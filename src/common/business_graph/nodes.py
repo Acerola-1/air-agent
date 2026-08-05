@@ -41,6 +41,19 @@ from common.mcp_client import ensure_mcp_tools
 from common.models import ModelRegistry
 from common.permission.rules import is_conversational
 from common.runtime_tools import get_business_tools, tool_name
+from common.skill_discovery import _union_allowed_tools
+from common.skill_router import SkillRouteCandidate, SkillSemanticRouter
+
+# 始终可见的本地工具名集合 (不被 skill allowed-tools 过滤掉).
+# 知识检索工具已移除, 当前仅保留时间工具.
+_ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset(
+    {"get_beijing_time"}
+)
+
+# 兜底消息常量 (模型调用失败 / 空回复时使用, 与 data_analysis/nodes.py 保持一致).
+_SERVICE_UNAVAILABLE_MESSAGE = "抱歉，当前智能问答服务暂时不可用，请稍后再试。"
+_EMPTY_REPLY_NUDGE = "请基于以上工具返回的数据，直接输出分析结论。"
+_FALLBACK_EMPTY_REPLY = "服务暂不可用，请稍后重试。"
 
 def _latest_human_content(messages: Sequence[Any]) -> str:
     """获取最近一条用户消息文本."""

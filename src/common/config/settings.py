@@ -70,10 +70,6 @@ class Config:
         "MCP_SERVER_URL",
         "IPP Air 服务的 MCP 服务器 URL。",
     )
-    MCP_SERVER_URL2: str = _get_env_required(
-        "MCP_SERVER_URL2",
-        "数据中心统计服务的 MCP 服务器 URL。",
-    )
 
     # ==================== 元数据 API 配置 ====================
     METADATA_API_URL: str = _get_env_optional(

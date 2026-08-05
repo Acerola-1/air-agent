@@ -25,16 +25,11 @@ ipp_mcp_client = MultiServerMCPClient(
         }
     }
 )
-datacenter_mcp_client = MultiServerMCPClient(
-    {
-        "datacenter-statistics-mcp-server": {
-            "url": config.MCP_SERVER_URL2,
-            "transport": "streamable_http",
-        }
-    }
-)
 
 ipp_mcp_tools: List[Any] = []
+# datacenter MCP server 已下线 (MCP_SERVER_URL2 已清理).
+# 保留空列表占位, 避免 deep_research / intelligent_report / intelligent_tracing 的 NameError.
+# 权限相关工具 (permission_vaild / get_user_profile / resolve_region_scope) 不可用时自动降级.
 datacenter_mcp_tools: List[Any] = []
 ipp_mcp_tools_name: List[str] = []
 datacenter_mcp_tools_name: List[str] = []
@@ -259,11 +254,6 @@ _mcp_registry = MCPToolRegistry(
             key="ipp",
             server_name="ipp-air-mcp-server",
             client_provider=lambda: ipp_mcp_client,
-        ),
-        _MCPServerSpec(
-            key="datacenter",
-            server_name="datacenter-statistics-mcp-server",
-            client_provider=lambda: datacenter_mcp_client,
         ),
     ]
 )
