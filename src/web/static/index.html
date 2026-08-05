@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Air Agent</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>Air Agent</h1>
+      <p class="subtitle">本地化 LangGraph 多智能体</p>
+    </div>
+    <button id="new-chat-btn" class="primary-btn">+ 新对话</button>
+    <div class="graph-picker">
+      <label for="graph-select">图:</label>
+      <select id="graph-select"></select>
+    </div>
+    <div class="thread-info">
+      <span class="label">Thread</span>
+      <code id="thread-id-display">—</code>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div id="messages" class="messages">
+      <div class="empty-state" id="empty-state">
+        <p>从左侧开始一个新对话, 或选择已有 thread 加载历史</p>
+      </div>
+    </div>
+    <div class="input-bar">
+      <textarea
+        id="input"
+        rows="2"
+        placeholder="输入消息, Enter 发送, Shift+Enter 换行"
+      ></textarea>
+      <button id="send-btn" class="primary-btn">发送</button>
+      <button id="stop-btn" class="secondary-btn" style="display:none">停止</button>
+    </div>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

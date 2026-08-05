@@ -308,12 +308,12 @@ temp_check/
 # 本地 README 草稿
 review.md
 
-# requirements.lock.txt 旧文件
-requirements_1.txt
 # DeepAgent Skills 文档归档 (不提交，仅作参考)
 deepagent_skills_doc/
-docker-compose.yaml
 
-
-# 忽略大工具结果
+# SQLite 数据库文件 (checkpointer 持久化)
+db/
+*.db
+*.sqlite
+*.sqlite3
 large_tool_results

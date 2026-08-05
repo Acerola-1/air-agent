@@ -4,27 +4,19 @@
 不允许使用硬编码默认值。
 
 本地化说明:
-- Milvus / Ollama / pg_store 相关配置已整体移除(知识检索与 Text2SQL 工具下线)。
-- 保留字段: MySQL(checkpointer) / MCP(业务数据) / 公网 LLM(主推理) / 外部搜索。
+- 2026-08-05 重构: 移除 PostgreSQL/MySQL 全部配置,checkpointer 切到 SQLite
+  (单文件存储, 项目根 db/ 目录, gitignore 忽略 db/*.db)。
+- 保留字段: SQLite(checkpointer) / MCP(业务数据) / 公网 LLM(主推理) / 外部搜索。
+- 知识库(Milvus / Ollama)与 text2sql 工具已下线,对应配置一并清理。
 """
+from __future__ import annotations
 
 import os
 from urllib.parse import quote_plus
 
 
 def _get_env_required(key: str, description: str) -> str:
-    """获取必需的环境变量.
-
-    参数:
-        key: 环境变量名称。
-        description: 错误信息的描述说明。
-
-    返回:
-        环境变量的值。
-
-    抛出:
-        OSError: 当环境变量未设置时抛出。
-    """
+    """获取必需的环境变量."""
     value = os.getenv(key)
     if value is None or value == "":
         raise OSError(f"必需的环境变量 '{key}' 未设置。{description}")
@@ -56,26 +48,18 @@ def _get_env_bool(key: str, default: bool) -> bool:
 
 
 class Config:
-    """应用配置类.
+    """应用配置类."""
 
-    所有敏感凭据必须通过环境变量设置。
-    敏感字段不提供硬编码默认值。
-    """
+    # ==================== SQLite 配置(checkpointer 存储)====================
+    # 单文件数据库,项目根 db/ 目录,gitignored
+    SQLITE_PATH: str = _get_env_optional("SQLITE_PATH", "db/checkpoints.db")
+    # SQLITE_PATH_PARENT 用于确保父目录存在(默认取父目录)
+    @property
+    def SQLITE_PATH_PARENT(self) -> str:
+        from pathlib import Path
+        return str(Path(self.SQLITE_PATH).parent) or "."
 
-    # ==================== MySQL 配置(checkpointer 存储)====================
-    # 提供两种使用方式:
-    #   1) 直接设 MYSQL_URI(推荐,整串连接信息,适配云库),例如
-    #      mysql://user:password@host:3306/dbname
-    #   2) 设 MYSQL_HOST/PORT/USER/PASSWORD/DB 五个字段,MysqlUri() 会自动组装
-    # 两者都设时,MYSQL_URI 优先
-    MYSQL_URI: str = _get_env_optional("MYSQL_URI", "")
-    MYSQL_HOST: str = _get_env_optional("MYSQL_HOST", "localhost")
-    MYSQL_PORT: int = _get_env_int("MYSQL_PORT", 3306)
-    MYSQL_USER: str = _get_env_optional("MYSQL_USER", "root")
-    MYSQL_PASSWORD: str = _get_env_optional("MYSQL_PASSWORD", "")
-    MYSQL_DB: str = _get_env_optional("MYSQL_DB", "air_agent")
-
-    # ==================== Redis 配置(LangGraph/DeepAgents 运行时)====================
+    # ==================== Redis 配置(预留)====================
     REDIS_HOST: str = _get_env_optional("REDIS_HOST", "localhost")
     REDIS_PORT: int = _get_env_int("REDIS_PORT", 6379)
     REDIS_PASSWORD: str | None = os.getenv("REDIS_PASSWORD")
@@ -116,8 +100,6 @@ class Config:
     )
 
     # ==================== OpenCode Go DeepSeek V4 Flash 配置(凭据必需)====================
-    # 走 OpenAI 兼容 /v1/chat/completions 通道;该通道不支持强制
-    # tool_choice / json_schema,结构化输出场景需用 bind_tools(auto) + Pydantic 校验。
     OPENCODE_GO_DEEPSEEK_V4_FLASH_API_KEY: str = _get_env_required(
         "OPENCODE_GO_DEEPSEEK_V4_FLASH_API_KEY",
         "OpenCode Go DeepSeek V4 Flash API 密钥,用于 OpenAI 兼容 LLM 推理。",
@@ -153,26 +135,6 @@ class Config:
     FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS: int = _get_env_int(
         "FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS", 20
     )
-
-    @property
-    def MysqlUri(self) -> str:
-        """MySQL 连接 URI(checkpointer 使用,优先取显式 MYSQL_URI,否则由字段组装)."""
-        if self.MYSQL_URI:
-            return self.MYSQL_URI
-        user = quote_plus(self.MYSQL_USER)
-        password = quote_plus(self.MYSQL_PASSWORD)
-        return f"mysql://{user}:{password}@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
-
-    @property
-    def REDIS_URI(self) -> str:
-        """LangGraph 运行时使用的 Redis 连接 URI."""
-        explicit_uri = os.getenv("REDIS_URI")
-        if explicit_uri:
-            return explicit_uri
-        password_part = (
-            f":{quote_plus(self.REDIS_PASSWORD)}@" if self.REDIS_PASSWORD else ""
-        )
-        return f"redis://{password_part}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
 
 
 config = Config()
