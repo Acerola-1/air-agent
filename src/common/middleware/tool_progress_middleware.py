@@ -42,9 +42,7 @@ class ProgressToolName(StrEnum):
     GET_BEIJING_TIME = "get_beijing_time"
     HELPER_GET_LATEST_TIME = "helper_get_latest_time"
     PARSE_REGION = "parse_region_tool"
-    KNOWLEDGE_RETRIEVER = "knowledge_retriever_tool"
     WEB_SEARCH = "websearch_tool"
-    TEXT2SQL = "text2sql"
 
 
 TOOL_PROGRESS_SPECS: Mapping[ProgressToolName, ProgressSpec] = {
@@ -127,18 +125,6 @@ TOOL_PROGRESS_SPECS: Mapping[ProgressToolName, ProgressSpec] = {
     ProgressToolName.PARSE_REGION: ProgressSpec(
         node="parse",
         message="正在识别查询范围...",
-    ),
-    ProgressToolName.KNOWLEDGE_RETRIEVER: ProgressSpec(
-        node="search",
-        message="正在检索相关资料...",
-    ),
-    ProgressToolName.WEB_SEARCH: ProgressSpec(
-        node="search",
-        message="正在联网检索相关资料...",
-    ),
-    ProgressToolName.TEXT2SQL: ProgressSpec(
-        node="query",
-        message="正在查询相关数据...",
     ),
 }
 

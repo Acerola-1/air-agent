@@ -2,9 +2,9 @@
 
 本地化版本：使用 MySQL(checkpointer)替代 PostgreSQL。
 PostgresSaver 改为 PyMySQLSaver,connect 协议换为 pymysql。
-pg_store.py 仍保留 PostgreSQL 路径,仅在 Milvus 启用时被调用,本地无 Milvus 时不会触发。
+pg_store.py / multi_query_retriever / milvus_vector_store / metadata_query_helper /
+vanna_sql_adapter 已随 Milvus 知识库下线一并删除。
 """
-
 from __future__ import annotations
 
 import threading

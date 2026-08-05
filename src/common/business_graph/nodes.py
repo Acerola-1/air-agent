@@ -64,8 +64,8 @@ _SERVICE_UNAVAILABLE_MESSAGE = "抱歉，当前智能问答服务暂时不可用
 # 空回复重试仍为空时的兜底消息
 _FALLBACK_EMPTY_REPLY = "服务暂不可用，请稍后重试。"
 
-# 非 allowed-tools 限制的始终可见业务工具
-_ALWAYS_VISIBLE_TOOL_NAMES = frozenset({"get_beijing_time", "knowledge_retriever_tool"})
+# 非 allowed-tools 限制的始终可见业务工具(本地化: knowledge_retriever_tool 依赖 Milvus, 已删除)
+_ALWAYS_VISIBLE_TOOL_NAMES = frozenset({"get_beijing_time"})
 
 # final_output_delta 事件的分片大小（字符）
 _DELTA_CHUNK_SIZE = 120

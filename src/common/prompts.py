@@ -351,26 +351,6 @@ EXPERT_MODE_SYSTEM_PROMPT = """
 
 """.strip()
 
-# =========================================================================
-# 检索相关提示词
-# =========================================================================
-
-
-def knowledge_retrieval_route_prompt(query: str) -> str:
-    """返回知识库路由选择提示词.
-
-    用于 knowledge_retriever_tool 和 retriever_tool 中，
-    判断应该查询 knowledge 还是 policy 知识库。
-    """
-    return f"""
-你是一个专业的知识库分类助手，任务是根据用户问题内容，判断最适合的知识库进行回答(只能选择一个)。
-可选的知识库有：
-1. knowledge：概念解释类，例如污染种类、治理方法、计算规则等
-2. policy：政策标准类，例如制度、规则、规范、标准流程等
-请你只返回这三个名称中的一个(knowledge / policy)，不要输出任何多余内容。
-用户问题是：
-\"\"\"{query}\"\"\"
-"""
 
 
 # =========================================================================
@@ -577,9 +557,6 @@ __all__ = [
     "FAST_MODE_SYSTEM_PROMPT",
     "EXPERT_MODE_SYSTEM_PROMPT",
     "with_main_agent_tool_use_output_guard",
-    "with_data_analysis_output_guard",
-    # 检索相关
-    "knowledge_retrieval_route_prompt",
     # 行政区划
     "region_extraction_prompt",
     # 权限检查(含上下文补全)

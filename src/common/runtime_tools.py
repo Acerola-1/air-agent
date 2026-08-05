@@ -5,14 +5,19 @@ from __future__ import annotations
 from typing import Any
 
 import common.mcp_client as mcp_client
-from common.tools import get_beijing_time, knowledge_retriever_tool
+from common.tools import get_beijing_time, parse_region_tool, websearch_tool
 
 
 def get_business_tools() -> list[Any]:
-    """返回当前可用的业务工具，MCP 工具按运行时初始化状态动态追加."""
+    """返回当前可用的业务工具,MCP 工具按运行时初始化状态动态追加.
+
+    本地化说明:知识检索与 text2sql 工具依赖 Milvus/Ollama,本地不可用,已移除。
+    保留工具: get_beijing_time / parse_region_tool / websearch_tool + 运行时 MCP 工具。
+    """
     return [
         get_beijing_time,
-        knowledge_retriever_tool,
+        parse_region_tool,
+        websearch_tool,
         *mcp_client.get_business_mcp_tools(),
     ]
 

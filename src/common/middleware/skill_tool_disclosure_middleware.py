@@ -142,7 +142,6 @@ class SkillToolFilterMiddleware(AgentMiddleware[Any, Any, Any]):
         always_visible_tool_names: Sequence[str] = (
             "find_skill",
             "get_beijing_time",
-            "knowledge_retriever_tool",
         ),
         unmatched_policy: UnmatchedPolicy = "strict",
     ) -> None:
