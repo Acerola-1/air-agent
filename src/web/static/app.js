@@ -1,14 +1,12 @@
 // ============================================================
-// Air Agent 前端 (ChatGPT 风格)
+// Air Agent 前端 (ChatGPT 风格还原)
 // 纯 vanilla JS, 0 框架. 依赖: marked + DOMPurify + highlight.js (CDN)
 //
-// 功能:
-// - 侧边栏: 时间分组 (今天/昨天/前7天/更早), inline 重命名, 删除, 搜索
-// - 顶栏: ChatGPT model picker 风格的图选择器
-// - 主区: 消息流 (Markdown + 代码高亮 + 代码复制按钮 + 工具调用折叠)
-// - 流式: SSE, 脉冲光标, 滚动跟随策略
-// - 主题: light / dark, 跟随系统 + 手动切换 + 持久化
-// - 键盘: Enter 发送, Shift+Enter 换行, Ctrl+K 新对话, Ctrl+B 折叠侧栏, Esc 停止
+// 关键差异 (相比旧版本):
+// - 工具调用完全嵌入 AI 消息 body 内, 不再作为独立 "T" 头像消息
+// - 历史加载时, 相邻的 assistant/tool 消息合并成同一条 AI 消息
+// - 用户消息无 bubble 背景 (纯文本 + 头像 + 作者小字, GPT 经典排版)
+// - 顶栏: 左会话标题, 右图选择器 (GPT 布局)
 // ============================================================
 
 // ============ State ============
@@ -19,10 +17,10 @@ const state = {
   isStreaming: false,
   threads: [],
   graphs: [],
-  // 用户是否手动滚离底部 (用于决定流式时是否自动跟随)
   userPinnedToTop: false,
-  // 搜索关键词
   searchKeyword: "",
+  // 当前流式 AI 消息引用 (用于嵌入 tool calls)
+  _curAssistant: null,   // {body, pendingToolDetails: []}
 };
 
 // 图描述 (用于下拉菜单显示, key 与后端 _GRAPH_SPECS 对齐)
@@ -43,13 +41,12 @@ const $ = {
   input: el("input"),
   sendBtn: el("send-btn"),
   newChatBtn: el("new-chat-btn"),
-  newChatTop: el("new-chat-top"),
   graphCurrent: el("graph-current"),
   graphCurrentName: el("graph-current-name"),
   graphDropdown: el("graph-dropdown"),
   graphOptions: el("graph-options"),
   graphPicker: el("graph-picker"),
-  threadIdDisplay: el("thread-id-display"),
+  chatTitle: el("chat-title"),                // 顶栏会话标题 (新增)
   threadList: el("thread-list"),
   themeBtn: el("theme-btn"),
   collapseBtn: el("collapse-btn"),
@@ -72,7 +69,7 @@ const escapeHtml = (s) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
-/** 把时间戳格式化成相对时间 (刚刚 / N 分钟前 / N 小时前 / N 天前 / 日期). */
+/** 把时间戳格式化成相对时间. */
 const formatTime = (ts) => {
   const d = new Date(ts * 1000);
   const now = new Date();
@@ -107,6 +104,13 @@ function groupThreadsByTime(threads) {
   ].filter((g) => g.items.length > 0);
 }
 
+/** 更新顶栏会话标题. */
+function updateChatTitle(title) {
+  const t = title ? title.trim() : "";
+  $.chatTitle.textContent = t || "新对话";
+  document.title = t ? `${t} — Air Agent` : "Air Agent";
+}
+
 /** 自适应 textarea 高度. */
 const autoResize = (ta) => {
   ta.style.height = "auto";
@@ -117,7 +121,7 @@ const autoResize = (ta) => {
 const setStreaming = (on) => {
   state.isStreaming = on;
   $.sendBtn.classList.toggle("streaming", on);
-  $.sendBtn.disabled = false; // 流式时也可点 (变停止按钮)
+  $.sendBtn.disabled = false;
   $.input.disabled = on;
 };
 
@@ -143,59 +147,346 @@ const updateScrollBottomBtn = () => {
 };
 
 // ============ Markdown 渲染 ============
-
+//
+// 三级降级:
+//   (1) marked@4 + hljs@11 + DOMPurify (完整能力, 首选; 静态库本地加载)
+//   (2) fallbackMarkdownToHtml()   (纯 JS 正则, 0 依赖; 标题/粗体/列表/代码/链接/表格)
+//   (3) escapeHtml()               (最底层; 仅 XSS 防护)
 let _mdReady = false;
+let _mdMethod = "pending"; // "marked" | "fallback" | "none"
 
-/** 等 CDN 库加载完成, 配置 marked + hljs. */
+/**
+ * 流式 MD 保护: 如果 text 末尾的围栏代码块 ``` 是奇数(未闭合), 则临时补上 "\n```\n"
+ * 避免逐字渲染时代码块标签外溢, 导致后续文字全被当成 <code>.
+ * ChatGPT 官方也用类似技巧.
+ */
+function completeUnclosedFences(text) {
+  if (!text || !text.includes("```")) return text;
+  // 只统计位于行首(允许前置空白)的 ```, 避免代码内容里的 ``` 干扰
+  const matches = text.match(/^[ \t]*```/gm);
+  if (matches && matches.length % 2 === 1) {
+    return text.replace(/\n?$/, "\n```\n");
+  }
+  return text;
+}
+
+/**
+ * 纯 JS 轻量 MD 渲染降级 (保底, 0 外部依赖).
+ * 支持: 标题 H1~H3, 段落, **粗体**, *斜体*, ~~删除线~~, `内联code`,
+ *       ```围栏代码块```, 无序/有序/任务列表, >引用, [链接](url),
+ *       水平分割线, 表格(最小语法), 换行.
+ * 返回的是不安全 HTML, 必须配合 escapeHtml 或 DOMPurify 使用.
+ */
+function fallbackMarkdownToHtml(raw) {
+  if (!raw) return "";
+  const lines = String(raw).replace(/\r\n/g, "\n").split("\n");
+  const out = [];
+  let i = 0;
+
+  // 转义工具
+  const h = (s) =>
+    String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  // 内联元素处理 (调用后再拼回 HTML)
+  const inline = (s) => {
+    let t = h(s);
+    // 内联 code: `xxx` (先处理, 避免其他正则干扰)
+    t = t.replace(/`([^`]+)`/g, (_, c) => `<code>${c}</code>`);
+    // 链接: [text](url)
+    t = t.replace(
+      /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+      (_, tx, u) => `<a href="${h(u)}" target="_blank" rel="noopener noreferrer">${tx}</a>`
+    );
+    // **粗体**, *斜体*, ~~删除线~~
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+    t = t.replace(/~~([^~]+)~~/g, "<del>$1</del>");
+    return t;
+  };
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // 围栏代码块 (```lang ... ```)
+    const fence = line.match(/^[ \t]*```([\w+-]*)[ \t]*$/);
+    if (fence) {
+      const lang = fence[1] || "text";
+      const buf = [];
+      i += 1;
+      while (i < lines.length && !/^[ \t]*```[ \t]*$/.test(lines[i])) {
+        buf.push(lines[i]);
+        i += 1;
+      }
+      i += 1; // 跳过结束 ```
+      const code = buf.join("\n");
+      out.push(
+        `<pre><div class="code-header">` +
+          `<span class="code-lang">${h(lang)}</span>` +
+          `<button class="code-copy-btn" data-code="${encodeURIComponent(code)}">复制</button>` +
+          `</div><code class="hljs language-${h(lang)}">${h(code)}</code></pre>`
+      );
+      continue;
+    }
+
+    // 水平分割线 --- / ***
+    if (/^[ \t]*([-*_])[ \t]*\1[ \t]*\1[ \t\1]*$/.test(line)) {
+      out.push("<hr>");
+      i += 1;
+      continue;
+    }
+
+    // 引用块 >
+    if (/^[ \t]*>/.test(line)) {
+      const buf = [];
+      while (i < lines.length && /^[ \t]*>/.test(lines[i])) {
+        buf.push(lines[i].replace(/^[ \t]*>[ \t]?/, ""));
+        i += 1;
+      }
+      out.push(`<blockquote>${inline(buf.join(" "))}</blockquote>`);
+      continue;
+    }
+
+    // 标题 # / ## / ### / ####
+    const hx = line.match(/^(#{1,6})[ \t]+(.+)$/);
+    if (hx) {
+      const level = hx[1].length;
+      out.push(`<h${level}>${inline(hx[2]).trim()}</h${level}>`);
+      i += 1;
+      continue;
+    }
+
+    // 表格 (下一行是 |---| 分隔)
+    if (
+      /\|/.test(line) &&
+      lines[i + 1] &&
+      /^[ \t]*\|?[ \t]*:?-{2,}:?[ \t]*(\|[ \t]*:?-{2,}:?[ \t]*)+\|?[ \t]*$/.test(lines[i + 1])
+    ) {
+      const headCells = line.replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      i += 2; // 跳过头 + 分隔
+      const rows = [];
+      while (i < lines.length && /\|/.test(lines[i]) && lines[i].trim() !== "") {
+        rows.push(lines[i].replace(/^\||\|$/g, "").split("|").map((c) => c.trim()));
+        i += 1;
+      }
+      let html = '<div class="table-wrap"><table><thead><tr>';
+      headCells.forEach((c) => (html += `<th>${inline(c)}</th>`));
+      html += "</tr></thead><tbody>";
+      rows.forEach((r) => {
+        html += "<tr>";
+        for (let k = 0; k < headCells.length; k += 1) {
+          html += `<td>${inline(r[k] ?? "")}</td>`;
+        }
+        html += "</tr>";
+      });
+      html += "</tbody></table></div>";
+      out.push(html);
+      continue;
+    }
+
+    // 无序列表 / 有序列表 / 任务列表 (支持连续多行)
+    const ulMatch = line.match(/^([ \t]*)[-*+][ \t]+(.+)$/);
+    const olMatch = !ulMatch && line.match(/^([ \t]*)(\d+)\.[ \t]+(.+)$/);
+    if (ulMatch || olMatch) {
+      const isOl = !!olMatch;
+      const baseIndent = (ulMatch || olMatch)[1].length;
+      const tag = isOl ? "ol" : "ul";
+      out.push(`<${tag}>`);
+      while (i < lines.length) {
+        const mUL = lines[i].match(/^([ \t]*)[-*+][ \t]+(.+)$/);
+        const mOL = !mUL && lines[i].match(/^([ \t]*)(\d+)\.[ \t]+(.+)$/);
+        if (!mUL && !mOL) break;
+        const m = mUL || mOL;
+        if (m[1].length !== baseIndent) break;
+        const wantOl = !!mOL;
+        if (wantOl !== isOl) break;
+        let content = m[mUL ? 2 : 3];
+        // 任务列表 - [x] / - [ ]
+        const task = content.match(/^\[([ xX])\][ \t]+(.+)$/);
+        if (task) {
+          const checked = task[1].toLowerCase() === "x" ? " checked" : "";
+          out.push(
+            `<li><input type="checkbox" disabled${checked}> <span>${inline(task[2])}</span></li>`
+          );
+        } else {
+          out.push(`<li>${inline(content)}</li>`);
+        }
+        i += 1;
+      }
+      out.push(`</${tag}>`);
+      continue;
+    }
+
+    // 空行
+    if (line.trim() === "") {
+      i += 1;
+      continue;
+    }
+
+    // 段落: 连续非空行合并
+    const buf = [line];
+    i += 1;
+    while (
+      i < lines.length &&
+      lines[i].trim() !== "" &&
+      !/^(#{1,6})[ \t]/.test(lines[i]) &&
+      !/^[ \t]*>/.test(lines[i]) &&
+      !/^[ \t]*```/.test(lines[i]) &&
+      !/^[ \t]*([-*+]|\d+\.)[ \t]/.test(lines[i]) &&
+      !/^[ \t]*([-*_])[ \t]*\1[ \t]*\1/.test(lines[i])
+    ) {
+      buf.push(lines[i]);
+      i += 1;
+    }
+    out.push(`<p>${inline(buf.join(" "))}</p>`);
+  }
+  return out.join("\n");
+}
+
+/** 等 3 个库加载完成并配置 marked + hljs. 3 秒超时后降级到 fallback. */
 const waitForLibs = () =>
   new Promise((resolve) => {
-    const check = () => {
-      if (window.marked && window.DOMPurify && window.hljs) {
-        _mdReady = true;
-        window.marked.setOptions({ gfm: true, breaks: false });
-        // 接管代码块: 输出带 header + 复制按钮的结构
+    const startAt = Date.now();
+    const TIMEOUT_MS = 3000;
+
+    const setupMarked = () => {
+      try {
+        // marked v4 setOptions API
+        window.marked.setOptions({
+          gfm: true,
+          breaks: false,
+          tables: true,
+          headerIds: false,
+          mangle: false,
+        });
         const renderer = new window.marked.Renderer();
-        const origCode = renderer.code.bind(renderer);
+
+        // --- 表格: 包一层 .table-wrap 实现外圆角 ---
+        renderer.table = (header, body) =>
+          `<div class="table-wrap"><table><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
+
+        // --- 链接: 自动加 target=_blank + rel ---
+        renderer.link = (href, title, text) => {
+          const safe = (href || "").replace(/"/g, "%22");
+          const t = title ? ` title="${title.replace(/"/g, "%22")}"` : "";
+          return `<a href="${safe}"${t} target="_blank" rel="noopener noreferrer">${text}</a>`;
+        };
+
+        // --- 代码块: hljs v11 + 复制按钮 ---
         renderer.code = (code, lang) => {
-          const langLabel = lang && window.hljs.getLanguage(lang) ? lang : "text";
-          let highlighted;
-          try {
-            if (lang && window.hljs.getLanguage(lang)) {
-              highlighted = window.hljs.highlight(code, { language: lang }).value;
-            } else {
-              highlighted = window.hljs.highlightAuto(code).value;
-            }
-          } catch {
-            highlighted = escapeHtml(code);
+          // hljs v11 API: hljs.getLanguage(lang), hljs.highlight(code, {language}), hljs.highlightAuto(code)
+          const hl = window.hljs;
+          let normalizedLang = "text";
+          if (hl && typeof hl.getLanguage === "function") {
+            const l = (lang || "").trim().split(" ")[0].toLowerCase();
+            if (l && hl.getLanguage(l)) normalizedLang = l;
           }
+          let highlighted = null;
+          if (hl && typeof hl.highlight === "function") {
+            try {
+              if (normalizedLang !== "text") {
+                const r = hl.highlight(code, { language: normalizedLang, ignoreIllegals: true });
+                highlighted = r.value || null;
+              } else if (typeof hl.highlightAuto === "function") {
+                const r = hl.highlightAuto(code);
+                highlighted = r.value || null;
+                if (r.language) normalizedLang = r.language;
+              }
+            } catch (_e) {
+              highlighted = null;
+            }
+          }
+          if (!highlighted) highlighted = escapeHtml(code);
           const encoded = encodeURIComponent(code);
           return (
             `<pre><div class="code-header">` +
-            `<span class="code-lang">${escapeHtml(langLabel)}</span>` +
+            `<span class="code-lang">${escapeHtml(normalizedLang)}</span>` +
             `<button class="code-copy-btn" data-code="${encoded}">复制</button>` +
-            `</div><code class="hljs language-${escapeHtml(langLabel)}">${highlighted}</code></pre>`
+            `</div><code class="hljs language-${escapeHtml(normalizedLang)}">${highlighted}</code></pre>`
           );
         };
+
         window.marked.use({ renderer });
-        resolve();
-      } else {
-        setTimeout(check, 50);
+        return true;
+      } catch (e) {
+        console.warn("[md] marked 配置失败, 降级到 fallback:", e);
+        return false;
       }
+    };
+
+    const check = () => {
+      if (window.marked && typeof window.marked.parse === "function" && window.DOMPurify) {
+        // hljs 不存在也可以跑 marked,只是代码块没高亮 -> 自动用 escapeHtml
+        const ok = setupMarked();
+        _mdReady = true;
+        _mdMethod = ok ? "marked" : "fallback";
+        resolve();
+        return;
+      }
+      if (Date.now() - startAt > TIMEOUT_MS) {
+        // 超时, 直接用 fallback (避免永远等不到 CDN 或加载异常)
+        _mdReady = true;
+        _mdMethod = "fallback";
+        console.warn("[md] 3 秒内 MD 库未就绪, 降级为纯 JS fallback 渲染器.");
+        resolve();
+        return;
+      }
+      setTimeout(check, 50);
     };
     check();
   });
 
-/** 把 markdown 文本渲染成 sanitized HTML. */
-const renderMarkdown = (text) => {
-  if (!_mdReady || !window.marked) return escapeHtml(text);
-  const html = window.marked.parse(text);
-  return window.DOMPurify.sanitize(html, {
-    ADD_ATTR: ["target", "class", "data-code"],
-    ADD_TAGS: ["details", "summary"],
-  });
+/**
+ * 把 Markdown 文本渲染成安全的 HTML 字符串.
+ * - 流式时会自动补齐未闭合的 ``` 围栏代码块, 避免排版错位.
+ * - 三级降级: marked -> fallbackMarkdownToHtml -> escapeHtml
+ */
+const renderMarkdown = (text, { streaming = false } = {}) => {
+  if (text == null) return "";
+  const src = streaming ? completeUnclosedFences(String(text)) : String(text);
+  if (!_mdReady) return escapeHtml(src);
+
+  let html = null;
+  let needPurify = false;
+
+  if (_mdMethod === "marked" && window.marked && typeof window.marked.parse === "function") {
+    try {
+      html = window.marked.parse(src);
+      needPurify = true;
+    } catch (e) {
+      console.warn("[md] marked.parse 异常, 降级 fallback:", e);
+      html = fallbackMarkdownToHtml(src);
+      needPurify = true;
+    }
+  } else {
+    html = fallbackMarkdownToHtml(src);
+    needPurify = true;
+  }
+
+  if (!html) return escapeHtml(src);
+
+  // DOMPurify 最终兜底
+  if (needPurify && window.DOMPurify) {
+    try {
+      return window.DOMPurify.sanitize(html, {
+        ADD_ATTR: ["target", "class", "data-code", "disabled", "checked", "rel"],
+        ADD_TAGS: ["details", "summary"],
+      });
+    } catch (e) {
+      console.warn("[md] DOMPurify 异常, 退化为转义:", e);
+      return escapeHtml(src);
+    }
+  }
+  // 没 Purify 就直接输出 fallback(内部已先转义)
+  if (_mdMethod === "fallback") return html;
+  return escapeHtml(src);
 };
 
-/** 给 root 内所有代码块的复制按钮绑定事件 (避免重复绑定). */
+/** 给 root 内所有代码块的复制按钮绑定事件. */
 function bindCodeCopyButtons(root) {
   root.querySelectorAll("pre .code-copy-btn").forEach((btn) => {
     if (btn.dataset.bound) return;
@@ -212,6 +503,16 @@ function bindCodeCopyButtons(root) {
     });
   });
 }
+
+// 调试/扩展接口: 把关键 MD 函数挂到 window, 方便外部调用与测试.
+// 注: app.js 顶层 const 不会挂到 window, 必须显式赋值.
+window.__md = {
+  renderMarkdown,
+  fallbackMarkdownToHtml,
+  bindCodeCopyButtons,
+  completeUnclosedFences,
+  getStatus: () => ({ ready: _mdReady, method: _mdMethod }),
+};
 
 // ============ API 调用 ============
 
@@ -286,14 +587,13 @@ function renderGraphPicker() {
   });
 }
 
-/** 切换图: 清空主区, 重新加载该图的 thread 列表, 选中最近 thread. */
+/** 切换图. */
 async function switchGraph(graphId) {
   if (state.isStreaming) stopStream();
   state.graphId = graphId;
   state.threadId = null;
   localStorage.setItem("air-agent:graph", graphId);
-  $.threadIdDisplay.textContent = "—";
-  $.threadIdDisplay.title = "";
+  updateChatTitle("");
   renderGraphPicker();
   renderThreadList();
   renderHistory(null);
@@ -311,7 +611,7 @@ async function switchGraph(graphId) {
 
 // ============ ThreadList ============
 
-/** 渲染侧边栏 thread 列表, 按时间分组 + 关键词过滤. */
+/** 渲染侧边栏 thread 列表. */
 function renderThreadList() {
   let threads = state.threads;
   const kw = state.searchKeyword.trim().toLowerCase();
@@ -340,7 +640,7 @@ function renderThreadList() {
                 <button class="icon-btn rename-btn" title="重命名">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 20h9"></path>
-                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    <path d="M16.5 3.5a2.121 2 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                   </svg>
                 </button>
                 <button class="icon-btn danger delete-btn" title="删除">
@@ -366,33 +666,29 @@ function renderThreadList() {
   $.threadList.querySelectorAll(".thread-item").forEach((item) => {
     const tid = item.getAttribute("data-thread-id");
     item.addEventListener("click", (e) => {
-      // 点了内部按钮就不切换
       if (e.target.closest(".thread-item-actions")) return;
       if (tid && tid !== state.threadId) switchThread(tid);
     });
-    // 双击标题进入 inline 编辑
     const titleEl = item.querySelector(".thread-item-title");
     titleEl.addEventListener("dblclick", (e) => {
       e.stopPropagation();
       startInlineRename(item, tid);
     });
-    // 重命名按钮
     item.querySelector(".rename-btn").addEventListener("click", (e) => {
       e.stopPropagation();
       startInlineRename(item, tid);
     });
-    // 删除
     item.querySelector(".delete-btn").addEventListener("click", async (e) => {
       e.stopPropagation();
-      if (!confirm("确认删除该对话? 历史消息将被清空.")) return;
+      if (!confirm("确认删除该对话?")) return;
       const ok = await apiDeleteThread(tid);
       if (ok) {
         if (tid === state.threadId) {
           state.threadId = null;
           renderHistory(null);
+          updateChatTitle("");
         }
         await refreshThreadList();
-        // 如果当前 thread 被删了, 切到第一个
         if (!state.threadId && state.threads.length) {
           await switchThread(state.threads[0].thread_id);
         } else if (!state.threads.length) {
@@ -403,7 +699,6 @@ function renderThreadList() {
   });
 }
 
-/** 把某个 thread 项的标题变成可编辑 input. */
 function startInlineRename(itemEl, threadId) {
   const titleEl = itemEl.querySelector(".thread-item-title");
   const t = state.threads.find((x) => x.thread_id === threadId);
@@ -422,12 +717,12 @@ function startInlineRename(itemEl, threadId) {
     committed = true;
     const next = input.value.trim();
     if (!next || next === current) {
-      // 取消, 还原
       input.replaceWith(titleEl);
       return;
     }
     await apiRenameThread(threadId, next);
     if (t) t.title = next;
+    if (state.threadId === threadId) updateChatTitle(next);
     await refreshThreadList();
   };
   const cancel = () => {
@@ -437,13 +732,8 @@ function startInlineRename(itemEl, threadId) {
   };
   input.addEventListener("blur", commit);
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      input.blur();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      cancel();
-    }
+    if (e.key === "Enter") { e.preventDefault(); input.blur(); }
+    else if (e.key === "Escape") { e.preventDefault(); cancel(); }
   });
 }
 
@@ -458,8 +748,8 @@ async function switchThread(threadId) {
   if (state.isStreaming) stopStream();
   state.threadId = threadId;
   localStorage.setItem("air-agent:thread:" + state.graphId, threadId);
-  $.threadIdDisplay.textContent = threadId.slice(0, 8) + "…";
-  $.threadIdDisplay.title = threadId;
+  const t = state.threads.find((x) => x.thread_id === threadId);
+  updateChatTitle(t ? t.title : "");
   renderThreadList();
 
   const data = await apiGetHistory(state.graphId, threadId);
@@ -468,11 +758,8 @@ async function switchThread(threadId) {
 }
 
 /** 渲染历史消息.
- * data = { messages: [{role, content, tool_calls, tool_name, ...}, ...] }
- * - user: 用户消息 (bubble)
- * - assistant: AI 回复 (markdown); 若带 tool_calls, 额外渲染工具调用卡片
- * - tool: 工具返回 (折叠 details, 默认收起, 避免原始 JSON 刷屏)
- * - system: 系统消息 (灰显, 通常不展示)
+ *  关键逻辑: 相邻的 assistant + tool 消息合并到同一条 AI 消息中 (ChatGPT 风格).
+ *  这样 tool call / tool result 作为折叠卡, 位于同一个 AI author 下, 无独立 T 头像.
  */
 function renderHistory(data) {
   $.messages.innerHTML = "";
@@ -481,75 +768,150 @@ function renderHistory(data) {
     updateScrollBottomBtn();
     return;
   }
-  for (const m of data.messages) {
-    // 系统消息: 历史加载时直接跳过 (不展示给用户)
-    if (m.role === "system") continue;
 
-    // 工具返回: 折叠卡片
-    if (m.role === "tool") {
-      appendToolResult(m.tool_name || "工具", m.content);
+  const msgs = data.messages;
+  // 第 1 轮: 分组成"回合" — 每组以 user 开头 (或以非 user 开头, 用于首条 system/assistant),
+  // 连续的 assistant/tool 合并为同一条 AI 消息块
+  let i = 0;
+  while (i < msgs.length) {
+    const m = msgs[i];
+    if (m.role === "system") { i++; continue; }
+
+    if (m.role === "user") {
+      appendMessage("user", m.content || "", false);
+      i++;
       continue;
     }
 
-    // AI 消息: 先渲染 tool_calls (如果有), 再渲染 content
-    if (m.role === "assistant") {
-      if (Array.isArray(m.tool_calls) && m.tool_calls.length) {
-        for (const tc of m.tool_calls) {
-          appendToolCall(tc.name || "tool", tc.args || {});
+    // 连续 assistant/tool → 合并
+    const assistantParts = [];  // {kind:'content', text} | {kind:'tool_call', name, args} | {kind:'tool_result', name, content}
+    while (i < msgs.length && (msgs[i].role === "assistant" || msgs[i].role === "tool")) {
+      const mm = msgs[i];
+      if (mm.role === "assistant") {
+        if (Array.isArray(mm.tool_calls)) {
+          for (const tc of mm.tool_calls) {
+            assistantParts.push({ kind: "tool_call", name: tc.name || "tool", args: tc.args || {} });
+          }
         }
+        if (mm.content && mm.content.trim()) {
+          assistantParts.push({ kind: "content", text: mm.content });
+        }
+      } else if (mm.role === "tool") {
+        assistantParts.push({ kind: "tool_result", name: mm.tool_name || "工具", content: mm.content });
       }
-      // content 为空且没 tool_calls → 跳过 (避免空 bubble)
-      if (m.content && m.content.trim()) {
-        appendMessage("assistant", m.content, false);
-      } else if (!Array.isArray(m.tool_calls) || !m.tool_calls.length) {
-        // 完全空的 AI 消息也跳过
-        continue;
-      }
-      continue;
+      i++;
     }
-
-    // 用户消息
-    if (m.role === "user" && m.content) {
-      appendMessage("user", m.content, false);
+    if (assistantParts.length) {
+      appendMergedAssistant(assistantParts);
     }
   }
   updateScrollBottomBtn();
 }
 
-/** 追加工具返回结果 (折叠卡片, 默认收起).
- *  与 appendToolCall (调用中) 区分: 这里是已完成的工具返回.
- */
-function appendToolResult(toolName, resultText) {
+/** 渲染合并后的 AI 消息块 (内容 + 多个工具调用/结果). */
+function appendMergedAssistant(parts) {
   if ($.emptyState && $.emptyState.parentNode) $.emptyState.remove();
   const wrap = document.createElement("div");
-  wrap.className = "message tool";
-  // 尝试把 JSON 字符串美化, 否则原样展示
+  wrap.className = "message assistant";
+
+  const avatar = document.createElement("div");
+  avatar.className = "message-avatar";
+  avatar.textContent = "A";
+
+  const body = document.createElement("div");
+  body.className = "message-body";
+
+  const authorEl = document.createElement("div");
+  authorEl.className = "message-author";
+  authorEl.textContent = "Air Agent";
+  body.appendChild(authorEl);
+
+  for (const p of parts) {
+    if (p.kind === "content") {
+      const contentEl = document.createElement("div");
+      contentEl.className = "message-content";
+      contentEl.innerHTML = renderMarkdown(p.text);
+      bindCodeCopyButtons(contentEl);
+      body.appendChild(contentEl);
+    } else if (p.kind === "tool_call") {
+      body.appendChild(makeToolCallElement(p.name, p.args, true, "已调用"));
+    } else if (p.kind === "tool_result") {
+      body.appendChild(makeToolResultElement(p.name, p.content));
+    }
+  }
+
+  // Actions (复制 + 重试)
+  const allText = parts.filter(p => p.kind === "content").map(p => p.text).join("\n\n") || "";
+  const actions = document.createElement("div");
+  actions.className = "message-actions";
+  const copyBtn = mkIconBtn("复制", ICON_COPY, () => {
+    navigator.clipboard.writeText(allText);
+    flashIcon(copyBtn);
+  });
+  const retryBtn = mkIconBtn("重试", ICON_RETRY, () => retryLastUserMessage());
+  actions.appendChild(copyBtn);
+  actions.appendChild(retryBtn);
+  body.appendChild(actions);
+
+  // 包裹成 wrap -> avatar + body (GPT 标准两列布局)
+  const wrapInner = document.createElement("div");
+  wrapInner.className = "message-wrap";
+  wrapInner.appendChild(avatar);
+  wrapInner.appendChild(body);
+  wrap.appendChild(wrapInner);
+
+  $.messages.appendChild(wrap);
+  scrollToBottom();
+}
+
+// ============ 工具调用元素 (纯函数, 返回 DOM) ============
+
+/** 构造一个 <details class="tool-call"> — 用于"调用中"或"已调用". */
+function makeToolCallElement(toolName, args, done, statusText) {
+  const details = document.createElement("details");
+  details.className = "tool-call" + (done ? " tool-done" : "");
+  // 默认展开时显示: 用户能看到调用了什么, 但默认收起不占空间 (GPT 做派)
+  details.open = false;
+  const argsPretty = (typeof args === "string")
+    ? args
+    : JSON.stringify(args, null, 2);
+  details.innerHTML = `
+    <summary>
+      <span class="tool-icon">${done ? "✓" : "⚡"}</span>
+      <span class="tool-name">${escapeHtml(toolName)}</span>
+      <span class="tool-status">
+        ${done ? `<span>${statusText || "已调用"}</span>` : `<span class="spinner"></span><span>调用中</span>`}
+      </span>
+    </summary>
+    <div class="tool-args">${escapeHtml(argsPretty)}</div>
+  `;
+  return details;
+}
+
+/** 构造工具返回折叠卡 (绿色 ✓, 展示响应体). */
+function makeToolResultElement(toolName, resultText) {
+  // 尝试美化 JSON
   let pretty = resultText;
   try {
     const obj = JSON.parse(resultText);
     pretty = JSON.stringify(obj, null, 2);
-  } catch (_) {
-    // 非 JSON, 保持原样
-  }
-  wrap.innerHTML = `
-    <div class="message-avatar">T</div>
-    <div class="message-body">
-      <details class="tool-call">
-        <summary>
-          <span class="tool-icon">✓</span>
-          <span class="tool-name">${escapeHtml(toolName)}</span>
-          <span class="tool-status" style="color:var(--text-tertiary)">返回结果</span>
-        </summary>
-        <div class="tool-args">${escapeHtml(pretty)}</div>
-      </details>
-    </div>
+  } catch (_) { /* 非 JSON, 保持原样 */ }
+  const details = document.createElement("details");
+  details.className = "tool-call tool-done";
+  details.open = false;
+  details.innerHTML = `
+    <summary>
+      <span class="tool-icon">✓</span>
+      <span class="tool-name">${escapeHtml(toolName)}</span>
+      <span class="tool-status">返回结果</span>
+    </summary>
+    <div class="tool-args">${escapeHtml(pretty)}</div>
   `;
-  $.messages.appendChild(wrap);
+  return details;
 }
 
 // ============ 消息渲染 ============
 
-/** 创建图标按钮 (用于消息底部 actions). */
 function mkIconBtn(label, svgPath, onClick, extraClass = "") {
   const b = document.createElement("button");
   b.className = `message-action ${extraClass}`.trim();
@@ -568,7 +930,9 @@ const ICON_RETRY = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" 
   <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
 </svg>`;
 
-/** 追加一条消息到消息流. 返回 contentEl (供流式更新). */
+/** 追加一条消息.
+ *  返回 { wrap, body, contentEl } — 调用方拿到后可继续往 body 里插入 tool-calls.
+ */
 function appendMessage(role, content, streaming) {
   if ($.emptyState && $.emptyState.parentNode) $.emptyState.remove();
   const wrap = document.createElement("div");
@@ -588,20 +952,21 @@ function appendMessage(role, content, streaming) {
     role === "user" ? "你" :
     role === "assistant" ? "Air Agent" :
     role === "error" ? "错误" : "系统";
-  if (streaming) body.appendChild(authorEl);
+  body.appendChild(authorEl);
 
   const contentEl = document.createElement("div");
   contentEl.className = "message-content";
   if (streaming) {
-    contentEl.textContent = content;
+    // 流式: 仍用 MD 渲染 (completeUnclosedFences 会自动补齐未闭合 ``` 围栏, 避免错位)
+    contentEl.innerHTML = renderMarkdown(content, { streaming: true });
+    bindCodeCopyButtons(contentEl);
   } else {
     contentEl.innerHTML = renderMarkdown(content);
     bindCodeCopyButtons(contentEl);
   }
-
   body.appendChild(contentEl);
 
-  // 非流式消息: 加底部 actions
+  // 非流式消息: 加 actions
   if (!streaming) {
     const actions = document.createElement("div");
     actions.className = "message-actions";
@@ -617,56 +982,100 @@ function appendMessage(role, content, streaming) {
     body.appendChild(actions);
   }
 
-  wrap.appendChild(avatar);
-  wrap.appendChild(body);
+  // GPT 两列布局: wrap > wrap-inner (avatar + body)
+  const wrapInner = document.createElement("div");
+  wrapInner.className = "message-wrap";
+  wrapInner.appendChild(avatar);
+  wrapInner.appendChild(body);
+  wrap.appendChild(wrapInner);
+
   $.messages.appendChild(wrap);
   scrollToBottom();
-  return contentEl;
+  return { wrap, body, contentEl };
 }
 
-/** 让按钮短暂变成"已复制"反馈. */
 function flashIcon(btn) {
   const orig = btn.innerHTML;
   btn.innerHTML = `<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
   setTimeout(() => (btn.innerHTML = orig), 1200);
 }
 
-/** 追加工具调用 (折叠的 details 块). */
+/** 追加工具调用 — 嵌入到"当前流式 AI 消息"或"最后一条 AI 消息"的 body 里. */
 function appendToolCall(toolName, args) {
   if ($.emptyState && $.emptyState.parentNode) $.emptyState.remove();
-  const wrap = document.createElement("div");
-  wrap.className = "message tool";
-  wrap.innerHTML = `
-    <div class="message-avatar">T</div>
-    <div class="message-body">
-      <details class="tool-call">
-        <summary>
-          <span class="tool-icon">⚡</span>
-          <span class="tool-name">${escapeHtml(toolName)}</span>
-          <span class="tool-status">
-            <span class="spinner"></span>
-            调用中
-          </span>
-        </summary>
-        <div class="tool-args">${escapeHtml(JSON.stringify(args, null, 2))}</div>
-      </details>
-    </div>
-  `;
-  $.messages.appendChild(wrap);
+  let bodyEl;
+  if (state._curAssistant && state._curAssistant.body) {
+    bodyEl = state._curAssistant.body;
+  } else {
+    // fallback: 取最后一条 assistant
+    const last = $.messages.querySelector(".message.assistant:last-child .message-body");
+    if (!last) return null;
+    bodyEl = last;
+  }
+  const details = makeToolCallElement(toolName, args, false);
+  bodyEl.appendChild(details);
+  // 记录到 pending 列表, 之后转"完成"状态
+  if (state._curAssistant) {
+    state._curAssistant.pendingToolDetails = state._curAssistant.pendingToolDetails || [];
+    state._curAssistant.pendingToolDetails.push(details);
+  }
   scrollToBottom();
+  return details;
 }
 
-/** 追加系统/错误消息. */
+/** 追加工具返回 — 嵌入到最后一条 AI 消息 body, 绿色 ✓, 展示响应. */
+function appendToolResult(toolName, resultText) {
+  if ($.emptyState && $.emptyState.parentNode) $.emptyState.remove();
+  let bodyEl;
+  if (state._curAssistant && state._curAssistant.body) {
+    bodyEl = state._curAssistant.body;
+  } else {
+    const last = $.messages.querySelector(".message.assistant:last-child .message-body");
+    if (!last) return null;
+    bodyEl = last;
+  }
+  const details = makeToolResultElement(toolName, resultText);
+  bodyEl.appendChild(details);
+  scrollToBottom();
+  return details;
+}
+
+/** 把当前所有 pending tools 标为"已完成" (当一段文本或下一个 tool 到来时调用). */
+function markPendingToolsDone(statusText) {
+  if (!state._curAssistant || !state._curAssistant.pendingToolDetails) return;
+  for (const d of state._curAssistant.pendingToolDetails) {
+    d.classList.add("tool-done");
+    const icon = d.querySelector(".tool-icon");
+    if (icon) icon.textContent = "✓";
+    const status = d.querySelector(".tool-status");
+    if (status) status.innerHTML = `<span>${statusText || "已调用"}</span>`;
+  }
+  state._curAssistant.pendingToolDetails = [];
+}
+
 function appendSystemMessage(text, kind = "system") {
   if ($.emptyState && $.emptyState.parentNode) $.emptyState.remove();
   const wrap = document.createElement("div");
   wrap.className = `message ${kind}`;
-  wrap.innerHTML = `
-    <div class="message-avatar">${kind === "error" ? "!" : "·"}</div>
-    <div class="message-body">
-      <div class="message-content" style="color:var(--text-secondary);font-style:italic">${escapeHtml(text)}</div>
-    </div>
-  `;
+  const avatar = document.createElement("div");
+  avatar.className = "message-avatar";
+  avatar.textContent = kind === "error" ? "!" : "·";
+  const body = document.createElement("div");
+  body.className = "message-body";
+  const authorEl = document.createElement("div");
+  authorEl.className = "message-author";
+  authorEl.textContent = kind === "error" ? "错误" : "系统";
+  body.appendChild(authorEl);
+  const contentEl = document.createElement("div");
+  contentEl.className = "message-content";
+  contentEl.style.cssText = "color:var(--text-secondary);font-style:italic";
+  contentEl.textContent = text;
+  body.appendChild(contentEl);
+  const wrapInner = document.createElement("div");
+  wrapInner.className = "message-wrap";
+  wrapInner.appendChild(avatar);
+  wrapInner.appendChild(body);
+  wrap.appendChild(wrapInner);
   $.messages.appendChild(wrap);
   scrollToBottom();
 }
@@ -677,18 +1086,14 @@ async function send() {
   const text = $.input.value.trim();
   if (!text || state.isStreaming) return;
 
-  // 没 thread 就先建一个
   let isNewThread = false;
   if (!state.threadId) {
     const t = await apiCreateThread(state.graphId);
     state.threadId = t.thread_id;
     localStorage.setItem("air-agent:thread:" + state.graphId, t.thread_id);
-    $.threadIdDisplay.textContent = t.thread_id.slice(0, 8) + "…";
-    $.threadIdDisplay.title = t.thread_id;
     isNewThread = true;
   }
 
-  // 乐观更新: 新对话立即插入列表 + 用首条消息作标题
   if (isNewThread) {
     state.threads.unshift({
       thread_id: state.threadId,
@@ -698,11 +1103,14 @@ async function send() {
       updated_at: Date.now() / 1000,
       step_count: 0,
     });
+    updateChatTitle(text.slice(0, 30));
   } else {
-    // 已有对话: 更新标题 (若为空) + 移到列表顶部
     const t = state.threads.find((x) => x.thread_id === state.threadId);
     if (t) {
-      if (!t.title) t.title = text.slice(0, 30);
+      if (!t.title) {
+        t.title = text.slice(0, 30);
+        updateChatTitle(t.title);
+      }
       t.updated_at = Date.now() / 1000;
       state.threads = [t, ...state.threads.filter((x) => x.thread_id !== state.threadId)];
     }
@@ -717,19 +1125,17 @@ async function send() {
   state.userPinnedToTop = false;
   state.controller = new AbortController();
 
-  const contentEl = appendMessage("assistant", "", true);
+  const { body: assistantBody, contentEl, wrap: assistantWrap } = appendMessage("assistant", "", true);
+  // 记录当前流式 AI 消息引用, tool calls 嵌入此 body
+  state._curAssistant = { body: assistantBody, contentEl, wrap: assistantWrap, pendingToolDetails: [], rawText: "" };
 
-  let rawText = "";
   try {
     const r = await fetch(
       `/api/threads/${state.threadId}/runs/stream?graph_id=${encodeURIComponent(state.graphId)}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          graph_id: state.graphId,
-          content: text,
-        }),
+        body: JSON.stringify({ graph_id: state.graphId, content: text }),
         signal: state.controller.signal,
       },
     );
@@ -746,7 +1152,6 @@ async function send() {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      // SSE: data: {...}\n\n
       const lines = buffer.split("\n\n");
       buffer = lines.pop() || "";
       for (const chunk of lines) {
@@ -755,16 +1160,20 @@ async function send() {
         try {
           const obj = JSON.parse(line);
           if (obj.type === "text") {
-            rawText += obj.content;
-            // 流式过程中用 textContent 更新 (避免每次重渲染 markdown 卡顿)
-            contentEl.textContent = rawText;
+            // 有新文本来了, 上一个 tool 必然完成了 → 标记完成
+            markPendingToolsDone("已调用");
+            state._curAssistant.rawText += obj.content;
+            // 流式也走 MD, completeUnclosedFences 补齐未闭合的 ``` 围栏
+            state._curAssistant.contentEl.innerHTML = renderMarkdown(state._curAssistant.rawText, { streaming: true });
+            bindCodeCopyButtons(state._curAssistant.contentEl);
             scrollToBottom();
           } else if (obj.type === "tool_call") {
             appendToolCall(obj.name, obj.args);
           } else if (obj.type === "error") {
+            markPendingToolsDone("失败");
             appendSystemMessage("流式错误: " + obj.message, "error");
           } else if (obj.type === "done") {
-            // 流式结束
+            markPendingToolsDone("完成");
           }
         } catch (e) {
           console.warn("SSE 解析失败:", line, e);
@@ -772,26 +1181,28 @@ async function send() {
       }
     }
 
-    // 流式结束: 渲染 markdown + 加 actions
-    contentEl.innerHTML = renderMarkdown(rawText);
-    bindCodeCopyButtons(contentEl);
-    const wrap = contentEl.closest(".message");
-    wrap.classList.remove("streaming");
-    const body = wrap.querySelector(".message-body");
-    // 移除旧的 (流式时未加), 创建新的 actions
-    const oldActions = body.querySelector(".message-actions");
+    // 流式结束: 把当前 rawText → markdown 渲染; 加 actions
+    markPendingToolsDone("完成");
+    const finalText = state._curAssistant.rawText || "";
+    state._curAssistant.contentEl.innerHTML = renderMarkdown(finalText);
+    bindCodeCopyButtons(state._curAssistant.contentEl);
+    state._curAssistant.wrap.classList.remove("streaming");
+
+    // 移除旧 actions (流式时没加, 保险起见) + 加新的
+    const oldActions = state._curAssistant.body.querySelector(":scope > .message-actions");
     if (oldActions) oldActions.remove();
     const actions = document.createElement("div");
     actions.className = "message-actions";
     const copyBtn = mkIconBtn("复制", ICON_COPY, () => {
-      navigator.clipboard.writeText(rawText);
+      navigator.clipboard.writeText(finalText);
       flashIcon(copyBtn);
     });
     const retryBtn = mkIconBtn("重试", ICON_RETRY, () => retryLastUserMessage());
     actions.appendChild(copyBtn);
     actions.appendChild(retryBtn);
-    body.appendChild(actions);
+    state._curAssistant.body.appendChild(actions);
   } catch (e) {
+    markPendingToolsDone("已中断");
     if (e.name === "AbortError") {
       appendSystemMessage("已停止", "system");
     } else {
@@ -800,7 +1211,7 @@ async function send() {
   } finally {
     setStreaming(false);
     state.controller = null;
-    // 后台静默刷新会话列表 (不阻塞 UI, 拿后端最新 updated_at / title)
+    state._curAssistant = null;
     refreshThreadList();
   }
 }
@@ -813,7 +1224,6 @@ async function retryLastUserMessage() {
   const userMsgs = $.messages.querySelectorAll(".message.user .message-content");
   if (!userMsgs.length) return;
   const last = userMsgs[userMsgs.length - 1].textContent;
-  // 删掉 last user 之后所有消息
   const all = Array.from($.messages.children);
   const lastUserIdx = all.length - 1 - Array.from(all).reverse().findIndex((m) =>
     m.classList.contains("user"),
@@ -833,11 +1243,9 @@ async function startNewChat() {
   const t = await apiCreateThread(state.graphId);
   state.threadId = t.thread_id;
   localStorage.setItem("air-agent:thread:" + state.graphId, t.thread_id);
-  $.threadIdDisplay.textContent = t.thread_id.slice(0, 8) + "…";
-  $.threadIdDisplay.title = t.thread_id;
+  updateChatTitle("");
   renderHistory(null);
 
-  // 乐观更新: 立即把新 thread 插入列表头部, 不等网络刷新
   state.threads.unshift({
     thread_id: t.thread_id,
     graph_id: state.graphId,
@@ -847,10 +1255,7 @@ async function startNewChat() {
     step_count: 0,
   });
   renderThreadList();
-
-  // 后台静默刷新 (不阻塞 UI, 拿到后端最新状态)
   refreshThreadList();
-
   $.input.focus();
 }
 
@@ -881,17 +1286,11 @@ function toggleSidebar() {
 // ============ Init ============
 
 async function init() {
-  // 主题: 已在 <head> 内联脚本中预设, 这里只同步一下按钮图标状态
-  // (CSS 用 [data-theme] 自动切换图标, 无需 JS 处理)
-
-  // 侧边栏折叠状态
   const collapsed = localStorage.getItem("air-agent:sidebar-collapsed") === "1";
   if (collapsed && window.innerWidth > 768) {
     $.sidebar.classList.add("collapsed");
   }
 
-  // 等待 CDN 库 (marked / DOMPurify / hljs) 加载完成
-  // 超时 8s 后放行, 避免 CDN 不可达时整个 init 卡死
   try {
     await Promise.race([
       waitForLibs(),
@@ -901,21 +1300,18 @@ async function init() {
     console.warn("Markdown 库加载失败, 将以纯文本渲染:", e);
   }
 
-  // 加载图列表 (失败时用默认 basic-qa)
   try {
     state.graphs = await apiListGraphs();
   } catch (e) {
     console.warn("加载图列表失败, 使用默认:", e);
     state.graphs = ["basic-qa"];
   }
-  // 恢复上次选中的图
   const savedGraph = localStorage.getItem("air-agent:graph");
   if (savedGraph && state.graphs.includes(savedGraph)) {
     state.graphId = savedGraph;
   }
   renderGraphPicker();
 
-  // 加载会话历史列表 (失败时降级为空, 不阻塞后续)
   try {
     await refreshThreadList();
   } catch (e) {
@@ -924,12 +1320,10 @@ async function init() {
     renderThreadList();
   }
 
-  // 恢复上次 thread
   const saved = localStorage.getItem("air-agent:thread:" + state.graphId);
   if (saved && state.threads.some((t) => t.thread_id === saved)) {
     await switchThread(saved);
   } else {
-    // 选第一个有内容的 thread (跳过空对话), 否则新建
     const firstMeaningful = state.threads.find(
       (t) => t.title && t.title.trim(),
     );
@@ -945,45 +1339,33 @@ async function init() {
 
 // ============ Events ============
 
-// 图选择器下拉显隐
 $.graphCurrent.addEventListener("click", (e) => {
   e.stopPropagation();
   $.graphDropdown.hidden = !$.graphDropdown.hidden;
 });
 document.addEventListener("click", (e) => {
-  if (!$.graphPicker.contains(e.target)) {
-    $.graphDropdown.hidden = true;
-  }
+  if (!$.graphPicker.contains(e.target)) $.graphDropdown.hidden = true;
 });
 
-// 新对话按钮 (侧栏 + 顶栏)
 $.newChatBtn.addEventListener("click", startNewChat);
-$.newChatTop.addEventListener("click", startNewChat);
 
-// 主题切换
 $.themeBtn.addEventListener("click", toggleTheme);
 
-// 侧栏折叠
 $.collapseBtn.addEventListener("click", toggleSidebar);
 $.sidebarToggle.addEventListener("click", toggleSidebar);
 $.sidebarMask.addEventListener("click", () => setSidebarCollapsed(true));
 
-// 搜索
 $.searchInput.addEventListener("input", (e) => {
   state.searchKeyword = e.target.value;
   renderThreadList();
 });
 
-// 发送 / 停止 (同一个按钮)
 $.sendBtn.addEventListener("click", () => {
   if (state.isStreaming) stopStream();
   else send();
 });
 
-// 输入框
-$.input.addEventListener("input", () => {
-  autoResize($.input);
-});
+$.input.addEventListener("input", () => autoResize($.input));
 $.input.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
@@ -993,22 +1375,18 @@ $.input.addEventListener("keydown", (e) => {
   }
 });
 
-// 滚动到底部按钮
 $.scrollBottomBtn.addEventListener("click", () => {
   state.userPinnedToTop = false;
   scrollToBottom(true);
 });
 
-// 消息区滚动: 检测用户是否主动上滚
 $.messages.addEventListener("scroll", () => {
   const atBottom = isScrolledToBottom();
   state.userPinnedToTop = !atBottom;
   updateScrollBottomBtn();
-  // 顶部加边框, 视觉层次
   $.mainHeader.classList.toggle("has-border", $.messages.scrollTop > 4);
 });
 
-// 空状态建议卡片
 document.querySelectorAll(".suggestion-card").forEach((card) => {
   card.addEventListener("click", () => {
     const q = card.getAttribute("data-q");
@@ -1020,15 +1398,12 @@ document.querySelectorAll(".suggestion-card").forEach((card) => {
   });
 });
 
-// 全局快捷键
 document.addEventListener("keydown", (e) => {
-  // Ctrl/Cmd + K: 新对话
   if ((e.ctrlKey || e.metaKey) && e.key === "k") {
     e.preventDefault();
     startNewChat();
     return;
   }
-  // Ctrl/Cmd + B: 折叠侧栏
   if ((e.ctrlKey || e.metaKey) && e.key === "b") {
     e.preventDefault();
     toggleSidebar();
@@ -1036,7 +1411,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// 跟随系统主题变化 (用户未手动选过时)
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (ev) => {
   if (!localStorage.getItem("air-agent:theme")) {
     applyTheme(ev.matches ? "dark" : "light");
