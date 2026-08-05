@@ -1,0 +1,147 @@
+# LangGraph Agent 项目规则
+
+## 项目概述
+
+基于 LangGraph 的智能代理系统，支持多意图路由、工具调用、权限检查、知识检索、Text2SQL 等功能。
+
+## 技术栈
+
+- **框架**: LangGraph (1.1.0)
+- **语言**: Python (≥3.9)
+- **模型**: OpenAI, Anthropic Claude, Ollama, SiliconFlow
+- **向量库**: Milvus, Chroma
+- **MCP**: langchain-mcp-adapters (0.2.1)
+- **数据库**: PostgreSQL, Redis
+- **Text2SQL**: Vanna (0.7.6)
+
+## 代码规范
+
+### 导入顺序
+1. 标准库导入 (`from __future__ import annotations` 优先)
+2. 第三方库导入
+3. 本地项目导入 (`from agent.xxx`)
+
+### 类型注解
+- 所有函数参数和返回值必须有类型注解
+- 使用 `from __future__ import annotations` 启用延迟注解
+- 复杂类型使用 TypedDict 或 Pydantic BaseModel
+- 可选类型使用 `Optional[X]` 或 `X | None`
+
+### 命名规范
+- 模块: snake_case (`nodes.py`, `graph.py`)
+- 类: PascalCase (`AgentState`, `PlanStep`)
+- 函数/变量: snake_case (`planner_node`, `build_contextual_question`)
+- 常量: UPPER_SNAKE_CASE
+
+### 文档字符串
+- 使用 Google Style 文档字符串
+- 类和方法必须有 docstring
+
+## LangGraph 规范
+
+### 状态定义 (`state.py`)
+- 状态字段必须是 TypedDict 或 Pydantic Model
+- 消息字段: `Annotated[Sequence[BaseMessage], add_messages]`
+- 列表累加: `Annotated[List[X], operator.add]`
+
+### 节点函数 (`nodes.py`)
+- 异步函数: `async def node_name(state: AgentState) -> dict`
+- 返回字典包含要更新的状态字段
+
+### Stream Writer 规范
+```python
+writer = get_stream_writer()
+
+# 进度消息（无 node 属性）
+writer({"type": "progress", "message": "整理问题..."})
+
+# 业务数据（必须有 node 属性）
+writer({
+    "node": "generate",
+    "type": "message",  # message / chart_data / expanded_questions
+    "message": chunk_str,
+})
+```
+
+### 图构建 (`graph.py`)
+- 使用 StateGraph 构建工作流
+- 条件边使用路由函数返回节点名称字符串
+- 编译时指定 checkpointer
+
+## 工作流结构
+
+```
+START
+  → build_contextual_question
+  → fetch_time_context
+  → parse_region_expansion
+  → permission_agent
+    → permission_retrieve (如需调用工具)
+    → permission_eval
+    → permission_interrupt (如需登录/权限)
+  → unified_intent_match
+    → DIRECT: generate
+    → KNOWLEDGE: knowledge_agent → knowledge_retrieve → grade_documents → generate
+    → TEXT2SQL/MCP: parallel_tool_executor → generate
+    → 其他: planner → executor → replanner → generate
+  → expand_question
+→ END
+```
+
+## 意图类型 (`intent_config.py`)
+
+- `TEXT2SQL`: 数据库查询（Vanna text2sql）
+- `MCP`: 业务分析工具（播报、趋势、排名等）
+- `KNOWLEDGE`: 环境/政策知识检索
+- `DIRECT`: 直接回答
+
+## MCP 工具规范
+
+- 使用 `@tool` 装饰器定义工具
+- 参数使用 Pydantic BaseModel
+- MCP 返回格式: `[{'type': 'text', 'text': '...'}]`
+- 在 `_execute_mcp_tool_async` 提取 `text` 字段
+- 使用 `extract_mcp_data` 解析，分离 `chart_data` 和 `llm_data`
+
+## Git 提交规范
+
+### 格式
+```
+[修复/优化/新增/删除] 简述变更 (≤30字)
+
+1. 具体变更 (≤20字)
+2. 具体变更 (≤20字)
+```
+
+### 示例
+```
+[优化] 重构权限校验流程
+
+1. 抽取权限评估为独立函数
+2. 增加中断恢复逻辑
+3. 优化错误提示文案
+```
+
+## 关键文件
+
+| 文件 | 用途 |
+|------|------|
+| `graph.py` | 主工作流图定义 |
+| `nodes.py` | 所有节点实现 |
+| `state.py` | 状态类型定义 |
+| `tools.py` | 工具封装 |
+| `prompts.py` | 提示词模板 |
+| `config.py` | 环境配置 |
+| `intent_config.py` | 意图路由配置 |
+
+## 日志
+
+- 目录: `logs/graph_YYYY-MM-DD.log`
+- 格式: `时间戳 | 级别 | 模块:函数:行号 - 内容`
+
+## 开发建议
+
+1. 修改图结构后在 LangGraph Studio 验证
+2. 添加新节点时同步更新 `graph.py` 边定义
+3. 优先使用结构化输出 (Pydantic) 而非文本解析
+4. 复杂逻辑在节点函数中实现，保持图结构清晰

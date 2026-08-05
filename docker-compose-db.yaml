@@ -1,0 +1,41 @@
+# LangGraph Checkpointer 数据库服务
+# 用于环境隔离的 PostgreSQL 和 Redis 容器
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: langgraph-pg
+    environment:
+      POSTGRES_USER: langgraph
+      POSTGRES_PASSWORD: langgraph123
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - langgraph_pg_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langgraph"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: langgraph-redis
+    command: redis-server --requirepass langgraph123 --appendonly yes
+    ports:
+      - "6380:6379"
+    volumes:
+      - langgraph_redis_data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "langgraph123", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  langgraph_pg_data:
+  langgraph_redis_data:

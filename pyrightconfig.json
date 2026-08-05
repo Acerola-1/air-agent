@@ -1,0 +1,22 @@
+{
+  "include": ["src/agent"],
+  "exclude": ["docs", "tests", "test_*.py"],
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.13",
+  "executionEnvironments": [
+    {
+      "root": "src/agent",
+      "extraPaths": ["src"]
+    }
+  ],
+  "extraPaths": ["src"],
+  "reportMissingImports": "warning",
+  "reportAttributeAccessIssue": "warning",
+  "reportPrivateImportUsage": "warning",
+  "reportIncompatibleMethodOverride": "warning",
+  "reportOptionalMemberAccess": "warning",
+  "reportGeneralTypeIssues": "warning",
+  "reportArgumentType": "warning",
+  "reportReturnType": "warning"
+}
