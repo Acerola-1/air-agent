@@ -119,21 +119,11 @@ class Config:
 
     # ==================== 运行时性能开关 ====================
     MCP_RETRY_BACKOFF_SECONDS: int = _get_env_int("MCP_RETRY_BACKOFF_SECONDS", 30)
-    EXPAND_QUESTION_ENABLED: bool = _get_env_bool("EXPAND_QUESTION_ENABLED", True)
-    EXPAND_QUESTION_TIMEOUT_SECONDS: int = _get_env_int(
-        "EXPAND_QUESTION_TIMEOUT_SECONDS", 20
-    )
     PERMISSION_PROFILE_CACHE_TTL_SECONDS: int = _get_env_int(
         "PERMISSION_PROFILE_CACHE_TTL_SECONDS", 300
     )
     PERMISSION_REGION_CACHE_TTL_SECONDS: int = _get_env_int(
         "PERMISSION_REGION_CACHE_TTL_SECONDS", 3600
-    )
-    FINAL_OUTPUT_LLM_CLEANUP_FALLBACK: bool = _get_env_bool(
-        "FINAL_OUTPUT_LLM_CLEANUP_FALLBACK", False
-    )
-    FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS: int = _get_env_int(
-        "FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS", 20
     )
 
 

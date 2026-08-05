@@ -4,10 +4,10 @@
 - classify_intent: 入口意图分类（chitchat / knowledge / data_query）
 - resolve_skill: 语义路由前置执行，命中规则直接内联，消除 find_skill 工具往返
 - prepare_model: MCP 刷新 + 系统提示词一次性组装
-- call_model: LLM 推理 + 追问并行生成（合并原 finalize_output 的追问职责）
+- call_model: LLM 推理，决定调工具 / 直接输出（主答案直推 SSE）
 - execute_tools: ToolNode，ReAct 循环
 
-无 check_permission / finalize_output 节点: 权限审查已废弃, 最终输出由 call_model 直推 SSE。
+无 check_permission / finalize_output 节点: 权限审查已废弃, 主答案由 call_model 直推 SSE。
 """
 
 from __future__ import annotations
@@ -35,31 +35,12 @@ from common.business_graph.prompting import (
 )
 from common.business_graph.skill_content import load_skill_rules
 from common.business_graph.state import BusinessGraphState
-from common.config import config as app_config
+
 from common.context import get_message_content, get_routing_context
 from common.mcp_client import ensure_mcp_tools
 from common.models import ModelRegistry
 from common.permission.rules import is_conversational
-from common.prompts import expand_question_prompt
 from common.runtime_tools import get_business_tools, tool_name
-from common.skill_discovery import _union_allowed_tools
-from common.skill_router import SkillRouteCandidate, SkillSemanticRouter
-
-# 空回复时追加的引导消息，促使模型基于工具结果生成结论
-_EMPTY_REPLY_NUDGE = "请基于以上工具返回的数据，直接输出分析结论。"
-
-# 用户可见的服务不可用提示
-_SERVICE_UNAVAILABLE_MESSAGE = "抱歉，当前智能问答服务暂时不可用，请稍后再试。"
-
-# 空回复重试仍为空时的兜底消息
-_FALLBACK_EMPTY_REPLY = "服务暂不可用，请稍后重试。"
-
-# 非 allowed-tools 限制的始终可见业务工具（本地化: knowledge_retriever_tool 依赖 Milvus，已删除）
-_ALWAYS_VISIBLE_TOOL_NAMES = frozenset({"get_beijing_time"})
-
-# 推荐追问任务的最大等待时间（秒）
-_EXPAND_QUESTION_TIMEOUT_SECONDS = 8.0
-
 
 def _latest_human_content(messages: Sequence[Any]) -> str:
     """获取最近一条用户消息文本."""
@@ -67,39 +48,6 @@ def _latest_human_content(messages: Sequence[Any]) -> str:
         if isinstance(message, HumanMessage):
             return get_message_content(message)
     return ""
-
-
-def _expand_question_enabled(configurable: dict[str, Any]) -> bool:
-    """判断是否启用推荐追问（configurable 优先，环境配置兜底）."""
-    raw_value = configurable.get(
-        "expand_question_enabled",
-        configurable.get("enable_expand_question", None),
-    )
-    if raw_value is None:
-        return bool(app_config.EXPAND_QUESTION_ENABLED)
-    if isinstance(raw_value, bool):
-        return raw_value
-    if isinstance(raw_value, str):
-        return raw_value.strip().lower() in {"1", "true", "yes", "on"}
-    return bool(raw_value)
-
-
-async def _generate_expanded_questions(question: str, answer: str) -> list[str]:
-    """调用 LLM 生成推荐追问列表（并行任务内执行，不阻塞主答案）."""
-    llm = ModelRegistry.deepseek_v4_flash
-    prompt = expand_question_prompt(question, answer)
-
-    full_content = ""
-    async for chunk in llm.astream([{"role": "user", "content": prompt}]):
-        content = chunk.content if hasattr(chunk, "content") else str(chunk)
-        if isinstance(content, list):
-            content = str(content)
-        full_content += content
-
-    if full_content.strip() == "无":
-        return []
-    return [q.strip() for q in full_content.split("\n") if q.strip()]
-
 
 def _candidate_summaries(
     candidates: Sequence[SkillRouteCandidate],
@@ -359,8 +307,6 @@ class BusinessGraphNodes:
         """LLM 推理：决定调工具 / 直接输出.
 
         最多重试 3 次；空回复时追加引导消息重试一次。
-        当最终答案（无 tool_calls）生成后，并行起追问任务，await 完成后通过
-        writer 推 expanded_questions 事件给前端，不阻塞主答案。
         """
         writer(
             {
@@ -428,46 +374,7 @@ class BusinessGraphNodes:
                 logger.warning("业务图模型空回复重试失败: {}，使用兜底消息", exc)
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
-        # 最终答案（非 tool_call）触发追问并行任务，写入 SSE 事件
-        if (
-            isinstance(response, AIMessage)
-            and not response.tool_calls
-            and get_message_content(response).strip()
-        ):
-            await self._stream_expanded_questions(state, response, writer)
 
         return {"messages": [response]}
 
-    async def _stream_expanded_questions(
-        self,
-        state: BusinessGraphState,
-        response: AIMessage,
-        writer: StreamWriter,
-    ) -> None:
-        """在主答案生成后并发生成追问，短超时等待后通过 writer 推 SSE 事件.
-
-        失败静默跳过，不影响主流程。是否启用追问走环境配置兜底
-        (configurable 不在 state 里, 沿用 EXPAND_QUESTION_ENABLED)。
-        """
-        if not _expand_question_enabled({}):
-            return
-
-        question = _latest_human_content(state.get("messages", []))
-        answer = get_message_content(response)
-        if not question or not answer:
-            return
-
-        try:
-            expanded = await asyncio.wait_for(
-                _generate_expanded_questions(question, answer),
-                timeout=_EXPAND_QUESTION_TIMEOUT_SECONDS,
-            )
-            writer(
-                {
-                    "node": "expand_question",
-                    "type": "expanded_questions",
-                    "message": expanded,
-                }
-            )
-        except Exception as exc:
-            logger.warning("推荐追问生成失败，已跳过: {}", exc)
+    # ──── 工具过滤 ────
