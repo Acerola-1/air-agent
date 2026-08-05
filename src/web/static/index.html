@@ -5,38 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Air Agent</title>
   <link rel="stylesheet" href="/static/style.css" />
+  <!-- Markdown 渲染 + 代码高亮 (CDN, 浏览器缓存) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js" defer></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/lib/common.min.js" defer></script>
 </head>
 <body>
+  <!-- 左侧 Sidebar: 图下拉 + 新对话 + Thread 列表 -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>Air Agent</h1>
-      <p class="subtitle">本地化 LangGraph 多智能体</p>
+      <div class="brand">
+        <span class="brand-logo">🌀</span>
+        <span class="brand-text">Air Agent</span>
+      </div>
+      <button id="new-chat-btn" class="new-chat-btn" title="新对话">
+        <span class="icon">+</span> 新对话
+      </button>
     </div>
-    <button id="new-chat-btn" class="primary-btn">+ 新对话</button>
+
     <div class="graph-picker">
-      <label for="graph-select">图:</label>
+      <label for="graph-select">图</label>
       <select id="graph-select"></select>
     </div>
-    <div class="thread-info">
+
+    <div class="thread-list-wrapper">
+      <div class="thread-list-label">历史</div>
+      <ul id="thread-list" class="thread-list">
+        <li class="thread-empty">暂无历史</li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">
       <span class="label">Thread</span>
       <code id="thread-id-display">—</code>
     </div>
   </aside>
 
+  <!-- 中间主区: 消息列表 + 输入框 -->
   <main class="main">
-    <div id="messages" class="messages">
-      <div class="empty-state" id="empty-state">
-        <p>从左侧开始一个新对话, 或选择已有 thread 加载历史</p>
+    <div class="main-header">
+      <div class="thread-title-wrap">
+        <span id="thread-title" class="thread-title">新对话</span>
+        <button id="rename-btn" class="icon-btn" title="重命名">✎</button>
       </div>
     </div>
+
+    <div id="messages" class="messages">
+      <div class="empty-state" id="empty-state">
+        <h2>👋 你好</h2>
+        <p>选个图, 在下面输入消息开始对话.</p>
+      </div>
+    </div>
+
     <div class="input-bar">
       <textarea
         id="input"
-        rows="2"
-        placeholder="输入消息, Enter 发送, Shift+Enter 换行"
+        rows="1"
+        placeholder="输入消息, Enter 发送, Shift+Enter 换行, Esc 停止"
       ></textarea>
-      <button id="send-btn" class="primary-btn">发送</button>
-      <button id="stop-btn" class="secondary-btn" style="display:none">停止</button>
+      <div class="input-actions">
+        <button id="stop-btn" class="icon-btn" style="display:none" title="停止">■</button>
+        <button id="send-btn" class="primary-btn" disabled>发送</button>
+      </div>
     </div>
   </main>
 
