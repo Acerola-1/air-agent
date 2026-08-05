@@ -19,7 +19,7 @@ from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
-from langgraph.types import StreamWriter
+
 from loguru import logger
 
 from common.business_graph.intent import (
@@ -87,8 +87,6 @@ class BusinessGraphNodes:
         self,
         state: BusinessGraphState,
         config: RunnableConfig,
-        *,
-        writer: StreamWriter,
     ) -> dict[str, Any]:
         """入口意图分类：决定 chitchat/knowledge/data_query 车道（纯规则，零 LLM）.
 
@@ -111,21 +109,12 @@ class BusinessGraphNodes:
         self,
         state: BusinessGraphState,
         config: RunnableConfig,
-        *,
-        writer: StreamWriter,
     ) -> dict[str, Any]:
         """语义路由前置节点：替代 find_skill 工具往返.
 
         单命中：完整规则直接内联到 skill_rules_content；
         多命中：内联 top1 完整规则 + 其他候选摘要，模型可按需调用 load_skill。
         """
-        writer(
-            {
-                "type": "progress",
-                "node": "skill_discovery",
-                "message": "正在匹配业务技能...",
-            }
-        )
         configurable = config.get("configurable", {}) or {}
         mode = get_routing_context(configurable).mode
         question = _latest_human_content(state.get("messages", []))
@@ -209,8 +198,6 @@ class BusinessGraphNodes:
         self,
         state: BusinessGraphState,
         config: RunnableConfig,
-        *,
-        writer: StreamWriter,
     ) -> dict[str, Any]:
         """模型准备（按意图车道差异化）.
 
@@ -223,26 +210,10 @@ class BusinessGraphNodes:
 
         if intent == INTENT_CHITCHAT:
             return {"system_prompt": build_chitchat_system_prompt()}
-
         if intent == INTENT_KNOWLEDGE:
-            writer(
-                {
-                    "type": "progress",
-                    "node": "model_preparation",
-                    "message": "正在准备知识检索...",
-                }
-            )
             return {
                 "system_prompt": build_knowledge_system_prompt(configurable),
             }
-
-        writer(
-            {
-                "type": "progress",
-                "node": "model_preparation",
-                "message": "正在准备分析模型...",
-            }
-        )
 
         await ensure_mcp_tools()
 
@@ -301,21 +272,11 @@ class BusinessGraphNodes:
         self,
         state: BusinessGraphState,
         config: RunnableConfig,
-        *,
-        writer: StreamWriter,
     ) -> dict[str, Any]:
         """LLM 推理：决定调工具 / 直接输出.
 
         最多重试 3 次；空回复时追加引导消息重试一次。
         """
-        writer(
-            {
-                "type": "progress",
-                "node": "analysis",
-                "message": "正在分析数据...",
-            }
-        )
-
         model = ModelRegistry.deepseek_v4_flash
         system_prompt = state.get("system_prompt", "")
         available = self._available_tools(state)
