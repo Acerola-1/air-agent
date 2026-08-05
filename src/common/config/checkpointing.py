@@ -125,7 +125,127 @@ def get_checkpointer() -> Any:
 
 
 def reset_checkpointer_cache() -> None:
-    """清空进程内 checkpointer 缓存,供测试或连接重建使用."""
+    """清空进程内 checkpointer 缓存,供测试或连接重建."""
     global _saver
     with _saver_lock:
         _saver = None
+
+# ==================== thread_meta 表(供 ThreadList 查询) ====================
+
+
+_THREAD_META_SCHEMA = (
+    "CREATE TABLE IF NOT EXISTS thread_meta ("
+    "thread_id TEXT PRIMARY KEY,"
+    "graph_id TEXT NOT NULL,"
+    "title TEXT NOT NULL DEFAULT '',"
+    "created_at REAL NOT NULL,"
+    "updated_at REAL NOT NULL"
+    ")"
+)
+
+
+async def _ensure_thread_meta_table(conn: Any) -> None:
+    await conn.execute(_THREAD_META_SCHEMA)
+    await conn.commit()
+
+
+async def _save_thread_meta_async(
+    thread_id: str,
+    graph_id: str,
+    title: str = "",
+    created_at: float = 0.0,
+) -> None:
+    import time
+    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+    ts = created_at or time.time()
+    async with AsyncSqliteSaver.from_conn_string(config.SQLITE_PATH) as saver:
+        await _ensure_thread_meta_table(saver.conn)
+        await saver.conn.execute(
+            "INSERT INTO thread_meta (thread_id, graph_id, title, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?) "
+            "ON CONFLICT(thread_id) DO UPDATE SET "
+            "graph_id=excluded.graph_id, updated_at=excluded.updated_at",
+            (thread_id, graph_id, title, ts, ts),
+        )
+        await saver.conn.commit()
+
+
+async def _touch_thread_meta_async(thread_id: str) -> None:
+    """每次图执行完后 touch 该 thread 的 updated_at."""
+    import time
+    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+    async with AsyncSqliteSaver.from_conn_string(config.SQLITE_PATH) as saver:
+        await _ensure_thread_meta_table(saver.conn)
+        await saver.conn.execute(
+            "UPDATE thread_meta SET updated_at=? WHERE thread_id=?",
+            (time.time(), thread_id),
+        )
+        await saver.conn.commit()
+
+
+async def _list_threads_async(graph_id: str | None = None) -> list[dict[str, Any]]:
+    """列出 thread: thread_id, graph_id, title, created_at, updated_at, step_count.
+
+    不传 graph_id 返回全部 thread; 传 graph_id 只返回该图的.
+    step_count 来自 checkpoints 表 GROUP BY thread_id 计数.
+    按 updated_at 倒序.
+    """
+    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+    async with AsyncSqliteSaver.from_conn_string(config.SQLITE_PATH) as saver:
+        await _ensure_thread_meta_table(saver.conn)
+        if graph_id:
+            rows = await saver.conn.execute(
+                "SELECT m.thread_id, m.graph_id, m.title, m.created_at, m.updated_at, "
+                "COALESCE(c.cnt, 0) AS step_count "
+                "FROM thread_meta m "
+                "LEFT JOIN ("
+                "  SELECT thread_id, COUNT(*) AS cnt FROM checkpoints "
+                "  WHERE checkpoint_ns='' GROUP BY thread_id"
+                ") c ON c.thread_id = m.thread_id "
+                "WHERE m.graph_id = ? "
+                "ORDER BY m.updated_at DESC",
+                (graph_id,),
+            )
+        else:
+            rows = await saver.conn.execute(
+                "SELECT m.thread_id, m.graph_id, m.title, m.created_at, m.updated_at, "
+                "COALESCE(c.cnt, 0) AS step_count "
+                "FROM thread_meta m "
+                "LEFT JOIN ("
+                "  SELECT thread_id, COUNT(*) AS cnt FROM checkpoints "
+                "  WHERE checkpoint_ns='' GROUP BY thread_id"
+                ") c ON c.thread_id = m.thread_id "
+                "ORDER BY m.updated_at DESC"
+            )
+        result = []
+        async for r in rows:
+            result.append(
+                {
+                    "thread_id": r[0],
+                    "graph_id": r[1],
+                    "title": r[2] or "",
+                    "created_at": r[3],
+                    "updated_at": r[4],
+                    "step_count": r[5],
+                }
+            )
+        return result
+
+
+def save_thread_meta(thread_id: str, graph_id: str, title: str = "") -> None:
+    """跨 loop 同步写 thread_meta."""
+    _run_async_blocking(_save_thread_meta_async(thread_id, graph_id, title))
+
+
+def touch_thread_meta(thread_id: str) -> None:
+    """跨 loop 同步 touch updated_at."""
+    _run_async_blocking(_touch_thread_meta_async(thread_id))
+
+
+def list_threads(graph_id: str | None = None) -> list[dict[str, Any]]:
+    """跨 loop 同步读 thread 列表."""
+    return _run_async_blocking(_list_threads_async(graph_id))
+

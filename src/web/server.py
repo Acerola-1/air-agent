@@ -32,12 +32,18 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from langchain_core.messages import HumanMessage
-from common.config.checkpointing import get_checkpointer
 from pydantic import BaseModel, Field
+from common.config.checkpointing import (
+    get_checkpointer,
+    list_threads,
+    save_thread_meta,
+    touch_thread_meta,
+)
 
 logger = logging.getLogger(__name__)
 
 # ==================== 图加载 ====================
+
 
 # (raw graph 名字 -> import 路径:实例)
 _GRAPH_SPECS: dict[str, str] = {
@@ -51,8 +57,6 @@ _GRAPH_SPECS: dict[str, str] = {
 
 # 运行时: graph_id -> 已 compile 的 CompiledStateGraph
 _compiled_graphs: dict[str, Any] = {}
-
-
 def _load_raw_graphs() -> dict[str, Any]:
     """import 所有原始图 (无 checkpointer)."""
     import importlib
@@ -112,13 +116,13 @@ class CreateThreadRequest(BaseModel):
 
 @app.post("/api/threads")
 async def create_thread(req: CreateThreadRequest | None = None) -> dict[str, Any]:
-    """创建一个新会话, 返回 thread_id."""
-    if req is not None and req.graph_id not in _GRAPH_SPECS:
-        raise HTTPException(404, f"未知图: {req.graph_id}")
-    return {
-        "thread_id": str(uuid.uuid4()),
-        "graph_id": (req.graph_id if req else "basic-qa"),
-    }
+    """创建一个新会话, 返回 thread_id. 同时写入 thread_meta 表供 ThreadList 查询."""
+    graph_id = (req.graph_id if req else "basic-qa")
+    if graph_id not in _GRAPH_SPECS:
+        raise HTTPException(404, f"未知图: {graph_id}")
+    thread_id = str(uuid.uuid4())
+    save_thread_meta(thread_id, graph_id, title="")
+    return {"thread_id": thread_id, "graph_id": graph_id}
 
 
 def _serialize_message(msg: Any) -> dict[str, Any]:
@@ -145,10 +149,50 @@ def _serialize_message(msg: Any) -> dict[str, Any]:
     }
 
 
+
+@app.get("/api/threads")
+async def list_all_threads(graph_id: str | None = Query(None, description="可选图 id 过滤")) -> dict[str, Any]:
+    """列出 thread 列表, 供 ThreadList 侧边栏使用."""
+    if graph_id and graph_id not in _GRAPH_SPECS:
+        raise HTTPException(404, f"未知图: {graph_id}")
+    rows = list_threads(graph_id=graph_id)
+    # 补 title (取最新一条 human 消息前 30 字), 若无历史则空
+    for r in rows:
+        if not r["title"]:
+            try:
+                graph = _compiled_graphs.get(r["graph_id"])
+                if graph is not None:
+                    state = await graph.aget_state({"configurable": {"thread_id": r["thread_id"]}})
+                    msgs = (state.values or {}).get("messages", []) if state else []
+                    for m in reversed(msgs):
+                        if getattr(m, "type", "") == "human":
+                            text = _serialize_message(m)["content"]
+                            r["title"] = text[:30].replace("\n", " ")
+                            break
+            except Exception:
+                pass
+    return {"threads": rows}
+
+
+@app.patch("/api/threads/{thread_id}")
+async def rename_thread(thread_id: str, req: dict[str, Any]) -> dict[str, Any]:
+    """重命名 thread (改 title). 简易版: PATCH /api/threads/{id} body: {title: '...'}"""
+    new_title = (req or {}).get("title", "").strip()
+    if not new_title:
+        raise HTTPException(400, "title 不能为空")
+    # 复用 save_thread_meta (UPSERT)
+    from common.config.checkpointing import list_threads as _lt
+    existing = list_threads()
+    found = next((t for t in existing if t["thread_id"] == thread_id), None)
+    if not found:
+        raise HTTPException(404, f"未知 thread: {thread_id}")
+    save_thread_meta(thread_id, found["graph_id"], title=new_title)
+    return {"thread_id": thread_id, "title": new_title}
+
+
 @app.get("/api/threads/{thread_id}/history")
 async def get_history(
     thread_id: str,
-    graph_id: str = Query("basic-qa", description="图 id"),
 ) -> dict[str, Any]:
     """取一个 thread 的全部历史消息."""
     if graph_id not in _compiled_graphs:
@@ -281,6 +325,11 @@ async def stream_run(thread_id: str, req: RunRequest) -> StreamingResponse:
                             await result
                     except Exception:
                         pass
+            # 更新 thread 列表的 updated_at
+            try:
+                touch_thread_meta(thread_id)
+            except Exception:
+                pass
             yield b"data: {\"type\":\"done\"}\n\n"
         except Exception as exc:
             logger.exception("stream_run 失败: %s", exc)
