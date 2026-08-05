@@ -1,12 +1,13 @@
 """业务图（basic_qa / intelligent_analysis）节点流的所有节点函数.
 
 用显式节点替代 create_deep_agent 的中间件链：
-- check_permission: 复用 PermissionClassifyMiddleware 的权限审查（已合并 LLM、并行化）
+- classify_intent: 入口意图分类（chitchat / knowledge / data_query）
 - resolve_skill: 语义路由前置执行，命中规则直接内联，消除 find_skill 工具往返
-- prepare_model: MCP 刷新 + 系统提示词一次性组装（含权限上下文）
-- call_model / execute_tools: 标准 ReAct 循环
-- finalize_output: 唯一输出出口（确定性清洗 + final_output_delta/done 事件），
-  推荐追问并发生成，不阻塞正文
+- prepare_model: MCP 刷新 + 系统提示词一次性组装
+- call_model: LLM 推理 + 追问并行生成（合并原 finalize_output 的追问职责）
+- execute_tools: ToolNode，ReAct 循环
+
+无 check_permission / finalize_output 节点: 权限审查已废弃, 最终输出由 call_model 直推 SSE。
 """
 
 from __future__ import annotations
@@ -14,8 +15,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import Sequence
-from types import SimpleNamespace
-from typing import Any, cast
+from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
@@ -28,10 +28,6 @@ from common.business_graph.intent import (
     INTENT_KNOWLEDGE,
     classify_intent_rule,
 )
-from common.business_graph.output_cleanup import (
-    deterministic_cleanup,
-    has_process_residue,
-)
 from common.business_graph.prompting import (
     build_chitchat_system_prompt,
     build_knowledge_system_prompt,
@@ -42,12 +38,6 @@ from common.business_graph.state import BusinessGraphState
 from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
 from common.mcp_client import ensure_mcp_tools
-from common.middleware.final_output_cleanup_middleware import (
-    build_final_output_cleanup_prompt,
-)
-from common.middleware.permission_classify_middleware import (
-    PermissionClassifyMiddleware,
-)
 from common.models import ModelRegistry
 from common.permission.rules import is_conversational
 from common.prompts import expand_question_prompt
@@ -64,14 +54,11 @@ _SERVICE_UNAVAILABLE_MESSAGE = "抱歉，当前智能问答服务暂时不可用
 # 空回复重试仍为空时的兜底消息
 _FALLBACK_EMPTY_REPLY = "服务暂不可用，请稍后重试。"
 
-# 非 allowed-tools 限制的始终可见业务工具(本地化: knowledge_retriever_tool 依赖 Milvus, 已删除)
+# 非 allowed-tools 限制的始终可见业务工具（本地化: knowledge_retriever_tool 依赖 Milvus，已删除）
 _ALWAYS_VISIBLE_TOOL_NAMES = frozenset({"get_beijing_time"})
 
-# final_output_delta 事件的分片大小（字符）
-_DELTA_CHUNK_SIZE = 120
-
-# 进程级共享权限审查器：slots 抽取 agent 编译结果跨图复用
-_permission_reviewer = PermissionClassifyMiddleware()
+# 推荐追问任务的最大等待时间（秒）
+_EXPAND_QUESTION_TIMEOUT_SECONDS = 8.0
 
 
 def _latest_human_content(messages: Sequence[Any]) -> str:
@@ -79,33 +66,6 @@ def _latest_human_content(messages: Sequence[Any]) -> str:
     for message in reversed(messages):
         if isinstance(message, HumanMessage):
             return get_message_content(message)
-    return ""
-
-
-def _extract_last_visible_answer(state: BusinessGraphState) -> str:
-    """从消息列表中提取最后一条可见业务答案.
-
-    优先提取不含 tool_calls 且内容非空的 AIMessage；
-    若所有 AIMessage 都带 tool_calls，则兜底提取最后一条的 content。
-    """
-    messages = state.get("messages", [])
-
-    for message in reversed(messages):
-        if not isinstance(message, AIMessage):
-            continue
-        if getattr(message, "tool_calls", None):
-            continue
-        content = get_message_content(message).strip()
-        if content:
-            return content
-
-    for message in reversed(messages):
-        if not isinstance(message, AIMessage):
-            continue
-        content = get_message_content(message).strip()
-        if content:
-            return content
-
     return ""
 
 
@@ -125,7 +85,7 @@ def _expand_question_enabled(configurable: dict[str, Any]) -> bool:
 
 
 async def _generate_expanded_questions(question: str, answer: str) -> list[str]:
-    """调用 LLM 生成推荐追问列表（复用原 ExpandQuestionMiddleware 逻辑）."""
+    """调用 LLM 生成推荐追问列表（并行任务内执行，不阻塞主答案）."""
     llm = ModelRegistry.deepseek_v4_flash
     prompt = expand_question_prompt(question, answer)
 
@@ -196,37 +156,6 @@ class BusinessGraphNodes:
             question[:60],
         )
         return {"intent": intent}
-
-    # ──── 权限节点 ────
-
-    async def check_permission(
-        self,
-        state: BusinessGraphState,
-        config: RunnableConfig,
-        *,
-        writer: StreamWriter,
-    ) -> dict[str, Any]:
-        """权限审查节点：复用 PermissionClassifyMiddleware.abefore_agent.
-
-        画像预取与槽位抽取已在中间件内并行执行；硬拒绝时写入
-        permission_rejection，由条件边直接路由到 finalize_output。
-        """
-        runtime_shim = SimpleNamespace(stream_writer=writer)
-        update = (
-            await _permission_reviewer.abefore_agent(
-                cast(Any, state),
-                cast(Any, runtime_shim),
-            )
-            or {}
-        )
-
-        # 复用中间件的硬拒绝判定（原 wrap_model_call 短路逻辑）
-        merged = {**state, **update}
-        rejection = _permission_reviewer._rejection_message(merged)
-        if rejection:
-            logger.info("权限审查硬拒绝，跳过主模型: graph={}", self._graph_name)
-            update["permission_rejection"] = rejection
-        return update
 
     # ──── 技能路由节点 ────
 
@@ -337,9 +266,9 @@ class BusinessGraphNodes:
     ) -> dict[str, Any]:
         """模型准备（按意图车道差异化）.
 
-        - chitchat: 小提示词、零工具，跳过 MCP 刷新与权限/技能上下文；
+        - chitchat: 小提示词、零工具，跳过 MCP 刷新；
         - knowledge: 仅知识检索指引，本车道工具均为本地工具，无需刷新 MCP；
-        - data_query: 全量组装（基础 + 时间 + mode + 权限上下文 + Skill 规则）。
+        - data_query: 全量组装（基础 + 时间 + mode + Skill 规则）。
         """
         intent = state.get("intent") or INTENT_DATA_QUERY
         configurable = config.get("configurable", {}) or {}
@@ -369,13 +298,9 @@ class BusinessGraphNodes:
 
         await ensure_mcp_tools()
 
-        permission_context = _permission_reviewer._permission_context(
-            cast(dict[str, Any], state)
-        )
         system_prompt = build_system_prompt(
             base_prompt=self._base_system_prompt,
             skill_rules_content=state.get("skill_rules_content", ""),
-            permission_context=permission_context,
             configurable=configurable,
         )
 
@@ -434,6 +359,8 @@ class BusinessGraphNodes:
         """LLM 推理：决定调工具 / 直接输出.
 
         最多重试 3 次；空回复时追加引导消息重试一次。
+        当最终答案（无 tool_calls）生成后，并行起追问任务，await 完成后通过
+        writer 推 expanded_questions 事件给前端，不阻塞主答案。
         """
         writer(
             {
@@ -470,12 +397,6 @@ class BusinessGraphNodes:
                 if attempt < 2:
                     await asyncio.sleep(0.5 * (attempt + 1))
                 else:
-                    writer(
-                        {
-                            "type": "final_output_done",
-                            "message": _SERVICE_UNAVAILABLE_MESSAGE,
-                        }
-                    )
                     return {
                         "messages": [AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE)]
                     }
@@ -507,99 +428,46 @@ class BusinessGraphNodes:
                 logger.warning("业务图模型空回复重试失败: {}，使用兜底消息", exc)
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
+        # 最终答案（非 tool_call）触发追问并行任务，写入 SSE 事件
+        if (
+            isinstance(response, AIMessage)
+            and not response.tool_calls
+            and get_message_content(response).strip()
+        ):
+            await self._stream_expanded_questions(state, response, writer)
+
         return {"messages": [response]}
 
-    # ──── 最终输出节点 ────
-
-    async def _llm_cleanup_fallback(self, answer: str) -> str:
-        """LLM 清洗兜底（默认关闭，仅在检测到明显残留时启用）."""
-        model = ModelRegistry.deepseek_v4_flash
-        prompt = build_final_output_cleanup_prompt(answer)
-        async with asyncio.timeout(app_config.FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS):
-            response = await model.ainvoke([{"role": "user", "content": prompt}])
-        cleaned = get_message_content(response).strip()
-        return cleaned or answer
-
-    async def finalize_output(
+    async def _stream_expanded_questions(
         self,
         state: BusinessGraphState,
-        config: RunnableConfig,
-        *,
+        response: AIMessage,
         writer: StreamWriter,
-    ) -> dict[str, Any]:
-        """唯一输出出口：确定性清洗 + final_output_delta/done 事件推送.
+    ) -> None:
+        """在主答案生成后并发生成追问，短超时等待后通过 writer 推 SSE 事件.
 
-        推荐追问在正文推送期间并发生成，final_output_done 后短超时等待，
-        失败静默跳过，不阻塞主答案。
+        失败静默跳过，不影响主流程。是否启用追问走环境配置兜底
+        (configurable 不在 state 里, 沿用 EXPAND_QUESTION_ENABLED)。
         """
-        answer = state.get("permission_rejection") or _extract_last_visible_answer(
-            state
-        )
-        if not answer:
-            logger.warning("业务图最终输出未找到可见业务答案，使用兜底回复")
-            answer = _FALLBACK_EMPTY_REPLY
+        if not _expand_question_enabled({}):
+            return
 
-        writer(
-            {
-                "type": "progress",
-                "message": "正在整理最终答案...",
-            }
-        )
+        question = _latest_human_content(state.get("messages", []))
+        answer = get_message_content(response)
+        if not question or not answer:
+            return
 
-        configurable = config.get("configurable", {}) or {}
-        expand_task: asyncio.Task[list[str]] | None = None
-        if _expand_question_enabled(configurable):
-            question = _latest_human_content(state.get("messages", []))
-            expand_task = asyncio.create_task(
-                _generate_expanded_questions(question, answer)
+        try:
+            expanded = await asyncio.wait_for(
+                _generate_expanded_questions(question, answer),
+                timeout=_EXPAND_QUESTION_TIMEOUT_SECONDS,
             )
-
-        # 确定性清洗；仅当残留明显且显式开启兜底时才走 LLM
-        cleaned = deterministic_cleanup(answer)
-        if (
-            app_config.FINAL_OUTPUT_LLM_CLEANUP_FALLBACK
-            and cleaned
-            and has_process_residue(cleaned)
-        ):
-            try:
-                cleaned = await self._llm_cleanup_fallback(cleaned)
-            except Exception as exc:
-                logger.warning("最终输出 LLM 清洗兜底失败，使用规则清洗结果: {}", exc)
-
-        if not cleaned:
-            cleaned = _SERVICE_UNAVAILABLE_MESSAGE
-
-        # 分片推送正文增量 + 完成事件（Java 端契约：final_output_delta/done）
-        for start in range(0, len(cleaned), _DELTA_CHUNK_SIZE):
             writer(
                 {
-                    "type": "final_output_delta",
-                    "message": cleaned[start : start + _DELTA_CHUNK_SIZE],
+                    "node": "expand_question",
+                    "type": "expanded_questions",
+                    "message": expanded,
                 }
             )
-        writer(
-            {
-                "type": "final_output_done",
-                "message": cleaned,
-            }
-        )
-
-        # 正文完成后短超时等待推荐追问
-        if expand_task is not None:
-            try:
-                expanded_questions = await asyncio.wait_for(
-                    expand_task,
-                    timeout=app_config.EXPAND_QUESTION_TIMEOUT_SECONDS,
-                )
-                writer(
-                    {
-                        "node": "expand_question",
-                        "type": "expanded_questions",
-                        "message": expanded_questions,
-                    }
-                )
-            except Exception as exc:
-                expand_task.cancel()
-                logger.warning("推荐追问生成失败，已跳过: {}", exc)
-
-        return {"messages": [AIMessage(content=cleaned)]}
+        except Exception as exc:
+            logger.warning("推荐追问生成失败，已跳过: {}", exc)

@@ -40,8 +40,24 @@ MAIN_AGENT_TOOL_USE_OUTPUT_GUARD = (
 最终正文要求：
 - 直接给出结论、依据、必要数据和建议。
 - 列表、表格、标题之间必须换行，避免把多个阶段或多个段落连成一行。
+- 不得输出任何过程性内容、工具调用过程、内部标签块（<think> / <tool_call> / <permission_context> 等）及其未闭合形式、内部机制名词（skill / 工具名 / SKILL.md / middleware / LangGraph / MCP / ToolMessage / AIMessage / Traceback / 5xx / timeout 等）、过程性口吻（我需要调用 / 接下来我将调用 / 让我调用 / 调用工具 / 查询数据中等）。如不慎输出，立即删除并改写为面向用户的业务语言。
 """.strip()
 )
+
+
+ANTI_PROCESS_RESIDUE_GUARD = """
+## 内部痕迹自清约束（重要）
+你的输出直接呈现给最终用户，绝对不得出现下列任何过程性、内部实现或工具痕迹。请在生成前自检，确保以下内容一个字符也不出现：
+- 思考过程标签：<think>...</think>、<thinking>...</thinking> 及其未闭合形式
+- 工具调用块：<tool_call>...</tool_call>、<tool_response>...</tool_response> 及其未闭合形式
+- 内部上下文块：<permission_context>...</permission_context>、<runtime_context>...</runtime_context> 及其未闭合形式
+- 内部机制名词：skill、工具名、SKILL.md、middleware、LangGraph、MCP（server/工具/调用）、find_skill、load_skill
+- 内部对象名：ToolMessage、AIMessage、HumanMessage、Traceback、状态码 5xx、HTTP 5xx、timeout、timed out
+- 过程性口吻：我需要调用、正在调用、接下来我将调用、让我调用、我将调用、调用工具、查询数据中
+- 工具选择理由、参数推导过程、失败重试说明、下一步动作提示
+
+如果你发现自己正在输出上述任何内容，立即删除并改写为面向用户的业务语言。
+""".strip()
 
 
 DATA_AUTHENTICITY_GUARD = """
@@ -192,6 +208,7 @@ def with_main_agent_tool_use_output_guard(system_prompt: str) -> str:
     return (
         f"{system_prompt.strip()}\n\n"
         f"{DATA_AUTHENTICITY_GUARD}\n\n"
+        f"{ANTI_PROCESS_RESIDUE_GUARD}\n\n"
         f"{MAIN_AGENT_TOOL_USE_OUTPUT_GUARD}\n\n"
         f"{ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE}\n\n"
         f"{TIME_PARAMETER_NORMALIZATION_GUIDE}\n\n"

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Any, NotRequired
+from typing import Annotated, NotRequired
 
 from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
@@ -16,10 +16,6 @@ class BusinessGraphState(TypedDict):
         messages: 对话消息列表，使用 add_messages reducer 合并
         intent: 入口意图车道（chitchat/knowledge/data_query）
         user_id: 当前请求用户 ID（来自 configurable）
-        permission_need: 权限需求预分类结果（no_check/need_check/uncertain）
-        permission_result: 规则引擎输出的权限审查结果
-        permission_query_overrides: 权限修正后的查询覆盖参数
-        permission_rejection: 硬拒绝时直接输出给用户的答复文本
         selected_skill: 语义路由命中的 Skill 名称
         selected_skill_path: Skill 在后端可见的虚拟路径
         selected_skill_description: Skill 业务描述
@@ -35,10 +31,6 @@ class BusinessGraphState(TypedDict):
     messages: Annotated[list[AnyMessage], add_messages]
     intent: NotRequired[str]
     user_id: NotRequired[str]
-    permission_need: NotRequired[str]
-    permission_result: NotRequired[dict[str, Any]]
-    permission_query_overrides: NotRequired[dict[str, Any]]
-    permission_rejection: NotRequired[str]
     selected_skill: NotRequired[str | None]
     selected_skill_path: NotRequired[str | None]
     selected_skill_description: NotRequired[str | None]

@@ -243,25 +243,6 @@ async def stream_run(thread_id: str, req: RunRequest) -> StreamingResponse:
             try:
                 async for msg in stream.messages:
                     node = getattr(msg, "node", "")
-                    # 跳过 finalize_output 节点的 text 重复 (它在重发 list content)
-                    if node == "finalize_output":
-                        # 但仍取 output 看是否有 tool_calls
-                        try:
-                            final = await msg.output
-                            if final is not None:
-                                tcs = getattr(final, "tool_calls", None) or []
-                                for tc in tcs:
-                                    payload = {
-                                        "type": "tool_call",
-                                        "node": node,
-                                        "name": tc.get("name"),
-                                        "args": tc.get("args"),
-                                        "id": tc.get("id"),
-                                    }
-                                    yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n".encode("utf-8")
-                        except Exception:
-                            pass
-                        continue
                     # 推 text delta
                     try:
                         async for delta in msg.text:

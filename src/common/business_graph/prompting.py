@@ -1,7 +1,7 @@
 """业务图系统提示词组装.
 
-替代原 deepagents 中间件链中的 TimeContextMiddleware / ModeRoutingMiddleware /
-PermissionClassify wrap_model_call 注入，改为在 prepare_model 节点一次性组装。
+替代原 deepagents 中间件链中的 TimeContextMiddleware / ModeRoutingMiddleware，
+改为在 prepare_model 节点一次性组装。
 """
 
 from __future__ import annotations
@@ -103,20 +103,15 @@ def build_system_prompt(
     *,
     base_prompt: str,
     skill_rules_content: str = "",
-    permission_context: str | None = None,
     configurable: dict[str, Any] | None = None,
 ) -> str:
     """组装完整的系统提示词.
 
-    组装顺序: 基础提示 + output_guard + 时间上下文 + mode 上下文
-    + 权限上下文 + Skill 规则
+    组装顺序: 基础提示 + output_guard(含 anti-residue) + 时间上下文 + mode 上下文 + Skill 规则
     """
     parts = [with_main_agent_tool_use_output_guard(base_prompt)]
     parts.append(build_time_context())
     parts.append(build_mode_context(configurable))
-
-    if permission_context:
-        parts.append(permission_context)
 
     if skill_rules_content:
         parts.append("## 当前业务 Skill 执行规则\n\n" + skill_rules_content)
