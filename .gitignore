@@ -317,3 +317,29 @@ db/
 *.sqlite
 *.sqlite3
 large_tool_results
+
+# ================================
+# Node.js / Next.js 前端
+# ================================
+# 依赖目录 (整个项目各级 node_modules 都忽略)
+node_modules/
+*/node_modules/
+# Next.js 构建缓存与产物
+.next/
+out/
+# Next.js Turbopack 缓存
+.turbo/
+# Next.js 生产构建产物 (next build 输出)
+build/
+# npm 日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+# 本地环境变量 (frontend/.env.local 也不提交)
+.env.local
+*/.env.local
+frontend/.env*.local
+# Vercel 部署目录
+.vercel/
+*/.vercel/
