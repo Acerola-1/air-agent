@@ -33,29 +33,30 @@
 - **THEN** 加载方 SHALL 通过工厂函数重新 compile 并显式传入 SQLite checkpointer
 - **AND** 图 SHALL 具备本地持久化能力
 
-### Requirement: DeepAgents 图的图工厂必须支持 checkpointer 注入
+### Requirement: 3 个 DeepAgents 图各自保持独立实现，编译时 checkpointer 必须为 None
 
-3 个 DeepAgents 图（intelligent-report、deep-research、intelligent-tracing）SHALL 提供统一的 `create_deep_business_graph(skills_dir, name, checkpointer=None)` 工厂函数，调用 `create_deep_agent(..., checkpointer=checkpointer)`。`create_deep_agent` 接受 `checkpointer=None` 时 SHALL 正常工作（不抛错、不注入默认 `MemorySaver`、不破坏 subagent / middleware 链）。
+3 个 DeepAgents 图（intelligent-report、deep-research、intelligent-tracing）当前是空业务占位，未来各自的业务逻辑、模型、中间件都可能不同，**不应抽离共享工厂**。每个图 SHALL 保留独立的 `create_deep_agent(...)` 调用，仅在编译时把 `checkpointer` 改为 `None`，让 langgraph-api 平台在加载时自动注入持久化后端。`create_deep_agent` 接受 `checkpointer=None` 时 SHALL 正常工作（不抛错、不注入默认 `MemorySaver`、不破坏 subagent / middleware 链）。
 
-#### Scenario: 工厂以 checkpointer=None 构造
+#### Scenario: 3 个图独立 import（无共享工厂）
 
-- **WHEN** `create_deep_business_graph(..., checkpointer=None)` 被调用
-- **THEN** 返回的 CompiledStateGraph SHALL NOT 包含任何 checkpointer
-- **AND** 内部 `create_deep_agent` SHALL 接受 `checkpointer=None` 而不报 TypeError
+- **WHEN** langgraph-api 通过 `langgraph.json` 分别 import intelligent_report / deep_research / intelligent_tracing 三个模块
+- **THEN** 每个模块 SHALL NOT 抛 `ValueError: Your graph ... includes a custom checkpointer`
+- **AND** 每个模块的 `create_deep_agent(...)` 调用 SHALL 显式传 `checkpointer=None`
+- **AND** 三个模块 SHALL 保持完全独立的实现（无共享 `create_deep_business_graph` 工厂），各自能自由演化业务逻辑
 
-#### Scenario: 工厂以 SQLite checkpointer 构造
+#### Scenario: 3 个图不依赖共享 `get_checkpointer` 调用
 
-- **WHEN** `create_deep_business_graph(..., checkpointer=<sqlite_saver>)` 被调用
-- **THEN** 返回的 CompiledStateGraph SHALL 使用传入的 checkpointer
-- **AND** 跨 thread 状态 SHALL 持久化到本地 SQLite
+- **WHEN** 检查 3 个 DeepAgents 图的模块源码
+- **THEN** SHALL NOT 在模块级或图工厂中调用 `get_checkpointer()`
+- **AND** 单元测试 SHALL 包含 `checkpointer=None` 断言与 `get_checkpointer not in source` 断言，保证未来不会被误改回硬编码
 
-### Requirement: 6 个图入口文件统一指向 langgraph-api 加载点
+### Requirement: langgraph.json 直接注册 6 个业务图
 
-`langgraph.json` 的 `graphs` 配置 SHALL 指向 `src/langgraph_entry/<name>.py:graph`，每个入口文件 SHALL 从原 `src/<name>/graph.py` 工厂导出 `graph` 变量。`src/<name>/graph.py` SHALL 仅保留业务图构建逻辑，不再直接暴露 `graph` 变量给 langgraph-api 平台。
+`langgraph.json` 的 `graphs` 配置 SHALL 指向 `./src/<name>/graph.py:graph`（直接路径，无中间包装层）。平台 SHALL 通过该路径成功 import 全部 6 个图。
 
-#### Scenario: langgraph-api 加载 6 个图入口
+#### Scenario: langgraph-api 加载 6 个图
 
 - **WHEN** `langgraph dev --config ./langgraph.json` 启动
-- **THEN** 平台 SHALL 通过 `src/langgraph_entry/<name>.py:graph` 路径成功 import 全部 6 个图
-- **AND** 每个入口 SHALL 在 5 秒内完成 module import
-- **AND** `GET /assistants` SHALL 列出全部 6 个图作为 assistant
+- **THEN** 平台 SHALL 通过 `./src/<name>/graph.py:graph` 路径成功 import 全部 6 个图
+- **AND** 每个图 SHALL 在 5 秒内完成 module import
+- **AND** `POST /assistants/search` SHALL 列出全部 6 个图作为 assistant

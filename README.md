@@ -1,8 +1,56 @@
 # New LangGraph Project
 
-[![CI](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/unit-tests.yml)
+[![Standard API](https://img.shields.io/badge/langgraph--api-0.12.0-00324d.svg)](https://github.com/langchain-ai/langgraph)
 [![Integration Tests](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/integration-tests.yml)
 [![Open in - LangGraph Studio](https://img.shields.io/badge/Open_in-LangGraph_Studio-00324d.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4NS4zMzMiIGhlaWdodD0iODUuMzMzIiB2ZXJzaW9uPSIxLjAiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTTEzIDcuOGMtNi4zIDMuMS03LjEgNi4zLTYuOCAyNS43LjQgMjQuNi4zIDI0LjUgMjUuOSAyNC41QzU3LjUgNTggNTggNTcuNSA1OCAzMi4zIDU4IDcuMyA1Ni43IDYgMzIgNmMtMTIuOCAwLTE2LjEuMy0xOSAxLjhtMzcuNiAxNi42YzIuOCAyLjggMy40IDQuMiAzLjQgNy42cy0uNiA0LjgtMy40IDcuNkw0Ny4yIDQzSDE2LjhsLTMuNC0zLjRjLTQuOC00LjgtNC44LTEwLjQgMC0xNS4ybDMuNC0zLjRoMzAuNHoiLz48cGF0aCBkPSJNMTguOSAyNS42Yy0xLjEgMS4zLTEgMS43LjQgMi41LjkuNiAxLjcgMS44IDEuNyAyLjcgMCAxIC43IDIuOCAxLjYgNC4xIDEuNCAxLjkgMS40IDIuNS4zIDMuMi0xIC42LS42LjkgMS40LjkgMS41IDAgMi43LS41IDIuNy0xIDAtLjYgMS4xLS44IDIuNi0uNGwyLjYuNy0xLjgtMi45Yy01LjktOS4zLTkuNC0xMi4zLTExLjUtOS44TTM5IDI2YzAgMS4xLS45IDIuNS0yIDMuMi0yLjQgMS41LTIuNiAzLjQtLjUgNC4yLjguMyAyIDEuNyAyLjUgMy4xLjYgMS41IDEuNCAyLjMgMiAyIDEuNS0uOSAxLjItMy41LS40LTMuNS0yLjEgMC0yLjgtMi44LS44LTMuMyAxLjYtLjQgMS42LS41IDAtLjYtMS4xLS4xLTEuNS0uNi0xLjItMS42LjctMS43IDMuMy0yLjEgMy41LS41LjEuNS4yIDEuNi4zIDIuMiAwIC43LjkgMS40IDEuOSAxLjYgMi4xLjQgMi4zLTIuMy4yLTMuMi0uOC0uMy0yLTEuNy0yLjUtMy4xLTEuMS0zLTMtMy4zLTMtLjUiLz48L3N2Zz4=)](https://langgraph-studio.vercel.app/templates/open?githubUrl=https://github.com/langchain-ai/new-langgraph-project)
+
+## 6 个业务图
+
+本项目通过 langgraph-api 标准化协议（`langgraph dev` 模式）暴露 6 个业务图：
+
+| Graph ID | 类型 | 用途 |
+|---|---|---|
+| `basic-qa` | 业务图节点流 | 基础问答 |
+| `intelligent-analysis` | 业务图节点流 | 智能分析 |
+| `data-analysis` | 业务图节点流 | 数据分析 |
+| `intelligent-report` | DeepAgents | 智能报告 |
+| `deep-research` | DeepAgents | 深度研究 |
+| `intelligent-tracing` | DeepAgents | 智能污染溯源 |
+
+## 本地启动（langgraph-api 标准化模式）
+
+```bash
+# 一键启动 langgraph-api (2024) + 静态前端 (8125)
+./run-local.sh
+
+# 浏览器访问
+open http://localhost:8125
+```
+
+前置条件：
+- `.env` 存在（`cp .env.example .env` 后填入真实配置）
+- `.venv` 已激活且 `uv pip install -r requirements.lock.txt` 完成
+
+停止：
+```bash
+./stop-local.sh
+```
+
+`run-local.sh` 在后台启动两个进程：
+- `langgraph dev --config ./langgraph.json --no-browser --port 2024` —— 平台层
+- `scripts/serve_static.py --port 8125` —— 静态前端 + CORS
+
+`run.sh`（旧自建 FastAPI）已废弃。
+
+## 端到端冒烟
+
+```bash
+# 启动后:
+curl -s -X POST http://localhost:2024/assistants/search \
+  -H "Content-Type: application/json" -d '{}' \
+  | python3 -c "import json,sys; print(len(json.load(sys.stdin)), 'assistants')"
+# 应输出: 6 assistants
+```
 
 This template demonstrates a simple chatbot implemented using [LangGraph](https://github.com/langchain-ai/langgraph), designed for [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio). The chatbot maintains persistent chat memory, allowing for coherent conversations across multiple interactions.
 

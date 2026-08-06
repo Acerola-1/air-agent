@@ -16,4 +16,5 @@ SKILLS_DIR = Path(__file__).parent / "skills"
 graph = build_business_graph(
     skills_dir=SKILLS_DIR,
     name="intelligent-analysis",
+    checkpointer=None,
 )

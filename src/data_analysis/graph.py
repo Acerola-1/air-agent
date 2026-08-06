@@ -14,7 +14,7 @@ call_model 后若包含 tool_calls 则进入 execute_tools，
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from langchain_core.messages import AIMessage, ToolMessage
 from langgraph.graph import START, StateGraph
@@ -22,7 +22,6 @@ from langgraph.prebuilt import ToolNode
 from loguru import logger
 
 from common.business_graph.tool_wrappers import composed_tool_wrapper
-from common.config.checkpointing import get_checkpointer
 from common.runtime_tools import get_business_tools
 from data_analysis.nodes import (
     call_model,
@@ -79,8 +78,17 @@ def _route_after_tools(
     return "finalize_output"
 
 
-def build_graph() -> StateGraph:
-    """构建 data_analysis 节点流图."""
+def build_graph(*, checkpointer: Any = None):
+    """构建并编译 data_analysis 节点流图.
+
+    Args:
+        checkpointer: 持久化后端实例；默认 None 表示不绑定任何 checkpointer。
+                     langgraph-api / langgraph dev 模式下由平台注入，调用方无需传入。
+                     本地自建入口可显式传入 `get_checkpointer()` 拿到 SQLite 实例。
+
+    Returns:
+        编译后的 CompiledStateGraph。
+    """
     builder = StateGraph(DataAnalysisState)
 
     # 添加节点
@@ -120,8 +128,9 @@ def build_graph() -> StateGraph:
     # 出口
     builder.set_finish_point("finalize_output")
 
-    return builder
+    compiled = builder.compile(checkpointer=checkpointer)
+    logger.info("data_analysis 节点流图编译完成: checkpointer={}", type(checkpointer).__name__ if checkpointer else "None")
+    return compiled
 
 
-graph = build_graph().compile(checkpointer=get_checkpointer())
-logger.info("data_analysis 节点流图编译完成")
+graph = build_graph(checkpointer=None)

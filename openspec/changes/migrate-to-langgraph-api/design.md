@@ -52,16 +52,19 @@
 - *A. 平台路径用环境变量判断*：用 `os.environ.get("LANGGRAPH_API_MODE")` 在模块 import 时分支。问题：环境变量在 import 时已固化，无法在运行时切换模式；测试时难以模拟。
 - *B. 完全抽离编译到工厂函数*：模块不暴露 `graph`，只暴露 `build_graph(checkpointer=None)`。`langgraph.json` 入口指向一个调用工厂的小模块。问题：增加一层间接；与 langgraph-api 加载模型不完全契合（平台期望 `graph` 变量直接可调用）。
 
-### 决策 2：新建 `src/langgraph_entry/` 目录统一暴露 6 个入口
+### 决策 2：langgraph.json 直接指向业务图模块（无中间包装层）
 
-**选择**：6 个 `src/langgraph_entry/<name>.py` 文件，每个只做一行 `from src.<name>.graph import graph`（或等价调用），由 `langgraph.json` 指向。
+**选择**：`langgraph.json` 的 `graphs` 字段直接指向 `src/<name>/graph.py:graph`，无任何中间包装。
 
 **理由**：
-- 把"平台入口"与"业务图实现"分离，未来想替换入口机制不影响业务图本身
-- 业务图 `src/<name>/graph.py` 改造为只暴露 `build_xxx_graph(checkpointer=None)` 工厂；不再有模块级 `graph = ...`
-- 统一了"哪里是平台加载点"的认知，README/调试都清晰
+langgraph-api 平台已经做了"业务图 → 平台入口"的桥接，**不需要再叠一层**。`langgraph.json` 一行就够说明"哪个图被哪个名字注册"。任何"未来想替换入口机制"的需求是假设性的，目前加这一层只会带来:
+- 多一个目录维护（6 个空文件）
+- 开发者要查两个地方才能找到图定义
+- 测试断言要跟随路径变化
 
-**注意**：DeepAgents 的 3 个图（intelligent-report / deep-research / intelligent-tracing）改造时需要新增一个 `create_deep_business_graph(skills_dir, name, checkpointer=None)` 工厂，**替代**原来的"模块级 `graph = create_deep_agent(...)`"。
+如果未来真出现"平台入口与业务图实现需要分离"的需求（例如批量加 trace / 鉴权 / metric 包装），届时再抽 `langgraph_entry` 包装层即可，不需要预先抽。
+
+**注意**：DeepAgents 的 3 个图（intelligent-report / deep-research / intelligent-tracing）**保持各自独立实现**，仅在 `create_deep_agent(...)` 调用里把 `checkpointer=get_checkpointer()` 改为 `checkpointer=None`。**不抽离共享工厂**——这 3 个图是空业务占位，未来各自的 prompt / subagent / 工具 / 中间件都可能完全不同，强制共享会导致后续业务演化困难。
 
 ### 决策 3：本地 SQLite 持久化通过 `langgraph dev` 内置机制（inmem）+ 工厂函数 fallback 实现
 
@@ -179,11 +182,10 @@
 2. **阶段 1（graph 重构）**：
    - 改 `build_business_graph` 接受 `checkpointer` 参数（默认 None）
    - 改 `data_analysis/graph.py` 暴露 `build_graph(checkpointer=None)` 工厂
-   - 抽 `create_deep_business_graph` 工厂函数；3 个 DeepAgents 图改为 `graph = create_deep_business_graph(skills_dir=..., name=..., checkpointer=None)`
+   - 3 个 DeepAgents 图**保持独立实现**，仅把 `create_deep_agent(checkpointer=get_checkpointer(), ...)` 改为 `checkpointer=None`；不抽离 `create_deep_business_graph` 工厂
 3. **阶段 2（入口统一）**：
-   - 新建 `src/langgraph_entry/<name>.py`（6 个）
-   - `langgraph.json` 改 graphs 路径指向新入口
-4. **阶段 3（前端改造）**：
+3. **阶段 2（langgraph.json 注册）**：
+   - `langgraph.json` 的 `graphs` 字段保持原有路径 `./src/<name>/graph.py:graph`（无需修改）
    - 重写 `app.js` 流式与请求逻辑
    - 提供 `scripts/serve_static.py` + `run-local.sh`
 5. **阶段 4（清理）**：

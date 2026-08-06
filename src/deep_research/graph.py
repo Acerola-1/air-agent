@@ -10,7 +10,6 @@ from deepagents.backends import CompositeBackend, FilesystemBackend, StateBacken
 from langchain.agents.middleware.types import AgentMiddleware
 from langchain_quickjs import CodeInterpreterMiddleware
 
-from common.config.checkpointing import get_checkpointer
 from common.middleware import (
     ExpandQuestionMiddleware,
     FinalOutputCleanupMiddleware,
@@ -89,9 +88,9 @@ graph = create_deep_agent(
     backend=CompositeBackend(
         default=StateBackend(),
         routes={
-            "/skills/": FilesystemBackend(root_dir=str(Path(__file__).parent / "skills"), virtual_mode=True),
+            "/skills/": FilesystemBackend(root_dir=str(SKILLS_DIR), virtual_mode=True),
         },
     ),
-    checkpointer=get_checkpointer(),
+    checkpointer=None,
     name="deep-research",
 )

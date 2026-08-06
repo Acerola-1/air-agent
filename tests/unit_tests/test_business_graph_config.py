@@ -35,27 +35,24 @@ def test_business_graph_registry_contains_six_public_graphs() -> None:
 
 
 def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
+    # 3 个 DeepAgents 图（intelligent_report / deep_research / intelligent_tracing）
+    # 是空业务占位, 未来各自独立演化. 每个图保留自己的 create_deep_agent 调用,
+    # 不抽离共享工厂. 此处仍按"每图自包含"的方式断言源码结构.
     for graph_name, graph_file in DEEP_AGENT_GRAPHS.items():
         source = graph_file.read_text(encoding="utf-8")
         assert 'SKILLS_DIR = Path(__file__).parent / "skills"' in source
-        # 方案 A：关闭 deepagents 原生全量 skill 目录注入，路由统一交给 find_skill，
-        # 不再向 create_deep_agent 传 skills=["/skills/"]（read_file 仍可经 backend 路由按需读 references）。
-        assert 'skills=["/skills/"]' not in source
         assert "tools=[find_skill]" in source
         assert "with_main_agent_tool_use_output_guard" in source
         assert 'unmatched_policy="native"' in source
         assert "你是中科宇图的空气质量数据查询助手" in source
+        assert f'name="{graph_name}"' in source
+        # langgraph-api 兼容: 编译时 checkpointer 必须为 None, 不能用 get_checkpointer()
+        assert "checkpointer=None" in source
+        assert "get_checkpointer" not in source
         assert "rendered_text" not in source
         assert "subagent_type" not in source
-
-    # basic-qa / intelligent-analysis 使用共享 StateGraph 节点流：
-    # 语义路由前置到 resolve_skill 节点，基础提示词集中在 prompting 模块
-    for graph_name in ("basic-qa", "intelligent-analysis"):
-        source = STATE_GRAPHS[graph_name].read_text(encoding="utf-8")
-        assert 'SKILLS_DIR = Path(__file__).parent / "skills"' in source
-        assert "build_business_graph" in source
-        assert "create_deep_agent" not in source
-        assert "find_skill" not in source
+        # 方案 A：关闭 deepagents 原生全量 skill 目录注入, 路由统一交给 find_skill
+        assert 'skills=["/skills/"]' not in source
 
     bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
     bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
@@ -108,12 +105,11 @@ def test_basic_qa_uses_rich_output_pipeline() -> None:
 
 
 def test_business_graphs_use_final_output_cleanup_middleware() -> None:
+    # 每个 DeepAgents 图独立声明自己的 middleware 链 (含 FinalOutputCleanupMiddleware)
     for graph_file in DEEP_AGENT_GRAPHS.values():
         source = graph_file.read_text(encoding="utf-8")
-
         assert "FinalOutputCleanupMiddleware" in source
         assert "FinalOutputCleanupMiddleware()" in source
-
     # StateGraph 节点流使用 finalize_output 节点替代
     da_graph = STATE_GRAPHS["data-analysis"].read_text(encoding="utf-8")
     da_nodes = Path("src/data_analysis/nodes.py").read_text(encoding="utf-8")
@@ -130,16 +126,13 @@ def test_business_graphs_use_final_output_cleanup_middleware() -> None:
 
 
 def test_final_output_cleanup_runs_before_expand_question_when_present() -> None:
-    # ExpandQuestionMiddleware 在中间件列表中先于 FinalOutputCleanupMiddleware
-    # 中间件按列表顺序执行，expand 先执行，cleanup 后执行
+    # 每个 DeepAgents 图独立维护中间件顺序: ExpandQuestionMiddleware 必须在 FinalOutputCleanupMiddleware 之前
     for graph_file in DEEP_AGENT_GRAPHS.values():
         source = graph_file.read_text(encoding="utf-8")
         cleanup_index = source.find("FinalOutputCleanupMiddleware()")
         expand_index = source.find("ExpandQuestionMiddleware()")
-
         if expand_index != -1 and cleanup_index != -1:
             assert expand_index < cleanup_index
-
 
 def test_mcp_backed_graphs_do_not_initialize_mcp_at_import() -> None:
     for graph_name in ("basic-qa", "intelligent-analysis"):

@@ -7,12 +7,12 @@
 - **重构 6 个业务图的编译入口**：将 `checkpointer=get_checkpointer()` 硬编码替换为可配置参数（默认 `None`），消除 `langgraph-api` 在 import 阶段抛出的 `ValueError`
   - `src/common/business_graph/builder.py` 的 `build_business_graph()` 增加 `checkpointer` 参数
   - `src/data_analysis/graph.py` 的 `build_graph()` 暴露 `checkpointer` 入参
-  - 3 个 DeepAgents 图（intelligent-report / deep-research / intelligent-tracing）通过新增 `create_deep_business_graph(skills_dir, name, checkpointer=None)` 工厂函数统一构建
-- **新增本地开发入口 `src/langgraph_entry/`**：集中暴露 `langgraph.json` 所需的 6 个图变量，由平台负责 import 时机
+  - 3 个 DeepAgents 图（intelligent-report / deep-research / intelligent-tracing）**保持独立实现**，仅把各自 `create_deep_agent(checkpointer=get_checkpointer(), ...)` 改为 `checkpointer=None`（不抽离共享工厂——这 3 个图是空业务占位，未来各自演化）
+- **保留 `langgraph.json` 的 `graphs` 入口**：维持 `./src/<name>/graph.py:graph` 原状，无中间包装
 - **升级 langgraph 平台相关包**：`langgraph-cli` / `langgraph-api` / `langgraph-runtime-inmem` 升到配套版本；同步锁定 `langgraph-checkpoint-postgres` 与 `langgraph-checkpoint-sqlite` 版本
 - **重写前端 `app.js` 适配标准 API**：请求路径、请求体、SSE 事件解析全部切换到 langgraph-api 标准协议；对接 `POST /threads/{id}/runs/stream` 等官方端点
 - **删除 `src/web/server.py` 与 `run.sh`**：**BREAKING** —— 自建 FastAPI 路径废弃；静态文件改由独立简易 HTTP server 托管（仅用于本地前端调试）
-- **更新 `langgraph.json` 的 `graphs` 入口**：从 `./src/<name>/graph.py:graph` 改为 `./src/langgraph_entry/<name>.py:graph`
+- **保留 `langgraph.json` 的 `graphs` 入口**：维持 `./src/<name>/graph.py:graph` 原状（无需修改）
 - **新增 `run-local.sh` 替代 `run.sh`**：包装 `langgraph dev --config ./langgraph.json --no-browser` 启动命令，统一本地开发入口
 - **保留 SQLite 作为 langgraph dev 的 in-memory checkpointer 后端**：不引入 PostgreSQL，避免本地开发依赖外部服务
 
@@ -20,7 +20,7 @@
 
 ### New Capabilities
 
-- `langgraph-api-graph-compat`: 6 个业务图必须能在 `langgraph dev`（inmem 模式）下被 langgraph-api 平台加载，不在 import 阶段抛 `ValueError`；提供可注入 checkpointer 的工厂函数供本地持久化场景使用
+- `langgraph-api-graph-compat`: 6 个业务图必须能在 `langgraph dev`（inmem 模式）下被 langgraph-api 平台加载，不在 import 阶段抛 `ValueError`；每个图在编译时 `checkpointer=None`，由平台在加载时注入持久化后端
 - `langgraph-standard-api-frontend`: 前端必须使用 langgraph-api 标准 API 协议（`/threads`、`/threads/{id}/runs/stream` 等）发起对话请求并解析流式响应
 - `local-dev-runner`: 本地开发流程必须有统一的启动入口（`run-local.sh` + `langgraph dev`），提供 6 个图、静态前端托管、SSE 端点等完整本地闭环
 
@@ -33,9 +33,7 @@
 - **受影响的代码**：
   - `src/basic_qa/graph.py`、`src/intelligent_analysis/graph.py`、`src/data_analysis/graph.py`、`src/intelligent_report/graph.py`、`src/deep_research/graph.py`、`src/intelligent_tracing/graph.py`（6 个图入口重写或参数化）
   - `src/common/business_graph/builder.py`（`build_business_graph` 签名变更）
-  - `src/langgraph_entry/`（新增 6 个入口文件）
   - `src/web/static/app.js`（前端 SSE/请求协议全改）
-  - `langgraph.json`（graphs 路径变更）
   - `pyproject.toml` / `requirements.lock.txt`（langgraph-cli/api/runtime-inmem 版本升级）
   - `run.sh` → `run-local.sh`（本地启动入口替换）
   - `src/web/server.py`（**删除**）

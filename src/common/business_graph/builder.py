@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import threading
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from langchain_core.messages import AIMessage, ToolMessage
 from langgraph.graph import END, START, StateGraph
@@ -29,7 +29,6 @@ from common.business_graph.prompting import DEFAULT_BUSINESS_SYSTEM_PROMPT
 from common.business_graph.skill_content import create_load_skill_tool
 from common.business_graph.state import BusinessGraphState
 from common.business_graph.tool_wrappers import composed_tool_wrapper
-from common.config.checkpointing import get_checkpointer
 from common.runtime_tools import get_business_tools
 from common.skill_router import SkillSemanticRouter
 
@@ -76,6 +75,7 @@ def build_business_graph(
     skills_dir: str | Path,
     name: str,
     base_system_prompt: str = DEFAULT_BUSINESS_SYSTEM_PROMPT,
+    checkpointer: Any = None,
 ):
     """构建并编译业务图.
 
@@ -83,6 +83,9 @@ def build_business_graph(
         skills_dir: 当前业务图的 skills 目录
         name: 图名（与 langgraph.json assistant_id 对应，仅用于日志）
         base_system_prompt: 基础系统提示词，默认为通用空气质量助手提示
+        checkpointer: 持久化后端实例；默认 None 表示不绑定任何 checkpointer。
+                     langgraph-api / langgraph dev 模式下由平台注入，调用方无需传入。
+                     本地自建 FastAPI 入口可显式传入 `get_checkpointer()` 拿到 SQLite 实例。
 
     Returns:
         编译后的 LangGraph 图实例。
@@ -152,6 +155,6 @@ def build_business_graph(
         },
     )
 
-    graph = builder.compile(checkpointer=get_checkpointer())
+    graph = builder.compile(checkpointer=checkpointer)
     logger.info("业务图节点流编译完成: name={}，skills_dir={}", name, skills_dir)
     return graph
