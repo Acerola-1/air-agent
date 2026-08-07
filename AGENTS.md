@@ -2,7 +2,25 @@
 
 ## Project Structure & Module Organization
 
-This is a Python 3.13 LangGraph agent project. Primary application code lives in `src/agent/`, with graph entry points configured in `langgraph.json` as `src/agent/agent.py:graph` and `src/data_analysis_assistant/graph.py:graph`. Configuration and persistence helpers are under `src/agent/config/`; middleware lives in `src/agent/middleware/`; reusable skill prompts and references live in `src/agent/skills/`. Static data belongs in `static/`, and design/reference notes belong in `docs/`. Tests are expected under `tests/unit_tests/` and `tests/integration_tests/`.
+This is a Python 3.13 **LangGraph API** (standardized REST) project with 6 public graphs declared in `langgraph.json`:
+
+| Graph ID            | Entry file                        | Purpose               |
+|---------------------|-----------------------------------|-----------------------|
+| `basic-qa`          | `src/basic_qa/graph.py:graph`           | Q&A + semantic skill routing |
+| `intelligent-analysis` | `src/intelligent_analysis/graph.py:graph` | Smart analysis skill routing |
+| `data-analysis`     | `src/data_analysis/graph.py:graph`      | Menu/page-driven deterministic analysis (uses `menu_skill_mapping.py`) |
+| `intelligent-report` | `src/intelligent_report/graph.py:graph`  | Report generation |
+| `deep-research`     | `src/deep_research/graph.py:graph`      | Deep research workflow |
+| `intelligent-tracing` | `src/intelligent_tracing/graph.py:graph`| Tracing / root cause |
+
+Shared runtime is under `src/common/`:
+
+- `src/common/config/` — settings + SQLite/PostgreSQL checkpointing
+- `src/common/middleware/` — 10 middlewares (MCP/resilience/time-context/rich-output/final-cleanup/mode-routing/skill-tool-disclosure/permission/*)
+- `src/common/{models,skill_discovery,skill_router,mcp_client,runtime_tools,permission,tools}.py`
+- Business skills live per-graph under `src/<graph-id>/skills/<skill-name>/` with `SKILL.md` + `references/{fast,expert}.md`.
+
+Frontend is a Next.js 16 assistant-ui app under `frontend/`, proxying `/api/*` → langgraph API `:2024`. Design/reference notes → `docs/`. Tests → `tests/unit_tests/`, `tests/integration_tests/`.
 
 ## Build, Test, and Development Commands
 
@@ -98,3 +116,37 @@ PM10 旧边界（日均/小时）：
 
 PM2.5 旧边界（日均/小时）：
 小时：1级 0–35，2级 35–75，3级 75–115，4级 115–150，5级 150–250，6级 >250
+
+## Container & Deployment (Apple Container + Container-Compose)
+
+**Runtime choice**: This project does NOT use Docker Desktop. macOS-local container runtime is Apple's `container` CLI (OCI-compatible, installed via signed pkg); multi-service orchestration uses `container-compose` (Mcrich23/Container-Compose, Swift, parse docker-compose.yaml).
+
+### Apple Container (container CLI) — Quick reference
+
+- Start/stop runtime: `container system start` / `container system stop` / `container system status`
+- List containers/images/volumes: `container ls` / `container images` / `container volumes ls`
+- Inspect / logs / exec: `container logs -f <name>` / `container exec -it <name> -- <cmd>` / `container inspect <name>`
+- Lifecycle: `container run -d --name X -p HOST:CTR -e K=V -v VOL:/path image:tag` / `container stop|start|rm <name>` / `container image rm <tag>`
+- Build from Dockerfile: `container build -t <tag> -f Dockerfile [--build-arg K=V] [--no-cache] .`
+- **Known constraints (agent must remember)**:
+  - No Docker Engine API / no `docker.sock` → Portainer, Testcontainers, docker SDK, Podman Desktop GUI do NOT work against it
+  - No `docker compose` binary built in; use `container-compose` instead
+  - `container-compose` only implements `up / down / build / version` subcommands. For `logs / ps / exec / restart` use native `container` commands.
+  - PostgreSQL volume: set `PGDATA` to a **child** of the mount (e.g. `/var/lib/postgresql/data/pgdata`) — otherwise initdb fails on `lost+found` at the volume root. This is identical to Docker Desktop behavior.
+
+### container-compose (Mcrich23/Container-Compose) — Quick reference
+
+- **Install (user step)**: Release binary from GitHub → `chmod +x container-compose && sudo cp container-compose /usr/local/bin/`
+- **Supported subcommands only**: `container-compose up [-d] [--build] [--no-cache] [--profile NAME] [<svc>]` / `container-compose down [<svc>]` / `container-compose build [--no-cache] [<svc>]` / `container-compose version`
+- **Global options**: `-f,--file PATH`, `--profile NAME` (repeatable; also accepts env `COMPOSE_PROFILES=a,b,c`), `--env-file PATH`
+- **Service fields supported** (verified from Swift structs): `image, build{context,dockerfile,args}, restart, healthcheck{test,interval,timeout,retries,start_period}, volumes[], environment{dict}, env_file[], ports[], command[], entrypoint[], depends_on[] | depends_on.<svc>.condition=service_started|service_healthy|service_completed_successfully +restart, user, container_name, hostname, working_dir, privileged, read_only, platform, mem_limit, stdin_open, tty, extra_hosts[], labels{}, networks[], profiles[], secrets, configs`
+- **Top-level fields**: `name, version(optional), services{}, volumes{}, networks{}, configs{}, secrets{}`
+- **Service discovery**: container-compose automatically uses the `<service>` name as the hostname inside containers (macOS 26 Tahoe optimal; README warns macOS 15 Sequoia DNS may need manual setup). Container names on the host are `<projectName>-<serviceName>`.
+- **Key behavioral differences vs docker compose (agent must not get wrong)**:
+  1. Foreground `up` (no `-d`): killing the process **does NOT stop the containers**. Always use `-d` + explicit `down`.
+  2. No `ps / logs / restart / exec / pull` subcommands. Use `container ls | grep <project>-`, `container logs -f <project>-<svc>`, `container stop/start <project>-<svc>`, `container exec -it <project>-<svc> -- <cmd>` instead.
+- **Project-specific convention (see docker-compose.yaml at repo root)**:
+  - Project name: `air-agent`
+  - `postgres` service (17-alpine, port 15432→5432, healthcheck via `pg_isready`, named volume `pgdata` with child-PGDATA pattern). **Always started by default** (no profile gate) — local development uses it for the checkpointer.
+  - `langgraph-api` service (builds from repo Dockerfile, depends_on postgres `condition: service_healthy`, env_file `.env`, port 2024) — **gated behind `profiles: [prod]`**. Never auto-starts in local dev where we use `.venv/bin/langgraph dev`.
+  - So: **Local dev flow = `container-compose up -d` (only PG starts) + `run-local.sh` venv frontend+langgraph**. Full-container staging flow = `container-compose up -d --build --profile prod`.

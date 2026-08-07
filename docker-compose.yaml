@@ -1,0 +1,90 @@
+# ---------------------------------------------------------------------------
+# Air Agent — Apple Container + Mcrich23/Container-Compose deployment spec
+#
+# Orchestration target: Apple Container (container CLI 1.2+) via
+# `container-compose` (https://github.com/Mcrich23/Container-Compose).
+# This project does NOT use Docker Desktop or docker compose.
+#
+# Day-to-day workflow (local development, recommended):
+#   $ container-compose up -d        # starts ONLY postgres (langgraph-api is
+#                                    # gated behind `profiles: [prod]`).
+#   $ ./run-local.sh                 # venv langgraph-dev :2024 + Next :3000
+#   $ container-compose down         # stops postgres (named volumes kept).
+#
+# Full-container staging / packaging:
+#   $ container-compose up -d --build --profile prod
+# ---------------------------------------------------------------------------
+
+name: air-agent
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: air_agent
+      POSTGRES_PASSWORD: air_agent_dev
+      POSTGRES_DB: air_agent
+      # NOTE: PGDATA must live in a CHILD of the volume mount. The named-
+      #       volume root always contains a `lost+found` entry; `initdb`
+      #       refuses to run in a non-empty directory.
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U air_agent -d air_agent"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+      start_period: 10s
+
+  # NOTE: langgraph-api is gated behind `profiles: [prod]`. It will NOT be
+  #       started by a bare `container-compose up -d` in local development
+  #       (where the preferred runtime is `.venv/bin/langgraph dev` via
+  #       `./run-local.sh`, which gives hot-reload and a debugger).
+  #       Explicitly activate it with:
+  #         container-compose up -d --build --profile prod
+  langgraph-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Optional override: mirror the pip index used in the Dockerfile to
+      # a local mirror during build.
+      args:
+        PIP_INDEX_URL: https://pypi.tuna.tsinghua.edu.cn/simple/
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+    environment:
+      # Service-to-service DNS inside container-compose: host = service name.
+      DATABASE_URL: postgresql+psycopg://air_agent:air_agent_dev@postgres:5432/air_agent
+      # Secrets / API keys: prefer .env file (see `env_file` below). Values
+      # set here only act as shell-level fallbacks for `docker run`-style use;
+      # do NOT commit real values into this file.
+      LANGCHAIN_TRACING_V2: "${LANGCHAIN_TRACING_V2:-false}"
+      LANGCHAIN_API_KEY: "${LANGCHAIN_API_KEY:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ARK_API_KEY: "${ARK_API_KEY:-}"
+      DASHSCOPE_API_KEY: "${DASHSCOPE_API_KEY:-}"
+    env_file:
+      - .env
+    ports:
+      - "2024:2024"
+    working_dir: /app
+    command:
+      [
+        "langgraph", "dev",
+        "--config", "./langgraph.json",
+        "--host", "0.0.0.0",
+        "--port", "2024",
+        "--no-browser"
+      ]
+    profiles:
+      - prod
+
+volumes:
+  pgdata:
