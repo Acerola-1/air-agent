@@ -5,7 +5,7 @@
 - ExpandQuestionMiddleware: 问题扩展后置中间件
 - TimeContextMiddleware: 当前时间上下文注入中间件
 - mode_routing_prompt: 模式路由动态提示中间件
-- RichOutputMiddleware: 富输出拦截中间件
+- ArtifactMiddleware: Fenced code block 扫描 → Artifact 画布推送 + 上下文压缩
 - GlobalExceptionMiddleware: 全局异常友好兜底中间件
 - MCPResilienceMiddleware: MCP 工具异常降级中间件
 - SkillToolRegistryMiddleware: 业务工具预注册中间件
@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+from common.middleware.artifact_middleware import ArtifactMiddleware
 from common.middleware.expand_question_middleware import ExpandQuestionMiddleware
 from common.middleware.final_output_cleanup_middleware import (
     FinalOutputCleanupMiddleware,
@@ -26,7 +27,6 @@ from common.middleware.mode_routing_middleware import mode_routing_prompt
 from common.middleware.permission_classify_middleware import (
     PermissionClassifyMiddleware,
 )
-from common.middleware.rich_output_middleware import RichOutputMiddleware
 from common.middleware.skill_tool_disclosure_middleware import (
     SkillToolFilterMiddleware,
     SkillToolRegistryMiddleware,
@@ -39,7 +39,7 @@ __all__ = [
     "ExpandQuestionMiddleware",
     "TimeContextMiddleware",
     "mode_routing_prompt",
-    "RichOutputMiddleware",
+    "ArtifactMiddleware",
     "GlobalExceptionMiddleware",
     "MCPResilienceMiddleware",
     "SkillToolRegistryMiddleware",

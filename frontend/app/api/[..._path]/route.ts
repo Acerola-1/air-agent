@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+// SSE 流式代理需要禁用静态优化和设置足够长的超时（LangGraph run 可能持续 60s+）
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 function getCorsHeaders() {
   return {
     "Access-Control-Allow-Origin": "*",

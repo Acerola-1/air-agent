@@ -19,7 +19,7 @@ from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
-
+from langgraph.types import StreamWriter
 from loguru import logger
 
 from common.business_graph.intent import (
@@ -35,25 +35,28 @@ from common.business_graph.prompting import (
 )
 from common.business_graph.skill_content import load_skill_rules
 from common.business_graph.state import BusinessGraphState
-
 from common.context import get_message_content, get_routing_context
 from common.mcp_client import ensure_mcp_tools
+from common.middleware.artifact_middleware import ArtifactMiddleware
 from common.models import ModelRegistry
 from common.permission.rules import is_conversational
 from common.runtime_tools import get_business_tools, tool_name
-from common.skill_discovery import _union_allowed_tools
 from common.skill_router import SkillRouteCandidate, SkillSemanticRouter
 
 # 始终可见的本地工具名集合 (不被 skill allowed-tools 过滤掉).
 # 知识检索工具已移除, 当前仅保留时间工具.
-_ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset(
-    {"get_beijing_time"}
-)
+# 始终可见的工具：时间工具 + create_artifact 画布工具.
+# load_skill 始终可见：多候选时模型可自主加载更匹配的 skill 规则，
+# 单候选/零候选时模型无理由调用，不会产生副作用。
+# create_artifact 是跨技能的通用画布输出能力，不受技能 allowed_tools 限制，
+# 保证 Agent 在任何技能命中场景下都能自主产出 HTML/Markdown/SVG 画布内容.
+_ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset({"get_beijing_time", "create_artifact", "load_skill"})
 
 # 兜底消息常量 (模型调用失败 / 空回复时使用, 与 data_analysis/nodes.py 保持一致).
 _SERVICE_UNAVAILABLE_MESSAGE = "抱歉，当前智能问答服务暂时不可用，请稍后再试。"
 _EMPTY_REPLY_NUDGE = "请基于以上工具返回的数据，直接输出分析结论。"
 _FALLBACK_EMPTY_REPLY = "服务暂不可用，请稍后重试。"
+
 
 def _latest_human_content(messages: Sequence[Any]) -> str:
     """获取最近一条用户消息文本."""
@@ -61,6 +64,7 @@ def _latest_human_content(messages: Sequence[Any]) -> str:
         if isinstance(message, HumanMessage):
             return get_message_content(message)
     return ""
+
 
 def _candidate_summaries(
     candidates: Sequence[SkillRouteCandidate],
@@ -132,17 +136,7 @@ class BusinessGraphNodes:
         mode = get_routing_context(configurable).mode
         question = _latest_human_content(state.get("messages", []))
 
-        update: dict[str, Any] = {
-            "skill_search_attempted": True,
-            "skill_search_question": question,
-            "selected_skill": None,
-            "selected_skill_path": None,
-            "selected_skill_description": None,
-            "selected_skill_allowed_tools": [],
-            "selected_skill_score": None,
-            "skill_multi_candidates": False,
-            "skill_rules_content": "",
-        }
+        update: dict[str, Any] = {"skill_rules_content": ""}
         if not question:
             return update
 
@@ -166,7 +160,6 @@ class BusinessGraphNodes:
             return update
 
         top = candidates[0]
-        union_tools = _union_allowed_tools(candidates)
         skill_rules = load_skill_rules(self._router, top.name, mode)
 
         if len(candidates) > 1:
@@ -185,24 +178,13 @@ class BusinessGraphNodes:
             )
 
         logger.info(
-            "业务图 Skill 命中: graph={}，skill={}，候选数={}，score={}，allowed_tools={}",
+            "业务图 Skill 命中: graph={}，skill={}，候选数={}，score={}",
             self._graph_name,
             top.name,
             len(candidates),
             top.similarity_score,
-            union_tools,
         )
-        update.update(
-            {
-                "selected_skill": top.name,
-                "selected_skill_path": top.path,
-                "selected_skill_description": top.description,
-                "selected_skill_allowed_tools": union_tools,
-                "selected_skill_score": top.similarity_score,
-                "skill_multi_candidates": len(candidates) > 1,
-                "skill_rules_content": skill_rules,
-            }
-        )
+        update["skill_rules_content"] = skill_rules
         return update
 
     # ──── 模型准备与调用节点 ────
@@ -244,13 +226,13 @@ class BusinessGraphNodes:
         return {"system_prompt": system_prompt}
 
     def _available_tools(self, state: BusinessGraphState) -> list[Any]:
-        """按意图车道与 allowed-tools 过滤业务工具.
+        """按意图车道过滤业务工具.
 
         - chitchat 车道：零工具（纯对话，不暴露任何工具 schema）；
-        - knowledge 车道：仅始终可见的本地工具（时间 + 知识检索）；
-        - data_query 车道：保持原 SkillToolFilterMiddleware(native) 语义：
-          allowed 非空 → 交集 + 始终可见；为空 → 全量业务工具；
-          多候选场景额外披露 load_skill。
+        - knowledge 车道：仅始终可见的本地工具（时间 + create_artifact）；
+        - data_query 车道：全量业务工具 + load_skill（始终可见），
+          不再按 skill allowed_tools 做交集过滤——模型能力已足够，
+          skill 规则中的工具使用指引足以引导模型选择正确工具。
         """
         intent = state.get("intent") or INTENT_DATA_QUERY
         if intent == INTENT_CHITCHAT:
@@ -265,26 +247,19 @@ class BusinessGraphNodes:
                 and name in _ALWAYS_VISIBLE_TOOL_NAMES
             ]
 
-        allowed = state.get("selected_skill_allowed_tools") or []
-
-        if allowed:
-            allowed_set = set(allowed) | _ALWAYS_VISIBLE_TOOL_NAMES
-            available = [
-                t
-                for t in business
-                if (name := tool_name(t)) is not None and name in allowed_set
-            ]
-        else:
-            available = list(business)
-
-        if state.get("skill_multi_candidates"):
-            available = [*available, self._load_skill_tool]
+        # data_query 车道：全量业务工具 + load_skill
+        # 不再按 skill allowed_tools 做交集过滤——模型能力已足够，
+        # skill 规则中的工具使用指引足以引导模型选择正确工具。
+        available = list(business)
+        available.append(self._load_skill_tool)
         return available
 
     async def call_model(
         self,
         state: BusinessGraphState,
         config: RunnableConfig,
+        *,
+        writer: StreamWriter,
     ) -> dict[str, Any]:
         """LLM 推理：决定调工具 / 直接输出.
 
@@ -348,6 +323,14 @@ class BusinessGraphNodes:
                 logger.warning("业务图模型空回复重试失败: {}，使用兜底消息", exc)
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
+        # 扫描 AIMessage 中的 fenced code block → 压缩内容 + 嵌入 artifact_ref 注释
+        if isinstance(response, AIMessage) and isinstance(response.content, str):
+            scanned = ArtifactMiddleware().scan_text(
+                response.content,
+                default_open_in="canvas_window",
+            )
+            if scanned is not response.content:
+                response = response.model_copy(update={"content": scanned})
 
         return {"messages": [response]}
 

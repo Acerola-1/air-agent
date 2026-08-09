@@ -60,6 +60,35 @@ ANTI_PROCESS_RESIDUE_GUARD = """
 """.strip()
 
 
+ARTIFACT_GENERATION_GUIDE = """
+## 画布（Artifact）输出指引
+
+当以下任一情况出现时，你可以直接调用 `create_artifact` 工具或在回答文本中写对应的 fenced code block，
+系统会自动为用户打开独立画布窗口渲染，无需在正文中重复源码：
+
+**推荐调用时机**
+- 需要输出 HTML 报表页面（含 ECharts / Chart.js 图表、表格、样式）
+- 需要输出较长的 Markdown 分析报告（> 300 字或含多个章节 / 表格）
+- 需要输出 SVG / 流程图 / 时序图等矢量图
+- 需要输出图片 URL 或嵌入外部 URL 内容
+
+**两种输出方式**
+1. **显式工具调用（推荐）**：调用 `create_artifact`，参数：
+   - `title`: 画布标题（清晰描述内容，如"北京市 1 月 PM2.5 变化趋势图"）
+   - `content_type`: `html` / `markdown` / `svg` / `text` / `iframe_url` / `image_url`
+   - `content`: 对应类型的完整源码或 URL
+   - `open_in`: 默认 `canvas_window`；需在消息下方紧贴展示时用 `inline_below`
+2. **隐式代码块（便捷）**：直接在回答文本中写 ```html / ```markdown / ```svg fenced code block，
+   系统会自动识别并转为画布；正文中原代码块会被替换为一句"已在画布中生成 Artifact：XXX"的占位摘要。
+
+**输出约束（重要）**
+- `content_type=html` 时，输出必须是完整 `<html>...</html>` 文档，可使用 CDN 引用 ECharts、Chart.js 等；
+  不要依赖本地资源；iframe 会启用同源限制沙箱，仅保留 script 执行和样式。
+- 生成 Artifact 后，**正文只需用一句话引导用户在画布中查看**，严禁重复粘贴同一 HTML / Markdown 源码。
+- 画布标题必须概括内容，不要用"报表""报告""分析"等模糊字样。
+""".strip()
+
+
 DATA_AUTHENTICITY_GUARD = """
 ## 数据真实性约束
 - 数据必须来自真实工具的有效数据、用户当前页面传入的有效数据或上下文中已明确提供的有效数据，不得捏造。
@@ -68,8 +97,7 @@ DATA_AUTHENTICITY_GUARD = """
 """.strip()
 
 
-DATA_ANALYSIS_OUTPUT_GUARD = (
-    """
+DATA_ANALYSIS_OUTPUT_GUARD = """
 ## 输出格式要求
 - 使用 Markdown 输出，结论先行，层级清晰，内容简洁专业。
 - 当前回答服务于用户已打开的可视化页面，只做页面数据的伴随分析，不复刻页面已有图表、表格、排名或明细。
@@ -81,7 +109,6 @@ DATA_ANALYSIS_OUTPUT_GUARD = (
 - 如果上下文中不存在有效数据，简短回复"没有获取到必要数据，请稍后重试。"
 - 不得输出工具调用过程、执行进度、失败重试、错误状态码(如502、500)、超时提示、内部实现名词(如skill、工具名、JSON、SQL、路径、MCP等)。工具返回错误时，仅用业务语言说明"暂未获取到相关数据"并基于已有数据继续分析。
 """.strip()
-)
 
 
 ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE = """
@@ -210,6 +237,7 @@ def with_main_agent_tool_use_output_guard(system_prompt: str) -> str:
         f"{DATA_AUTHENTICITY_GUARD}\n\n"
         f"{ANTI_PROCESS_RESIDUE_GUARD}\n\n"
         f"{MAIN_AGENT_TOOL_USE_OUTPUT_GUARD}\n\n"
+        f"{ARTIFACT_GENERATION_GUIDE}\n\n"
         f"{ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE}\n\n"
         f"{TIME_PARAMETER_NORMALIZATION_GUIDE}\n\n"
         f"{DATA_DELAY_RETRY_GUIDE}\n\n"
@@ -367,7 +395,6 @@ EXPERT_MODE_SYSTEM_PROMPT = """
 
 
 """.strip()
-
 
 
 # =========================================================================
@@ -574,6 +601,7 @@ __all__ = [
     "FAST_MODE_SYSTEM_PROMPT",
     "EXPERT_MODE_SYSTEM_PROMPT",
     "with_main_agent_tool_use_output_guard",
+    "ARTIFACT_GENERATION_GUIDE",
     # 行政区划
     "region_extraction_prompt",
     # 权限检查(含上下文补全)

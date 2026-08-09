@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Python
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.ruff_cache
+.mypy_cache
+.pytest_cache
+
+# Node / Frontend
+frontend/node_modules
+frontend/.next
+frontend/out
+
+#容器 & 运行时
+container-data
+*.log
+*.db
+*.sqlite
+
+# IDE
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 文档（容器内不需要）
+docs
+openspec
+
+# 旧 web 静态文件
+src/web/static

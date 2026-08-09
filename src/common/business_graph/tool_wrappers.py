@@ -9,7 +9,7 @@ data_analysis 与 basic_qa / intelligent_analysis 节点流共用。
 - SkillToolRegistryMiddleware → 动态绑定工具实例
 - GlobalExceptionMiddleware → 异常兜底
 - MCPResilienceMiddleware → MCP 工具降级
-- RichOutputMiddleware → 富输出推送 + ToolMessage 压缩
+- ArtifactMiddleware → Fenced code block 扫描 → Artifact 画布推送 + 内容压缩
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from typing import Any
 from langchain_core.messages import ToolMessage
 from loguru import logger
 
-from common.middleware.rich_output_middleware import RichOutputMiddleware
+from common.middleware.artifact_middleware import ArtifactMiddleware
 from common.middleware.tool_progress_middleware import (
     ProgressSpec,
     ToolProgressMiddleware,
@@ -170,9 +170,17 @@ def _global_fallback(request: Any, exc: Exception) -> ToolMessage:
     )
 
 
-def _handle_rich_output(request: Any, result: Any) -> Any:
-    """处理富输出推送 + ToolMessage 压缩（等效于 RichOutputMiddleware）."""
-    middleware = RichOutputMiddleware()
+def _handle_artifact(request: Any, result: Any) -> Any:
+    """扫描 ToolMessage 中的 fenced code block → 推送 Artifact 事件 + 压缩内容."""
+    tool_name_str = str(request.tool_call.get("name") or "")
+    writer = getattr(getattr(request, "runtime", None), "stream_writer", None)
+    logger.info(
+        "Artifact 诊断: tool={}, has_writer={}, result_type={}",
+        tool_name_str,
+        callable(writer),
+        type(result).__name__,
+    )
+    middleware = ArtifactMiddleware()
     return middleware._handle_tool_result(request, result)
 
 
@@ -186,7 +194,7 @@ async def composed_tool_wrapper(
     1. 推送进度事件
     2. 动态绑定工具实例
     3. 执行工具（含异常兜底）
-    4. 处理富输出（推送 + 压缩）
+    4. 扫描 fenced code block 推送 Artifact 画布（create_artifact 工具跳过二次处理）
     """
     # 1. 推送进度
     _push_tool_progress(request)
@@ -203,7 +211,7 @@ async def composed_tool_wrapper(
         else:
             result = _global_fallback(request, exc)
 
-    # 4. 处理富输出
-    result = _handle_rich_output(request, result)
+    # 4. 扫描 fenced code block 推送 Artifact 画布
+    result = _handle_artifact(request, result)
 
     return result

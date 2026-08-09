@@ -90,11 +90,15 @@ def filter_business_tools(
 
     框架工具（不在业务工具列表中的）始终保留。
     allowed_tool_names 为空或 None 时，不暴露任何业务工具。
+    create_artifact / get_beijing_time 作为跨技能通用工具始终保留，
+    保证 Agent 在任何技能命中场景下都能自主产出画布内容。
     """
     if not allowed_tool_names:
         return []
 
-    allowed = set(allowed_tool_names)
+    # 始终可见的通用工具：画布输出 + 时间，不受技能 allowed-tools 限制
+    always_visible = {"create_artifact", "get_beijing_time"}
+    allowed = set(allowed_tool_names) | always_visible
     filtered: list[Any] = []
     for t in all_tools:
         name = tool_name(t)

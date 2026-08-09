@@ -267,6 +267,7 @@ class SkillSemanticRouter:
                     routes=routes,
                     index=LocalIndex(),
                     aggregation="max",
+                    top_k=10,
                 )
                 router.add(routes)
             except Exception as exc:
@@ -337,12 +338,24 @@ class SkillSemanticRouter:
             normalized_question[:120],
         )
         try:
-            matches = await router.acall(normalized_question)
+            matches = await router.acall(
+                normalized_question, limit=self.max_candidates
+            )
         except Exception as exc:
             logger.warning("技能语义匹配失败：错误={}", exc)
             return []
 
-        if not matches:
+        # semantic-router 的 limit>1 返回类型是联合类型：
+        #   - 0 命中 → 单个空 RouteChoice（name=None）
+        #   - 1 命中 → 单个 RouteChoice（向后兼容，不是 list）
+        #   - ≥2 命中 → list[RouteChoice]
+        raw_matches = matches if isinstance(matches, list) else [matches]
+        # 过滤掉空 RouteChoice（name=None，0 命中时的占位符）
+        raw_matches = [
+            m for m in raw_matches if getattr(m, "name", None) is not None
+        ]
+
+        if not raw_matches:
             logger.info(
                 "技能语义匹配无原始命中：skills_dir={}，归一化问题={}",
                 self.skills_dir,
@@ -350,8 +363,6 @@ class SkillSemanticRouter:
             )
             self._cache_match(normalized_question, ())
             return []
-
-        raw_matches = matches if isinstance(matches, list) else [matches]
         logger.info(
             "技能语义匹配原始结果：skills_dir={}，结果={}",
             self.skills_dir,

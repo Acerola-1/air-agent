@@ -25,9 +25,7 @@ services:
       POSTGRES_USER: air_agent
       POSTGRES_PASSWORD: air_agent_dev
       POSTGRES_DB: air_agent
-      # NOTE: PGDATA must live in a CHILD of the volume mount. The named-
-      #       volume root always contains a `lost+found` entry; `initdb`
-      #       refuses to run in a non-empty directory.
+      # PGDATA 必须在 volume 挂载点的子目录下，否则 initdb 因 lost+found 报错
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -40,49 +38,60 @@ services:
       retries: 10
       start_period: 10s
 
-  # NOTE: langgraph-api is gated behind `profiles: [prod]`. It will NOT be
-  #       started by a bare `container-compose up -d` in local development
-  #       (where the preferred runtime is `.venv/bin/langgraph dev` via
-  #       `./run-local.sh`, which gives hot-reload and a debugger).
-  #       Explicitly activate it with:
-  #         container-compose up -d --build --profile prod
+  # Redis：官方 langgraph-api 镜像的 migration lock 硬依赖
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+      start_period: 5s
+
+  # NOTE: langgraph-api gated behind `profiles: [prod]`，本地开发不启动。
+  #   全容器模式：container-compose up -d --build --profile prod
   langgraph-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      # Optional override: mirror the pip index used in the Dockerfile to
-      # a local mirror during build.
-      args:
-        PIP_INDEX_URL: https://pypi.tuna.tsinghua.edu.cn/simple/
+    # 镜像需手动构建：container build -t air-agent/langgraph-api:latest .
+    # （compose 的 build 有 builder 目录权限 bug，手动 build 更稳定）
+    image: air-agent/langgraph-api:latest
+    container_name: air-agent-langgraph-api
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
         restart: true
+      redis:
+        condition: service_healthy
+        restart: true
     environment:
-      # Service-to-service DNS inside container-compose: host = service name.
-      DATABASE_URL: postgresql+psycopg://air_agent:air_agent_dev@postgres:5432/air_agent
-      # Secrets / API keys: prefer .env file (see `env_file` below). Values
-      # set here only act as shell-level fallbacks for `docker run`-style use;
-      # do NOT commit real values into this file.
-      LANGCHAIN_TRACING_V2: "${LANGCHAIN_TRACING_V2:-false}"
-      LANGCHAIN_API_KEY: "${LANGCHAIN_API_KEY:-}"
-      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
-      ARK_API_KEY: "${ARK_API_KEY:-}"
-      DASHSCOPE_API_KEY: "${DASHSCOPE_API_KEY:-}"
+      # --- PostgreSQL ---
+      # Go core-server 用 libpq 解析，不支持 postgresql+psycopg:// 前缀
+      DATABASE_URI:  "postgresql://air_agent:air_agent_dev@postgres:5432/air_agent"
+      POSTGRES_URI:  "postgresql://air_agent:air_agent_dev@postgres:5432/air_agent"
+
+      # --- Redis（migration lock + broker）---
+      REDIS_URI: "redis://redis:6379"
+
+      # --- Store ---
+      LANGGRAPH_STORE_BACKEND: "postgres"
+      LANGGRAPH_STORE: '{"kind":"postgres","uri":"postgresql://air_agent:air_agent_dev@postgres:5432/air_agent"}'
+
+      # --- Misc ---
+      LANGGRAPH_API_URL: "http://localhost:2024"
+      LANGGRAPH_AUTH_TYPE: "noop"
+      DB_MIGRATION_BY_CORE_API: "false"
+
+      # --- API keys（从 .env 注入）---
+      LANGCHAIN_TRACING_V2: "${LANGCHAIN_TRACING_V2}"
+      LANGCHAIN_API_KEY:    "${LANGCHAIN_API_KEY}"
+      OPENAI_API_KEY:       "${OPENAI_API_KEY}"
+      ARK_API_KEY:          "${ARK_API_KEY}"
+      DASHSCOPE_API_KEY:    "${DASHSCOPE_API_KEY}"
     env_file:
       - .env
     ports:
-      - "2024:2024"
-    working_dir: /app
-    command:
-      [
-        "langgraph", "dev",
-        "--config", "./langgraph.json",
-        "--host", "0.0.0.0",
-        "--port", "2024",
-        "--no-browser"
-      ]
+      - "2024:8000"
     profiles:
       - prod
 

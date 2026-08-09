@@ -3,8 +3,23 @@
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { useStreamRuntime } from "@assistant-ui/react-langchain";
 import { Client } from "@langchain/langgraph-sdk";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { makeLangGraphThreadListAdapter } from "./langgraph-thread-list-adapter";
+import {
+  ArtifactProvider,
+} from "@/components/artifact/ArtifactProvider";
+import { CanvasWindow } from "@/components/artifact/CanvasWindow";
+import { InlineContainer } from "@/components/artifact/InlineContainer";
+
+/** ArtifactToolInterceptor: 仅客户端渲染, 避免 SSR 时 stream 为 undefined 崩溃. */
+const ArtifactToolInterceptor = dynamic(
+  () =>
+    import("@/components/artifact/ArtifactToolInterceptor").then(
+      (m) => m.ArtifactToolInterceptor,
+    ),
+  { ssr: false },
+);
 
 /** 当前 air_agent 支持的 6 个 graph — 这里硬编码一份中文展示名, 下拉切换用
  *
@@ -45,9 +60,9 @@ export function MyRuntimeProvider({
 
   const [assistantId, setAssistantId] = useState<GraphId>(defaultGraphId);
   const assistantIdRef = useRef<GraphId>(assistantId);
-  useEffect(() => {
-    assistantIdRef.current = assistantId;
-  }, [assistantId]);
+  // 直接在 render body 更新 ref，确保子组件（key={assistantId} 重建时）
+  // 调 adapter.list() 读到的 ref 已是最新值；用 useEffect 会有竞态（effect 在 paint 后才执行）
+  assistantIdRef.current = assistantId;
 
   const apiUrl = useMemo(() => buildApiUrl(), []);
   const apiUrlRef = useRef(apiUrl);
@@ -151,5 +166,14 @@ function AssistantRuntimeProviderInner({
     };
   }, [assistantId, onAssistantIdChange]);
 
-  return <AssistantRuntimeProvider runtime={runtime}>{children}</AssistantRuntimeProvider>;
+  return (
+    <ArtifactProvider>
+      <AssistantRuntimeProvider runtime={runtime}>
+        {children}
+        <ArtifactToolInterceptor />
+        <InlineContainer />
+      </AssistantRuntimeProvider>
+      <CanvasWindow />
+    </ArtifactProvider>
+  );
 }

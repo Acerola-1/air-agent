@@ -343,3 +343,4 @@ frontend/.env*.local
 # Vercel 部署目录
 .vercel/
 */.vercel/
+.trae

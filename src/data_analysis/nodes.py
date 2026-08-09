@@ -16,6 +16,7 @@ from loguru import logger
 from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
 from common.mcp_client import ensure_mcp_tools
+from common.middleware.artifact_middleware import ArtifactMiddleware
 from common.models import ModelRegistry
 from common.runtime_tools import get_business_tools
 from data_analysis.menu_skill_mapping import match_menu_skill
@@ -352,6 +353,15 @@ async def call_model(
         except Exception as exc:
             logger.warning("数据分析模型空回复重试失败: {}，使用兜底消息", exc)
             response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
+
+    # 扫描 AIMessage 中的 fenced code block → 压缩内容 + 嵌入 artifact_ref 注释
+    if isinstance(response, AIMessage) and isinstance(response.content, str):
+        scanned = ArtifactMiddleware().scan_text(
+            response.content,
+            default_open_in="canvas_window",
+        )
+        if scanned is not response.content:
+            response = response.model_copy(update={"content": scanned})
 
     return {"messages": [response]}
 

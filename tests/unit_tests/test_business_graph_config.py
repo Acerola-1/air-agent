@@ -99,7 +99,9 @@ def test_basic_qa_uses_rich_output_pipeline() -> None:
     assert "LegacyChartDataMiddleware()" not in source
 
     wrappers = BUSINESS_GRAPH_TOOL_WRAPPERS.read_text(encoding="utf-8")
-    assert "RichOutputMiddleware" in wrappers
+    # 由 ArtifactMiddleware（fenced code block 自动扫描 + create_artifact 显式工具）替代旧 RichOutputMiddleware
+    assert "RichOutputMiddleware" not in wrappers
+    assert "_handle_artifact" in wrappers
     bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
     assert "composed_tool_wrapper" in bg_builder
 
@@ -118,11 +120,13 @@ def test_business_graphs_use_final_output_cleanup_middleware() -> None:
 
     bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
     bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
-    assert "finalize_output" in bg_builder
-    # 业务图节点流的清洗为确定性规则，LLM 仅作显式开关的兜底
-    assert "deterministic_cleanup" in bg_nodes
-    assert "final_output_delta" in bg_nodes
-    assert "final_output_done" in bg_nodes
+    # basic-qa / intelligent-analysis 图（business_graph）无 finalize_output 节点，
+    # 但 call_model 节点中集成了 Artifact 源码扫描与最终清洗提示词注入
+    assert "ArtifactMiddleware" in bg_nodes
+    assert "scan_text" in bg_nodes
+    # data-analysis 图仍然保留 finalize_output + 流式事件
+    assert "final_output_delta" in da_nodes
+    assert "final_output_done" in da_nodes
 
 
 def test_final_output_cleanup_runs_before_expand_question_when_present() -> None:

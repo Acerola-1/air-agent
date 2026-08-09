@@ -36,7 +36,7 @@ async def _run(request: SimpleNamespace, handler: Any) -> Any:
     with (
         patch.object(tw, "get_mcp_tool_names", return_value=["mcp_tool_a"]),
         patch.object(tw.asyncio, "sleep", new=AsyncMock()) as sleep_mock,
-        patch.object(tw, "_handle_rich_output", side_effect=lambda _r, res: res),
+        patch.object(tw, "_handle_artifact", side_effect=lambda _r, res: res),
     ):
         result = await tw.composed_tool_wrapper(request, handler)
     return result, sleep_mock
