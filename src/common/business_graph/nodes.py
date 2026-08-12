@@ -37,7 +37,6 @@ from common.business_graph.skill_content import load_skill_rules
 from common.business_graph.state import BusinessGraphState
 from common.context import get_message_content, get_routing_context
 from common.mcp_client import ensure_mcp_tools
-from common.middleware.artifact_middleware import ArtifactMiddleware
 from common.models import ModelRegistry
 from common.permission.rules import is_conversational
 from common.runtime_tools import get_business_tools, tool_name
@@ -50,7 +49,9 @@ from common.skill_router import SkillRouteCandidate, SkillSemanticRouter
 # 单候选/零候选时模型无理由调用，不会产生副作用。
 # create_artifact 是跨技能的通用画布输出能力，不受技能 allowed_tools 限制，
 # 保证 Agent 在任何技能命中场景下都能自主产出 HTML/Markdown/SVG 画布内容.
-_ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset({"get_beijing_time", "create_artifact", "load_skill"})
+_ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset(
+    {"get_beijing_time", "create_artifact", "load_skill"}
+)
 
 # 兜底消息常量 (模型调用失败 / 空回复时使用, 与 data_analysis/nodes.py 保持一致).
 _SERVICE_UNAVAILABLE_MESSAGE = "抱歉，当前智能问答服务暂时不可用，请稍后再试。"
@@ -322,15 +323,6 @@ class BusinessGraphNodes:
             except Exception as exc:
                 logger.warning("业务图模型空回复重试失败: {}，使用兜底消息", exc)
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
-
-        # 扫描 AIMessage 中的 fenced code block → 压缩内容 + 嵌入 artifact_ref 注释
-        if isinstance(response, AIMessage) and isinstance(response.content, str):
-            scanned = ArtifactMiddleware().scan_text(
-                response.content,
-                default_open_in="canvas_window",
-            )
-            if scanned is not response.content:
-                response = response.model_copy(update={"content": scanned})
 
         return {"messages": [response]}
 

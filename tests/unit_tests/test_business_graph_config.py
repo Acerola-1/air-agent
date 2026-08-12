@@ -41,9 +41,10 @@ def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
     for graph_name, graph_file in DEEP_AGENT_GRAPHS.items():
         source = graph_file.read_text(encoding="utf-8")
         assert 'SKILLS_DIR = Path(__file__).parent / "skills"' in source
-        assert "tools=[find_skill]" in source
+        # MCP 工具注入后 find_skill 仍保留在工具列表首位
+        assert "find_skill" in source
+        assert "_mcp_tools" in source
         assert "with_main_agent_tool_use_output_guard" in source
-        assert 'unmatched_policy="native"' in source
         assert "你是中科宇图的空气质量数据查询助手" in source
         assert f'name="{graph_name}"' in source
         # langgraph-api 兼容: 编译时 checkpointer 必须为 None, 不能用 get_checkpointer()
@@ -53,6 +54,9 @@ def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
         assert "subagent_type" not in source
         # 方案 A：关闭 deepagents 原生全量 skill 目录注入, 路由统一交给 find_skill
         assert 'skills=["/skills/"]' not in source
+        # 中间件已精简：仅保留 TimeContextMiddleware + 第三方 CodeInterpreterMiddleware
+        assert "TimeContextMiddleware" in source
+        assert "CodeInterpreterMiddleware" in source
 
     bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
     bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
@@ -76,7 +80,6 @@ def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
     assert "match_menu_skill" in da_nodes
     assert "with_data_analysis_output_guard" in da_prompt_builder
     assert "with_main_agent_tool_use_output_guard" not in da_graph
-    assert 'unmatched_policy="native"' not in da_graph
     assert "increment_iteration" not in da_graph
     # data-analysis 使用 StateGraph 节点流，支持工具执行后回到 call_model 生成答案
     assert "route_after_tools" in da_graph
@@ -99,44 +102,28 @@ def test_basic_qa_uses_rich_output_pipeline() -> None:
     assert "LegacyChartDataMiddleware()" not in source
 
     wrappers = BUSINESS_GRAPH_TOOL_WRAPPERS.read_text(encoding="utf-8")
-    # 由 ArtifactMiddleware（fenced code block 自动扫描 + create_artifact 显式工具）替代旧 RichOutputMiddleware
     assert "RichOutputMiddleware" not in wrappers
-    assert "_handle_artifact" in wrappers
+    # 工具执行组合包装器保留：绑定实例 + MCP 重试 + 异常兜底
+    assert "composed_tool_wrapper" in wrappers
+    assert "_handle_artifact" not in wrappers
     bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
     assert "composed_tool_wrapper" in bg_builder
 
 
-def test_business_graphs_use_final_output_cleanup_middleware() -> None:
-    # 每个 DeepAgents 图独立声明自己的 middleware 链 (含 FinalOutputCleanupMiddleware)
-    for graph_file in DEEP_AGENT_GRAPHS.values():
-        source = graph_file.read_text(encoding="utf-8")
-        assert "FinalOutputCleanupMiddleware" in source
-        assert "FinalOutputCleanupMiddleware()" in source
-    # StateGraph 节点流使用 finalize_output 节点替代
+def test_business_graphs_node_flow_finalize_output() -> None:
+    # 中间件已移除，节点流不再引用 ArtifactMiddleware / scan_text
+    bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
+    assert "ArtifactMiddleware" not in bg_nodes
+    assert "scan_text" not in bg_nodes
+
+    # data-analysis 图保留 finalize_output + 流式事件
     da_graph = STATE_GRAPHS["data-analysis"].read_text(encoding="utf-8")
     da_nodes = Path("src/data_analysis/nodes.py").read_text(encoding="utf-8")
     assert "finalize_output" in da_graph
     assert "_stream_cleaned_answer" not in da_nodes
-
-    bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
-    bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
-    # basic-qa / intelligent-analysis 图（business_graph）无 finalize_output 节点，
-    # 但 call_model 节点中集成了 Artifact 源码扫描与最终清洗提示词注入
-    assert "ArtifactMiddleware" in bg_nodes
-    assert "scan_text" in bg_nodes
-    # data-analysis 图仍然保留 finalize_output + 流式事件
     assert "final_output_delta" in da_nodes
     assert "final_output_done" in da_nodes
 
-
-def test_final_output_cleanup_runs_before_expand_question_when_present() -> None:
-    # 每个 DeepAgents 图独立维护中间件顺序: ExpandQuestionMiddleware 必须在 FinalOutputCleanupMiddleware 之前
-    for graph_file in DEEP_AGENT_GRAPHS.values():
-        source = graph_file.read_text(encoding="utf-8")
-        cleanup_index = source.find("FinalOutputCleanupMiddleware()")
-        expand_index = source.find("ExpandQuestionMiddleware()")
-        if expand_index != -1 and cleanup_index != -1:
-            assert expand_index < cleanup_index
 
 def test_mcp_backed_graphs_do_not_initialize_mcp_at_import() -> None:
     for graph_name in ("basic-qa", "intelligent-analysis"):

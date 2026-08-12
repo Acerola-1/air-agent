@@ -10,18 +10,8 @@ from deepagents.backends import CompositeBackend, FilesystemBackend, StateBacken
 from langchain.agents.middleware.types import AgentMiddleware
 from langchain_quickjs import CodeInterpreterMiddleware
 
-from common.middleware import (
-    ExpandQuestionMiddleware,
-    FinalOutputCleanupMiddleware,
-    GlobalExceptionMiddleware,
-    MCPResilienceMiddleware,
-    ArtifactMiddleware,
-    SkillToolFilterMiddleware,
-    SkillToolRegistryMiddleware,
-    TimeContextMiddleware,
-    ToolProgressMiddleware,
-)
-from common.middleware.mode_routing_middleware import ModeRoutingMiddleware
+from common.mcp_client import ensure_mcp_tools_sync, get_business_mcp_tools
+from common.middleware import TimeContextMiddleware
 from common.models import ModelRegistry
 from common.prompts import with_main_agent_tool_use_output_guard
 from common.skill_discovery import create_find_skill_tool
@@ -41,50 +31,24 @@ SYSTEM_PROMPT = """
 SKILLS_DIR = Path(__file__).parent / "skills"
 
 
-def _business_tool_names(tools: list[Any]) -> list[str]:
+def _build_middleware() -> list[AgentMiddleware[Any, Any, Any]]:
     return [
-        name for tool in tools if isinstance(name := getattr(tool, "name", None), str)
-    ]
-
-
-def _mcp_tool_names() -> list[str]:
-    import common.mcp_client as mcp_client
-
-    return [
-        *mcp_client.ipp_mcp_tools_name,
-        *mcp_client.datacenter_mcp_tools_name,
-    ]
-
-
-def _build_middleware(
-    business_tools: list[Any],
-) -> list[AgentMiddleware[Any, Any, Any]]:
-    return [
-        SkillToolRegistryMiddleware(business_tools),
-        ToolProgressMiddleware(),
-        GlobalExceptionMiddleware(),
-        MCPResilienceMiddleware(_mcp_tool_names()),
         TimeContextMiddleware(),
-        ArtifactMiddleware(),
-        ExpandQuestionMiddleware(),
-        FinalOutputCleanupMiddleware(),
-        ModeRoutingMiddleware(),
         CodeInterpreterMiddleware(ptc=[]),
-        SkillToolFilterMiddleware(
-            business_tool_names=_business_tool_names(business_tools),
-            unmatched_policy="native",
-        ),
     ]
 
 
-_business_tools: list[Any] = []
 find_skill = create_find_skill_tool(SkillSemanticRouter(SKILLS_DIR))
+
+# MCP 工具懒加载：datacenter MCP 服务不可达时自动降级为空列表，图照常编译
+ensure_mcp_tools_sync()
+_mcp_tools = get_business_mcp_tools()
 
 graph = create_deep_agent(
     model=ModelRegistry.deepseek_v4_flash,
-    tools=[find_skill],
+    tools=[find_skill, *_mcp_tools],
     system_prompt=with_main_agent_tool_use_output_guard(SYSTEM_PROMPT),
-    middleware=_build_middleware(_business_tools),
+    middleware=_build_middleware(),
     backend=CompositeBackend(
         default=StateBackend(),
         routes={

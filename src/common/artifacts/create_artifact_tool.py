@@ -1,12 +1,12 @@
 """create_artifact 工具：Agent 自主生成 Artifact 画布的显式入口.
 
 当 Agent 需要生成独立画布内容（报表、页面、文档等）时，
-可显式调用本工具，系统通过 stream_writer 将 Artifact 事件
-直接推送到前端画布容器，同时将 ToolMessage 压缩为简短摘要，
-避免 HTML / Markdown / SVG 大段源码重新进入 LLM 上下文。
+可显式调用本工具，返回结构化 Artifact payload（含完整内容），
+由调用方消费；同时避免 HTML / Markdown / SVG 大段源码
+重新进入 LLM 上下文。
 
-如果 Agent 不方便调工具，亦可直接在回答文本中写 fenced code block，
-ArtifactMiddleware 会自动识别并推送事件（走 `auto_detected` 路径）。
+（注：原先由中间件拦截层负责的 stream_writer 事件推送与
+fenced code block 自动识别能力已随中间件移除，待重新设计。）
 """
 
 from __future__ import annotations
@@ -73,10 +73,8 @@ def create_artifact_tool_fn(
 ) -> dict[str, Any]:
     """create_artifact 工具执行函数.
 
-    仅做参数校验并返回结构化结果（含 artifact_ref + artifact_id）。
-    Artifact 事件的 stream_writer 推送由 ArtifactMiddleware._handle_create_artifact_result
-    在工具调用拦截层统一完成（通过 request.runtime.stream_writer），
-    与项目其他工具的 writer 获取方式保持一致。
+    仅做参数校验并返回结构化结果（含 artifact_ref + artifact_id），
+    供调用方消费或持久化恢复。
 
     参数:
         title: 画布标题.
@@ -86,7 +84,7 @@ def create_artifact_tool_fn(
 
     返回:
         含 artifact_ref（完整 payload + artifact_id）的结构化结果，
-        供拦截层提取推送事件，同时保留 artifact_ref 到 ToolMessage
+        供调用方消费，同时保留 artifact_ref 到 ToolMessage
         作为 checkpointer 持久化后的恢复依据。
     """
     # 1) 参数校验
@@ -137,7 +135,7 @@ def create_artifact_tool_fn(
         "success": True,
         "artifact_id": artifact_id,
         "content_sha256": content_sha256,
-        # artifact_ref 是拦截层推送前端事件 & checkpointer 恢复的双重依据
+        # artifact_ref 是持久化恢复与前端消费的双重依据
         "artifact": artifact_ref,
         "artifact_ref": artifact_ref,
         "data": {"summary": summary, "artifact_id": artifact_id},

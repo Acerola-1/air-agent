@@ -32,11 +32,10 @@ def _ok_message(name: str) -> ToolMessage:
 
 
 async def _run(request: SimpleNamespace, handler: Any) -> Any:
-    """在 MCP 名单/退避/富输出均被隔离的环境下执行包装器."""
+    """在 MCP 名单/退避均被隔离的环境下执行包装器."""
     with (
         patch.object(tw, "get_mcp_tool_names", return_value=["mcp_tool_a"]),
         patch.object(tw.asyncio, "sleep", new=AsyncMock()) as sleep_mock,
-        patch.object(tw, "_handle_artifact", side_effect=lambda _r, res: res),
     ):
         result = await tw.composed_tool_wrapper(request, handler)
     return result, sleep_mock
