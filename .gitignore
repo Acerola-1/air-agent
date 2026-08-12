@@ -348,3 +348,7 @@ data/
 db/*.db
 db/*.db-shm
 db/*.db-wal
+# ZCode 会话计划目录
+.zcode/
+# TypeScript 增量编译产物
+*.tsbuildinfo

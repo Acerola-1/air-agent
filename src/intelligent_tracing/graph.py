@@ -10,6 +10,7 @@ from deepagents.backends import CompositeBackend, FilesystemBackend, StateBacken
 from langchain.agents.middleware.types import AgentMiddleware
 from langchain_quickjs import CodeInterpreterMiddleware
 
+from common.artifacts.create_artifact_tool import build_create_artifact_tool
 from common.mcp_client import ensure_mcp_tools_sync, get_business_mcp_tools
 from common.middleware import TimeContextMiddleware
 from common.models import ModelRegistry
@@ -25,6 +26,8 @@ SYSTEM_PROMPT = """
     若返回多个候选，先从候选摘要中选择最匹配的一个，必要时读取该候选的 references_path 获取完整流程，再使用披露出来的业务工具执行查询与回答。
     如果 find_skill 未命中，则回到 DeepAgents 原生能力：根据 find_skill 返回结果、工具说明和问题语义自行判断，
     可按需读取相关 Skill 的 references 规则并选择工具，但数据必须来自真实工具的有效数据，不得捏造。
+    当需要以图表、完整报告或独立页面形式展示结果时，调用 create_artifact 在画布中输出
+    （content_type 支持 html/markdown/svg/text），调用后画布会自动展示给用户，回答中无需再重复输出源码或代码块。
 
 """
 
@@ -46,7 +49,7 @@ _mcp_tools = get_business_mcp_tools()
 
 graph = create_deep_agent(
     model=ModelRegistry.deepseek_v4_flash,
-    tools=[find_skill, *_mcp_tools],
+    tools=[find_skill, build_create_artifact_tool(), *_mcp_tools],
     system_prompt=with_main_agent_tool_use_output_guard(SYSTEM_PROMPT),
     middleware=_build_middleware(),
     backend=CompositeBackend(
