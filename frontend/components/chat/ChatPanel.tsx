@@ -11,7 +11,7 @@ import {
 import { ArrowUpIcon, ChevronDownIcon, SquareIcon, WrenchIcon } from "lucide-react";
 import { useChatStore, type ChatMessage } from "@/lib/chat-store";
 import { useChatMode } from "@/lib/chat-mode-store";
-import { getUserIdentity } from "@/lib/user-identity";
+import { useSessionStore } from "@/lib/session-client";
 import { Markdown } from "@/components/chat/Markdown";
 import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
@@ -229,11 +229,9 @@ function Composer({
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const canSend = text.trim().length > 0 && !disabled;
-  // 用户标识在客户端才生成（SSR 阶段为 undefined），挂载后再读避免 Hydration mismatch
-  const [userId, setUserId] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    setUserId(getUserIdentity());
-  }, []);
+  // 当前登录用户名（session-store，refreshSession 后填充）
+  const username = useSessionStore((s) => s.username);
+  const logout = useSessionStore((s) => s.logout);
 
   const submit = useCallback(() => {
     const t = text.trim();
@@ -261,9 +259,25 @@ function Composer({
         <div className="flex flex-wrap items-center gap-2 px-1 pt-0.5">
           <GraphSwitcher />
           <ModeSwitcher />
-          {/* 占位：隔离标识提示（只读信息，不参与交互） */}
-          <span className="text-muted-foreground/60 ml-auto hidden text-[11px] sm:inline">
-            用户 {shortId(userId)}
+          {/* 登录用户徽标 + 退出登录 */}
+          <span className="text-muted-foreground/60 ml-auto hidden items-center gap-2 text-[11px] sm:inline-flex">
+            {username ? (
+              <>
+                <span className="bg-muted text-foreground rounded-full px-2 py-0.5 font-medium">
+                  {username}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="hover:text-foreground underline underline-offset-2"
+                  title="退出登录"
+                >
+                  退出
+                </button>
+              </>
+            ) : (
+              "登录中…"
+            )}
           </span>
         </div>
         <textarea
@@ -302,9 +316,4 @@ function Composer({
       </div>
     </form>
   );
-}
-
-function shortId(id: string | undefined): string {
-  if (!id) return "匿名";
-  return id.slice(0, 8);
 }

@@ -1,12 +1,8 @@
-# New LangGraph Project
+# Air Agent — 空气质量智能助手
 
-[![Standard API](https://img.shields.io/badge/langgraph--api-0.12.0-00324d.svg)](https://github.com/langchain-ai/langgraph)
-[![Integration Tests](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/langchain-ai/new-langgraph-project/actions/workflows/integration-tests.yml)
-[![Open in - LangGraph Studio](https://img.shields.io/badge/Open_in-LangGraph_Studio-00324d.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4NS4zMzMiIGhlaWdodD0iODUuMzMzIiB2ZXJzaW9uPSIxLjAiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTTEzIDcuOGMtNi4zIDMuMS03LjEgNi4zLTYuOCAyNS43LjQgMjQuNi4zIDI0LjUgMjUuOSAyNC41QzU3LjUgNTggNTggNTcuNSA1OCAzMi4zIDU4IDcuMyA1Ni43IDYgMzIgNmMtMTIuOCAwLTE2LjEuMy0xOSAxLjhtMzcuNiAxNi42YzIuOCAyLjggMy40IDQuMiAzLjQgNy42cy0uNiA0LjgtMy40IDcuNkw0Ny4yIDQzSDE2LjhsLTMuNC0zLjRjLTQuOC00LjgtNC44LTEwLjQgMC0xNS4ybDMuNC0zLjRoMzAuNHoiLz48cGF0aCBkPSJNMTguOSAyNS42Yy0xLjEgMS4zLTEgMS43LjQgMi41LjkuNiAxLjcgMS44IDEuNyAyLjcgMCAxIC43IDIuOCAxLjYgNC4xIDEuNCAxLjkgMS40IDIuNS4zIDMuMi0xIC42LS42LjkgMS40LjkgMS41IDAgMi43LS41IDIuNy0xIDAtLjYgMS4xLS44IDIuNi0uNGwyLjYuNy0xLjgtMi45Yy01LjktOS4zLTkuNC0xMi4zLTExLjUtOS44TTM5IDI2YzAgMS4xLS45IDIuNS0yIDMuMi0yLjQgMS41LTIuNiAzLjQtLjUgNC4yLjguMyAyIDEuNyAyLjUgMy4xLjYgMS41IDEuNCAyLjMgMiAyIDEuNS0uOSAxLjItMy41LS40LTMuNS0yLjEgMC0yLjgtMi44LS44LTMuMyAxLjYtLjQgMS42LS41IDAtLjYtMS4xLS4xLTEuNS0uNi0xLjItMS42LjctMS43IDMuMy0yLjEgMy41LS41LjEuNS4yIDEuNi4zIDIuMiAwIC43LjkgMS40IDEuOSAxLjYgMi4xLjQgMi4zLTIuMy4yLTMuMi0uOC0uMy0yLTEuNy0yLjUtMy4xLTEuMS0zLTMtMy4zLTMtLjUiLz48L3N2Zz4=)](https://langgraph-studio.vercel.app/templates/open?githubUrl=https://github.com/langchain-ai/new-langgraph-project)
+LangGraph API（标准化 REST）+ Next.js 原生前端。6 个公开图，对话持久化到 PostgreSQL 容器。
 
 ## 6 个业务图
-
-本项目通过 langgraph-api 标准化协议（`langgraph dev` 模式）暴露 6 个业务图：
 
 | Graph ID | 类型 | 用途 |
 |---|---|---|
@@ -17,129 +13,90 @@
 | `deep-research` | DeepAgents | 深度研究 |
 | `intelligent-tracing` | DeepAgents | 智能污染溯源 |
 
-## 本地启动（langgraph-api 标准化模式）
+## 架构
 
+```
+浏览器 (:3000, Next.js 原生前端)
+   └─ /api/* 同源代理 (Next Route Handler, 注入 x-api-key)
+        └─ langgraph-api (:2024, 官方镜像容器)
+             ├─ PostgreSQL 容器 (命名卷 pgdata)  ← 线程/消息/画布持久化
+             ├─ Redis 容器 (迁移锁 + 队列)
+             └─ 本地代码挂载 ./src:/deps/air_agent/src  ← 改代码重启即生效
+```
+
+- **后端**: 官方 `langchain/langgraph-api:3.13` 镜像 + 项目代码（Dockerfile 构建）。
+- **前端**: Next.js 原生 LangGraph SDK（无 assistant-ui 线程层），线程列表按 `metadata.{graph_id, user_id}` 过滤，对话走 `runs.stream`（SSE）。
+- **存储**: PostgreSQL 容器（`-p` 端口转发在 Apple Container 1.2.2 已验证可用）。本地 `db/checkpoints.db`（SQLite）已弃用。
+
+## 本地开发（容器化模式）
+
+**前置条件**：
+- Apple Container 系统已启动：`container system start`
+- `.env` 存在（`cp .env.example .env` 后填入真实配置，含 `AUTH_SECRET`、`MCP_SERVER_URL`、各 API Key）
+
+**一键启动**：
 ```bash
-# 一键启动 langgraph-api (2024) + 静态前端 (8125)
 ./run-local.sh
-
-# 浏览器访问
-open http://localhost:8125
+# 浏览器打开 http://localhost:3000
 ```
 
-前置条件：
-- `.env` 存在（`cp .env.example .env` 后填入真实配置）
-- 依赖已同步：`uv sync --all-extras`（pyproject.toml + uv.lock 为依赖真相源）
+`run-local.sh` 做两件事：
+1. `container-compose up -d --profile prod` —— 拉起 postgres + redis + langgraph-api 容器（:2024）
+2. 后台启动 Next.js 前端（:3000）
 
-停止：
+**改后端代码后更新（无需重建镜像）**：
 ```bash
-./stop-local.sh
+container-compose up -d --profile prod
+# 或直接重跑 ./run-local.sh
+```
+本地 `src/` 已挂载进容器（`./src:/deps/air_agent/src`），重启容器即加载新代码。
+
+**停止/管理**：
+```bash
+container-compose down          # 停容器（pgdata 卷保留）
+container logs -f air-agent-langgraph-api
 ```
 
-`run-local.sh` 在后台启动两个进程：
-- `langgraph dev --config ./langgraph.json --no-browser --port 2024` —— 平台层
-- `scripts/serve_static.py --port 8125` —— 静态前端 + CORS
+**注意**：容器为 `profiles: [prod]` 门控；`container restart` 插件不可用，统一用 `container-compose up -d --profile prod` 重启。旧 venv `langgraph dev`（内存持久化）已废弃。
 
-`run.sh`（旧自建 FastAPI）已废弃。
+## 登录系统（简易本地账号密码）
 
-## Chainlit 多图聊天 UI
+- 手写 HMAC session cookie（`frontend/lib/session-token.ts`）+ bcrypt 账号存储（`frontend/lib/user-store.ts`，`data/users.json`，gitignored）。
+- 未登录访问任意页面 → middleware 重定向 `/login`；注册/登录后前端把账号 id 写入 `localStorage.air_agent_user_id`，线程 `metadata.user_id` 按账号隔离历史。
+- 密钥：`.env` 的 `AUTH_SECRET`（必填，随机长串）。
 
-无需写前端, 通过按钮在 6 个图之间切换的纯 Python 聊天界面:
+## 用户隔离与持久化
+
+- 线程创建：`threads.create({ threadId, metadata: { graph_id, user_id, title } })`（容器版只认 metadata，顶层 graphId 被忽略）。
+- 历史加载：`threads.search({ metadata: { graph_id, user_id } })` → 每个浏览器/账号只看到自己的线程。
+- 画布（HTML 报告）：`create_artifact` 工具把 `artifact_ref` 写入 ToolMessage，随线程由 PG checkpointer 持久化；前端按 threadId 隔离恢复。
+
+## 容器化部署（staging）
 
 ```bash
-# 依赖已含 chainlit(ui extra), 直接启动
-.venv/bin/chainlit run chainlit_app.py --port 8000
+container build -t air-agent/langgraph-api:latest .   # 需重新构建时（改依赖/新增文件）
+container-compose up -d --profile prod
 ```
-
-浏览器打开 http://localhost:8000, 点击顶部消息里的按钮即可切换图(切换后开启新会话)。
-后端地址默认 `http://localhost:2024`, 可用环境变量 `LANGGRAPH_API_URL` 覆盖。
 
 ## 端到端冒烟
 
 ```bash
-# 启动后:
 curl -s -X POST http://localhost:2024/assistants/search \
   -H "Content-Type: application/json" -d '{}' \
   | python3 -c "import json,sys; print(len(json.load(sys.stdin)), 'assistants')"
 # 应输出: 6 assistants
 ```
 
-This template demonstrates a simple chatbot implemented using [LangGraph](https://github.com/langchain-ai/langgraph), designed for [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio). The chatbot maintains persistent chat memory, allowing for coherent conversations across multiple interactions.
-
-![Graph view in LangGraph studio UI](./static/studio_ui.png)
-
-The core logic, defined in `src/agent/graph.py`, showcases a straightforward chatbot that responds to user queries while maintaining context from previous messages.
-
-## What it does
-
-The simple chatbot:
-
-1. Takes a user **message** as input
-2. Maintains a history of the conversation
-3. Generates a response based on the current message and conversation history
-4. Updates the conversation history with the new interaction
-
-This template provides a foundation that can be easily customized and extended to create more complex conversational agents.
-
-## Getting Started
-
-Assuming you have already [installed LangGraph Studio](https://github.com/langchain-ai/langgraph-studio?tab=readme-ov-file#download), to set up:
-
-1. Create a `.env` file.
+## Chainlit 多图聊天 UI（备用）
 
 ```bash
-cp .env.example .env
+.venv/bin/chainlit run chainlit_app.py --port 8000
 ```
+后端地址默认 `http://localhost:2024`，可用 `LANGGRAPH_API_URL` 覆盖。
 
-2. Define required API keys in your `.env` file.
+## 测试
 
-<!--
-Setup instruction auto-generated by `langgraph template lock`. DO NOT EDIT MANUALLY.
--->
-
-
-
-<!--
-End setup instructions
--->
-
-3. Customize the code as needed.
-4. Open the folder in LangGraph Studio!
-
-## How to customize
-
-1. **Modify runtime configuration**: Runtime configurable parameters are defined in [configuration.py](./src/agent/config/configuration.py). You can update these via configuration in the studio.
-2. **Select a different model**: We default to Anthropic's Claude 3 Sonnet. You can select a compatible chat model using `provider/model-name` via configuration. Example: `openai/gpt-4-turbo-preview`.
-3. **Extend the graph**: The core logic of the chatbot is defined in [graph.py](./src/agent/graph.py). You can modify this file to add new nodes, edges, or change the flow of the conversation.
-
-You can also quickly extend this template by:
-
-- Adding custom tools or functions to enhance the chatbot's capabilities.
-- Implementing additional logic for handling specific types of user queries or tasks.
-- Integrating external APIs or databases to provide more dynamic responses.
-
-## Development
-
-While iterating on your graph, you can edit past state and rerun your app from previous states to debug specific nodes. Local changes will be automatically applied via hot reload. Try experimenting with:
-
-- Modifying the system prompt to give your chatbot a unique personality.
-- Adding new nodes to the graph for more complex conversation flows.
-- Implementing conditional logic to handle different types of user inputs.
-
-Follow-up requests will be appended to the same thread. You can create an entirely new thread, clearing previous history, using the `+` button in the top right.
-
-For more advanced features and examples, refer to the [LangGraph documentation](https://github.com/langchain-ai/langgraph). These resources can help you adapt this template for your specific use case and build more sophisticated conversational agents.
-
-LangGraph Studio also integrates with [LangSmith](https://smith.langchain.com/) for more in-depth tracing and collaboration with teammates, allowing you to analyze and optimize your chatbot's performance.
-
-<!--
-Configuration auto-generated by `langgraph template lock`. DO NOT EDIT MANUALLY.
-{
-  "config_schemas": {
-    "agent": {
-      "type": "object",
-      "properties": {}
-    }
-  }
-}
--->
+```bash
+make test                 # 单元测试
+make integration_tests    # 集成测试
+```

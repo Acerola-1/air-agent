@@ -90,6 +90,10 @@ services:
       DASHSCOPE_API_KEY:    "${DASHSCOPE_API_KEY}"
     env_file:
       - .env
+    volumes:
+      # 本地代码挂载（镜像内 editable install，Python 直接读 /deps/air_agent/src）：
+      # 改本地 src/ 后 `container restart air-agent-langgraph-api` 即生效，无需重建镜像
+      - ./src:/deps/air_agent/src
     ports:
       - "2024:8000"
     profiles:

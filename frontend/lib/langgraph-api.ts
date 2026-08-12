@@ -43,21 +43,20 @@ export async function searchThreads(
   return Array.isArray(res) ? res : (res as { threads?: LgThread[] }).threads ?? [];
 }
 
-/** 创建线程并写入 graph_id + user_id（+ 可选 title），返回新 threadId */
+/** 创建线程并写入 graph_id + user_id（+ 可选 title），返回新 threadId.
+ *
+ *  注意：graph_id 必须放 metadata（容器版 langgraph-api 忽略顶层 graphId 参数，
+ *  只认 metadata.graph_id；venv langgraph dev 0.12.3 两者都接受，统一用 metadata 兼容）。 */
 export async function createThread(
   graphId: string,
   userId?: string,
   title?: string,
 ): Promise<string> {
   const threadId = generateUuidV7();
-  const metadata: Record<string, unknown> = {};
+  const metadata: Record<string, unknown> = { graph_id: graphId };
   if (userId) metadata.user_id = userId;
   if (title) metadata.title = title;
-  await apiClient().threads.create({
-    threadId,
-    graphId,
-    ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
-  });
+  await apiClient().threads.create({ threadId, metadata });
   return threadId;
 }
 

@@ -343,3 +343,8 @@ frontend/.env*.local
 .vercel/
 */.vercel/
 .trae
+# 本地账号数据（登录系统，勿提交）
+data/
+db/*.db
+db/*.db-shm
+db/*.db-wal
