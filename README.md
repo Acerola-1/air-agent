@@ -87,13 +87,6 @@ curl -s -X POST http://localhost:2024/assistants/search \
 # 应输出: 6 assistants
 ```
 
-## Chainlit 多图聊天 UI（备用）
-
-```bash
-.venv/bin/chainlit run chainlit_app.py --port 8000
-```
-后端地址默认 `http://localhost:2024`，可用 `LANGGRAPH_API_URL` 覆盖。
-
 ## 测试
 
 ```bash

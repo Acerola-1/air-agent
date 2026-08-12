@@ -39,10 +39,6 @@ dev = [
     "pytest-timeout>=2.4.0,<3.0",
     "ruff>=0.9.10,<1.0",
 ]
-ui = [
-    "chainlit>=2.11,<3.0",
-    "langgraph-sdk>=0.4.2,<1.0",
-]
 
 [tool.uv]
 # opentelemetry 全家桶锁定 1.37.0: 与官方 langchain/langgraph-api 镜像自带版本对齐,
@@ -55,12 +51,6 @@ constraint-dependencies = [
     "opentelemetry-exporter-otlp-proto-grpc==1.37.0",
     "opentelemetry-exporter-otlp-proto-http==1.37.0",
 ]
-
-[tool.mypy]
-[[tool.mypy.overrides]]
-# chainlit 的 user_session/Message 等 API 无类型标注, 属动态框架边界, 豁免这两类错误码
-module = "chainlit_app"
-disable_error_code = ["no-untyped-call", "no-any-return"]
 
 [build-system]
 requires = ["setuptools>=73.0.0", "wheel"]
