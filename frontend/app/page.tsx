@@ -3,6 +3,7 @@
 import { Thread } from "@/components/assistant-ui/thread";
 import { ThreadList } from "@/components/assistant-ui/thread-list";
 import { GraphSwitcher } from "@/components/assistant-ui/graph-switcher";
+import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { useEffect, useState } from "react";
 
 /** useIsMounted Hook: 客户端挂载后返回 true, 否则 false
@@ -51,7 +52,7 @@ function Skeleton() {
         </aside>
         <main className="flex flex-1 flex-col">
           <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-            Loading...
+            加载中…
           </div>
           <div className="h-20 border-t bg-muted/10" />
         </main>
@@ -81,7 +82,8 @@ export default function Home() {
             </span>
           </div>
         </div>
-        <div className="shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <ModeSwitcher />
           <GraphSwitcher />
         </div>
       </header>

@@ -35,13 +35,13 @@ set +a
 
 # 检查 venv
 if [ ! -x .venv/bin/python ]; then
-  echo "[ERROR] .venv/bin/python 不存在,请先运行: uv venv --python 3.13 .venv && uv pip install -r requirements.lock.txt" >&2
+  echo "[ERROR] .venv/bin/python 不存在,请先运行: uv sync --all-extras" >&2
   exit 1
 fi
 
 # 检查关键依赖
 if ! .venv/bin/python -c "import langgraph_api, langgraph_cli, langgraph_runtime_inmem; from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver" 2>/dev/null; then
-  echo "[ERROR] 关键依赖缺失, 请运行: uv pip install -r requirements.lock.txt" >&2
+  echo "[ERROR] 关键依赖缺失, 请运行: uv sync --all-extras" >&2
   exit 1
 fi
 

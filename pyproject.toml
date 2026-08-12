@@ -9,17 +9,57 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.13"
 dependencies = [
-    "fastapi>=0.135",
-    "langgraph-checkpoint-sqlite>=3.1",
-    "uvicorn[standard]>=0.44",
+    "deepagents>=0.7.5,<1.0",
+    "fastapi>=0.135,<1.0",
+    "httpx>=0.28.1,<1.0",
+    "langchain>=1.3.14,<2.0",
+    "langchain-core>=1.5.3,<2.0",
+    "langchain-mcp-adapters>=0.3.0,<1.0",
+    "langchain-openai>=1.3.2,<2.0",
+    "langchain-quickjs>=0.3.5,<1.0",
+    "langgraph>=1.2.10,<2.0",
+    "langgraph-checkpoint-sqlite>=3.1.1,<4.0",
+    "loguru>=0.7.3,<1.0",
+    "openai>=2.38.0,<3.0",
+    "pydantic>=2.13.4,<3.0",
+    "pyyaml>=6.0.3,<7.0",
+    "semantic-router>=0.1.15,<1.0",
+    "uvicorn[standard]>=0.44,<1.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "basedpyright>=1.39.3",
-    "mypy>=1.11.1",
-    "ruff>=0.6.1",
+    "basedpyright>=1.39.3,<2.0",
+    "langgraph-cli[inmem]>=0.4.31,<1.0",
+    "mypy>=1.20.0,<2.0",
+    "numpy>=2.4.6,<3.0",
+    "pandas>=3.0.2,<4.0",
+    "pytest>=9.0.2,<10.0",
+    "pytest-timeout>=2.4.0,<3.0",
+    "ruff>=0.9.10,<1.0",
 ]
+ui = [
+    "chainlit>=2.11,<3.0",
+    "langgraph-sdk>=0.4.2,<1.0",
+]
+
+[tool.uv]
+# opentelemetry 全家桶锁定 1.37.0: 与官方 langchain/langgraph-api 镜像自带版本对齐,
+# 避免容器内 uv pip install 覆盖镜像兼容版本导致 core-server 异常.
+constraint-dependencies = [
+    "opentelemetry-api==1.37.0",
+    "opentelemetry-sdk==1.37.0",
+    "opentelemetry-proto==1.37.0",
+    "opentelemetry-exporter-otlp-proto-common==1.37.0",
+    "opentelemetry-exporter-otlp-proto-grpc==1.37.0",
+    "opentelemetry-exporter-otlp-proto-http==1.37.0",
+]
+
+[tool.mypy]
+[[tool.mypy.overrides]]
+# chainlit 的 user_session/Message 等 API 无类型标注, 属动态框架边界, 豁免这两类错误码
+module = "chainlit_app"
+disable_error_code = ["no-untyped-call", "no-any-return"]
 
 [build-system]
 requires = ["setuptools>=73.0.0", "wheel"]

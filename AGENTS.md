@@ -24,14 +24,21 @@ Frontend is a Next.js 16 assistant-ui app under `frontend/`, proxying `/api/*` �
 
 ## Build, Test, and Development Commands
 
-- `pip install -e ".[dev]"`: install the package and development tools from `pyproject.toml`.
+依赖管理采用 uv 原生工作流：`pyproject.toml`（直接依赖 + `dev`/`ui` extras + `[tool.uv]` 约束）是唯一声明源，`uv.lock`（已入库）是唯一锁文件。
+
+- `uv sync --all-extras`: 按 `uv.lock` 创建/同步 `.venv`（含 dev + ui extras），日常开发安装用这个。
+- `uv sync --frozen --no-dev`: 只装运行时依赖（CI/容器语义），不触碰 `uv.lock`。
+- `uv add <pkg>` / `uv remove <pkg>`: 增删直接依赖并自动更新 `uv.lock`。
+- `pip install -e ".[dev]"`: 兼容回退（等效于不带锁的安装），不作为主路径。
 - `make format`: run Ruff formatting and import fixes over the repository.
 - `make lint`: run Ruff checks, Ruff format diff, import checks, and strict mypy.
 - `make test`: run unit tests from `tests/unit_tests/` by default.
 - `make test TEST_FILE=tests/unit_tests/test_example.py`: run a specific test file or directory.
 - `make integration_tests`: run integration tests from `tests/integration_tests/`.
 
-For LangGraph Studio/local graph execution, keep `.env` populated and use the graph names defined in `langgraph.json`: `agent` and `data_analysis`.
+注意：`requirements.lock.txt` 已废弃删除；容器构建所需清单在 Dockerfile 内用 `uv export --frozen --no-dev` 即时生成。`opentelemetry-*` 全家桶在 `[tool.uv] constraint-dependencies` 中被钉在 1.37.0，与官方 `langchain/langgraph-api` 镜像保持兼容，不要随意改动。
+
+For LangGraph Studio/local graph execution, keep `.env` populated and use the graph ids defined in `langgraph.json` (e.g. `basic-qa`, `data-analysis`).
 
 ## Local Verification Preferences
 
@@ -63,7 +70,7 @@ Pull requests should include a short purpose statement, key implementation notes
 
 ## Security & Configuration Tips
 
-Do not commit secrets from `.env`, logs, or local cache directories. Keep real local values in `.env`; track configuration shape and non-secret defaults in `.env.example` so environment changes are visible in git. Treat `requirements.lock.txt`, `uv.lock`, `langgraph.json`, and Docker files as shared environment contracts; update them deliberately and mention related runtime impacts in the PR.
+Do not commit secrets from `.env`, logs, or local cache directories. Keep real local values in `.env`; track configuration shape and non-secret defaults in `.env.example` so environment changes are visible in git. Treat `uv.lock`, `pyproject.toml`, `langgraph.json`, and Docker files as shared environment contracts; update them deliberately and mention related runtime impacts in the PR.
 
 ## 各因子污染等级说明
 
@@ -155,4 +162,4 @@ PM2.5 旧边界（日均/小时）：
   - `redis` service (7-alpine, healthcheck via `redis-cli ping`). **Always started by default** — 官方 langgraph-api 镜像的 migration lock 硬依赖 Redis。
   - `langgraph-api` service (基于官方 `langchain/langgraph-api:3.13` 镜像 + 项目代码, depends_on postgres+redis `condition: service_healthy`, env_file `.env`, port 2024→8000) — **gated behind `profiles: [prod]`**。镜像需手动构建：`container build -t air-agent/langgraph-api:latest .`（compose 的 `build:` 段有 builder 目录权限 bug，手动 build 更稳定）。
   - So: **Local dev flow = `container-compose up -d` (PG+Redis start) + `run-local.sh` venv frontend+langgraph**. Full-container staging flow = `container build -t air-agent/langgraph-api:latest . && container-compose up -d --profile prod`.
-  - **官方镜像注意事项**：`langchain/langgraph-api:3.13` 内置 Go core-server + Python data-plane，监听 **8000** 端口（非 2024）；migration lock 无条件依赖 Redis（`FF_USE_REDIS_QUEUE=false` 也不能绕过）；PG URI 必须用 `postgresql://` scheme（不支持 `postgresql+psycopg://`）。Dockerfile 由 `langgraph dockerfile` 生成，用 uv + 国内镜像源安装 `requirements.lock.txt`。`pyproject.toml` 用 `[tool.setuptools.packages.find]` 自动发现包（`where = ["src"]`），子包需有 `__init__.py`。
+  - **官方镜像注意事项**：`langchain/langgraph-api:3.13` 内置 Go core-server + Python data-plane，监听 **8000** 端口（非 2024）；migration lock 无条件依赖 Redis（`FF_USE_REDIS_QUEUE=false` 也不能绕过）；PG URI 必须用 `postgresql://` scheme（不支持 `postgresql+psycopg://`）。Dockerfile 由 `langgraph dockerfile` 生成，用 uv 按 `pyproject.toml + uv.lock` 安装：构建期先 `uv export --frozen --no-dev` 生成清单再 `uv pip install -r`（不再维护 `requirements.lock.txt`）。`pyproject.toml` 用 `[tool.setuptools.packages.find]` 自动发现包（`where = ["src"]`），子包需有 `__init__.py`。

@@ -36,6 +36,7 @@ import {
   SuggestionPrimitive,
   ThreadPrimitive,
   type ToolCallMessagePartComponent,
+  useAui,
   useAuiState,
 } from "@assistant-ui/react";
 import {
@@ -52,9 +53,11 @@ import {
   RefreshCwIcon,
   SquareIcon,
 } from "lucide-react";
+import { useChatMode } from "@/lib/chat-mode-store";
 import {
   createContext,
   useContext,
+  useEffect,
   type ComponentType,
   type FC,
   type PropsWithChildren,
@@ -180,7 +183,7 @@ const ThreadScrollToBottom: FC = () => {
   return (
     <ThreadPrimitive.ScrollToBottom asChild>
       <TooltipIconButton
-        tooltip="Scroll to bottom"
+        tooltip="回到底部"
         variant="outline"
         className="aui-thread-scroll-to-bottom dark:border-border dark:bg-background dark:hover:bg-accent absolute -top-12 z-10 self-center rounded-full p-4 disabled:invisible"
       >
@@ -194,7 +197,7 @@ const ThreadWelcome: FC = () => {
   return (
     <div className="aui-thread-welcome-root mb-6 flex flex-col items-center px-4 text-center">
       <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-2xl font-semibold duration-200">
-        How can I help you today?
+        今天想了解什么空气质量问题？
       </h1>
     </div>
   );
@@ -227,6 +230,15 @@ const ThreadSuggestionItem: FC = () => {
 };
 
 const Composer: FC = () => {
+  const chatMode = useChatMode();
+  const aui = useAui();
+
+  // 常驻模式: 把快速/专家选择挂到 composer 的 runConfig 上,
+  // 发送时由 useStreamRuntime 转成 config.configurable.chat_mode 传给后端.
+  useEffect(() => {
+    aui.composer.setRunConfig({ custom: { chat_mode: chatMode } });
+  }, [chatMode, aui]);
+
   return (
     <ComposerPrimitive.Root className="aui-composer-root relative flex w-full flex-col">
       <ComposerPrimitive.AttachmentDropzone asChild>
@@ -236,12 +248,12 @@ const Composer: FC = () => {
         >
           <ComposerAttachments />
           <ComposerPrimitive.Input
-            placeholder="Send a message..."
+            placeholder="输入消息…"
             className="aui-composer-input caret-primary placeholder:text-muted-foreground/80 max-h-32 min-h-10 w-full resize-none bg-transparent px-2.5 py-1 text-base outline-none"
             rows={1}
             autoFocus
             enterKeyHint="send"
-            aria-label="Message input"
+            aria-label="消息输入框"
           />
           <ComposerAction />
         </div>
@@ -259,13 +271,13 @@ const ComposerAction: FC = () => {
           <AuiIf condition={(s) => s.composer.dictation == null}>
             <ComposerPrimitive.Dictate asChild>
               <TooltipIconButton
-                tooltip="Voice input"
+                tooltip="语音输入"
                 side="bottom"
                 type="button"
                 variant="ghost"
                 size="icon"
                 className="aui-composer-dictate size-7 rounded-full"
-                aria-label="Start voice input"
+                aria-label="开始语音输入"
               >
                 <MicIcon className="aui-composer-dictate-icon size-4" />
               </TooltipIconButton>
@@ -274,13 +286,13 @@ const ComposerAction: FC = () => {
           <AuiIf condition={(s) => s.composer.dictation != null}>
             <ComposerPrimitive.StopDictation asChild>
               <TooltipIconButton
-                tooltip="Stop dictation"
+                tooltip="停止语音"
                 side="bottom"
                 type="button"
                 variant="ghost"
                 size="icon"
                 className="aui-composer-stop-dictation text-destructive size-7 rounded-full"
-                aria-label="Stop voice input"
+                aria-label="停止语音输入"
               >
                 <SquareIcon className="aui-composer-stop-dictation-icon size-3.5 animate-pulse fill-current" />
               </TooltipIconButton>
@@ -290,13 +302,13 @@ const ComposerAction: FC = () => {
         <AuiIf condition={(s) => !s.thread.isRunning}>
           <ComposerPrimitive.Send asChild>
             <TooltipIconButton
-              tooltip="Send message"
+              tooltip="发送消息"
               side="bottom"
               type="button"
               variant="default"
               size="icon"
               className="aui-composer-send size-7 rounded-full"
-              aria-label="Send message"
+              aria-label="发送消息"
             >
               <ArrowUpIcon className="aui-composer-send-icon size-4.5" />
             </TooltipIconButton>
@@ -309,7 +321,7 @@ const ComposerAction: FC = () => {
               variant="default"
               size="icon"
               className="aui-composer-cancel size-7 rounded-full"
-              aria-label="Stop generating"
+              aria-label="停止生成"
             >
               <SquareIcon className="aui-composer-cancel-icon size-3.5 fill-current" />
             </Button>
@@ -404,7 +416,7 @@ const AssistantMessage: FC = () => {
                   <span
                     data-slot="aui_assistant-message-indicator"
                     className="animate-pulse font-sans"
-                    aria-label="Assistant is working"
+                    aria-label="助手思考中"
                   >
                     {"●"}
                   </span>
@@ -436,7 +448,7 @@ const AssistantActionBar: FC = () => {
       className="aui-assistant-action-bar-root text-muted-foreground animate-in fade-in col-start-3 row-start-2 -ms-1 flex gap-1 duration-200"
     >
       <ActionBarPrimitive.Copy asChild>
-        <TooltipIconButton tooltip="Copy">
+        <TooltipIconButton tooltip="复制">
           <AuiIf condition={(s) => s.message.isCopied}>
             <CheckIcon className="animate-in zoom-in-50 fade-in duration-200 ease-out" />
           </AuiIf>
@@ -446,14 +458,14 @@ const AssistantActionBar: FC = () => {
         </TooltipIconButton>
       </ActionBarPrimitive.Copy>
       <ActionBarPrimitive.Reload asChild>
-        <TooltipIconButton tooltip="Refresh">
+        <TooltipIconButton tooltip="重新生成">
           <RefreshCwIcon />
         </TooltipIconButton>
       </ActionBarPrimitive.Reload>
       <ActionBarMorePrimitive.Root>
         <ActionBarMorePrimitive.Trigger asChild>
           <TooltipIconButton
-            tooltip="More"
+            tooltip="更多"
             className="data-[state=open]:bg-accent"
           >
             <MoreHorizontalIcon />
@@ -468,7 +480,7 @@ const AssistantActionBar: FC = () => {
           <ActionBarPrimitive.ExportMarkdown asChild>
             <ActionBarMorePrimitive.Item className="aui-action-bar-more-item hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground flex cursor-pointer items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm outline-none select-none">
               <DownloadIcon className="size-4" />
-              Export as Markdown
+              导出为 Markdown
             </ActionBarMorePrimitive.Item>
           </ActionBarPrimitive.ExportMarkdown>
         </ActionBarMorePrimitive.Content>
@@ -511,7 +523,7 @@ const UserActionBar: FC = () => {
       className="aui-user-action-bar-root flex flex-col items-end"
     >
       <ActionBarPrimitive.Edit asChild>
-        <TooltipIconButton tooltip="Edit" className="aui-user-action-edit">
+        <TooltipIconButton tooltip="编辑" className="aui-user-action-edit">
           <PencilIcon />
         </TooltipIconButton>
       </ActionBarPrimitive.Edit>
@@ -537,12 +549,12 @@ const EditComposer: FC = () => {
               size="sm"
               className="h-8 rounded-full px-3.5"
             >
-              Cancel
+              取消
             </Button>
           </ComposerPrimitive.Cancel>
           <ComposerPrimitive.Send asChild>
             <Button size="sm" className="h-8 rounded-full px-3.5">
-              Update
+              更新
             </Button>
           </ComposerPrimitive.Send>
         </div>
@@ -565,7 +577,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
       {...rest}
     >
       <BranchPickerPrimitive.Previous asChild>
-        <TooltipIconButton tooltip="Previous">
+        <TooltipIconButton tooltip="上一条">
           <ChevronLeftIcon />
         </TooltipIconButton>
       </BranchPickerPrimitive.Previous>
@@ -573,7 +585,7 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
         <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
       </span>
       <BranchPickerPrimitive.Next asChild>
-        <TooltipIconButton tooltip="Next">
+        <TooltipIconButton tooltip="下一条">
           <ChevronRightIcon />
         </TooltipIconButton>
       </BranchPickerPrimitive.Next>

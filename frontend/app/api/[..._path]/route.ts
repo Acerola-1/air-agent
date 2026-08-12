@@ -43,6 +43,8 @@ async function handleRequest(req: NextRequest, method: string) {
     headers.delete("content-encoding");
     headers.delete("content-length");
     headers.delete("transfer-encoding");
+    // SSE / 会话列表不允许被中间层缓存, 否则会拿到陈旧结果
+    headers.set("Cache-Control", "no-store");
     const corsHeaders = getCorsHeaders();
     for (const [key, value] of Object.entries(corsHeaders)) {
       headers.set(key, value);
@@ -57,11 +59,14 @@ async function handleRequest(req: NextRequest, method: string) {
     if (e instanceof Error) {
       const typedError = e as Error & { status?: number };
       return NextResponse.json(
-        { error: typedError.message },
-        { status: typedError.status ?? 500 },
+        { error: `请求 LangGraph 后端失败：${typedError.message}` },
+        { status: typedError.status ?? 502 },
       );
     }
-    return NextResponse.json({ error: "Unknown error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "请求 LangGraph 后端失败：未知错误" },
+      { status: 502 },
+    );
   }
 }
 

@@ -21,12 +21,14 @@ ENV UV_EXTRA_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
 # -- 添加项目代码 --
 ADD . /deps/air_agent
 
-# -- 安装项目锁定依赖（pyproject.toml 只声明了 3 个包，实际依赖在 requirements.lock.txt）--
+# -- 安装项目锁定依赖（pyproject.toml + uv.lock 为真相源, 由 uv export 生成安装清单）--
 RUN cd /deps/air_agent \
- && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir \
+ && PYTHONDONTWRITEBYTECODE=1 uv export --frozen --no-dev -o /tmp/requirements-export.txt \
+ && uv pip install --system --no-cache-dir \
         --index-url https://pypi.tuna.tsinghua.edu.cn/simple/ \
         --extra-index-url https://mirrors.aliyun.com/pypi/simple/ \
-        -r requirements.lock.txt
+        -r /tmp/requirements-export.txt \
+ && rm -f /tmp/requirements-export.txt
 
 # -- 安装项目本身（editable，-c /api/constraints.txt 防止覆盖 langgraph-api 版本）--
 RUN cd /deps/air_agent \

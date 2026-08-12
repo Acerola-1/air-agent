@@ -29,7 +29,7 @@ open http://localhost:8125
 
 前置条件：
 - `.env` 存在（`cp .env.example .env` 后填入真实配置）
-- `.venv` 已激活且 `uv pip install -r requirements.lock.txt` 完成
+- 依赖已同步：`uv sync --all-extras`（pyproject.toml + uv.lock 为依赖真相源）
 
 停止：
 ```bash
@@ -41,6 +41,18 @@ open http://localhost:8125
 - `scripts/serve_static.py --port 8125` —— 静态前端 + CORS
 
 `run.sh`（旧自建 FastAPI）已废弃。
+
+## Chainlit 多图聊天 UI
+
+无需写前端, 通过按钮在 6 个图之间切换的纯 Python 聊天界面:
+
+```bash
+# 依赖已含 chainlit(ui extra), 直接启动
+.venv/bin/chainlit run chainlit_app.py --port 8000
+```
+
+浏览器打开 http://localhost:8000, 点击顶部消息里的按钮即可切换图(切换后开启新会话)。
+后端地址默认 `http://localhost:2024`, 可用环境变量 `LANGGRAPH_API_URL` 覆盖。
 
 ## 端到端冒烟
 

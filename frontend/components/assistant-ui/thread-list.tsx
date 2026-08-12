@@ -65,8 +65,8 @@ export const ThreadListSearch = forwardRef<
         type="search"
         value={value}
         onChange={(event) => onValueChange(event.target.value)}
-        aria-label="Search threads"
-        placeholder="Search threads"
+        aria-label="搜索会话"
+        placeholder="搜索会话"
         className={cn("h-8 ps-8 text-sm", className)}
         {...props}
       />
@@ -115,9 +115,9 @@ const dateGroupLabel = (
   date: Date | undefined,
   startOfToday: number,
 ): string => {
-  if (!date || date.getTime() >= startOfToday) return "Today";
-  if (date.getTime() >= startOfToday - DAY_IN_MS) return "Yesterday";
-  return "Earlier";
+  if (!date || date.getTime() >= startOfToday) return "今天";
+  if (date.getTime() >= startOfToday - DAY_IN_MS) return "昨天";
+  return "更早";
 };
 
 type ThreadListGroup = { label: string; indices: number[] };
@@ -150,7 +150,7 @@ const ThreadListItemGroups: FC<{ searchQuery?: string }> = ({
       .filter(
         ({ id }) =>
           !query ||
-          (itemsById.get(id)?.title || "New Chat")
+          (itemsById.get(id)?.title || "新会话")
             .toLowerCase()
             .includes(query),
       )
@@ -267,7 +267,7 @@ const ThreadListSkeleton: FC = () => {
         <div
           key={i}
           role="status"
-          aria-label="Loading threads"
+          aria-label="会话加载中"
           data-slot="aui_thread-list-skeleton-wrapper"
           className="flex h-8 items-center px-2.5"
         >
@@ -322,7 +322,7 @@ export const ThreadListItem: FC = () => {
             data-slot="aui_thread-list-item-title"
             className="min-w-0 flex-1 truncate"
           >
-            <ThreadListItemPrimitive.Title fallback="New Chat" />
+            <ThreadListItemPrimitive.Title fallback="新会话" />
           </span>
           {isRunning && <span className="sr-only">Running</span>}
         </ThreadListItemPrimitive.Trigger>
@@ -378,7 +378,7 @@ const ThreadListItemRename: FC<{
       ref={inputRef}
       autoFocus
       data-slot="aui_thread-list-item-rename"
-      aria-label="Rename thread"
+      aria-label="重命名会话"
       value={value}
       className="h-7 min-w-0 flex-1 ps-2.5 pe-9 text-sm"
       onChange={(event) => setValue(event.target.value)}
