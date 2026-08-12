@@ -189,31 +189,28 @@ function ToolCallCard({ name, args }: { name: string; args: unknown }) {
   );
 }
 
-/** 工具结果折叠卡（tool 消息） */
+/** 工具结果折叠卡（tool 消息）：默认只显示工具名一行，点击展开完整结果 */
 function ToolResultCard({ message }: { message: ChatMessage }) {
   const [open, setOpen] = useState(false);
-  const isLong = message.content.length > 200;
-  const preview = isLong ? `${message.content.slice(0, 200)}…` : message.content;
   return (
-    <div className="border-border/60 bg-muted/30 flex items-start gap-2 rounded-md border px-2.5 py-1.5 text-xs">
-      <WrenchIcon className="text-muted-foreground mt-0.5 size-3 shrink-0" />
-      <div className="min-w-0 flex-1">
-        <span className="text-muted-foreground font-medium">{message.name ?? "工具"}</span>
-        {open ? (
-          <pre className="text-muted-foreground mt-1.5 overflow-x-auto font-mono">{message.content}</pre>
-        ) : (
-          <p className="text-muted-foreground mt-0.5 whitespace-pre-wrap break-all">{preview}</p>
-        )}
-        {isLong && (
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="text-primary mt-1 text-xs underline underline-offset-2"
-          >
-            {open ? "收起" : "展开完整结果"}
-          </button>
-        )}
-      </div>
+    <div className="border-border/60 bg-muted/30 rounded-md border text-xs">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="text-muted-foreground hover:bg-muted/50 flex w-full items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left"
+      >
+        <WrenchIcon className="size-3 shrink-0" />
+        <span className="min-w-0 flex-1 truncate font-medium">{message.name ?? "工具"}</span>
+        <ChevronDownIcon
+          className={cn("size-3 shrink-0 transition-transform", open && "rotate-180")}
+        />
+      </button>
+      {open && (
+        <pre className="text-muted-foreground border-border/50 max-h-64 overflow-auto border-t p-2.5 font-mono whitespace-pre-wrap break-all">
+          {message.content}
+        </pre>
+      )}
     </div>
   );
 }
