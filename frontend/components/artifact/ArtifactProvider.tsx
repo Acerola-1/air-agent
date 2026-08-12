@@ -5,7 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useRef,
+  useMemo,
   type PropsWithChildren,
 } from "react";
 import { createArtifactStore } from "@/store/artifact-store";
@@ -48,11 +48,12 @@ export function ArtifactProvider({
   children,
   threadId,
 }: PropsWithChildren<{ threadId?: string }>) {
-  const storeRef = useRef<ArtifactUseBoundStore | null>(null);
-  if (!storeRef.current) {
-    storeRef.current = createArtifactStore(threadId ?? "__default__");
-  }
-  const store = storeRef.current;
+  // 每个线程一个独立 store：persist key 为 air-agent-artifacts:{threadId}，
+  // threadId 变化（切换会话）时重建，画布数据按会话隔离、不串。
+  const store = useMemo(
+    () => createArtifactStore(threadId ?? "__default__"),
+    [threadId],
+  );
 
   const addArtifact = useCallback<ArtifactApi["addArtifact"]>(
     (input) => {

@@ -7,7 +7,7 @@ import {
   ExternalLinkIcon,
   DownloadIcon,
 } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { ContentRenderer } from "@/components/artifact/ContentRenderer";
 import { cn } from "@/lib/utils";
@@ -93,6 +93,12 @@ function EmptyCanvasHint({ onClose }: { onClose: () => void }) {
 }
 
 export function CanvasWindow() {
+  // SSR 与客户端首帧不渲染: artifact store 用 localStorage 持久化,
+  // 客户端挂载后恢复的历史 artifact 会导致服务器/客户端 HTML 不一致(hydration 报错).
+  // 注意: early return 必须放在所有 hooks 之后, 保持 hook 顺序稳定.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // 拿原始 zustand store 实例，便于调用 .getState().xxx() 进行一次性 action
   const store = useArtifactStore();
 
@@ -160,6 +166,8 @@ export function CanvasWindow() {
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(href), 30_000);
   };
+
+  if (!mounted) return null;
 
   return (
     <>
