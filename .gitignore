@@ -350,5 +350,7 @@ db/*.db-shm
 db/*.db-wal
 # ZCode 会话计划目录
 .zcode/
+# Mimosa 安全扫描 hook 状态 (按会话生成，勿提交)
+.mimosa/
 # TypeScript 增量编译产物
 *.tsbuildinfo
