@@ -25,3 +25,4 @@ class BusinessGraphState(TypedDict):
     user_id: NotRequired[str]
     skill_rules_content: NotRequired[str]
     system_prompt: NotRequired[str]
+    summary: NotRequired[str]

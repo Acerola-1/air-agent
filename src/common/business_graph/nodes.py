@@ -35,7 +35,13 @@ from common.business_graph.prompting import (
 )
 from common.business_graph.skill_content import load_skill_rules
 from common.business_graph.state import BusinessGraphState
+from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
+from common.context_guard import prepare_model_context
+from common.conversation_summarizer import (
+    should_summarize_conversation,
+    summarize_conversation_history,
+)
 from common.mcp_client import ensure_mcp_tools
 from common.models import ModelRegistry
 from common.permission.rules import is_conversational
@@ -111,6 +117,23 @@ class BusinessGraphNodes:
         不确定时 fail-open 到 data_query 全流程，快车道只对高置信信号开放。
         """
         question = _latest_human_content(state.get("messages", []))
+        max_input_chars = getattr(app_config, "MAX_INPUT_CHARS", 8000)
+        if len(question) > max_input_chars:
+            overflow_msg = (
+                f"您的提问内容过长（共 {len(question)} 字符，系统单次提问上限为 {max_input_chars} 字符），"
+                "请精简或分段提问。"
+            )
+            logger.warning(
+                "用户提问超出长度限制，直接拦截: graph={}, length={}, max={}",
+                self._graph_name,
+                len(question),
+                max_input_chars,
+            )
+            return {
+                "intent": "input_overflow",
+                "messages": [AIMessage(content=overflow_msg)],
+            }
+
         intent, reason = classify_intent_rule(question)
         logger.info(
             "业务图意图车道: graph={}，intent={}，reason={}，question={}",
@@ -224,7 +247,17 @@ class BusinessGraphNodes:
             self._graph_name,
             len(system_prompt),
         )
-        return {"system_prompt": system_prompt}
+        updates: dict[str, Any] = {"system_prompt": system_prompt}
+        messages = state.get("messages", [])
+        if should_summarize_conversation(messages):
+            new_summary = await summarize_conversation_history(
+                messages,
+                existing_summary=state.get("summary"),
+            )
+            if new_summary:
+                updates["summary"] = new_summary
+
+        return updates
 
     def _available_tools(self, state: BusinessGraphState) -> list[Any]:
         """按意图车道过滤业务工具.
@@ -271,10 +304,16 @@ class BusinessGraphNodes:
         available = self._available_tools(state)
 
         messages = state["messages"]
+        # 模型调用前只读上下文修剪 (注入早期历史摘要 + 保护当期轮次与旧工具治理)
+        protected_messages = prepare_model_context(
+            messages,
+            summary=state.get("summary"),
+        )
+
         full_messages: list[Any] = []
         if system_prompt:
             full_messages.append(SystemMessage(content=system_prompt))
-        full_messages.extend(messages)
+        full_messages.extend(protected_messages)
 
         if available:
             model_with_tools = model.bind_tools(available)

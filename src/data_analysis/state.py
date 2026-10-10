@@ -33,3 +33,4 @@ class DataAnalysisState(TypedDict):
     skill_search_attempted: NotRequired[bool]
     skill_search_question: NotRequired[str]
     system_prompt: NotRequired[str]
+    summary: NotRequired[str]

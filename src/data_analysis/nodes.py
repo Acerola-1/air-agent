@@ -15,6 +15,11 @@ from loguru import logger
 
 from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
+from common.context_guard import prepare_model_context
+from common.conversation_summarizer import (
+    should_summarize_conversation,
+    summarize_conversation_history,
+)
 from common.mcp_client import ensure_mcp_tools
 from common.models import ModelRegistry
 from common.runtime_tools import get_business_tools
@@ -255,9 +260,17 @@ async def prepare_model(
         len(system_prompt),
     )
 
-    return {
-        "system_prompt": system_prompt,
-    }
+    updates: dict[str, Any] = {"system_prompt": system_prompt}
+    messages = state.get("messages", [])
+    if should_summarize_conversation(messages):
+        new_summary = await summarize_conversation_history(
+            messages,
+            existing_summary=state.get("summary"),
+        )
+        if new_summary:
+            updates["summary"] = new_summary
+
+    return updates
 
 
 # ──── Phase 3: LLM 节点 ────
@@ -295,10 +308,33 @@ async def call_model(
     available = filter_business_tools(all_tools, allowed)
 
     messages = state["messages"]
+    # 1. 检查最新用户提问长度
+    last_human = ""
+    for msg in reversed(messages):
+        if getattr(msg, "type", None) == "human" or type(msg).__name__ == "HumanMessage":
+            last_human = get_message_content(msg)
+            break
+    max_input_chars = getattr(app_config, "MAX_INPUT_CHARS", 8000)
+    if len(last_human) > max_input_chars:
+        overflow_msg = (
+            f"您的提问内容过长（共 {len(last_human)} 字符，系统单次提问上限为 {max_input_chars} 字符），"
+            "请精简或分段提问。"
+        )
+        logger.warning("数据分析用户提问超出输入限制: len={}, max={}", len(last_human), max_input_chars)
+        writer({"type": "final_output_done", "message": overflow_msg})
+        return {"messages": [AIMessage(content=overflow_msg)]}
+
+    # 2. 模型调用前只读上下文修剪 (注入早期历史摘要 + 保护当期轮次与旧工具治理)
+    protected_messages = prepare_model_context(
+        messages,
+        summary=state.get("summary"),
+    )
+
     full_messages: list[Any] = []
     if system_prompt:
         full_messages.append(SystemMessage(content=system_prompt))
-    full_messages.extend(messages)
+    full_messages.extend(protected_messages)
+
 
     # 绑定工具
     if available:

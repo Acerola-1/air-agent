@@ -13,7 +13,6 @@
 from __future__ import annotations
 
 import os
-from urllib.parse import quote_plus
 
 
 def _get_env_required(key: str, description: str) -> str:
@@ -125,5 +124,21 @@ class Config:
         "PERMISSION_REGION_CACHE_TTL_SECONDS", 3600
     )
 
+    # ==================== 模型上下文与工具治理 ====================
+    MODEL_MAX_CONTEXT_TOKENS: int = _get_env_int("MODEL_MAX_CONTEXT_TOKENS", 192000)
+    MAX_INPUT_CHARS: int = _get_env_int("MAX_INPUT_CHARS", 8000)
+    TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS: int = _get_env_int(
+        "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000
+    )
+    MODEL_CONTEXT_BUDGET_TOKENS: int = _get_env_int("MODEL_CONTEXT_BUDGET_TOKENS", 120000)
+    SUMMARY_LLM: str | None = os.getenv("SUMMARY_LLM") or None
+    CONVERSATION_SUMMARY_THRESHOLD_TOKENS: int = _get_env_int(
+        "CONVERSATION_SUMMARY_THRESHOLD_TOKENS", 30000
+    )
+    CONVERSATION_SUMMARY_KEEP_TURNS: int = _get_env_int(
+        "CONVERSATION_SUMMARY_KEEP_TURNS", 3
+    )
+
 
 config = Config()
+

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
-from typing import Literal, Optional
+from typing import Literal
 
 from langchain_core.runnables import RunnableConfig
 
@@ -20,7 +20,7 @@ class Configuration:
 
     @classmethod
     def from_runnable_config(
-        cls, config: Optional[RunnableConfig] = None
+        cls, config: RunnableConfig | None = None
     ) -> Configuration:
         """根据 RunnableConfig 创建 Configuration 实例."""
         configurable = (config.get("configurable") or {}) if config else {}

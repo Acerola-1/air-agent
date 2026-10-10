@@ -35,11 +35,14 @@ from common.skill_router import SkillSemanticRouter
 
 def _route_after_intent(
     state: BusinessGraphState,
-) -> Literal["resolve_skill", "prepare_model"]:
-    """条件边：意图车道分流——data_query 走技能路由；其余直达 prepare_model."""
+) -> Literal["resolve_skill", "prepare_model", "__end__"]:
+    """条件边：意图车道分流——input_overflow 直达 END；data_query 走技能路由；其余直达 prepare_model."""
+    if state.get("intent") == "input_overflow":
+        return "__end__"
     if state.get("intent") == INTENT_DATA_QUERY:
         return "resolve_skill"
     return "prepare_model"
+
 
 
 def _route_after_model(
@@ -124,15 +127,17 @@ def build_business_graph(
 
     builder.add_edge(START, "classify_intent")
 
-    # 意图车道分流：data_query 走技能路由；闲聊/知识车道直达 prepare_model
+    # 意图车道分流：input_overflow 直达 END；data_query 走技能路由；闲聊/知识车道直达 prepare_model
     builder.add_conditional_edges(
         "classify_intent",
         _route_after_intent,
         {
             "resolve_skill": "resolve_skill",
             "prepare_model": "prepare_model",
+            "__end__": END,
         },
     )
+
 
     builder.add_edge("resolve_skill", "prepare_model")
     builder.add_edge("prepare_model", "call_model")

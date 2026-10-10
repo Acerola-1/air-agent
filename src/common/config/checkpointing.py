@@ -156,6 +156,7 @@ async def _save_thread_meta_async(
     created_at: float = 0.0,
 ) -> None:
     import time
+
     from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
     ts = created_at or time.time()
@@ -174,6 +175,7 @@ async def _save_thread_meta_async(
 async def _touch_thread_meta_async(thread_id: str) -> None:
     """每次图执行完后 touch 该 thread 的 updated_at."""
     import time
+
     from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
     async with AsyncSqliteSaver.from_conn_string(config.SQLITE_PATH) as saver:

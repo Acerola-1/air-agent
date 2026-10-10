@@ -17,6 +17,10 @@ from typing import Any
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from common.business_graph.output_cleanup import (
+    deterministic_cleanup,
+    has_process_residue,
+)
 from langchain_core.messages import AIMessage, HumanMessage
 
 import common.business_graph.nodes as nodes_module
@@ -33,10 +37,6 @@ from common.business_graph.intent import (
     classify_intent_rule,
 )
 from common.business_graph.nodes import BusinessGraphNodes
-from common.business_graph.output_cleanup import (
-    deterministic_cleanup,
-    has_process_residue,
-)
 from common.business_graph.skill_content import (
     clear_skill_rules_cache,
     load_skill_rules,
