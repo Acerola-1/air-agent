@@ -9,6 +9,7 @@
 - 保留字段: SQLite(checkpointer) / MCP(业务数据) / 公网 LLM(主推理) / 外部搜索。
 - 知识库(Milvus / Ollama)与 text2sql 工具已下线,对应配置一并清理。
 """
+
 from __future__ import annotations
 
 import os
@@ -53,10 +54,12 @@ class Config:
     # ==================== SQLite 配置(checkpointer 存储)====================
     # 单文件数据库,项目根 db/ 目录,gitignored
     SQLITE_PATH: str = _get_env_optional("SQLITE_PATH", "db/checkpoints.db")
+
     # SQLITE_PATH_PARENT 用于确保父目录存在(默认取父目录)
     @property
     def SQLITE_PATH_PARENT(self) -> str:
         from pathlib import Path
+
         return str(Path(self.SQLITE_PATH).parent) or "."
 
     # ==================== Redis 配置(预留)====================
@@ -95,17 +98,17 @@ class Config:
         "Serper API 密钥,用于网络搜索功能。",
     )
 
-    # ==================== OpenCode Go DeepSeek V4 Flash 配置(凭据必需)====================
-    OPENCODE_GO_DEEPSEEK_V4_FLASH_API_KEY: str = _get_env_required(
-        "OPENCODE_GO_DEEPSEEK_V4_FLASH_API_KEY",
-        "OpenCode Go DeepSeek V4 Flash API 密钥,用于 OpenAI 兼容 LLM 推理。",
+    # ==================== 主 LLM 通道配置(凭据必需)====================
+    # 默认走本机 workbuddy2api 网关(OpenAI 兼容 /v1/chat/completions)。
+    # 192.168.64.1 是 Apple Container 网桥上的宿主机地址,容器内可直接访问。
+    MAIN_LLM_API_KEY: str = _get_env_required(
+        "MAIN_LLM_API_KEY",
+        "主 LLM API 密钥,用于 OpenAI 兼容 LLM 推理。",
     )
-    OPENCODE_GO_DEEPSEEK_V4_FLASH_BASE_URL: str = _get_env_optional(
-        "OPENCODE_GO_DEEPSEEK_V4_FLASH_BASE_URL", "https://opencode.ai/zen/go/v1"
+    MAIN_LLM_BASE_URL: str = _get_env_optional(
+        "MAIN_LLM_BASE_URL", "http://192.168.64.1:8787/v1"
     )
-    OPENCODE_GO_DEEPSEEK_V4_FLASH_MODEL: str = _get_env_optional(
-        "OPENCODE_GO_DEEPSEEK_V4_FLASH_MODEL", "deepseek-v4-flash"
-    )
+    MAIN_LLM_MODEL: str = _get_env_optional("MAIN_LLM_MODEL", "hy3")
 
     # ==================== DuckDuckGo 配置(可选)====================
     DDGS_PROXY: str | None = os.getenv("DDGS_PROXY")

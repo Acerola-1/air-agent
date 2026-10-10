@@ -14,14 +14,14 @@ class FailingRouter:
 
 def test_policy_route_fast_path_skips_llm(monkeypatch) -> None:
     tools.clear_knowledge_route_cache()
-    monkeypatch.setattr(tools.ModelRegistry, "deepseek_v4_flash", FailingRouter())
+    monkeypatch.setattr(tools.ModelRegistry, "main_llm", FailingRouter())
 
     assert tools._route_knowledge_query("大气污染防治法有哪些要求", 5) == "policy"
 
 
 def test_knowledge_route_fast_path_skips_llm(monkeypatch) -> None:
     tools.clear_knowledge_route_cache()
-    monkeypatch.setattr(tools.ModelRegistry, "deepseek_v4_flash", FailingRouter())
+    monkeypatch.setattr(tools.ModelRegistry, "main_llm", FailingRouter())
 
     assert tools._route_knowledge_query("PM2.5 是什么意思", 5) == "knowledge"
 
@@ -37,7 +37,7 @@ def test_route_cache_reuses_llm_result(monkeypatch) -> None:
 
     monkeypatch.setattr(
         tools.ModelRegistry,
-        "deepseek_v4_flash",
+        "main_llm",
         SimpleNamespace(invoke=fake_invoke),
     )
 
@@ -57,7 +57,7 @@ def test_ambiguous_route_uses_llm_fallback(monkeypatch) -> None:
 
     monkeypatch.setattr(
         tools.ModelRegistry,
-        "deepseek_v4_flash",
+        "main_llm",
         SimpleNamespace(invoke=fake_invoke),
     )
 

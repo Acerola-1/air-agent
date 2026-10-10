@@ -33,6 +33,7 @@ LangGraph API（标准化 REST）+ Next.js 原生前端。6 个公开图，对�
 **前置条件**：
 - Apple Container 系统已启动：`container system start`
 - `.env` 存在（`cp .env.example .env` 后填入真实配置，含 `AUTH_SECRET`、`MCP_SERVER_URL`、各 API Key）
+- `.env.langfuse` 存在（首次配置时复制 `.env.langfuse.example` 并设置随机密钥）
 
 **一键启动**：
 ```bash
@@ -41,12 +42,19 @@ LangGraph API（标准化 REST）+ Next.js 原生前端。6 个公开图，对�
 ```
 
 `run-local.sh` 做两件事：
-1. `container-compose up -d --profile prod` —— 拉起 postgres + redis + langgraph-api 容器（:2024）
+1. `container-compose up -d --profile prod --profile observability` —— 拉起 AirAgent API、Langfuse 及其独立存储容器
 2. 后台启动 Next.js 前端（:3000）
+
+LangGraph 的六个图都会把模型、工具与节点运行 trace 发到本地 Langfuse（`http://localhost:3001`）。服务端凭据保存在 gitignored 的 `.env.langfuse`；Agent 使用的项目公钥、私钥和容器内地址保存在 `.env`。LangSmith 的现有追踪设置仍可独立使用。
+
+首次自行部署时，把 `.env.langfuse.example` 复制为 `.env.langfuse`，生成并填写各服务密钥；将其中的 `LANGFUSE_INIT_PROJECT_PUBLIC_KEY`、`LANGFUSE_INIT_PROJECT_SECRET_KEY` 同步到 `.env` 的 `LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`。
 
 **改后端代码后更新（无需重建镜像）**：
 ```bash
-container-compose up -d --profile prod
+set -a
+. ./.env.langfuse
+set +a
+container-compose up -d --profile prod --profile observability
 # 或直接重跑 ./run-local.sh
 ```
 本地 `src/` 已挂载进容器（`./src:/deps/air_agent/src`），重启容器即加载新代码。
@@ -57,7 +65,7 @@ container-compose down          # 停容器（pgdata 卷保留）
 container logs -f air-agent-langgraph-api
 ```
 
-**注意**：容器为 `profiles: [prod]` 门控；`container restart` 插件不可用，统一用 `container-compose up -d --profile prod` 重启。旧 venv `langgraph dev`（内存持久化）已废弃。
+**注意**：API 容器由 `profiles: [prod]` 门控，Langfuse 容器由 `profiles: [observability]` 门控；`container restart` 插件不可用，统一用 `container-compose up -d --profile prod --profile observability` 重启。旧 venv `langgraph dev`（内存持久化）已废弃。
 
 ## 登录系统（简易本地账号密码）
 
@@ -75,7 +83,7 @@ container logs -f air-agent-langgraph-api
 
 ```bash
 container build -t air-agent/langgraph-api:latest .   # 需重新构建时（改依赖/新增文件）
-container-compose up -d --profile prod
+container-compose up -d --profile prod --profile observability
 ```
 
 ## 端到端冒烟

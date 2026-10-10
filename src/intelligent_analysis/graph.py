@@ -10,11 +10,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from common.business_graph import build_business_graph
+from common.langfuse_tracing import with_langfuse_tracing
 
 SKILLS_DIR = Path(__file__).parent / "skills"
 
-graph = build_business_graph(
-    skills_dir=SKILLS_DIR,
-    name="intelligent-analysis",
-    checkpointer=None,
+graph = with_langfuse_tracing(
+    build_business_graph(
+        skills_dir=SKILLS_DIR,
+        name="intelligent-analysis",
+        checkpointer=None,
+    )
 )

@@ -266,7 +266,7 @@ class BusinessGraphNodes:
 
         最多重试 3 次；空回复时追加引导消息重试一次。
         """
-        model = ModelRegistry.deepseek_v4_flash
+        model = ModelRegistry.main_llm
         system_prompt = state.get("system_prompt", "")
         available = self._available_tools(state)
 

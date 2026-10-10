@@ -16,16 +16,15 @@ logger.info("模型注册表初始化开始")
 class ModelRegistry:
     """Agent 运行时使用的模型实例."""
 
-    _opencode_go_api_key = SecretStr(config.OPENCODE_GO_DEEPSEEK_V4_FLASH_API_KEY)
+    _main_llm_api_key = SecretStr(config.MAIN_LLM_API_KEY)
 
-    # OpenAI 兼容 /v1/chat/completions 通道（OpenCode Go）。
-    # 实测（2026-07-31）较 minimax-m3 首 token 延迟低约一半、生成速率快约 68%。
-    # 注意：该通道不支持强制 tool_choice / json_schema（稳定 400），
-    # 结构化抽取场景需用 bind_tools(auto) + Pydantic model_validate 校验。
-    deepseek_v4_flash = ChatOpenAI(
-        api_key=_opencode_go_api_key,
-        base_url=config.OPENCODE_GO_DEEPSEEK_V4_FLASH_BASE_URL,
-        model=config.OPENCODE_GO_DEEPSEEK_V4_FLASH_MODEL,
+    # 主对话通道：本机 workbuddy2api 网关的 OpenAI 兼容 /v1/chat/completions。
+    # hy3 为推理模型（reasoning_tokens 计入 max_tokens，额度需留足）。
+    # 实测（2026-10-10）plain / tool_calls / SSE stream 三路径均可用。
+    main_llm = ChatOpenAI(
+        api_key=_main_llm_api_key,
+        base_url=config.MAIN_LLM_BASE_URL,
+        model=config.MAIN_LLM_MODEL,
         temperature=0.1,
         max_tokens=8192,
         timeout=120,

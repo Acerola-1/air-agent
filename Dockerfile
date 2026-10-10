@@ -27,6 +27,7 @@ RUN cd /deps/air_agent \
  && uv pip install --system --no-cache-dir \
         --index-url https://pypi.tuna.tsinghua.edu.cn/simple/ \
         --extra-index-url https://mirrors.aliyun.com/pypi/simple/ \
+        --index-strategy unsafe-best-match \
         -r /tmp/requirements-export.txt \
  && rm -f /tmp/requirements-export.txt
 

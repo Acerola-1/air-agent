@@ -2,6 +2,10 @@
 .git
 .gitignore
 
+# Local environment files may contain API keys and must never enter an image.
+.env*
+frontend/.env*
+
 # Python
 .venv
 __pycache__

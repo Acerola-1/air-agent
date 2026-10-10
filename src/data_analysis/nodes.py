@@ -286,7 +286,7 @@ async def call_model(
         }
     )
 
-    model = ModelRegistry.deepseek_v4_flash
+    model = ModelRegistry.main_llm
     system_prompt = state.get("system_prompt", "")
 
     # 按 allowed-tools 过滤业务工具（运行时查找，不存入 state）
@@ -415,7 +415,7 @@ async def finalize_output(
     )
 
     # 调用清洗 LLM 流式生成清洗后的答案
-    model = ModelRegistry.deepseek_v4_flash
+    model = ModelRegistry.main_llm
     prompt = _FINAL_OUTPUT_CLEANUP_PROMPT.format(answer=answer)
     full_cleaned = ""
 

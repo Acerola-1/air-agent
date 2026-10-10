@@ -8,7 +8,7 @@
 # Day-to-day workflow (local development, recommended):
 #   $ container-compose up -d        # starts ONLY postgres (langgraph-api is
 #                                    # gated behind `profiles: [prod]`).
-#   $ ./run-local.sh                 # venv langgraph-dev :2024 + Next :3000
+#   $ ./run-local.sh                 # API + Langfuse containers + Next :3000
 #   $ container-compose down         # stops postgres (named volumes kept).
 #
 # Full-container staging / packaging:
@@ -85,6 +85,10 @@ services:
       # --- API keys（从 .env 注入）---
       LANGCHAIN_TRACING_V2: "${LANGCHAIN_TRACING_V2}"
       LANGCHAIN_API_KEY:    "${LANGCHAIN_API_KEY}"
+      LANGFUSE_ENABLED:     "${LANGFUSE_ENABLED:-false}"
+      LANGFUSE_BASE_URL:    "${LANGFUSE_BASE_URL:-http://192.168.64.1:3001}"
+      LANGFUSE_PUBLIC_KEY:  "${LANGFUSE_PUBLIC_KEY}"
+      LANGFUSE_SECRET_KEY:  "${LANGFUSE_SECRET_KEY}"
       OPENAI_API_KEY:       "${OPENAI_API_KEY}"
       ARK_API_KEY:          "${ARK_API_KEY}"
       DASHSCOPE_API_KEY:    "${DASHSCOPE_API_KEY}"
@@ -99,5 +103,162 @@ services:
     profiles:
       - prod
 
+  # Langfuse v4 local observability stack. Keep its data and credentials
+  # separate from the AirAgent/Lightrag PostgreSQL and Redis instances.
+  # 内部依赖统一走宿主机桥地址 192.168.64.1 的端口映射（见 .env.langfuse）：
+  # Apple Container 的 compose 服务名 DNS 在容器分批创建/宿主机 TUN 代理下不可靠，
+  # 桥地址端口映射走内核直连路由，与容器批次无关。
+  langfuse-postgres:
+    image: postgres:17-alpine
+    container_name: air-agent-langfuse-postgres
+    restart: unless-stopped
+    ports:
+      - "15433:5432"
+    env_file:
+      - .env.langfuse
+    volumes:
+      - langfuse_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse -d langfuse"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    profiles:
+      - observability
+
+  langfuse-clickhouse:
+    image: clickhouse/clickhouse-server:25.12
+    container_name: air-agent-langfuse-clickhouse
+    restart: unless-stopped
+    ports:
+      - "18123:8123"
+      - "18124:9000"
+    env_file:
+      - .env.langfuse
+    volumes:
+      - langfuse_clickhouse_data:/var/lib/clickhouse
+      - langfuse_clickhouse_logs:/var/log/clickhouse-server
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - observability
+
+  langfuse-minio:
+    image: cgr.dev/chainguard/minio
+    container_name: air-agent-langfuse-minio
+    restart: unless-stopped
+    user: "0:0"
+    entrypoint: ["sh"]
+    command:
+      - -c
+      - mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data
+    env_file:
+      - .env.langfuse
+    ports:
+      - "19000:9000"
+    volumes:
+      - langfuse_minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - observability
+
+  langfuse-redis:
+    image: redis:7
+    container_name: air-agent-langfuse-redis
+    restart: unless-stopped
+    ports:
+      - "16380:6379"
+    env_file:
+      - .env.langfuse
+    entrypoint: ["sh", "-c"]
+    command:
+      - exec redis-server --requirepass "$REDIS_AUTH" --maxmemory-policy noeviction
+    volumes:
+      - langfuse_redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$REDIS_AUTH\" ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    profiles:
+      - observability
+
+  langfuse-web:
+    image: docker.io/langfuse/langfuse:4
+    container_name: air-agent-langfuse-web
+    restart: unless-stopped
+    # Next.js server 启动峰值超过 container-compose 默认 1G 配额（OOM GC 崩溃）
+    mem_limit: 2g
+    depends_on:
+      langfuse-postgres:
+        condition: service_healthy
+        restart: true
+      langfuse-clickhouse:
+        condition: service_healthy
+        restart: true
+      langfuse-minio:
+        condition: service_healthy
+        restart: true
+      langfuse-redis:
+        condition: service_healthy
+        restart: true
+    env_file:
+      - .env.langfuse
+    ports:
+      - "3001:3000"
+    # container-compose 并行创建服务，web 的镜像入口会先于 postgres/ClickHouse
+    # 就绪而迁移失败（Prisma P1001）后退出。这里等待宿主桥端口（192.168.64.1
+    # 上的 15433/18123，固定地址、与批次无关）就绪后再走镜像原生迁移+启动链。
+    entrypoint: ["dumb-init", "--", "/bin/sh", "-c"]
+    command:
+      - >-
+        i=0;
+        until node -e 'require("net").connect(15433,"192.168.64.1",()=>process.exit(0)).on("error",()=>process.exit(1))' 2>/dev/null
+        && node -e 'require("net").connect(18123,"192.168.64.1",()=>process.exit(0)).on("error",()=>process.exit(1))' 2>/dev/null; do
+          [ $i -ge 120 ] && echo "prewarm: dependency ports not ready" && exit 1;
+          echo "prewarm: waiting langfuse deps ($i)"; i=$((i+1)); sleep 2;
+        done;
+        exec ./web/entrypoint.sh /bin/sh -c 'if [ -n "$NEXT_PUBLIC_LANGFUSE_CLOUD_REGION" ]; then node --import dd-trace/initialize.mjs ./web/server.js --keepAliveTimeout 110000; else node ./web/server.js --keepAliveTimeout 110000; fi'
+    profiles:
+      - observability
+
+  langfuse-worker:
+    image: docker.io/langfuse/langfuse-worker:4
+    container_name: air-agent-langfuse-worker
+    restart: unless-stopped
+    depends_on:
+      langfuse-postgres:
+        condition: service_healthy
+        restart: true
+      langfuse-clickhouse:
+        condition: service_healthy
+        restart: true
+      langfuse-minio:
+        condition: service_healthy
+        restart: true
+      langfuse-redis:
+        condition: service_healthy
+        restart: true
+    env_file:
+      - .env.langfuse
+    profiles:
+      - observability
+
 volumes:
   pgdata:
+  langfuse_postgres_data:
+  langfuse_clickhouse_data:
+  langfuse_clickhouse_logs:
+  langfuse_minio_data:
+  langfuse_redis_data:

@@ -22,6 +22,7 @@ from langgraph.prebuilt import ToolNode
 from loguru import logger
 
 from common.business_graph.tool_wrappers import composed_tool_wrapper
+from common.langfuse_tracing import with_langfuse_tracing
 from common.runtime_tools import get_business_tools
 from data_analysis.nodes import (
     call_model,
@@ -133,4 +134,4 @@ def build_graph(*, checkpointer: Any = None):
     return compiled
 
 
-graph = build_graph(checkpointer=None)
+graph = with_langfuse_tracing(build_graph(checkpointer=None))

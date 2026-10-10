@@ -7,7 +7,7 @@
 - 知识检索 (knowledge_retriever_tool) 与 Text2SQL (text2sql_tool) 依赖 Milvus/Ollama,
   本地环境无这两项服务,已整体删除。相关依赖模块(multi_query_retriever /
   milvus_vector_store / metadata_query_helper / vanna_sql_adapter / pg_store)一并移除。
-- 保留的工具仅依赖:公网 LLM (deepseek_v4_flash) / Serper API / 本地区划树 JSON。
+- 保留的工具仅依赖:公网 LLM (main_llm) / Serper API / 本地区划树 JSON。
 """
 
 from __future__ import annotations
@@ -169,7 +169,7 @@ def parse_region_tool(question: str) -> Dict[str, Any]:
         prompt = region_extraction_prompt(question)
         # deepseek 通道不支持强制结构化输出,改用 bind_tools(auto) +
         # 显式提示要求调用工具,再用 Pydantic 校验 tool_calls 参数。
-        model_with_tool = ModelRegistry.deepseek_v4_flash.bind_tools([RegionExtraction])
+        model_with_tool = ModelRegistry.main_llm.bind_tools([RegionExtraction])
         response = model_with_tool.invoke(
             [
                 HumanMessage(

@@ -22,7 +22,7 @@ for key in (
     "XIAOMI_MIMO_API_KEY",
     "SERPER_API_KEY",
     "ARK_API_KEY",
-    "OPENCODE_GO_DEEPSEEK_V4_FLASH_API_KEY",
+    "MAIN_LLM_API_KEY",
 ):
     os.environ.setdefault(key, "test")
 

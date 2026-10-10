@@ -11,6 +11,7 @@ from langchain.agents.middleware.types import AgentMiddleware
 from langchain_quickjs import CodeInterpreterMiddleware
 
 from common.artifacts.create_artifact_tool import build_create_artifact_tool
+from common.langfuse_tracing import with_langfuse_tracing
 from common.mcp_client import ensure_mcp_tools_sync, get_business_mcp_tools
 from common.middleware import TimeContextMiddleware
 from common.models import ModelRegistry
@@ -47,17 +48,19 @@ find_skill = create_find_skill_tool(SkillSemanticRouter(SKILLS_DIR))
 ensure_mcp_tools_sync()
 _mcp_tools = get_business_mcp_tools()
 
-graph = create_deep_agent(
-    model=ModelRegistry.deepseek_v4_flash,
-    tools=[find_skill, build_create_artifact_tool(), *_mcp_tools],
-    system_prompt=with_main_agent_tool_use_output_guard(SYSTEM_PROMPT),
-    middleware=_build_middleware(),
-    backend=CompositeBackend(
-        default=StateBackend(),
-        routes={
-            "/skills/": FilesystemBackend(root_dir=str(SKILLS_DIR), virtual_mode=True),
-        },
-    ),
-    checkpointer=None,
-    name="intelligent-report",
+graph = with_langfuse_tracing(
+    create_deep_agent(
+        model=ModelRegistry.main_llm,
+        tools=[find_skill, build_create_artifact_tool(), *_mcp_tools],
+        system_prompt=with_main_agent_tool_use_output_guard(SYSTEM_PROMPT),
+        middleware=_build_middleware(),
+        backend=CompositeBackend(
+            default=StateBackend(),
+            routes={
+                "/skills/": FilesystemBackend(root_dir=str(SKILLS_DIR), virtual_mode=True),
+            },
+        ),
+        checkpointer=None,
+        name="intelligent-report",
+    )
 )
