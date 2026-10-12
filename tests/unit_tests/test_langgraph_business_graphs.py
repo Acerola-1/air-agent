@@ -21,9 +21,20 @@ def test_langgraph_json_registers_business_graphs() -> None:
     assert "agent" not in graphs
 
 
-def test_docker_compose_langserve_graphs_match_langgraph_json() -> None:
+def test_container_graph_and_http_registration_match_langgraph_json() -> None:
     compose = Path("docker-compose.yaml").read_text(encoding="utf-8")
-    expected_graphs_json = json.dumps(EXPECTED_GRAPHS, ensure_ascii=False)
+    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
+    expected_graphs_json = json.dumps(
+        {
+            name: path.replace("./", "/deps/air_agent/", 1)
+            for name, path in EXPECTED_GRAPHS.items()
+        },
+        ensure_ascii=False,
+    )
 
-    assert f"LANGSERVE_GRAPHS: '{expected_graphs_json}'" in compose
+    assert f"ENV LANGSERVE_GRAPHS='{expected_graphs_json}'" in dockerfile
+    configuration = json.loads(Path("langgraph.json").read_text(encoding="utf-8"))
+    assert configuration["http"]["app"] == "./src/common/artifact_http.py:app"
+    assert "/deps/air_agent/src/common/artifact_http.py:app" in compose
+    assert "/deps/air_agent/src/common/artifact_http.py:app" in dockerfile
     assert "src/data_analysis_assistant/graph.py" not in compose

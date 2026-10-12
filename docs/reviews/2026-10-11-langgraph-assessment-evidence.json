@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-11",
+  "timezone": "Asia/Shanghai",
+  "commit": "2ec4b9f",
+  "scope": [
+    "basic-qa",
+    "intelligent-analysis",
+    "data-analysis",
+    "current chat frontend"
+  ],
+  "verification_kind": "isolated local probes; synthetic tools and models; no production MCP or PG verification",
+  "backend": {
+    "toolnode": {
+      "attempts": 1,
+      "statuses": [
+        "error",
+        "success"
+      ],
+      "contents": [
+        "Error: RuntimeError('synthetic backend exception')\n Please fix your mistakes.",
+        "{\"code\": 400, \"success\": false, \"message\": \"region is required\"}"
+      ],
+      "messages_stream": [
+        {
+          "type": "tool",
+          "content": "Error: RuntimeError('synthetic backend exception')\n Please fix your mistakes.",
+          "node": "execute_tools"
+        },
+        {
+          "type": "tool",
+          "content": "{\"code\": 400, \"success\": false, \"message\": \"region is required\"}",
+          "node": "execute_tools"
+        }
+      ]
+    },
+    "summary_stream": [
+      {
+        "type": "ai",
+        "content": "SUMMARY_INTERNAL_ONLY",
+        "node": "prepare_model"
+      }
+    ],
+    "offload_tail": {
+      "raw_length": 500021,
+      "target_in_raw": true,
+      "target_in_model_prompt": false
+    },
+    "budget": {
+      "configured_budget": 120000,
+      "physical_window_config": 192000,
+      "projected_estimate": 218902,
+      "all_current_outputs_kept": true
+    },
+    "stale_summary": {
+      "knowledge_summary_calls": 0,
+      "updates_summary": false,
+      "decision_in_raw": true,
+      "decision_in_model_context": false
+    },
+    "pg_initialized_then_write_failure": {
+      "fallback_error": "no such table: tool_artifact_storage"
+    }
+  },
+  "frontend": {
+    "tool_error_before_values": "{\"code\":400,\"success\":false,\"message\":\"region is required\"}",
+    "tool_error_after_values": {
+      "streamingText": "",
+      "toolCardStatus": "error"
+    },
+    "internal_summary_in_answer": "SUMMARY_INTERNAL_ONLY",
+    "context_meter": {
+      "beforeNewQuestion": 120,
+      "afterNewQuestion": 120
+    },
+    "business_400_status": "completed",
+    "data_analysis_visible_answers": [
+      "original internal details",
+      "cleaned final answer"
+    ],
+    "sse_error_reported": null,
+    "old_run_completion": {
+      "before": true,
+      "after": false
+    }
+  },
+  "ui_static_audit": {
+    "findings": [
+      {
+        "category": "violation",
+        "file": "app/login/page.tsx",
+        "line": 79,
+        "message": "Application-owned form does not declare its validation owner.",
+        "remediation": "Add noValidate/novalidate and implement the canonical validation contract.",
+        "ruleId": "form.novalidate-missing",
+        "severity": "error"
+      }
+    ],
+    "mode": "strict",
+    "projectRoot": "/Users/acerola/Dev/Python/air_agent/frontend",
+    "schemaVersion": 1,
+    "summary": {
+      "errors": 1,
+      "total": 1,
+      "unresolved": 0,
+      "violations": 1,
+      "warnings": 0
+    }
+  },
+  "checks": {
+    "targeted_pytest": "27 passed",
+    "typescript": "passed",
+    "targeted_ruff": "passed",
+    "business_graph_nodes_collection": "failed: missing common.business_graph.output_cleanup"
+  },
+  "live_checks": {
+    "frontend": "HTTP 307; login page visible",
+    "backend_2024": "unreachable",
+    "container_list": "service connection invalid"
+  },
+  "implementation_follow_up": {
+    "status": "implemented and verified",
+    "report": "2026-10-11-langgraph-governance-acceptance.md",
+    "evidence": "2026-10-11-langgraph-governance-evidence.json",
+    "live_integration_passed": 6,
+    "targeted_python_passed": 55
+  }
+}

@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from common.computation import COMPUTATION_SYSTEM_RULES
 from common.context import get_routing_context
 from common.prompts import (
     EXPERT_MODE_SYSTEM_PROMPT,
@@ -79,6 +80,8 @@ def build_system_prompt(
     if skill_rules_content:
         parts.append(skill_rules_content)
 
+    parts.append(COMPUTATION_SYSTEM_RULES)
+
     return "\n\n".join(parts)
 
 
@@ -94,10 +97,10 @@ def filter_business_tools(
     保证 Agent 在任何技能命中场景下都能自主产出画布内容。
     """
     if not allowed_tool_names:
-        return []
+        return [t for t in all_tools if tool_name(t) == "compute_artifact"]
 
     # 始终可见的通用工具：画布输出 + 时间，不受技能 allowed-tools 限制
-    always_visible = {"create_artifact", "get_beijing_time"}
+    always_visible = {"create_artifact", "get_beijing_time", "compute_artifact"}
     allowed = set(allowed_tool_names) | always_visible
     filtered: list[Any] = []
     for t in all_tools:

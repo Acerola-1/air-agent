@@ -42,4 +42,6 @@ RUN PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -
 
 ENV LANGSERVE_GRAPHS='{"basic-qa": "/deps/air_agent/src/basic_qa/graph.py:graph", "intelligent-analysis": "/deps/air_agent/src/intelligent_analysis/graph.py:graph", "data-analysis": "/deps/air_agent/src/data_analysis/graph.py:graph", "intelligent-report": "/deps/air_agent/src/intelligent_report/graph.py:graph", "deep-research": "/deps/air_agent/src/deep_research/graph.py:graph", "intelligent-tracing": "/deps/air_agent/src/intelligent_tracing/graph.py:graph"}'
 
+ENV LANGGRAPH_HTTP='{"app": "/deps/air_agent/src/common/artifact_http.py:app"}'
+
 WORKDIR /deps/air_agent

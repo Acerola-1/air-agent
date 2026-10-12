@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 
 
@@ -47,6 +48,15 @@ def _get_env_bool(key: str, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _get_env_float(key: str, default: float) -> float:
+    """读取有限浮点配置，非法配置使用默认值."""
+    try:
+        value = float(os.getenv(key) or default)
+        return value if math.isfinite(value) else default
+    except ValueError:
+        return default
+
+
 class Config:
     """应用配置类."""
 
@@ -57,6 +67,7 @@ class Config:
     # SQLITE_PATH_PARENT 用于确保父目录存在(默认取父目录)
     @property
     def SQLITE_PATH_PARENT(self) -> str:
+        """返回 SQLite 文件父目录."""
         from pathlib import Path
 
         return str(Path(self.SQLITE_PATH).parent) or "."
@@ -108,6 +119,13 @@ class Config:
         "MAIN_LLM_BASE_URL", "http://192.168.64.1:8787/v1"
     )
     MAIN_LLM_MODEL: str = _get_env_optional("MAIN_LLM_MODEL", "hy3")
+    MODEL_TOKENIZER_ENCODING: str = _get_env_optional("MODEL_TOKENIZER_ENCODING", "")
+    SUMMARY_TOKENIZER_ENCODING: str = _get_env_optional(
+        "SUMMARY_TOKENIZER_ENCODING", ""
+    )
+    MODEL_TOKEN_ESTIMATE_MARGIN: float = _get_env_float(
+        "MODEL_TOKEN_ESTIMATE_MARGIN", 1.25
+    )
 
     # ==================== DuckDuckGo 配置(可选)====================
     DDGS_PROXY: str | None = os.getenv("DDGS_PROXY")
@@ -130,8 +148,47 @@ class Config:
     TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS: int = _get_env_int(
         "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000
     )
-    MODEL_CONTEXT_BUDGET_TOKENS: int = _get_env_int("MODEL_CONTEXT_BUDGET_TOKENS", 120000)
+    MODEL_CONTEXT_BUDGET_TOKENS: int = _get_env_int(
+        "MODEL_CONTEXT_BUDGET_TOKENS", 120000
+    )
     SUMMARY_LLM: str | None = os.getenv("SUMMARY_LLM") or None
+    MODEL_TOOL_DESCRIPTION_CHARS: int = _get_env_int(
+        "MODEL_TOOL_DESCRIPTION_CHARS", 256
+    )
+    MODEL_TOOL_PARAMETER_DESCRIPTION_CHARS: int = _get_env_int(
+        "MODEL_TOOL_PARAMETER_DESCRIPTION_CHARS", 120
+    )
+    MODEL_TOOL_SCHEMA_BUDGET_PERCENT: int = _get_env_int(
+        "MODEL_TOOL_SCHEMA_BUDGET_PERCENT", 40
+    )
+    MAIN_LLM_MAX_OUTPUT_TOKENS: int = _get_env_int("MAIN_LLM_MAX_OUTPUT_TOKENS", 8192)
+    MODEL_CONTEXT_SAFETY_TOKENS: int = _get_env_int("MODEL_CONTEXT_SAFETY_TOKENS", 4096)
+    SUMMARY_LLM_BASE_URL: str = _get_env_optional(
+        "SUMMARY_LLM_BASE_URL", MAIN_LLM_BASE_URL
+    )
+    SUMMARY_LLM_API_KEY: str = _get_env_optional(
+        "SUMMARY_LLM_API_KEY", MAIN_LLM_API_KEY
+    )
+    SUMMARY_MODEL_CONTEXT_TOKENS: int = _get_env_int(
+        "SUMMARY_MODEL_CONTEXT_TOKENS", MODEL_MAX_CONTEXT_TOKENS
+    )
+    SUMMARY_MODEL_OUTPUT_TOKENS: int = _get_env_int("SUMMARY_MODEL_OUTPUT_TOKENS", 4096)
+    SUMMARY_MODEL_SAFETY_TOKENS: int = _get_env_int("SUMMARY_MODEL_SAFETY_TOKENS", 2048)
+    DATA_PROCESSING_TIMEOUT_SECONDS: int = _get_env_int(
+        "DATA_PROCESSING_TIMEOUT_SECONDS", 90
+    )
+    SUMMARY_MAX_BATCHES: int = _get_env_int("SUMMARY_MAX_BATCHES", 256)
+    QUICKJS_TIMEOUT_SECONDS: int = _get_env_int("QUICKJS_TIMEOUT_SECONDS", 5)
+    QUICKJS_MEMORY_MIB: int = _get_env_int("QUICKJS_MEMORY_MIB", 64)
+    QUICKJS_MAX_INPUT_BYTES: int = _get_env_int(
+        "QUICKJS_MAX_INPUT_BYTES", 16 * 1024 * 1024
+    )
+    QUICKJS_MAX_RESULT_BYTES: int = _get_env_int("QUICKJS_MAX_RESULT_BYTES", 128 * 1024)
+    QUICKJS_MAX_CORRECTIONS: int = _get_env_int("QUICKJS_MAX_CORRECTIONS", 1)
+    TOOL_ARTIFACT_RETENTION_DAYS: int = _get_env_int("TOOL_ARTIFACT_RETENTION_DAYS", 30)
+    FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS: int = _get_env_int(
+        "FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS", 45
+    )
     CONVERSATION_SUMMARY_THRESHOLD_TOKENS: int = _get_env_int(
         "CONVERSATION_SUMMARY_THRESHOLD_TOKENS", 30000
     )
@@ -141,4 +198,3 @@ class Config:
 
 
 config = Config()
-

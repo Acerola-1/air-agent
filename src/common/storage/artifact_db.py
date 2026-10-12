@@ -1,119 +1,139 @@
-"""超大工具返回结果专属数据库存储服务.
-
-用于持久化超限的原始 MCP 工具输出数据，避免 Checkpointer 数据库膨胀。
-自适应适配生产 PostgreSQL（若 psycopg 可用且配置 DATABASE_URI）与本地 SQLite（aiosqlite）。
-"""
+"""带归属、保留期与计算配额的原始／派生归档；PG 故障不回退."""
 
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import uuid
-from datetime import UTC, datetime
+from collections.abc import AsyncIterator, Mapping, Sequence
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
-
-from loguru import logger
+from typing import Any, Protocol, cast
 
 from common.config import config
 
 _TABLE_NAME = "tool_artifact_storage"
 _initialized = False
+_initialized_key = ""
 _init_lock = asyncio.Lock()
+_COLUMNS = {
+    "user_id": "TEXT",
+    "thread_id": "TEXT",
+    "run_id": "TEXT",
+    "parent_artifact_id": "TEXT",
+    "kind": "TEXT DEFAULT 'raw'",
+    "status": "TEXT DEFAULT 'stored'",
+    "expires_at": "TEXT",
+    "processing_metadata": "TEXT DEFAULT '{}'",
+}
+
+
+class _Cursor(Protocol):
+    async def fetchall(self) -> Sequence[Mapping[str, Any]]: ...
+    async def fetchone(self) -> Mapping[str, Any] | None: ...
+
+
+class _Database(Protocol):
+    async def execute(self, statement: str, args: tuple[Any, ...] = ()) -> _Cursor: ...
+    async def commit(self) -> None: ...
+
+
+class ArtifactExpired(ValueError):
+    """归档已过期，聊天记录仍保留."""
+
+
+class ComputationLimit(ValueError):
+    """计算阶段配额已用尽."""
 
 
 def _is_pg_configured() -> bool:
-    """判断是否配置并支持 PostgreSQL."""
-    db_uri = os.getenv("DATABASE_URI", "")
-    if not (db_uri.startswith("postgresql://") or db_uri.startswith("postgres://")):
+    uri = os.getenv("DATABASE_URI", "")
+    if not uri:
         return False
-    try:
-        import psycopg  # noqa: F401
-
-        return True
-    except Exception:
-        return False
+    if not uri.startswith(("postgresql://", "postgres://")):
+        raise ValueError("DATABASE_URI 必须使用 postgresql://；本地 SQLite 开发请留空")
+    return True
 
 
 def _get_sqlite_path() -> str:
-    """获取 SQLite 数据库文件绝对路径并确保父目录存在."""
-    sqlite_path = getattr(config, "SQLITE_PATH", "db/checkpoints.db")
-    path_obj = Path(sqlite_path)
-    if not path_obj.is_absolute():
-        # 项目根目录
-        project_root = Path(__file__).resolve().parent.parent.parent.parent
-        path_obj = project_root / sqlite_path
-    path_obj.parent.mkdir(parents=True, exist_ok=True)
-    return str(path_obj)
+    path = Path(config.SQLITE_PATH)
+    if not path.is_absolute():
+        path = Path(__file__).resolve().parents[3] / path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return str(path)
+
+
+@asynccontextmanager
+async def _connection() -> AsyncIterator[_Database]:
+    if _is_pg_configured():
+        import psycopg
+        from psycopg.rows import dict_row
+
+        async with await psycopg.AsyncConnection.connect(
+            os.environ["DATABASE_URI"], row_factory=dict_row, connect_timeout=10
+        ) as db:
+            # 两种驱动都已选择映射行工厂；统一其游标协议。
+            yield cast(_Database, cast(object, db))
+    else:
+        import aiosqlite
+
+        async with aiosqlite.connect(_get_sqlite_path()) as db:
+            db.row_factory = aiosqlite.Row
+            yield cast(_Database, cast(object, db))
+
+
+def _sql(statement: str) -> str:
+    return statement.replace("?", "%s") if _is_pg_configured() else statement
+
+
+async def _query(
+    statement: str, args: tuple[Any, ...] = (), *, fetch: bool = False
+) -> list[dict[str, Any]]:
+    async with _connection() as db:
+        cur = await db.execute(_sql(statement), args)
+        rows = [dict(row) for row in await cur.fetchall()] if fetch else []
+        await db.commit()
+        return rows
 
 
 async def init_artifact_storage_table() -> None:
-    """初始化专属存储表（幂等执行）."""
-    global _initialized
-    if _initialized:
-        return
-
+    """增量迁移旧表，初始化结果按实际数据库键区分."""
+    global _initialized, _initialized_key
+    key = (
+        os.environ.get("DATABASE_URI", "")
+        if _is_pg_configured()
+        else _get_sqlite_path()
+    )
     async with _init_lock:
-        if _initialized:
+        if _initialized and _initialized_key == key:
             return
-
-        if _is_pg_configured():
-            import psycopg
-
-            db_uri = os.getenv("DATABASE_URI", "")
-            try:
-                async with await psycopg.AsyncConnection.connect(db_uri) as aconn:
-                    async with aconn.cursor() as cur:
-                        await cur.execute(
-                            f"""
-                            CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
-                                artifact_id VARCHAR(64) PRIMARY KEY,
-                                tool_call_id VARCHAR(64) NOT NULL,
-                                tool_name VARCHAR(128) NOT NULL,
-                                char_length INT NOT NULL,
-                                raw_payload TEXT NOT NULL,
-                                summary TEXT,
-                                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-                            );
-                            CREATE INDEX IF NOT EXISTS idx_tool_artifact_call_id ON {_TABLE_NAME}(tool_call_id);
-                            """
-                        )
-                    await aconn.commit()
-                _initialized = True
-                logger.info("专属工具载荷表已在 PostgreSQL 中就绪: table={}", _TABLE_NAME)
-                return
-            except Exception as e:
-                logger.warning(
-                    "PostgreSQL 初始化工具载荷表失败，将回退至 SQLite: error={}",
-                    e,
-                )
-
-        # 回退至 SQLite
-        import aiosqlite
-
-        db_path = _get_sqlite_path()
-        async with aiosqlite.connect(db_path) as db:
+        async with _connection() as db:
             await db.execute(
-                f"""
-                CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
-                    artifact_id TEXT PRIMARY KEY,
-                    tool_call_id TEXT NOT NULL,
-                    tool_name TEXT NOT NULL,
-                    char_length INTEGER NOT NULL,
-                    raw_payload TEXT NOT NULL,
-                    summary TEXT,
-                    created_at TEXT NOT NULL
-                );
-                """
+                f"CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (artifact_id TEXT PRIMARY KEY, tool_call_id TEXT NOT NULL, tool_name TEXT NOT NULL, char_length INTEGER NOT NULL, raw_payload TEXT NOT NULL, summary TEXT, created_at TEXT NOT NULL)"
+            )
+            if _is_pg_configured():
+                for name, declaration in _COLUMNS.items():
+                    await db.execute(
+                        f"ALTER TABLE {_TABLE_NAME} ADD COLUMN IF NOT EXISTS {name} {declaration}"
+                    )
+            else:
+                cur = await db.execute(f"PRAGMA table_info({_TABLE_NAME})")
+                columns = {row["name"] for row in await cur.fetchall()}
+                for name, declaration in _COLUMNS.items():
+                    if name not in columns:
+                        await db.execute(
+                            f"ALTER TABLE {_TABLE_NAME} ADD COLUMN {name} {declaration}"
+                        )
+            await db.execute(
+                f"CREATE INDEX IF NOT EXISTS idx_tool_artifact_owner ON {_TABLE_NAME}(user_id, thread_id)"
             )
             await db.execute(
-                f"""
-                CREATE INDEX IF NOT EXISTS idx_tool_artifact_call_id ON {_TABLE_NAME}(tool_call_id);
-                """
+                "CREATE TABLE IF NOT EXISTS artifact_computations (artifact_id TEXT NOT NULL, run_id TEXT NOT NULL, started_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (artifact_id,run_id))"
             )
             await db.commit()
-        _initialized = True
-        logger.info("专属工具载荷表已在 SQLite 中就绪: path={}", db_path)
+        _initialized, _initialized_key = True, key
 
 
 async def save_tool_artifact(
@@ -121,146 +141,218 @@ async def save_tool_artifact(
     tool_call_id: str,
     tool_name: str,
     raw_payload: str,
+    user_id: str,
+    thread_id: str,
+    run_id: str,
     summary: str = "",
+    kind: str = "raw",
+    parent_artifact_id: str | None = None,
+    processing_metadata: dict[str, Any] | None = None,
 ) -> str:
-    """异步将超大工具原始数据存入专属数据库表.
-
-    Args:
-        tool_call_id: 工具调用 ID
-        tool_name: 工具名称
-        raw_payload: 原始返回文本（如超长 JSON）
-        summary: Subagent 生成的高浓度提炼结论（可选）
-
-    Returns:
-        生成的全局唯一 artifact_id
-    """
+    """只有存储提交成功才返回引用；调用者必须提供可信归属."""
+    if not user_id or not thread_id or not run_id:
+        raise PermissionError("归档缺少已认证的用户、会话或运行归属")
     await init_artifact_storage_table()
-
     artifact_id = f"art_{uuid.uuid4().hex}"
-    char_length = len(raw_payload)
-    now_iso = datetime.now(UTC).isoformat()
-
-    if _is_pg_configured():
-        import psycopg
-
-        db_uri = os.getenv("DATABASE_URI", "")
-        try:
-            async with await psycopg.AsyncConnection.connect(db_uri) as aconn:
-                async with aconn.cursor() as cur:
-                    await cur.execute(
-                        f"""
-                        INSERT INTO {_TABLE_NAME} (
-                            artifact_id, tool_call_id, tool_name, char_length, raw_payload, summary, created_at
-                        ) VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
-                        """,
-                        (
-                            artifact_id,
-                            tool_call_id,
-                            tool_name,
-                            char_length,
-                            raw_payload,
-                            summary,
-                        ),
-                    )
-                await aconn.commit()
-            logger.info(
-                "超大工具载荷已成功存入 PostgreSQL: id={}, tool={}, length={}",
-                artifact_id,
-                tool_name,
-                char_length,
-            )
-            return artifact_id
-        except Exception as e:
-            logger.warning(
-                "写入 PostgreSQL 失败，尝试回退写入 SQLite: id={}, error={}",
-                artifact_id,
-                e,
-            )
-
-    # 写入 SQLite
-    import aiosqlite
-
-    db_path = _get_sqlite_path()
-    async with aiosqlite.connect(db_path) as db:
-        await db.execute(
-            f"""
-            INSERT INTO {_TABLE_NAME} (
-                artifact_id, tool_call_id, tool_name, char_length, raw_payload, summary, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                artifact_id,
-                tool_call_id,
-                tool_name,
-                char_length,
-                raw_payload,
-                summary,
-                now_iso,
-            ),
-        )
-        await db.commit()
-
-    logger.info(
-        "超大工具载荷已成功存入 SQLite: id={}, tool={}, length={}",
-        artifact_id,
-        tool_name,
-        char_length,
+    now = datetime.now(UTC)
+    days = config.TOOL_ARTIFACT_RETENTION_DAYS
+    if days < 0:
+        raise ValueError("归档保留期不能为负数")
+    expires = (now + timedelta(days=days)).isoformat() if days else None
+    await _query(
+        f"INSERT INTO {_TABLE_NAME} (artifact_id,tool_call_id,tool_name,char_length,raw_payload,summary,created_at,user_id,thread_id,run_id,parent_artifact_id,kind,status,expires_at,processing_metadata) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        (
+            artifact_id,
+            tool_call_id,
+            tool_name,
+            len(raw_payload),
+            raw_payload,
+            summary,
+            now.isoformat(),
+            user_id,
+            thread_id,
+            run_id,
+            parent_artifact_id,
+            kind,
+            "stored",
+            expires,
+            json.dumps(processing_metadata or {}, ensure_ascii=False),
+        ),
     )
     return artifact_id
 
 
-async def get_tool_artifact(artifact_id: str) -> dict[str, Any] | None:
-    """根据 artifact_id 查询原始数据记录."""
+async def get_tool_artifact(
+    artifact_id: str, *, user_id: str, thread_id: str
+) -> dict[str, Any] | None:
+    """按归属读取，旧无归属与跨线程均不返回载荷."""
     await init_artifact_storage_table()
+    rows = await _query(
+        f"SELECT * FROM {_TABLE_NAME} WHERE artifact_id=? AND user_id=? AND thread_id=?",
+        (artifact_id, user_id, thread_id),
+        fetch=True,
+    )
+    if not rows:
+        return None
+    row = rows[0]
+    if row["status"] == "expired" or (
+        row["expires_at"]
+        and datetime.fromisoformat(row["expires_at"]) <= datetime.now(UTC)
+    ):
+        await _query(
+            f"UPDATE {_TABLE_NAME} SET raw_payload='', summary='', status='expired' WHERE artifact_id=? AND user_id=? AND thread_id=?",
+            (artifact_id, user_id, thread_id),
+        )
+        raise ArtifactExpired("原始资料已过期，历史消息仍保留。请重新查询资料。")
+    row["processing_metadata"] = json.loads(row["processing_metadata"] or "{}")
+    return row
 
-    if _is_pg_configured():
-        import psycopg
 
-        db_uri = os.getenv("DATABASE_URI", "")
+async def list_tool_artifacts(
+    *, user_id: str, thread_id: str, offset: int = 0, limit: int = 50
+) -> list[dict[str, Any]]:
+    """分页列出元数据，不在列表响应中装载原文."""
+    await init_artifact_storage_table()
+    return await _query(
+        f"SELECT artifact_id,tool_name,char_length,kind,status,expires_at,created_at,parent_artifact_id FROM {_TABLE_NAME} WHERE user_id=? AND thread_id=? ORDER BY created_at DESC,artifact_id LIMIT ? OFFSET ?",
+        (user_id, thread_id, min(max(limit, 1), 100), max(offset, 0)),
+        fetch=True,
+    )
+
+
+async def delete_thread_artifacts(*, user_id: str, thread_id: str) -> None:
+    """删除本人线程的原始／派生归档和计算记录，幂等."""
+    await init_artifact_storage_table()
+    async with _connection() as db:
+        await db.execute(
+            _sql(
+                f"DELETE FROM artifact_computations WHERE artifact_id IN (SELECT artifact_id FROM {_TABLE_NAME} WHERE user_id=? AND thread_id=?)"
+            ),
+            (user_id, thread_id),
+        )
+        await db.execute(
+            _sql(f"DELETE FROM {_TABLE_NAME} WHERE user_id=? AND thread_id=?"),
+            (user_id, thread_id),
+        )
+        await db.commit()
+
+
+async def cleanup_expired_artifacts(limit: int = 500) -> None:
+    """有界清理过期载荷，不删除聊天或诊断引用."""
+    await init_artifact_storage_table()
+    await _backfill_legacy_expiry()
+    await _query(
+        f"UPDATE {_TABLE_NAME} SET raw_payload='', summary='', status='expired' WHERE artifact_id IN (SELECT artifact_id FROM {_TABLE_NAME} WHERE expires_at<=? AND status!='expired' LIMIT ?)",
+        (datetime.now(UTC).isoformat(), min(max(limit, 1), 1000)),
+    )
+
+
+async def claim_computation(
+    artifact_id: str,
+    run_id: str,
+    *,
+    attempt: bool = True,
+    started_at: str | None = None,
+) -> dict[str, Any]:
+    """事务分配一次生成及有界修正，总阶段从首次归档就开始计时."""
+    await init_artifact_storage_table()
+    started = datetime.now(UTC)
+    if started_at:
         try:
-            async with await psycopg.AsyncConnection.connect(db_uri) as aconn:
-                async with aconn.cursor() as cur:
-                    await cur.execute(
-                        f"""
-                        SELECT artifact_id, tool_call_id, tool_name, char_length, raw_payload, summary, created_at
-                        FROM {_TABLE_NAME} WHERE artifact_id = %s
-                        """,
-                        (artifact_id,),
-                    )
-                    row = await cur.fetchone()
-                    if row:
-                        return {
-                            "artifact_id": row[0],
-                            "tool_call_id": row[1],
-                            "tool_name": row[2],
-                            "char_length": row[3],
-                            "raw_payload": row[4],
-                            "summary": row[5],
-                            "created_at": str(row[6]),
-                        }
-        except Exception as e:
-            logger.warning("从 PostgreSQL 读取载荷失败，尝试 SQLite: {}", e)
+            candidate = datetime.fromisoformat(started_at)
+            if candidate.tzinfo is not None:
+                started = min(started, candidate)
+        except ValueError:
+            pass
+    async with _connection() as db:
+        if not _is_pg_configured():
+            await db.execute("BEGIN IMMEDIATE")
+        await db.execute(
+            _sql(
+                "INSERT INTO artifact_computations (artifact_id,run_id,started_at,attempts) VALUES (?,?,?,0) ON CONFLICT (artifact_id,run_id) DO NOTHING"
+            ),
+            (artifact_id, run_id, started.isoformat()),
+        )
+        query = (
+            "SELECT * FROM artifact_computations WHERE artifact_id=? AND run_id=?"
+            + (" FOR UPDATE" if _is_pg_configured() else "")
+        )
+        cur = await db.execute(_sql(query), (artifact_id, run_id))
+        stored = await cur.fetchone()
+        if stored is None:
+            raise ComputationLimit("计算配额记录不存在，尚未完成处理。")
+        row = dict(stored)
+        elapsed = (
+            datetime.now(UTC) - datetime.fromisoformat(row["started_at"])
+        ).total_seconds()
+        if (
+            elapsed >= config.DATA_PROCESSING_TIMEOUT_SECONDS
+            or row["attempts"] >= 1 + config.QUICKJS_MAX_CORRECTIONS
+        ):
+            raise ComputationLimit("本阶段处理时限或修正次数已用尽，尚未完成计算。")
+        if attempt:
+            await db.execute(
+                _sql(
+                    "UPDATE artifact_computations SET attempts=attempts+1 WHERE artifact_id=? AND run_id=?"
+                ),
+                (artifact_id, run_id),
+            )
+        await db.commit()
+        return {
+            "attempt": row["attempts"] + (1 if attempt else 0),
+            "remaining_seconds": config.DATA_PROCESSING_TIMEOUT_SECONDS - elapsed,
+        }
 
-    import aiosqlite
 
-    db_path = _get_sqlite_path()
-    async with aiosqlite.connect(db_path) as db:
-        async with db.execute(
-            f"""
-            SELECT artifact_id, tool_call_id, tool_name, char_length, raw_payload, summary, created_at
-            FROM {_TABLE_NAME} WHERE artifact_id = ?
-            """,
-            (artifact_id,),
-        ) as cursor:
-            row = await cursor.fetchone()
-            if row:
-                return {
-                    "artifact_id": row[0],
-                    "tool_call_id": row[1],
-                    "tool_name": row[2],
-                    "char_length": row[3],
-                    "raw_payload": row[4],
-                    "summary": row[5],
-                    "created_at": str(row[6]),
-                }
-    return None
+async def update_artifact_summary(
+    artifact_id: str,
+    *,
+    user_id: str,
+    thread_id: str,
+    summary: str,
+    metadata: dict[str, Any],
+) -> None:
+    """原文保存成功后记录完整摘要和覆盖证据，不能更新他人归档."""
+    await init_artifact_storage_table()
+    rows = await _query(
+        f"UPDATE {_TABLE_NAME} SET summary=?,processing_metadata=? WHERE artifact_id=? AND user_id=? AND thread_id=? AND status='stored' RETURNING artifact_id",
+        (
+            summary,
+            json.dumps(metadata, ensure_ascii=False),
+            artifact_id,
+            user_id,
+            thread_id,
+        ),
+        fetch=True,
+    )
+    if not rows:
+        raise PermissionError("归档无法更新")
+
+
+async def _backfill_legacy_expiry(limit: int = 500) -> None:
+    days = config.TOOL_ARTIFACT_RETENTION_DAYS
+    if days <= 0:
+        return
+    async with _connection() as db:
+        cur = await db.execute(
+            _sql(
+                f"SELECT artifact_id,created_at FROM {_TABLE_NAME} WHERE user_id IS NULL AND expires_at IS NULL LIMIT ?"
+            ),
+            (limit,),
+        )
+        for row in await cur.fetchall():
+            try:
+                created = (
+                    row["created_at"]
+                    if isinstance(row["created_at"], datetime)
+                    else datetime.fromisoformat(str(row["created_at"]))
+                )
+                if created.tzinfo is None:
+                    created = created.replace(tzinfo=UTC)
+            except (ValueError, TypeError):
+                created = datetime.now(UTC)
+            await db.execute(
+                _sql(f"UPDATE {_TABLE_NAME} SET expires_at=? WHERE artifact_id=?"),
+                ((created + timedelta(days=days)).isoformat(), row["artifact_id"]),
+            )
+        await db.commit()

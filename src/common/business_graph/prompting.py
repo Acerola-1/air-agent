@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from common.computation import COMPUTATION_SYSTEM_RULES
 from common.context import get_routing_context
 from common.prompts import (
     EXPERT_MODE_SYSTEM_PROMPT,
@@ -76,6 +77,7 @@ def build_knowledge_system_prompt(configurable: dict[str, Any] | None) -> str:
     parts = [
         with_main_agent_tool_use_output_guard(KNOWLEDGE_SYSTEM_PROMPT),
         build_mode_context(configurable),
+        COMPUTATION_SYSTEM_RULES,
     ]
     return "\n\n".join(parts)
 
@@ -123,5 +125,7 @@ def build_system_prompt(
 
     if skill_rules_content:
         parts.append("## 当前业务 Skill 执行规则\n\n" + skill_rules_content)
+
+    parts.append(COMPUTATION_SYSTEM_RULES)
 
     return "\n\n".join(parts)

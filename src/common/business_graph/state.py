@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Annotated, NotRequired
+from typing import Annotated, Any, NotRequired
 
 from langchain_core.messages import AnyMessage
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
+
+from common.runtime_events import merge_processing_status
 
 
 class BusinessGraphState(TypedDict):
@@ -26,3 +28,8 @@ class BusinessGraphState(TypedDict):
     skill_rules_content: NotRequired[str]
     system_prompt: NotRequired[str]
     summary: NotRequired[str]
+    summary_covered_message_id: NotRequired[str]
+    context_metrics: NotRequired[dict[str, Any]]
+    context_status: NotRequired[dict[str, Any]]
+    data_status: Annotated[dict[str, Any], merge_processing_status]
+    data_model_started_at: NotRequired[str]

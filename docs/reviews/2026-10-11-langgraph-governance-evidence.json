@@ -1,0 +1,333 @@
+{
+  "date": "2026-10-11",
+  "timezone": "Asia/Shanghai",
+  "baseline_commit": "2ec4b9f",
+  "working_tree_uncommitted": true,
+  "scope": [
+    "basic-qa",
+    "intelligent-analysis",
+    "data-analysis",
+    "current chat frontend"
+  ],
+  "verification_kind": "real local browser + authenticated Next.js proxy + LangGraph API + configured models + PG + isolated QuickJS; synthetic full-tail JSON fixture; separate real MCP 400",
+  "results": {
+    "computation": {
+      "thread_id": "30b478ec-52c5-4ee1-8f7f-7e1d4af3ebec",
+      "artifact_id": "art_8ce622a00a064a2493036fd4d75a1b5b",
+      "derived_artifact_id": "art_44af7f95306b4032a9576b0f9180efb8",
+      "coverage": [
+        {
+          "path": "",
+          "input_records": 10001,
+          "processed_records": 10001
+        }
+      ],
+      "result": {
+        "count": 10001,
+        "valueSum": 495777,
+        "maxValue": 777,
+        "maxValueId": 10000
+      },
+      "final_message": "已对归档 `art_8ce622a00a064a2493036fd4d75a1b5b` 的全部记录完成计算，结果如下：\n\n- **记录数**：10001 条\n- **value 总和**：495777\n- **最大值对应 id**：value 最大值为 777，对应 id = 10000\n\n计算范围覆盖该归档原始 JSON 数组的全部 10001 条记录，字段含 id、value、padding，未做时间、站点或因子筛选，value 单位与原始数据保持一致。"
+    },
+    "compression": {
+      "thread_id": "d862d4d1-04ac-450a-9e2a-87d42590d10f",
+      "status": {
+        "version": 1,
+        "created_at": "2026-10-11T10:56:21.761126+00:00",
+        "processing_id": "2034798c-019d-4b8d-92ec-87d32eb9bd1a",
+        "type": "context_status",
+        "thread_id": "d862d4d1-04ac-450a-9e2a-87d42590d10f",
+        "run_id": "01a12a9a-aab7-7573-b41d-4ea5f08a2340",
+        "stage": "history",
+        "status": "completed",
+        "input_before": 386951,
+        "input_after": 78384,
+        "kept_turns": 3,
+        "measurement_source": "estimate:utf8-upper-bound"
+      },
+      "metrics": {
+        "model": "hy3",
+        "window_tokens": 192000,
+        "input_budget_tokens": 120000,
+        "input_tokens": 78384,
+        "output_reserved_tokens": 8192,
+        "safety_tokens": 4096,
+        "measurement_source": "estimate:utf8-upper-bound",
+        "latest_usage": {
+          "input_tokens": 13132,
+          "output_tokens": 936,
+          "total_tokens": 14068,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 895
+          }
+        }
+      },
+      "message_count": 22,
+      "summary_characters": 133
+    },
+    "error": {
+      "thread_id": "447cf3ce-1c78-4eeb-b55c-fc726cf121f8",
+      "tool_status": "error",
+      "code": 400,
+      "readable_error": "参数校验失败，请调整查询条件。",
+      "final": "调用失败。工具 `mcp_city_common_city_area_ranking` 缺少必填参数（如 `type`），系统返回错误：\"指定城市指定区域排名 type is marked non-null but is null\"（HTTP 400）。\n\n本次仅作验证说明，未补齐缺失参数，也未调用其他工具。"
+    },
+    "stop": {
+      "thread_id": "01a12a54-4829-7909-ad31-c853013f722b",
+      "runs": [
+        {
+          "run_id": "01a12a56-2625-70e3-a74e-fa713e0a1942",
+          "status": "success"
+        },
+        {
+          "run_id": "01a12a54-48a3-73e0-ae14-933baef18183",
+          "status": "interrupted"
+        }
+      ],
+      "browser_scroll_before_stop": 0,
+      "browser_scroll_after_stop": 0,
+      "stop_button_removed": true,
+      "new_run_final_answer": "你好！我是中科宇图的空气质量数据查询助手，可为您提供空气质量查询与环保科普服务。请问需要了解哪方面内容？"
+    }
+  },
+  "checks": {
+    "targeted_python": {
+      "passed": 55,
+      "duration_seconds": 8.52
+    },
+    "live_integration": {
+      "passed": 6,
+      "duration_seconds": 82.34
+    },
+    "frontend_contracts": {
+      "passed": 6
+    },
+    "typescript": "passed",
+    "production_build": "passed with webpack; existing Edge/middleware warnings",
+    "ruff": "37 Python files check and format passed",
+    "targeted_types": "0 errors; dynamic typing warnings remain; final 5-file check 104 warnings",
+    "openspec": "strict valid",
+    "git_diff_check": "passed",
+    "full_legacy_unit": {
+      "passed": 193,
+      "skipped": 26,
+      "failed": 10,
+      "excluded_collection_file": "tests/unit_tests/test_vanna_visualization.py",
+      "existing_failure_groups": {
+        "checkpointing": 1,
+        "knowledge_route": 4,
+        "mcp_client": 5
+      }
+    }
+  },
+  "screenshots": {
+    "full-data-computation": "evidence/2026-10-11/full-data-computation.jpg",
+    "history-compression": "evidence/2026-10-11/history-compression.jpg",
+    "mcp-400-readable": "evidence/2026-10-11/mcp-400-readable.jpg",
+    "mcp-400-expanded": "evidence/2026-10-11/mcp-400-expanded.jpg",
+    "archive-expired": "evidence/2026-10-11/archive-expired.jpg"
+  },
+  "limitations": [
+    "full-tail raw JSON is synthetic PG fixture, not a real oversized MCP payload",
+    "nonstructured full-text splitting covered by targeted tests, no additional live stress test",
+    "ordinary Chinese Enter verified; all native IME composition states not exercised",
+    "no frame-by-frame browser video; intermediate body contract tested",
+    "direct local backend retains existing trusted-local noop authentication",
+    "history checkpoint retained; no frontend history pagination",
+    "coverage counters do not prove arbitrary generated business logic correctness",
+    "unspecified pollution boundaries are rejected"
+  ],
+  "cleanup": {
+    "latest_bulk_cleanup": "rejected by automatic approval; not executed",
+    "remaining_test_samples": "retained",
+    "original_user_threads": "unchanged"
+  },
+  "report": "2026-10-11-langgraph-governance-acceptance.md",
+  "budget_follow_up": {
+    "original_failure": {
+      "thread_id": "01a12b52-858b-750f-9bdd-e79f8c8d3b15",
+      "metrics": {
+        "model": "hy3",
+        "window_tokens": 192000,
+        "input_budget_tokens": 120000,
+        "input_tokens": 128082,
+        "output_reserved_tokens": 8192,
+        "safety_tokens": 4096,
+        "measurement_source": "estimate:utf8-upper-bound",
+        "latest_usage": {}
+      },
+      "intent": "data_query",
+      "system_chars": 18483,
+      "message_sizes": [
+        {
+          "type": "human",
+          "characters": 2,
+          "tool_calls": 0
+        },
+        {
+          "type": "ai",
+          "characters": 100,
+          "tool_calls": 0
+        },
+        {
+          "type": "human",
+          "characters": 19,
+          "tool_calls": 0
+        },
+        {
+          "type": "ai",
+          "characters": 39,
+          "tool_calls": 0
+        }
+      ]
+    },
+    "expert_query": {
+      "thread_id": "e8450755-6e5b-4008-870e-305b7e2e389b",
+      "metrics": {
+        "model": "hy3",
+        "window_tokens": 192000,
+        "input_budget_tokens": 120000,
+        "input_tokens": 82060,
+        "output_reserved_tokens": 8192,
+        "safety_tokens": 4096,
+        "measurement_source": "estimate:multilingual:1.25x",
+        "input_breakdown_tokens": {
+          "system": 26805,
+          "conversation": 7000,
+          "tools": 44319,
+          "framing": 3936
+        },
+        "tool_count": 115,
+        "latest_usage": {
+          "input_tokens": 24785,
+          "output_tokens": 1328,
+          "total_tokens": 26113,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1049
+          }
+        }
+      },
+      "tools": [
+        {
+          "name": "load_skill",
+          "status": "success"
+        },
+        {
+          "name": "helper_get_latest_time",
+          "status": "success"
+        },
+        {
+          "name": "mcp_city_common_get_air_quality_realtime_stat",
+          "status": "error"
+        },
+        {
+          "name": "mcp_weather_forecast_hourly",
+          "status": "success"
+        },
+        {
+          "name": "mcp_city_common_get_air_quality_realtime_stat",
+          "status": "error"
+        },
+        {
+          "name": "text2sql_today_single_city_aqi_route",
+          "status": "success"
+        }
+      ],
+      "final": "【专家结论】\n湖州市今日（2026年10月11日）截止21时，PM2.5 为 **48 微克/立方米**，处于良级别。\n\n### 数据特征分析\n- 全天 PM2.5 逐小时波动区间：**22–48 微克/立方米**。\n- 变化特征：凌晨至上午缓慢抬升（00时 22 → 10时 44），午间至傍晚回落（13时 35），夜间再次累积（21时 48）。\n- 截止21时其余六项：PM10 **62 微克/立方米**、SO2 **9 微克/立方米**、NO2 **50 微克/立方米**、CO **0.9 毫克/立方米**、O3 **121 微克/立方米**、AQI **76（良）**。\n\n### 气象影响分析\n当前（截止23时）湖州市晴，气温 **19℃**，相对湿度 **87%**，北风微风（风力3级）。高湿、弱风条件下扩散能力一般，夜间 PM2.5 出现小幅累积，与监测走势一致。\n\n### 注意事项\n- 缺失全天逐小时气象数据，未做完整气象耦合分析，结论仅供参考。\n- 暂无空气质量数值预报数据，后续趋势仅基于已监测变化和可用气象条件作保守判断。"
+    },
+    "compression": {
+      "thread_id": "d7090563-2426-475f-901b-8c25b869aaa1",
+      "status": {
+        "version": 1,
+        "created_at": "2026-10-11T14:27:46.353022+00:00",
+        "processing_id": "c50e69f5-06e8-440d-ae20-7ec3f1120290",
+        "type": "context_status",
+        "thread_id": "d7090563-2426-475f-901b-8c25b869aaa1",
+        "run_id": "01a12b5c-6014-72d2-be4b-7d239fad7942",
+        "stage": "history",
+        "status": "completed",
+        "input_before": 241889,
+        "input_after": 49144,
+        "kept_turns": 3,
+        "measurement_source": "estimate:multilingual:1.25x"
+      },
+      "metrics": {
+        "model": "hy3",
+        "window_tokens": 192000,
+        "input_budget_tokens": 120000,
+        "input_tokens": 49144,
+        "output_reserved_tokens": 8192,
+        "safety_tokens": 4096,
+        "measurement_source": "estimate:multilingual:1.25x",
+        "input_breakdown_tokens": {
+          "system": 784,
+          "conversation": 48232,
+          "tools": 0,
+          "framing": 128
+        },
+        "tool_count": 0,
+        "latest_usage": {
+          "input_tokens": 13153,
+          "output_tokens": 540,
+          "total_tokens": 13693,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 481
+          }
+        }
+      },
+      "message_count": 22,
+      "summary_characters": 164
+    },
+    "computation": {
+      "thread_id": "decbe5b7-693b-4ea9-8924-3e9bf52ea30a",
+      "artifact_id": "art_2c1b45e41fa04c5bb0556c1a4d157f54",
+      "derived_artifact_id": "art_c3b1579ceeae4a1b8be09ad8fadfee75",
+      "coverage": [
+        {
+          "path": "",
+          "input_records": 10001,
+          "processed_records": 10001
+        }
+      ],
+      "result": {
+        "count": 10001,
+        "sum": 495777,
+        "maxValue": 777,
+        "maxId": 10000
+      },
+      "final_message": "已对归档数据（art_2c1b45e41fa04c5bb0556c1a4d157f54）全部 10001 条记录完成计算，结果如下：\n\n- **记录数**：10001 条\n- **value 总和**：495777\n- **最大值对应 id**：最大值 value = 777，对应 id = 10000\n\n计算过程已覆盖全部根数组记录，无遗漏。"
+    },
+    "checks": {
+      "related_python_passed": 58,
+      "live_selected_passed": 3,
+      "live_duration_seconds": 101.64,
+      "frontend_contracts_passed": 7,
+      "typescript": "passed",
+      "targeted_types": {
+        "errors": 0,
+        "warnings": 57
+      }
+    },
+    "screenshots": [
+      "evidence/2026-10-11/expert-query-budget-fixed.jpg",
+      "evidence/2026-10-11/expert-query-budget-breakdown.jpg"
+    ],
+    "scope_note": "Original user failure thread was not modified; actual tool failures remain transparent; tool-returned atmospheric values not separately validated against external source."
+  }
+}

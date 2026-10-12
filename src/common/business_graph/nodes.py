@@ -15,9 +15,10 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import Sequence
+from datetime import UTC, datetime
 from typing import Any
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import StreamWriter
 from loguru import logger
@@ -38,13 +39,19 @@ from common.business_graph.state import BusinessGraphState
 from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
 from common.context_guard import prepare_model_context
-from common.conversation_summarizer import (
-    should_summarize_conversation,
-    summarize_conversation_history,
-)
+from common.conversation_summarizer import update_conversation_summary
+from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
 from common.mcp_client import ensure_mcp_tools
+from common.model_budget import (
+    ContextBudgetExceeded,
+    enforce_request_budget,
+    fit_tool_schemas,
+    request_metrics,
+)
 from common.models import ModelRegistry
+from common.output_contract import visible_result
 from common.permission.rules import is_conversational
+from common.runtime_events import emit_event
 from common.runtime_tools import get_business_tools, tool_name
 from common.skill_router import SkillRouteCandidate, SkillSemanticRouter
 
@@ -56,7 +63,7 @@ from common.skill_router import SkillRouteCandidate, SkillSemanticRouter
 # create_artifact 是跨技能的通用画布输出能力，不受技能 allowed_tools 限制，
 # 保证 Agent 在任何技能命中场景下都能自主产出 HTML/Markdown/SVG 画布内容.
 _ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset(
-    {"get_beijing_time", "create_artifact", "load_skill"}
+    {"get_beijing_time", "create_artifact", "load_skill", "compute_artifact"}
 )
 
 # 兜底消息常量 (模型调用失败 / 空回复时使用, 与 data_analysis/nodes.py 保持一致).
@@ -131,7 +138,11 @@ class BusinessGraphNodes:
             )
             return {
                 "intent": "input_overflow",
-                "messages": [AIMessage(content=overflow_msg)],
+                "messages": [
+                    AIMessage(
+                        content=overflow_msg, additional_kwargs={"ui_visible": True}
+                    )
+                ],
             }
 
         intent, reason = classify_intent_rule(question)
@@ -228,35 +239,24 @@ class BusinessGraphNodes:
         configurable = config.get("configurable", {}) or {}
 
         if intent == INTENT_CHITCHAT:
-            return {"system_prompt": build_chitchat_system_prompt()}
-        if intent == INTENT_KNOWLEDGE:
-            return {
-                "system_prompt": build_knowledge_system_prompt(configurable),
-            }
-
-        await ensure_mcp_tools()
-
-        system_prompt = build_system_prompt(
-            base_prompt=self._base_system_prompt,
-            skill_rules_content=state.get("skill_rules_content", ""),
-            configurable=configurable,
-        )
-
-        logger.info(
-            "业务图模型准备完成: graph={}，system_prompt_length={}",
-            self._graph_name,
-            len(system_prompt),
-        )
-        updates: dict[str, Any] = {"system_prompt": system_prompt}
-        messages = state.get("messages", [])
-        if should_summarize_conversation(messages):
-            new_summary = await summarize_conversation_history(
-                messages,
-                existing_summary=state.get("summary"),
+            system_prompt = build_chitchat_system_prompt()
+        elif intent == INTENT_KNOWLEDGE:
+            system_prompt = build_knowledge_system_prompt(configurable)
+        else:
+            await ensure_mcp_tools()
+            system_prompt = build_system_prompt(
+                base_prompt=self._base_system_prompt,
+                skill_rules_content=state.get("skill_rules_content", ""),
+                configurable=configurable,
             )
-            if new_summary:
-                updates["summary"] = new_summary
-
+        updates: dict[str, Any] = {"system_prompt": system_prompt}
+        updates.update(
+            await update_conversation_summary(
+                {**state, "system_prompt": system_prompt},
+                config,
+                tools=self._available_tools(state),
+            )
+        )
         return updates
 
     def _available_tools(self, state: BusinessGraphState) -> list[Any]:
@@ -272,7 +272,7 @@ class BusinessGraphNodes:
         if intent == INTENT_CHITCHAT:
             return []
 
-        business = get_business_tools()
+        business = get_business_tools(include_computation=True)
         if intent == INTENT_KNOWLEDGE:
             return [
                 t
@@ -299,6 +299,27 @@ class BusinessGraphNodes:
 
         最多重试 3 次；空回复时追加引导消息重试一次。
         """
+        recent = state.get("messages", [])
+        last_human = max(
+            (
+                i
+                for i, message in enumerate(recent)
+                if isinstance(message, HumanMessage)
+            ),
+            default=-1,
+        )
+        if any(
+            isinstance(message, ToolMessage)
+            and message.additional_kwargs.get("processing_terminal")
+            for message in recent[last_human + 1 :]
+        ):
+            return visible_result(
+                AIMessage(
+                    content="本次全量计算未完成，尚无完整统计结果。请缩小数据范围或重新查询。"
+                ),
+                config,
+            )
+
         model = ModelRegistry.main_llm
         system_prompt = state.get("system_prompt", "")
         available = self._available_tools(state)
@@ -308,6 +329,7 @@ class BusinessGraphNodes:
         protected_messages = prepare_model_context(
             messages,
             summary=state.get("summary"),
+            summary_covered_message_id=state.get("summary_covered_message_id"),
         )
 
         full_messages: list[Any] = []
@@ -315,16 +337,42 @@ class BusinessGraphNodes:
             full_messages.append(SystemMessage(content=system_prompt))
         full_messages.extend(protected_messages)
 
+        schemas = fit_tool_schemas(full_messages, available)
+        try:
+            metrics = enforce_request_budget(full_messages, schemas)
+        except ContextBudgetExceeded as exc:
+            metrics = request_metrics(full_messages, schemas)
+            emit_event(config, "context_metrics", **metrics)
+            return visible_result(AIMessage(content=str(exc)), config, metrics=metrics)
+        emit_event(config, "context_metrics", **metrics)
+
         if available:
-            model_with_tools = model.bind_tools(available)
+            model_with_tools = model.bind_tools(schemas)
         else:
             model_with_tools = model
 
+        data_model_started_at = datetime.now(UTC).isoformat()
         response = None
         for attempt in range(3):
             try:
-                response = await model_with_tools.ainvoke(full_messages)
+                response = await invoke_with_data_deadline(
+                    model_with_tools, full_messages, messages, config
+                )
                 break
+            except DataProcessingFailure as exc:
+                status = emit_event(
+                    config,
+                    "context_status",
+                    stage="data",
+                    status="failed",
+                    message=str(exc),
+                )
+                return {
+                    **visible_result(
+                        AIMessage(content=str(exc)), config, metrics=metrics
+                    ),
+                    "data_status": status,
+                }
             except Exception as exc:
                 logger.exception(
                     "业务图模型调用失败 (attempt {}): {}", attempt + 1, exc
@@ -332,9 +380,11 @@ class BusinessGraphNodes:
                 if attempt < 2:
                     await asyncio.sleep(0.5 * (attempt + 1))
                 else:
-                    return {
-                        "messages": [AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE)]
-                    }
+                    return visible_result(
+                        AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE),
+                        config,
+                        metrics=metrics,
+                    )
 
         # 空回复检测：content 为空且无 tool_calls -> 追加引导重试
         if (
@@ -349,7 +399,11 @@ class BusinessGraphNodes:
                 HumanMessage(content=_EMPTY_REPLY_NUDGE),
             ]
             try:
-                nudge_response = await model_with_tools.ainvoke(nudge_messages)
+                metrics = enforce_request_budget(nudge_messages, schemas)
+                emit_event(config, "context_metrics", **metrics)
+                nudge_response = await invoke_with_data_deadline(
+                    model_with_tools, nudge_messages, messages, config
+                )
                 if (
                     isinstance(nudge_response, AIMessage)
                     and not nudge_response.tool_calls
@@ -363,6 +417,9 @@ class BusinessGraphNodes:
                 logger.warning("业务图模型空回复重试失败: {}，使用兜底消息", exc)
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
-        return {"messages": [response]}
+        return {
+            **visible_result(response, config, metrics=metrics),
+            "data_model_started_at": data_model_started_at,
+        }
 
     # ──── 工具过滤 ────

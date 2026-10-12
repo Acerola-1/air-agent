@@ -60,11 +60,37 @@ export async function createThread(
   return threadId;
 }
 
-/** 读取线程完整状态（含历史 messages） */
-export async function getThreadState(threadId: string): Promise<unknown[]> {
+export type ContextMetrics = {
+  model: string; window_tokens: number; input_budget_tokens: number; input_tokens: number;
+  output_reserved_tokens: number; safety_tokens: number; measurement_source: string;
+  input_breakdown_tokens?: { system: number; conversation: number; tools: number; framing: number };
+  tool_count?: number;
+  latest_usage?: { input_tokens?: number; output_tokens?: number; total_tokens?: number };
+};
+export type ProcessingStatus = {
+  type: string; stage: "history" | "data"; status: "started" | "completed" | "failed";
+  thread_id?: string; run_id?: string; input_before?: number; input_after?: number; kept_turns?: number; message?: string;
+  processing_id?: string; artifact_id?: string;
+  artifacts?: Record<string, { status: "started" | "completed" | "failed"; message?: string }>;
+};
+export type ThreadValues = { messages: unknown[]; context_metrics?: ContextMetrics; context_status?: ProcessingStatus; data_status?: ProcessingStatus };
+
+/** 摘要为内部 state，界面仅消费消息和公开统计。 */
+export async function getThreadState(threadId: string): Promise<ThreadValues> {
   const state = await apiClient().threads.getState(threadId);
-  const messages = (state as { values?: { messages?: unknown[] } }).values?.messages;
-  return Array.isArray(messages) ? messages : [];
+  const values = (state as unknown as { values?: ThreadValues }).values;
+  return { messages: Array.isArray(values?.messages) ? values.messages : [], context_metrics: values?.context_metrics, context_status: values?.context_status, data_status: values?.data_status };
+}
+
+export async function cancelRun(threadId: string, runId: string): Promise<void> {
+  await apiClient().runs.cancel(threadId, runId, false, "interrupt");
+}
+
+export type ArchivePage = { content: string; offset: number; next_offset: number | null; char_length: number };
+export async function readArchive(threadId: string, artifactId: string, offset = 0): Promise<ArchivePage> {
+  const response = await fetch(`/api/archives/${encodeURIComponent(threadId)}/${encodeURIComponent(artifactId)}?offset=${offset}`, { cache: "no-store" });
+  if (!response.ok) throw new Error(response.status === 410 ? "资料已过期，请重新查询。" : response.status === 403 || response.status === 404 ? "此会话无法读取该资料。" : "资料暂时无法读取，请重试。");
+  return response.json();
 }
 
 /** 更新线程 metadata（标题/用户归属等） */
@@ -79,51 +105,46 @@ export async function deleteThread(threadId: string): Promise<void> {
   await apiClient().threads.delete(threadId);
 }
 
-/** runs.stream 流式回调 */
 export type StreamHandlers = {
-  /** values 事件：完整 messages 快照（节点结束触发，可靠渲染基准） */
-  onValues: (messages: unknown[]) => void;
-  /** messages 事件：token 级增量 [[message, meta], ...]，用于打字机效果 */
-  onMessagesDelta: (messages: [unknown, unknown][]) => void;
-  /** 流结束 / 出错 */
+  onValues: (values: ThreadValues) => void;
+  onMessagesDelta?: (messages: [unknown, unknown][]) => void;
+  onCustom?: (event: Record<string, unknown>) => void;
+  onRun?: (runId: string) => void;
   onDone?: (error?: Error) => void;
 };
 
-/** 提交一轮对话（增量 messages，历史由后端 checkpointer 累积）并流式消费 */
 export async function streamRun(opts: {
-  threadId: string;
-  graphId: string;
-  messages: { type: string; content: unknown }[];
-  config?: { configurable?: Record<string, unknown> };
-  signal?: AbortSignal;
-  handlers: StreamHandlers;
+  threadId: string; graphId: string; messages: { id?: string; type: string; content: unknown }[];
+  config?: { configurable?: Record<string, unknown> }; signal?: AbortSignal; handlers: StreamHandlers;
 }): Promise<void> {
   const { threadId, graphId, messages, config, signal, handlers } = opts;
   try {
     const stream = await apiClient().runs.stream(threadId, graphId, {
-      input: { messages },
-      config,
-      streamMode: ["values", "messages-tuple"],
-      signal,
+      input: { messages }, config, streamMode: ["values", "messages-tuple", "custom"], signal,
+      onDisconnect: "cancel",
     });
     for await (const chunk of stream) {
+      // 即使用户已停止，也需接收首次 metadata 以取消已创建的 run。
+      if (chunk.event === "metadata") {
+        const data = chunk.data as { run_id?: string };
+        if (data?.run_id) handlers.onRun?.(data.run_id);
+      }
       if (signal?.aborted) break;
+      if (chunk.event === "error") throw new Error("本次处理失败，已确认的内容仍保留。请重试。");
       if (chunk.event === "values") {
-        const values = chunk.data as { messages?: unknown[] };
-        if (Array.isArray(values?.messages)) handlers.onValues(values.messages);
+        const values = chunk.data as ThreadValues;
+        if (Array.isArray(values?.messages)) handlers.onValues(values);
+      } else if (chunk.event === "custom") {
+        const data = chunk.data;
+        if (data && typeof data === "object") handlers.onCustom?.(data as Record<string, unknown>);
       } else if (chunk.event === "messages") {
-        // messages-tuple 事件：data = [message, metadata]
-        const tuple = chunk.data as [unknown, unknown] | undefined;
-        if (tuple && Array.isArray(tuple)) handlers.onMessagesDelta([tuple]);
+        const tuple = chunk.data as [unknown, unknown];
+        if (Array.isArray(tuple)) handlers.onMessagesDelta?.([tuple]);
       }
     }
     handlers.onDone?.();
   } catch (error) {
-    if (signal?.aborted) {
-      handlers.onDone?.();
-    } else {
-      handlers.onDone?.(error instanceof Error ? error : new Error(String(error)));
-    }
+    handlers.onDone?.(signal?.aborted ? undefined : error instanceof Error ? error : new Error("本次处理失败，请重试。"));
   }
 }
 

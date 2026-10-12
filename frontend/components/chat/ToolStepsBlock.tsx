@@ -11,6 +11,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import { type ToolExecution } from "@/lib/chat-store";
+import { ArchiveReader } from "@/components/chat/ArchiveReader";
 import { cn } from "@/lib/utils";
 
 interface ToolStepsBlockProps {
@@ -27,7 +28,7 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
 
   if (!tools || tools.length === 0) return null;
 
-  const runningCount = tools.filter((t) => t.status === "running").length;
+  const runningCount = tools.filter((t) => t.status === "running" || t.status === "pending").length;
   const errorCount = tools.filter((t) => t.status === "error").length;
   const isAllCompleted = runningCount === 0 && errorCount === 0;
 
@@ -50,7 +51,7 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
       <button
         type="button"
         onClick={() => setIsMainOpen((prev) => !prev)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-left text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors"
+        className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-colors focus-visible:outline-2 focus-visible:outline-ring"
         aria-expanded={isMainOpen}
       >
         <span className="flex size-5 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
@@ -91,6 +92,7 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
         </div>
       </button>
 
+      {errorCount > 0 && !isMainOpen && <p role="status" className="px-3 pb-2 text-destructive">{tools.find((tool) => tool.status === "error")?.errorMessage || "查询未完成，请调整条件或稍后重试。"}</p>}
       {/* 展开的工具列表 */}
       {isMainOpen && (
         <div className="divide-y divide-border/40 border-t border-border/50 bg-background/50">
@@ -100,8 +102,8 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
 
             return (
               <div key={`${tool.id}-${idx}`} className="p-2.5 space-y-2">
-                <div
-                  className="flex items-center justify-between cursor-pointer select-none"
+                <button type="button" aria-expanded={isSubOpen}
+                  className="flex w-full items-center justify-between cursor-pointer select-none text-left hover:bg-muted/40 focus-visible:outline-2 focus-visible:outline-ring"
                   onClick={() => setExpandedSubId(isSubOpen ? null : tool.id)}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -110,25 +112,27 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
                     </span>
                     {hasArtifact && (
                       <span className="inline-flex items-center gap-1 rounded bg-indigo-500/10 px-1.5 py-0.5 text-[10px] font-medium text-indigo-500 dark:text-indigo-400">
-                        <DatabaseIcon className="size-2.5" /> 已落专属库
+                        <DatabaseIcon className="size-2.5" /> 已归档
                       </span>
                     )}
                   </div>
 
                   <span className="text-[11px] text-muted-foreground/70 flex items-center gap-1">
-                    {isSubOpen ? "收起明细" : "查看数据"}
+                    {isSubOpen ? "收起详情" : "查看详情"}
                     <ChevronDownIcon
                       className={cn("size-3 transition-transform", isSubOpen && "rotate-180")}
                     />
                   </span>
-                </div>
+                </button>
+                {tool.status === "error" && <p role="status" className="text-destructive">{tool.errorMessage || "查询未完成，请调整条件或稍后重试。"}</p>}
 
                 {isSubOpen && (
                   <div className="space-y-2 pt-1 font-mono text-[11px]">
+                    {tool.artifactId && <ArchiveReader artifactId={tool.artifactId} />}
                     {/* 入参 */}
                     <div className="rounded-lg bg-muted/40 p-2 border border-border/40">
                       <div className="text-[10px] font-sans font-semibold text-muted-foreground mb-1">
-                        调用入参 (Args):
+                        查询参数：
                       </div>
                       <pre className="overflow-x-auto text-muted-foreground whitespace-pre-wrap break-all">
                         {typeof tool.args === "string"
@@ -141,7 +145,7 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
                     {tool.result && (
                       <div className="rounded-lg bg-muted/40 p-2 border border-border/40 relative">
                         <div className="flex items-center justify-between text-[10px] font-sans font-semibold text-muted-foreground mb-1">
-                          <span>返回结果 (Result):</span>
+                          <span>诊断／返回详情：</span>
                           <button
                             type="button"
                             onClick={(e) => {

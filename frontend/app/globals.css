@@ -139,3 +139,13 @@
 @custom-variant data-open (&:where([data-state="open"], [data-open]:not([data-open="false"])));
 
 @custom-variant data-closed (&:where([data-state="closed"], [data-closed]:not([data-closed="false"])));
+/* 应用拥有的滚动区域统一继承可见滚动条，支持系统高对比与减少动画。 */
+@layer base {
+  * { scrollbar-width: thin; scrollbar-color: var(--muted-foreground) var(--muted); }
+  *::-webkit-scrollbar { width: 8px; height: 8px; }
+  *::-webkit-scrollbar-track { background: var(--muted); }
+  *::-webkit-scrollbar-thumb { background: var(--muted-foreground); border-radius: var(--radius); }
+  *::-webkit-scrollbar-thumb:hover { background: var(--foreground); }
+  @media (forced-colors: active) { * { scrollbar-color: auto; } }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+}

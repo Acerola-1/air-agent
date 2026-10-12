@@ -1,4 +1,10 @@
-## ADDED Requirements
+# 最终输出清理
+
+## Purpose
+
+提供业务答案清理与状态事件，去除过程性内容并保留结论、数据和原有格式，在失败时提供可读答案，使实时输出与重新读取历史保持一致。
+
+## Requirements
 
 ### Requirement: 最终输出清理中间件
 系统 SHALL 提供一个后置中间件，在业务 DeepAgent 完成后清理最终可见答案中的过程信息，并保持主 Agent 执行链路、工具调用、Skill 输出和原始 Messages 降级路径可用。

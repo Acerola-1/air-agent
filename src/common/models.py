@@ -26,7 +26,18 @@ class ModelRegistry:
         base_url=config.MAIN_LLM_BASE_URL,
         model=config.MAIN_LLM_MODEL,
         temperature=0.1,
-        max_tokens=8192,
+        max_completion_tokens=config.MAIN_LLM_MAX_OUTPUT_TOKENS,
         timeout=120,
         max_retries=1,
+    )
+
+    summary_llm = ChatOpenAI(
+        api_key=SecretStr(config.SUMMARY_LLM_API_KEY),
+        base_url=config.SUMMARY_LLM_BASE_URL,
+        model=config.SUMMARY_LLM or config.MAIN_LLM_MODEL,
+        temperature=0,
+        max_completion_tokens=config.SUMMARY_MODEL_OUTPUT_TOKENS,
+        timeout=config.DATA_PROCESSING_TIMEOUT_SECONDS,
+        max_retries=0,
+        tags=["nostream", "internal-summary"],
     )

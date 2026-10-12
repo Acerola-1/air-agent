@@ -1,86 +1,64 @@
-"""Subagent 总结提炼子代理单元测试."""
+"""独立摘要模型的完整输入与失败传播契约."""
 
 from __future__ import annotations
 
 import asyncio
 from unittest.mock import AsyncMock
 
+import pytest
 from langchain_core.messages import AIMessage
 
-from common.business_graph.subagent_summarizer import (
-    _build_summarizer_prompt,
-    _fallback_summary,
-    summarize_large_tool_output,
-)
+from common.business_graph.subagent_summarizer import summarize_large_tool_output
+from common.models import ModelRegistry
+from common.text_reduction import summarize_complete_text
 
 
-def test_subagent_prompt_and_fallback_builder():
-    """测试提示词构建与安全降级格式."""
-    prompt = _build_summarizer_prompt(
-        user_question="海淀区空气质量",
-        tool_name="mcp_weather",
-        tool_args={"region": ""},
-        char_length=50000,
-        raw_output="WEATHER_DATA_" * 1000,
+@pytest.mark.anyio
+@pytest.mark.parametrize("reason", ["length", "content_filter"])
+async def test_provider_truncation_is_not_a_complete_summary(monkeypatch, reason):
+    model = AsyncMock()
+    model.ainvoke.return_value = AIMessage(
+        content="半段摘要", response_metadata={"finish_reason": reason}
     )
-    assert "海淀区空气质量" in prompt
-    assert "mcp_weather" in prompt
-    assert "50000" in prompt
+    monkeypatch.setattr(ModelRegistry, "summary_llm", model)
+    with pytest.raises(ValueError, match="未完整"):
+        await summarize_complete_text("完整原文资料", instruction="保留用户约束")
+    assert model.ainvoke.await_count == 1
 
-    fallback = _fallback_summary(
-        tool_name="mcp_weather",
-        char_length=50000,
-        raw_output="SAMPLE_HEAD_12345" + "X" * 10000 + "SAMPLE_TAIL_67890",
-        reason="测试超时",
+
+@pytest.mark.anyio
+async def test_tool_summary_keeps_question_source_and_full_coverage(monkeypatch):
+    model = AsyncMock()
+    model.ainvoke.return_value = AIMessage(content="保留时间、单位与目标事实")
+    monkeypatch.setattr(ModelRegistry, "summary_llm", model)
+    raw = "资料" * 10000 + "尾部目标777"
+    text, coverage = await summarize_large_tool_output(
+        user_question="查询尾部目标",
+        tool_name="source",
+        tool_args={"region": "测试范围"},
+        raw_output=raw,
     )
-    assert "工具超大输出降级摘要" in fallback
-    assert "测试超时" in fallback
-    assert "SAMPLE_HEAD_12345" in fallback
-    assert "SAMPLE_TAIL_67890" in fallback
+    assert text == "保留时间、单位与目标事实"
+    assert coverage["characters_covered"] == len(raw) and coverage["complete"] is True
+    prompt = model.ainvoke.await_args.args[0][1].content
+    assert "尾部目标777" in prompt and "测试范围" in prompt and "source" in prompt
+    assert "nostream" in model.ainvoke.await_args.kwargs["config"]["tags"]
 
 
-def test_subagent_summarize_success(monkeypatch):
-    """测试 Subagent 正常提炼流程."""
-    async def _run():
-        mock_model = AsyncMock()
-        mock_model.ainvoke.return_value = AIMessage(
-            content="【海淀区空气质量摘要】AQI: 45, 优, PM2.5: 12μg/m³。"
+@pytest.mark.anyio
+async def test_timeout_has_no_fake_prefix_summary(monkeypatch):
+    async def slow(*args, **kwargs):
+        await asyncio.sleep(1)
+        return AIMessage(content="迟到结果")
+
+    model = AsyncMock()
+    model.ainvoke.side_effect = slow
+    monkeypatch.setattr(ModelRegistry, "summary_llm", model)
+    with pytest.raises(TimeoutError):
+        await summarize_large_tool_output(
+            user_question="全量资料",
+            tool_name="source",
+            tool_args={},
+            raw_output="头部资料" + ("x" * 10000) + "尾部资料",
+            timeout_seconds=0.01,
         )
-        monkeypatch.setattr("common.business_graph.subagent_summarizer.ModelRegistry.main_llm", mock_model)
-
-        result = await summarize_large_tool_output(
-            user_question="海淀区今天空气质量如何？",
-            tool_name="mcp_weather",
-            tool_args={"region": ""},
-            raw_output="RAW_DATA_" * 2000,
-        )
-        assert "【海淀区空气质量摘要】" in result
-        assert "PM2.5: 12μg/m³" in result
-        assert mock_model.ainvoke.called
-
-    asyncio.run(_run())
-
-
-def test_subagent_summarize_timeout_fallback(monkeypatch):
-    """测试 Subagent 超时安全降级."""
-    async def _run():
-        mock_model = AsyncMock()
-
-        async def _slow_call(*args, **kwargs):
-            await asyncio.sleep(1.0)
-            return AIMessage(content="late")
-
-        mock_model.ainvoke = _slow_call
-        monkeypatch.setattr("common.business_graph.subagent_summarizer.ModelRegistry.main_llm", mock_model)
-
-        result = await summarize_large_tool_output(
-            user_question="海淀区天气",
-            tool_name="mcp_weather",
-            tool_args={"region": ""},
-            raw_output="FAST_DATA_CHUNK_" * 500,
-            timeout_seconds=0.05,
-        )
-        assert "工具超大输出降级摘要" in result
-        assert "提炼超时" in result
-
-    asyncio.run(_run())

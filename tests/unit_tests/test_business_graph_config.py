@@ -116,12 +116,13 @@ def test_business_graphs_node_flow_finalize_output() -> None:
     assert "ArtifactMiddleware" not in bg_nodes
     assert "scan_text" not in bg_nodes
 
-    # data-analysis 图保留 finalize_output + 流式事件
+    # 清洗草稿缓冲后统一发布，避免半段文本或内部错误短暂进入正文。
     da_graph = STATE_GRAPHS["data-analysis"].read_text(encoding="utf-8")
     da_nodes = Path("src/data_analysis/nodes.py").read_text(encoding="utf-8")
     assert "finalize_output" in da_graph
     assert "_stream_cleaned_answer" not in da_nodes
-    assert "final_output_delta" in da_nodes
+    assert "final_output_delta" not in da_nodes
+    assert "visible_result" in da_nodes
     assert "final_output_done" in da_nodes
 
 

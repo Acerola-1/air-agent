@@ -6,10 +6,11 @@ from typing import Any
 
 import common.mcp_client as mcp_client
 from common.artifacts.create_artifact_tool import build_create_artifact_tool
+from common.computation.tool import compute_artifact
 from common.tools import get_beijing_time, parse_region_tool, websearch_tool
 
 
-def get_business_tools() -> list[Any]:
+def get_business_tools(*, include_computation: bool = False) -> list[Any]:
     """返回当前可用的业务工具,MCP 工具按运行时初始化状态动态追加.
 
     本地化说明:知识检索与 text2sql 工具依赖 Milvus/Ollama,本地不可用,已移除。
@@ -18,6 +19,7 @@ def get_business_tools() -> list[Any]:
     """
     return [
         build_create_artifact_tool(),
+        *([compute_artifact] if include_computation else []),
         get_beijing_time,
         parse_region_tool,
         websearch_tool,

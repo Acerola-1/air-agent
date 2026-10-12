@@ -1,125 +1,46 @@
 "use client";
 
-import { useMemo } from "react";
-import { CpuIcon, GaugeIcon, InfoIcon } from "lucide-react";
+import { GaugeIcon } from "lucide-react";
 import { useChatStore } from "@/lib/chat-store";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-const MAX_CONTEXT_TOKENS = 192_000;
-const PRUNE_BUDGET_TOKENS = 120_000;
-
 export function ContextMeter({ className }: { className?: string }) {
-  const totalTokens = useChatStore((s) => s.totalContextTokens);
-  const messages = useChatStore((s) => s.messages);
-
-  // 获取最近一条有 usage 记录的 assistant 消息
-  const lastUsage = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].usage) return messages[i].usage;
-    }
-    return null;
-  }, [messages]);
-
-  const percentage = Math.min(100, Math.max(0.1, (totalTokens / MAX_CONTEXT_TOKENS) * 100));
-  const isNearBudget = totalTokens >= PRUNE_BUDGET_TOKENS;
-
-  // 格式化千位数显示
-  const formattedTokens =
-    totalTokens >= 1000 ? `${(totalTokens / 1000).toFixed(1)}k` : `${totalTokens}`;
-  const formattedMax = `${MAX_CONTEXT_TOKENS / 1000}k`;
-
+  const metrics = useChatStore((state) => state.contextMetrics);
+  const actual = metrics?.latest_usage?.input_tokens;
+  const hasActual = typeof actual === "number" && Number.isFinite(actual) && actual >= 0;
+  const displayed = hasActual ? actual : metrics?.input_tokens ?? 0;
+  const estimated = metrics && !hasActual && !metrics.measurement_source.startsWith("tokenizer:");
+  const near = metrics && displayed >= metrics.input_budget_tokens * 0.9;
+  const ratio = metrics ? Math.min(100, displayed / metrics.input_budget_tokens * 100) : 0;
+  const format = (count: number) => count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className={cn(
-              "group inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium transition-all select-none cursor-pointer",
-              isNearBudget
-                ? "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                : "border-border/60 bg-muted/40 text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-              className
-            )}
-            role="status"
-            aria-label={`当前上下文使用 ${formattedTokens} / ${formattedMax} Tokens`}
-          >
-            <GaugeIcon
-              className={cn(
-                "size-3 shrink-0 transition-transform group-hover:rotate-12",
-                isNearBudget ? "text-amber-500" : "text-emerald-500"
-              )}
-            />
-            <span className="tabular-nums font-mono">
-              {formattedTokens} / {formattedMax}
-            </span>
-            <span className="text-[10px] opacity-75">({percentage.toFixed(1)}%)</span>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent
-          side="top"
-          align="end"
-          className="w-64 p-3 bg-popover text-popover-foreground border shadow-xl rounded-xl space-y-2 text-xs"
-        >
-          <div className="flex items-center justify-between border-b pb-1.5 font-semibold">
-            <span className="flex items-center gap-1.5">
-              <CpuIcon className="size-3.5 text-primary" /> 上下文窗口监控
-            </span>
-            <span className="text-[11px] text-muted-foreground font-mono">HY3 192K</span>
-          </div>
-
-          <div className="space-y-1.5 font-mono text-[11px]">
-            <div className="flex justify-between text-muted-foreground">
-              <span>当前会话估算 Token:</span>
-              <span className="font-semibold text-foreground">{totalTokens.toLocaleString()}</span>
-            </div>
-            {lastUsage && (
-              <>
-                <div className="flex justify-between text-muted-foreground/80">
-                  <span>· 最近输入 (Prompt):</span>
-                  <span>{lastUsage.inputTokens.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-muted-foreground/80">
-                  <span>· 最近生成 (Output):</span>
-                  <span>{lastUsage.outputTokens.toLocaleString()}</span>
-                </div>
-              </>
-            )}
-            <div className="flex justify-between text-muted-foreground">
-              <span>历史修剪安全线:</span>
-              <span>{PRUNE_BUDGET_TOKENS.toLocaleString()} Tokens</span>
-            </div>
-            <div className="flex justify-between text-muted-foreground">
-              <span>物理最大窗口:</span>
-              <span>{MAX_CONTEXT_TOKENS.toLocaleString()} Tokens</span>
-            </div>
-          </div>
-
-          {/* 进度条 */}
-          <div className="space-y-1 pt-1">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-500",
-                  isNearBudget ? "bg-amber-500" : "bg-emerald-500"
-                )}
-                style={{ width: `${percentage}%` }}
-              />
-            </div>
-            <p className="text-[10px] text-muted-foreground/80 flex items-center gap-1">
-              <InfoIcon className="size-3 inline shrink-0" />
-              {isNearBudget
-                ? "接近 120K 安全预算，将自动修剪历史旧工具数据"
-                : "当前会话容量充裕，历史数据完好保留"}
-            </p>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <TooltipProvider><Tooltip><TooltipTrigger asChild>
+      <button type="button" className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring", near ? "border-amber-500/40 text-amber-600 dark:text-amber-400" : "border-border/60 text-muted-foreground", className)}
+        aria-label={metrics ? `${hasActual ? "最近主模型实际输入" : estimated ? "最近准备的模型输入估算" : "最近准备的模型输入"} ${displayed}，可用容量 ${metrics.input_budget_tokens}` : "等待后端提供上下文用量"}>
+        <GaugeIcon className="size-3" />
+        <span className="font-mono tabular-nums">{metrics ? `${estimated ? "≈ " : ""}${format(displayed)} / ${format(metrics.input_budget_tokens)}` : "用量待更新"}</span>
+      </button>
+    </TooltipTrigger><TooltipContent side="top" align="end" className="w-64 space-y-2 p-3 text-xs">
+      <p className="font-semibold">{hasActual ? "最近主模型实际输入" : "最近准备的模型输入"}</p>
+      {metrics ? <>
+        <p className="text-muted-foreground">{metrics.model} · {metrics.measurement_source.startsWith("tokenizer:") ? "模型分词计量" : "保守估算"}</p>
+        <dl className="grid grid-cols-2 gap-1 tabular-nums">
+          <dt>{metrics.measurement_source.startsWith("tokenizer:") ? "请求分词计量" : "请求输入估算"}</dt><dd className="text-right">{metrics.input_tokens.toLocaleString()}</dd>
+          {metrics.input_breakdown_tokens && <>
+            <dt>系统规则</dt><dd className="text-right">{metrics.input_breakdown_tokens.system.toLocaleString()}</dd>
+            <dt>聊天与工具结果</dt><dd className="text-right">{metrics.input_breakdown_tokens.conversation.toLocaleString()}</dd>
+            <dt>工具定义{metrics.tool_count !== undefined ? `（${metrics.tool_count} 个）` : ""}</dt><dd className="text-right">{metrics.input_breakdown_tokens.tools.toLocaleString()}</dd>
+            <dt>请求开销</dt><dd className="text-right">{metrics.input_breakdown_tokens.framing.toLocaleString()}</dd>
+          </>}
+          <dt>可用输入容量</dt><dd className="text-right">{metrics.input_budget_tokens.toLocaleString()}</dd>
+          <dt>模型窗口</dt><dd className="text-right">{metrics.window_tokens.toLocaleString()}</dd>
+          <dt>生成预留</dt><dd className="text-right">{metrics.output_reserved_tokens.toLocaleString()}</dd>
+          {metrics.latest_usage && <><dt>最近主模型输入</dt><dd className="text-right">{metrics.latest_usage.input_tokens?.toLocaleString() ?? "—"}</dd><dt>最近主模型生成</dt><dd className="text-right">{metrics.latest_usage.output_tokens?.toLocaleString() ?? "—"}</dd></>}
+        </dl>
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted"><div className={cn("h-full", near ? "bg-amber-500" : "bg-emerald-500")} style={{ width: `${ratio}%` }} /></div>
+        <p className="text-muted-foreground">输入包含系统规则和工具定义，不只是聊天文字。回答完成后优先显示提供商实际输入；准备阶段显示带余量的估算，拆分也为估算。</p>
+      </> : <p className="text-muted-foreground">模型准备好本次请求后显示容量。历史记录仍可查看。</p>}
+    </TooltipContent></Tooltip></TooltipProvider>
   );
 }

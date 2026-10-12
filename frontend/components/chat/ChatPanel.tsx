@@ -25,6 +25,7 @@ import { useSessionStore } from "@/lib/session-client";
 import { Markdown } from "@/components/chat/Markdown";
 import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
+import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
 import { ContextMeter } from "@/components/chat/ContextMeter";
 import { ThinkingBlock } from "@/components/chat/ThinkingBlock";
 import { ToolStepsBlock } from "@/components/chat/ToolStepsBlock";
@@ -65,17 +66,26 @@ export function ChatPanel() {
   const streamingText = useChatStore((s) => s.streamingText);
   const streamingReasoning = useChatStore((s) => s.streamingReasoning);
   const error = useChatStore((s) => s.error);
+  const failedInput = useChatStore((s) => s.failedInput);
+  const contextStatus = useChatStore((s) => s.contextStatus);
+  const dataStatus = useChatStore((s) => s.dataStatus);
+  const activeThreadId = useChatStore((s) => s.activeThreadId);
+  const loadingThread = useChatStore((s) => s.loadingThread);
+  const openThread = useChatStore((s) => s.openThread);
   const sendMessage = useChatStore((s) => s.sendMessage);
   const stopStreaming = useChatStore((s) => s.stopStreaming);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatMode = useChatMode();
 
-  // 自动平滑滚动到底部
+  const following = useRef(true);
+  useEffect(() => { following.current = true; }, [activeThreadId]);
+
+  // 仅在用户接近底部时跟随，用户上翻时保持阅读位置。
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) {
-      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    if (el && following.current) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "auto" });
     }
   }, [messages, streamingText, streamingReasoning, isStreaming]);
 
@@ -101,12 +111,12 @@ export function ChatPanel() {
     }
   }, [messages, artifactStore]);
 
-  const isEmpty = messages.length === 0 && !isStreaming;
+  const isEmpty = messages.length === 0 && !isStreaming && !loadingThread && !error;
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
       {/* 滚动消息展示区 */}
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-4">
+      <div ref={scrollRef} onScroll={(event) => { const element = event.currentTarget; following.current = element.scrollHeight - element.scrollTop - element.clientHeight < 80; }} className="min-h-0 flex-1 overflow-y-auto px-4 pt-6 pb-4">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
           {isEmpty ? (
             <div className="flex flex-1 flex-col items-center justify-center px-4 py-12 text-center">
@@ -147,8 +157,11 @@ export function ChatPanel() {
             messages.map((m) => <MessageItem key={m.id} message={m} />)
           )}
 
+          <ProcessingNotice status={contextStatus} />
+          <ProcessingNotice status={dataStatus} />
+          {loadingThread && <p role="status" aria-live="polite" className="text-sm text-muted-foreground">正在读取会话…</p>}
           {/* 流式生成中的响应卡片 */}
-          {isStreaming && (
+          {isStreaming && (streamingText || messages.at(-1)?.role !== "assistant" || !messages.at(-1)?.content) && (
             <StreamingAssistantCard
               streamingText={streamingText}
               streamingReasoning={streamingReasoning}
@@ -157,9 +170,11 @@ export function ChatPanel() {
 
           {/* 异常错误提示 */}
           {error && (
-            <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-xs text-destructive">
+            <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-xs text-destructive">
               <p className="font-semibold mb-0.5">请求处理遇到问题</p>
               <p className="opacity-90">{error}</p>
+              {failedInput && <Button type="button" variant="outline" size="sm" className="mt-2" disabled={isStreaming} onClick={() => void sendMessage(failedInput, chatMode)}>重新发送</Button>}
+              {!failedInput && activeThreadId && <Button type="button" variant="outline" size="sm" className="mt-2" disabled={loadingThread || isStreaming} onClick={() => void openThread(activeThreadId)}>重新读取会话</Button>}
             </div>
           )}
         </div>
@@ -168,7 +183,7 @@ export function ChatPanel() {
       {/* 底部悬浮输入面板 */}
       <div className="bg-background/95 backdrop-blur-md px-4 py-3 border-t border-border/40">
         <Composer
-          disabled={isStreaming}
+          disabled={isStreaming || loadingThread}
           onSend={(text) => void sendMessage(text, chatMode)}
           onStop={() => stopStreaming()}
         />

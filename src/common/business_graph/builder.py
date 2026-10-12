@@ -44,7 +44,6 @@ def _route_after_intent(
     return "prepare_model"
 
 
-
 def _route_after_model(
     state: BusinessGraphState,
 ) -> Literal["execute_tools", "__end__"]:
@@ -119,8 +118,8 @@ def build_business_graph(
     builder.add_node(
         "execute_tools",
         ToolNode(
-            tools=[*get_business_tools(), load_skill_tool],
-            handle_tool_errors=True,
+            tools=[*get_business_tools(include_computation=True), load_skill_tool],
+            handle_tool_errors=False,
             awrap_tool_call=composed_tool_wrapper,
         ),
     )
@@ -137,7 +136,6 @@ def build_business_graph(
             "__end__": END,
         },
     )
-
 
     builder.add_edge("resolve_skill", "prepare_model")
     builder.add_edge("prepare_model", "call_model")

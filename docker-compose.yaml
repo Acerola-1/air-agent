@@ -80,6 +80,7 @@ services:
       # --- Misc ---
       LANGGRAPH_API_URL: "http://localhost:2024"
       LANGGRAPH_AUTH_TYPE: "noop"
+      LANGGRAPH_HTTP: '{"app":"/deps/air_agent/src/common/artifact_http.py:app"}'
       DB_MIGRATION_BY_CORE_API: "false"
 
       # --- API keys（从 .env 注入）---

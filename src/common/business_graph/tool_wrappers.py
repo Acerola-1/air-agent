@@ -22,11 +22,18 @@ from langgraph.errors import GraphBubbleUp
 from langgraph.types import Command
 from loguru import logger
 
+from common.artifact_scope import runtime_scope
 from common.business_graph.subagent_summarizer import summarize_large_tool_output
 from common.config import config
 from common.context import get_message_content
+from common.data_manifest import build_manifest, parse_payload
+from common.runtime_events import event_payload
 from common.runtime_tools import get_mcp_tool_names, tool_name
-from common.storage.artifact_db import save_tool_artifact
+from common.storage.artifact_db import (
+    claim_computation,
+    save_tool_artifact,
+    update_artifact_summary,
+)
 
 # MCP 远程工具代码级重试策略：替代原先写在各 skill 提示词里的
 # "工具调用失败时，自动重试 1 次，间隔 2 秒"。代码级重试无需额外 LLM 轮次，
@@ -47,7 +54,7 @@ def _bind_tool_instance(request: Any) -> Any:
     # 从运行时业务工具列表中查找工具实例
     from common.runtime_tools import get_business_tools
 
-    for t in get_business_tools():
+    for t in get_business_tools(include_computation=True):
         if tool_name(t) == name:
             return request.override(tool=t)
 
@@ -82,6 +89,8 @@ async def _invoke_mcp_with_retry(
         await asyncio.sleep(_MCP_RETRY_BACKOFF_SECONDS)
         try:
             return await handler(request)
+        except GraphBubbleUp:
+            raise
         except Exception as exc:
             last_exc = exc
     return _mcp_fallback(request, last_exc)
@@ -178,7 +187,11 @@ async def composed_tool_wrapper(
         # ⚠️ 关键: 人机交互中断异常必须向上冒泡，严禁降级捕获！
         raise
     except Exception as exc:
-        if _is_mcp_tool(request):
+        if (
+            _is_mcp_tool(request)
+            and not isinstance(exc, (ValueError, TypeError))
+            and getattr(exc, "status_code", 500) >= 500
+        ):
             result = await _invoke_mcp_with_retry(request, handler, exc)
         else:
             result = _global_fallback(request, exc)
@@ -188,56 +201,159 @@ async def composed_tool_wrapper(
     if isinstance(result, Command):
         return result
 
-    if isinstance(result, ToolMessage):
-        raw_content = result.content
-        if isinstance(raw_content, str):
-            content_str = raw_content
-        else:
-            try:
-                content_str = json.dumps(raw_content, ensure_ascii=False) if raw_content else ""
-            except Exception:
-                content_str = str(raw_content)
-
-        threshold = getattr(config, "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000)
-        if len(content_str) > threshold:
-            tool_name_str = str(request.tool_call.get("name") or getattr(result, "name", "") or "unknown_tool")
-            tool_call_id = str(request.tool_call.get("id") or getattr(result, "tool_call_id", "") or "")
-            tool_args = request.tool_call.get("args") or {}
-            user_question = _extract_user_question(request)
-
-            # 3.1 原始超大载荷写入专属数据库表
-            try:
-                artifact_id = await save_tool_artifact(
-                    tool_call_id=tool_call_id,
-                    tool_name=tool_name_str,
-                    raw_payload=content_str,
-                )
-            except Exception as db_err:
-                logger.error("超大工具输出持久化失败: tool={}, error={}", tool_name_str, db_err)
-                artifact_id = "storage_failed"
-
-            # 3.2 调度独立 192K Subagent 精准提炼
-            summary_text = await summarize_large_tool_output(
-                user_question=user_question,
-                tool_name=tool_name_str,
-                tool_args=tool_args,
-                raw_output=content_str,
+    if not isinstance(result, ToolMessage):
+        return result
+    raw_content = result.content
+    content_str = (
+        raw_content
+        if isinstance(raw_content, str)
+        else json.dumps(raw_content, ensure_ascii=False, default=str)
+    )
+    try:
+        business = parse_payload(content_str)
+    except (ValueError, TypeError):
+        business = None
+    is_error = result.status == "error"
+    error_message = "工具调用未完成，请调整参数或稍后重试。"
+    if isinstance(business, dict):
+        code = str(business.get("code", ""))
+        if business.get("success") is False or (code.isdigit() and int(code) >= 400):
+            is_error = True
+            error_message = (
+                "参数校验失败，请调整查询条件。"
+                if code in {"400", "422"}
+                else "数据服务暂未完成查询，请稍后重试。"
             )
-
-            # 3.3 替换为轻量内容并保留 artifact 数据库引用
-            artifact_meta = {
-                "storage_type": "database",
-                "table": "tool_artifact_storage",
-                "artifact_id": artifact_id,
-                "tool_call_id": tool_call_id,
-                "char_length": len(content_str),
+    if is_error:
+        result = result.model_copy(
+            update={
+                "status": "error",
+                "additional_kwargs": {
+                    **result.additional_kwargs,
+                    "error_message": error_message,
+                },
             }
-            return result.model_copy(
+        )
+    tool_name_str = str(request.tool_call.get("name") or result.name or "unknown_tool")
+    tool_call_id = str(request.tool_call.get("id") or result.tool_call_id)
+    run_config = getattr(request.runtime, "config", {}) or {}
+    writer = getattr(request.runtime, "stream_writer", None)
+    data_status = None
+    if len(content_str) > config.TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS:
+        artifact_id = None
+        try:
+            user_id, thread_id, run_id = runtime_scope(run_config)
+            artifact_id = await save_tool_artifact(
+                tool_call_id=tool_call_id,
+                tool_name=tool_name_str,
+                raw_payload=content_str,
+                user_id=user_id,
+                thread_id=thread_id,
+                run_id=run_id,
+            )
+            if len(content_str.encode()) > config.QUICKJS_MAX_INPUT_BYTES:
+                raise ValueError("资料超出当前单批全量处理配额，尚未完成")
+            manifest = None if is_error else build_manifest(content_str, artifact_id)
+            if manifest is not None:
+                await claim_computation(artifact_id, run_id, attempt=False)
+                reduced = json.dumps(manifest, ensure_ascii=False)
+                data_status = event_payload(
+                    run_config,
+                    "context_status",
+                    stage="data",
+                    status="started",
+                    artifact_id=artifact_id,
+                    message="完整资料已保存，正在准备计算。",
+                )
+                if callable(writer):
+                    writer(data_status)
+            elif is_error:
+                reduced = error_message
+            else:
+                if callable(writer):
+                    writer(
+                        event_payload(
+                            run_config,
+                            "context_status",
+                            stage="data",
+                            status="started",
+                            artifact_id=artifact_id,
+                        )
+                    )
+                reduced, coverage = await summarize_large_tool_output(
+                    user_question=_extract_user_question(request),
+                    tool_name=tool_name_str,
+                    tool_args=request.tool_call.get("args") or {},
+                    raw_output=content_str,
+                )
+                await update_artifact_summary(
+                    artifact_id,
+                    user_id=user_id,
+                    thread_id=thread_id,
+                    summary=reduced,
+                    metadata=coverage,
+                )
+                data_status = event_payload(
+                    run_config,
+                    "context_status",
+                    stage="data",
+                    status="completed",
+                    artifact_id=artifact_id,
+                )
+                if callable(writer):
+                    writer(data_status)
+            result = result.model_copy(
                 update={
-                    "content": summary_text,
-                    "artifact": artifact_meta,
+                    "content": reduced,
+                    "artifact": {
+                        "storage_type": "database",
+                        "storage_status": "stored",
+                        "artifact_id": artifact_id,
+                        "tool_call_id": tool_call_id,
+                        "char_length": len(content_str),
+                    },
                 }
             )
-
+        except Exception:
+            # 无法完整处理时明确失败，不能声称已保存或完整摘要。
+            result = result.model_copy(
+                update={
+                    "status": "error",
+                    "content": "资料整理未完成，无法据此提供完整统计。请重新查询或缩小范围。",
+                    "artifact": {
+                        "storage_type": "database",
+                        "storage_status": "stored",
+                        "artifact_id": artifact_id,
+                    }
+                    if artifact_id
+                    else None,
+                    "additional_kwargs": {
+                        **result.additional_kwargs,
+                        "error_message": "资料保存或整理失败，请重试。",
+                    },
+                }
+            )
+            data_status = event_payload(
+                run_config,
+                "context_status",
+                stage="data",
+                status="failed",
+                artifact_id=artifact_id,
+                message="资料保存或整理未完成。",
+            )
+            if callable(writer):
+                writer(data_status)
+    if callable(writer):
+        writer(
+            event_payload(
+                run_config,
+                "tool_status",
+                status="failed" if result.status == "error" else "completed",
+                tool_call_id=tool_call_id,
+                tool_name=tool_name_str,
+                message=result.additional_kwargs.get("error_message", "工具执行完成"),
+            )
+        )
+    if data_status is not None:
+        return Command(update={"messages": [result], "data_status": data_status})
     return result
-

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Mapping, Sequence
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
 import yaml
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import StreamWriter
 from loguru import logger
@@ -16,12 +17,18 @@ from loguru import logger
 from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
 from common.context_guard import prepare_model_context
-from common.conversation_summarizer import (
-    should_summarize_conversation,
-    summarize_conversation_history,
-)
+from common.conversation_summarizer import update_conversation_summary
+from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
 from common.mcp_client import ensure_mcp_tools
+from common.model_budget import (
+    ContextBudgetExceeded,
+    enforce_request_budget,
+    fit_tool_schemas,
+    request_metrics,
+)
 from common.models import ModelRegistry
+from common.output_contract import visible_result
+from common.runtime_events import emit_event
 from common.runtime_tools import get_business_tools
 from data_analysis.menu_skill_mapping import match_menu_skill
 from data_analysis.prompt_builder import (
@@ -261,14 +268,15 @@ async def prepare_model(
     )
 
     updates: dict[str, Any] = {"system_prompt": system_prompt}
-    messages = state.get("messages", [])
-    if should_summarize_conversation(messages):
-        new_summary = await summarize_conversation_history(
-            messages,
-            existing_summary=state.get("summary"),
+    updates.update(
+        await update_conversation_summary(
+            {**state, "system_prompt": system_prompt},
+            config,
+            tools=filter_business_tools(
+                get_business_tools(include_computation=True), allowed
+            ),
         )
-        if new_summary:
-            updates["summary"] = new_summary
+    )
 
     return updates
 
@@ -299,19 +307,39 @@ async def call_model(
         }
     )
 
+    recent = state.get("messages", [])
+    last_human = max(
+        (i for i, message in enumerate(recent) if isinstance(message, HumanMessage)),
+        default=-1,
+    )
+    if any(
+        isinstance(message, ToolMessage)
+        and message.additional_kwargs.get("processing_terminal")
+        for message in recent[last_human + 1 :]
+    ):
+        return visible_result(
+            AIMessage(
+                content="本次全量计算未完成，尚无完整统计结果。请缩小数据范围或重新查询。"
+            ),
+            config,
+        )
+
     model = ModelRegistry.main_llm
     system_prompt = state.get("system_prompt", "")
 
     # 按 allowed-tools 过滤业务工具（运行时查找，不存入 state）
     allowed = state.get("selected_skill_allowed_tools") or []
-    all_tools = get_business_tools()
+    all_tools = get_business_tools(include_computation=True)
     available = filter_business_tools(all_tools, allowed)
 
     messages = state["messages"]
     # 1. 检查最新用户提问长度
     last_human = ""
     for msg in reversed(messages):
-        if getattr(msg, "type", None) == "human" or type(msg).__name__ == "HumanMessage":
+        if (
+            getattr(msg, "type", None) == "human"
+            or type(msg).__name__ == "HumanMessage"
+        ):
             last_human = get_message_content(msg)
             break
     max_input_chars = getattr(app_config, "MAX_INPUT_CHARS", 8000)
@@ -320,14 +348,19 @@ async def call_model(
             f"您的提问内容过长（共 {len(last_human)} 字符，系统单次提问上限为 {max_input_chars} 字符），"
             "请精简或分段提问。"
         )
-        logger.warning("数据分析用户提问超出输入限制: len={}, max={}", len(last_human), max_input_chars)
+        logger.warning(
+            "数据分析用户提问超出输入限制: len={}, max={}",
+            len(last_human),
+            max_input_chars,
+        )
         writer({"type": "final_output_done", "message": overflow_msg})
-        return {"messages": [AIMessage(content=overflow_msg)]}
+        return visible_result(AIMessage(content=overflow_msg), config)
 
     # 2. 模型调用前只读上下文修剪 (注入早期历史摘要 + 保护当期轮次与旧工具治理)
     protected_messages = prepare_model_context(
         messages,
         summary=state.get("summary"),
+        summary_covered_message_id=state.get("summary_covered_message_id"),
     )
 
     full_messages: list[Any] = []
@@ -335,19 +368,42 @@ async def call_model(
         full_messages.append(SystemMessage(content=system_prompt))
     full_messages.extend(protected_messages)
 
-
     # 绑定工具
+    schemas = fit_tool_schemas(full_messages, available)
+    try:
+        metrics = enforce_request_budget(full_messages, schemas)
+    except ContextBudgetExceeded as exc:
+        metrics = request_metrics(full_messages, schemas)
+        emit_event(config, "context_metrics", **metrics)
+        return visible_result(AIMessage(content=str(exc)), config, metrics=metrics)
+    emit_event(config, "context_metrics", **metrics)
+
     if available:
-        model_with_tools = model.bind_tools(available)
+        model_with_tools = model.bind_tools(schemas)
     else:
         model_with_tools = model
 
     # 重试调用模型（最多 3 次）
+    data_model_started_at = datetime.now(UTC).isoformat()
     response = None
     for attempt in range(3):
         try:
-            response = await model_with_tools.ainvoke(full_messages)
+            response = await invoke_with_data_deadline(
+                model_with_tools, full_messages, messages, config
+            )
             break
+        except DataProcessingFailure as exc:
+            status = emit_event(
+                config,
+                "context_status",
+                stage="data",
+                status="failed",
+                message=str(exc),
+            )
+            return {
+                **visible_result(AIMessage(content=str(exc)), config, metrics=metrics),
+                "data_status": status,
+            }
         except Exception as exc:
             logger.exception("数据分析模型调用失败 (attempt {}): {}", attempt + 1, exc)
             if attempt < 2:
@@ -360,7 +416,11 @@ async def call_model(
                         "message": _SERVICE_UNAVAILABLE_MESSAGE,
                     }
                 )
-                return {"messages": [AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE)]}
+                return visible_result(
+                    AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE),
+                    config,
+                    metrics=metrics,
+                )
 
     # 空回复检测：content 为空且无 tool_calls -> 追加引导重试
     if (
@@ -375,7 +435,11 @@ async def call_model(
             HumanMessage(content=_EMPTY_REPLY_NUDGE),
         ]
         try:
-            nudge_response = await model_with_tools.ainvoke(nudge_messages)
+            metrics = enforce_request_budget(nudge_messages, schemas)
+            emit_event(config, "context_metrics", **metrics)
+            nudge_response = await invoke_with_data_deadline(
+                model_with_tools, nudge_messages, messages, config
+            )
             if (
                 isinstance(nudge_response, AIMessage)
                 and not nudge_response.tool_calls
@@ -389,39 +453,28 @@ async def call_model(
             logger.warning("数据分析模型空回复重试失败: {}，使用兜底消息", exc)
             response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
-    return {"messages": [response]}
+    return {
+        **visible_result(response, config, metrics=metrics, publish=False),
+        "data_model_started_at": data_model_started_at,
+    }
 
 
 # ──── Phase 5: 最终输出节点 ────
 
 
+def _last_answer_message(state: DataAnalysisState) -> AIMessage | None:
+    for message in reversed(state.get("messages", [])):
+        if isinstance(message, HumanMessage):
+            break
+        if isinstance(message, AIMessage) and not message.tool_calls:
+            return message
+    return None
+
+
 def _extract_last_visible_answer(state: DataAnalysisState) -> str:
-    """从消息列表中提取最后一条可见业务答案（等效于 FinalOutputCleanupMiddleware）.
-
-    优先提取不含 tool_calls 且内容非空的 AIMessage。
-    若所有 AIMessage 都带 tool_calls，则兜底提取最后一条 AIMessage 的 content。
-    """
-    messages = state.get("messages", [])
-
-    # 优先路径：找最后一条不含 tool_calls 的 AIMessage
-    for message in reversed(messages):
-        if not isinstance(message, AIMessage):
-            continue
-        if getattr(message, "tool_calls", None):
-            continue
-        content = get_message_content(message).strip()
-        if content:
-            return content
-
-    # 兜底路径：所有 AIMessage 都带 tool_calls，提取最后一条的 content
-    for message in reversed(messages):
-        if not isinstance(message, AIMessage):
-            continue
-        content = get_message_content(message).strip()
-        if content:
-            return content
-
-    return ""
+    """仅提取本轮原稿，不能把历史答案当本轮终答."""
+    message = _last_answer_message(state)
+    return get_message_content(message).strip() if message else ""
 
 
 async def finalize_output(
@@ -430,13 +483,11 @@ async def finalize_output(
     *,
     writer: StreamWriter,
 ) -> dict[str, Any]:
-    """最终输出：提取答案、调用清洗 LLM 流式生成并推送.
+    """收集完整清洗结果后发布唯一终答，失败不暴露半段草稿."""
+    original = _last_answer_message(state)
+    if original is not None and original.additional_kwargs.get("ui_visible") is True:
+        return visible_result(original, config, writer=writer)
 
-    1. 从消息列表提取原始分析答案
-    2. 调用清洗 LLM（流式）清理不合规内容
-    3. 使用 StreamWriter 流式推送清洗后的内容
-    4. 完成后推送 final_output_done 事件
-    """
     answer = _extract_last_visible_answer(state)
 
     if not answer:
@@ -457,7 +508,15 @@ async def finalize_output(
 
     try:
         async with asyncio.timeout(app_config.FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS):
-            async for chunk in model.astream([{"role": "user", "content": prompt}]):
+            enforce_request_budget([HumanMessage(content=prompt)])
+            async for chunk in model.astream(
+                [HumanMessage(content=prompt)],
+                config={"tags": ["nostream", "internal-cleanup"]},
+            ):
+                if (getattr(chunk, "response_metadata", {}) or {}).get(
+                    "finish_reason"
+                ) in {"length", "content_filter"}:
+                    raise ValueError("终答清洗输出未完整结束")
                 content = getattr(chunk, "content", None)
                 if isinstance(content, list):
                     content = "".join(str(item) for item in content)
@@ -470,15 +529,9 @@ async def finalize_output(
                     continue
 
                 full_cleaned += content
-                writer(
-                    {
-                        "type": "final_output_delta",
-                        "message": content,
-                    }
-                )
     except Exception as exc:
-        logger.warning("数据分析最终输出清洗失败，退化使用原始答案: {}", exc)
-        full_cleaned = answer
+        logger.warning("数据分析最终输出清洗失败: {}", type(exc).__name__)
+        full_cleaned = "分析结果已生成，但最终答案整理未完成。请重试。"
 
     cleaned = full_cleaned.strip()
 
@@ -486,11 +539,11 @@ async def finalize_output(
     if not cleaned:
         cleaned = _SERVICE_UNAVAILABLE_MESSAGE
 
-    writer(
-        {
-            "type": "final_output_done",
-            "message": cleaned,
-        }
+    original = _last_answer_message(state)
+    return visible_result(
+        original.model_copy(update={"content": cleaned})
+        if original
+        else AIMessage(content=cleaned),
+        config,
+        writer=writer,
     )
-
-    return {"messages": [AIMessage(content=cleaned)]}

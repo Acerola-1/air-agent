@@ -4,476 +4,278 @@ import { create } from "zustand";
 import { generateUuidV7 } from "@/lib/uuidv7";
 import { getUserIdentity } from "@/lib/user-identity";
 import {
-  searchThreads,
-  createThread,
-  getThreadState,
-  updateThreadMetadata,
-  deleteThread,
-  streamRun,
-  deriveTitle,
-  type LgThread,
+  searchThreads, createThread, getThreadState, updateThreadMetadata, deleteThread,
+  streamRun, cancelRun, deriveTitle,
+  type LgThread, type ContextMetrics, type ProcessingStatus, type ThreadValues,
 } from "@/lib/langgraph-api";
 
-/** 单个工具调用的执行信息模型 */
 export type ToolExecution = {
-  id: string; // tool_call_id
-  name: string; // 工具函数名
-  args: unknown; // 调用入参
-  result?: string; // 工具执行返回结果字符串
+  id: string; name: string; args: unknown; result?: string;
   status: "pending" | "running" | "completed" | "error";
-  artifactId?: string; // 专属表存储引用的 artifact_id (若有)
+  artifactId?: string; errorMessage?: string;
 };
-
-/** 前端渲染用聚合消息模型（将思考、工具调用与正文回答有机统一） */
 export type ChatMessage = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  reasoningContent?: string; // 深度思考内容（思维链）
-  reasoningTokens?: number; // 思考消耗的 Token 数量
-  tools?: ToolExecution[]; // 本轮调用的所有工具执行集合（聚合卡片）
-  usage?: {
-    inputTokens: number;
-    outputTokens: number;
-    totalTokens: number;
-  };
-  modelName?: string;
-  timestamp?: number;
+  id: string; role: "user" | "assistant"; content: string;
+  reasoningContent?: string; reasoningTokens?: number; tools?: ToolExecution[];
+  usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
+  modelName?: string; timestamp?: number;
 };
 
 type ChatState = {
-  graphId: string;
-  threads: LgThread[];
-  activeThreadId: string | null;
-  messages: ChatMessage[];
-  isStreaming: boolean;
-  /** 流式增量正文文本 */
-  streamingText: string;
-  /** 流式增量思考过程文本 */
-  streamingReasoning: string;
-  /** 当前活跃线程累计的 Token 估算总数 */
-  totalContextTokens: number;
-  error: string | null;
-  loadingThreads: boolean;
-
-  /** 切换 graph（清空当前会话并加载该 graph 的线程列表） */
-  switchGraph: (graphId: string) => Promise<void>;
-  loadThreads: () => Promise<void>;
-  /** 打开历史线程：读取完整消息并聚合计算 */
-  openThread: (threadId: string) => Promise<void>;
-  /** 新建会话（不创建后端线程，首条消息发送时才创建） */
-  newThread: () => void;
-  /** 发送消息：无活动线程则先创建（带 graph_id/user_id/标题），再流式 run */
-  sendMessage: (text: string, chatMode: string) => Promise<void>;
-  stopStreaming: () => void;
+  graphId: string; threads: LgThread[]; activeThreadId: string | null; messages: ChatMessage[];
+  isStreaming: boolean; streamingText: string; streamingReasoning: string; totalContextTokens: number;
+  contextMetrics: ContextMetrics | null; contextStatus: ProcessingStatus | null; dataStatus: ProcessingStatus | null;
+  error: string | null; failedInput: string | null; loadingThreads: boolean; loadingThread: boolean;
+  switchGraph: (graphId: string) => Promise<void>; loadThreads: () => Promise<void>;
+  openThread: (threadId: string) => Promise<void>; newThread: () => void;
+  sendMessage: (text: string, chatMode: string) => Promise<void>; stopStreaming: () => void;
   removeThread: (threadId: string) => Promise<void>;
 };
+let generation = 0;
+let listRequest = 0;
+type ActiveRun = { generation: number; controller: AbortController; threadId: string | null; runId: string | null };
+let activeRun: ActiveRun | null = null;
+const emptyView = { messages: [] as ChatMessage[], isStreaming: false, streamingText: "", streamingReasoning: "",
+  totalContextTokens: 0, contextMetrics: null, contextStatus: null, dataStatus: null, error: null, failedInput: null, loadingThread: false };
 
-let abortRef: AbortController | null = null;
+function cancelActive() {
+  const cancelEpoch = generation;
+  const run = activeRun;
+  activeRun = null;
+  run?.controller.abort();
+  if (run?.threadId && run.runId) {
+    void cancelRun(run.threadId, run.runId).catch(() => {
+      // SDK onDisconnect=cancel 仍会取消断开的运行；界面仅提示未确认的状态。
+      if (generation === cancelEpoch && useChatStore.getState().activeThreadId === run.threadId) useChatStore.setState({ error: "停止请求尚未确认，请刷新会话状态。" });
+    });
+  }
+}
+function fromValues(values: ThreadValues) {
+  return { messages: parseMessages(values.messages), loadingThread: false, contextMetrics: values.context_metrics ?? null,
+    contextStatus: processingStatus(values.context_status), dataStatus: processingStatus(values.data_status), totalContextTokens: values.context_metrics?.input_tokens ?? 0 };
+}
+function processingStatus(value: ProcessingStatus | null | undefined): ProcessingStatus | null {
+  return value && ['history', 'data'].includes(value.stage) && ['started', 'completed', 'failed'].includes(value.status) ? value : null;
+}
+function mergeDataStatus(previous: ProcessingStatus | null, current: ProcessingStatus): ProcessingStatus {
+  const same = previous?.processing_id === current.processing_id;
+  const artifacts = { ...(same ? previous?.artifacts : current.artifacts) };
+  const key = current.artifact_id || 'phase';
+  artifacts[key] = current.artifacts?.[key] ?? { status: current.status, message: current.message };
+  const statuses = Object.values(artifacts).map((value) => value.status);
+  return { ...current, artifacts, status: statuses.includes('failed') ? 'failed' : statuses.includes('started') ? 'started' : 'completed' };
+}
+function sameRun(run: ActiveRun) {
+  return generation === run.generation && activeRun === run && !run.controller.signal.aborted;
+}
 
 export const useChatStore = create<ChatState>((set, get) => ({
-  graphId: "basic-qa",
-  threads: [],
-  activeThreadId: null,
-  messages: [],
-  isStreaming: false,
-  streamingText: "",
-  streamingReasoning: "",
-  totalContextTokens: 0,
-  error: null,
-  loadingThreads: false,
-
+  graphId: "basic-qa", threads: [], activeThreadId: null, ...emptyView, loadingThreads: false,
   switchGraph: async (graphId) => {
-    abortRef?.abort();
-    abortRef = null;
-    set({
-      graphId,
-      activeThreadId: null,
-      messages: [],
-      isStreaming: false,
-      streamingText: "",
-      streamingReasoning: "",
-      totalContextTokens: 0,
-      error: null,
-    });
+    generation++; cancelActive();
+    set({ graphId, activeThreadId: null, threads: [], ...emptyView });
     await get().loadThreads();
   },
-
   loadThreads: async () => {
-    const { graphId } = get();
+    const graphId = get().graphId;
+    const request = ++listRequest;
     set({ loadingThreads: true });
     try {
       const threads = await searchThreads(graphId, getUserIdentity());
-      set({ threads, loadingThreads: false });
-    } catch (e) {
-      set({ loadingThreads: false, error: e instanceof Error ? e.message : String(e) });
+      if (request === listRequest && get().graphId === graphId) set({ threads, loadingThreads: false });
+    } catch {
+      if (request === listRequest && get().graphId === graphId) set({ loadingThreads: false, error: "会话列表暂时无法读取，请重试。" });
     }
   },
-
   openThread: async (threadId) => {
-    if (get().isStreaming) abortRef?.abort();
-    set({
-      activeThreadId: threadId,
-      messages: [],
-      isStreaming: false,
-      streamingText: "",
-      streamingReasoning: "",
-      totalContextTokens: 0,
-      error: null,
-    });
+    const epoch = ++generation; cancelActive();
+    set({ activeThreadId: threadId, ...emptyView, loadingThread: true });
     try {
-      const raw = await getThreadState(threadId);
-      const parsed = parseMessages(raw);
-      const tokens = calculateTotalTokens(parsed);
-      set({ messages: parsed, totalContextTokens: tokens });
-    } catch (e) {
-      set({ error: e instanceof Error ? e.message : String(e) });
+      const values = await getThreadState(threadId);
+      if (generation === epoch && get().activeThreadId === threadId) set(fromValues(values));
+    } catch {
+      if (generation === epoch) set({ loadingThread: false, error: "会话暂时无法读取，请重试。" });
     }
   },
-
   newThread: () => {
-    abortRef?.abort();
-    set({
-      activeThreadId: null,
-      messages: [],
-      isStreaming: false,
-      streamingText: "",
-      streamingReasoning: "",
-      totalContextTokens: 0,
-      error: null,
-    });
+    generation++; cancelActive();
+    set({ activeThreadId: null, ...emptyView });
   },
-
   sendMessage: async (text, chatMode) => {
-    const s = get();
-    const trimmed = text.trim();
-    if (s.isStreaming || !trimmed) return;
-
-    const userId = getUserIdentity();
-    let threadId = s.activeThreadId;
-    if (!threadId) {
+    const previous = get(); const trimmed = text.trim();
+    if (previous.isStreaming || !trimmed) return;
+    const run: ActiveRun = { generation: ++generation, controller: new AbortController(), threadId: previous.activeThreadId, runId: null };
+    activeRun = run;
+    const userMsg: ChatMessage = { id: generateUuidV7(), role: "user", content: trimmed, timestamp: Date.now() };
+    set({ messages: [...previous.messages, userMsg], isStreaming: true, streamingText: "", streamingReasoning: "", error: null, failedInput: null,
+      contextStatus: null, dataStatus: null, contextMetrics: null });
+    try {
+      if (!run.threadId) {
+        run.threadId = await createThread(previous.graphId, getUserIdentity(), deriveTitle(trimmed));
+        if (!sameRun(run)) return;
+        set({ activeThreadId: run.threadId });
+      }
+      const threadId = run.threadId;
+      let streamedMessageId: string | null = null;
+      await streamRun({ threadId, graphId: previous.graphId,
+        messages: [{ id: userMsg.id, type: "human", content: trimmed }],
+        config: { configurable: { chat_mode: chatMode } }, signal: run.controller.signal,
+        handlers: {
+          onRun: (runId) => {
+            run.runId = runId;
+            if (!sameRun(run)) void cancelRun(threadId, runId).catch(() => {});
+          },
+          onValues: (values) => {
+            if (!sameRun(run) || get().activeThreadId !== threadId) return;
+            const view = fromValues(values);
+            const confirmed = streamedMessageId && values.messages.some((item) => {
+              const message = item as { id?: string; additional_kwargs?: { ui_visible?: boolean } };
+              return message?.id === streamedMessageId && message.additional_kwargs?.ui_visible !== false;
+            });
+            set({ ...view, ...(confirmed ? { streamingText: "" } : {}) });
+          },
+          // messages-tuple 包括工具、内部模型和未确认草稿，绝不追加为正文。
+          onMessagesDelta: () => {},
+          onCustom: (event) => {
+            if (!sameRun(run) || get().activeThreadId !== threadId) return;
+            if (event.thread_id && event.thread_id !== threadId) return;
+            if (event.run_id && run.runId && event.run_id !== run.runId) return;
+            if (event.type === "context_metrics") set({ contextMetrics: event as unknown as ContextMetrics, totalContextTokens: Number(event.input_tokens) || 0 });
+            if (event.type === "tool_status" && typeof event.tool_call_id === "string") {
+              set((state) => ({ messages: state.messages.map((message) => ({ ...message, tools: message.tools?.map((tool) => tool.id === event.tool_call_id ? { ...tool, status: event.status === "failed" ? "error" : event.status === "completed" ? "completed" : "running", errorMessage: event.status === "failed" && typeof event.message === "string" ? event.message : tool.errorMessage } : tool) })) }));
+            }
+            if (event.type === "context_status") {
+              const status = processingStatus(event as unknown as ProcessingStatus);
+              if (!status) return;
+              set((state) => status.stage === "history" ? { contextStatus: status } : { dataStatus: mergeDataStatus(state.dataStatus, status) });
+            }
+            if (event.type === "final_output_delta" && typeof event.message === "string") set((state) => ({ streamingText: state.streamingText + event.message }));
+            if (event.type === "final_output_done" && typeof event.message === "string") {
+              streamedMessageId = typeof event.message_id === "string" ? event.message_id : null;
+              set({ streamingText: event.message });
+            }
+          },
+          onDone: (error) => {
+            if (!sameRun(run)) return;
+            if (error) set({ error: error.message, failedInput: trimmed });
+          },
+        },
+      });
+      if (!sameRun(run)) return;
       try {
-        threadId = await createThread(s.graphId, userId, deriveTitle(trimmed));
-        set({ activeThreadId: threadId });
-      } catch (e) {
-        set({ error: e instanceof Error ? e.message : String(e) });
-        return;
+        const values = await getThreadState(threadId);
+        if (sameRun(run)) set({ ...fromValues(values), streamingText: "" });
+      } catch {
+        // 完成事件已经确认的正文仍保留；不丢弃已确认答案。
+        if (sameRun(run) && get().streamingText && streamedMessageId) {
+          const confirmedText = get().streamingText;
+          set((state) => ({ messages: [...state.messages, { id: streamedMessageId!, role: "assistant", content: confirmedText }], streamingText: "" }));
+        }
+      }
+    } catch {
+      if (sameRun(run)) set({ error: "消息暂未发送成功，请重试。", failedInput: trimmed });
+    } finally {
+      if (sameRun(run)) {
+        activeRun = null;
+        set({ isStreaming: false, streamingText: "", streamingReasoning: "" });
+        void get().loadThreads();
       }
     }
-
-    const userMsg: ChatMessage = {
-      id: generateUuidV7(),
-      role: "user",
-      content: trimmed,
-      timestamp: Date.now(),
-    };
-    const nextMsgs = [...get().messages, userMsg];
-    set({
-      messages: nextMsgs,
-      isStreaming: true,
-      streamingText: "",
-      streamingReasoning: "",
-      totalContextTokens: calculateTotalTokens(nextMsgs),
-      error: null,
-    });
-
-    const abort = new AbortController();
-    abortRef = abort;
-    await streamRun({
-      threadId,
-      graphId: s.graphId,
-      messages: [{ type: "human", content: trimmed }],
-      config: { configurable: { chat_mode: chatMode } },
-      signal: abort.signal,
-      handlers: {
-        onValues: (msgs) => {
-          const parsed = parseMessages(msgs);
-          const tokens = calculateTotalTokens(parsed);
-          set({
-            messages: parsed,
-            streamingText: "",
-            streamingReasoning: "",
-            totalContextTokens: tokens,
-          });
-        },
-        onMessagesDelta: (chunks) => {
-          let textAcc = "";
-          let reasoningAcc = "";
-          for (const [msg] of chunks) {
-            const rawMsg = msg as Record<string, unknown>;
-            const reasoning =
-              (rawMsg?.additional_kwargs as Record<string, unknown>)?.reasoning_content ||
-              rawMsg?.reasoning_content;
-            if (typeof reasoning === "string" && reasoning) {
-              reasoningAcc += reasoning;
-            }
-
-            const t = textOfContent(rawMsg?.content);
-            if (t) {
-              // 检查是否有 <think> 标签流
-              if (t.includes("<think>")) {
-                const parts = t.split("</think>");
-                if (parts.length > 1) {
-                  reasoningAcc += parts[0].replace("<think>", "");
-                  textAcc += parts[1];
-                } else {
-                  reasoningAcc += t.replace("<think>", "");
-                }
-              } else {
-                textAcc += t;
-              }
-            }
-          }
-
-          if (reasoningAcc) {
-            set((prev) => ({ streamingReasoning: prev.streamingReasoning + reasoningAcc }));
-          }
-          if (textAcc) {
-            set((prev) => ({ streamingText: prev.streamingText + textAcc }));
-          }
-        },
-        onDone: (err) => {
-          abortRef = null;
-          if (err) {
-            set({
-              error: err.message,
-              isStreaming: false,
-              streamingText: "",
-              streamingReasoning: "",
-            });
-          } else {
-            set({
-              isStreaming: false,
-              streamingText: "",
-              streamingReasoning: "",
-            });
-            void get().loadThreads();
-          }
-        },
-      },
-    });
   },
-
   stopStreaming: () => {
-    abortRef?.abort();
-    abortRef = null;
+    const threadId = get().activeThreadId; const epoch = ++generation;
+    cancelActive();
     set({ isStreaming: false, streamingText: "", streamingReasoning: "" });
+    if (threadId) void getThreadState(threadId).then((values) => {
+      if (generation === epoch && get().activeThreadId === threadId) set(fromValues(values));
+    }).catch(() => {
+      if (generation === epoch) set({ error: "已请求停止；会话状态暂时无法刷新，请重试。" });
+    });
   },
-
   removeThread: async (threadId) => {
+    if (get().activeThreadId === threadId) get().stopStreaming();
     try {
       await deleteThread(threadId);
+      if (get().activeThreadId === threadId) get().newThread();
+      await get().loadThreads();
     } catch {
-      /* 删除软失败，列表照常刷新 */
+      set({ error: "删除未完全确认，请刷新会话列表后重试。" });
     }
-    if (get().activeThreadId === threadId) get().newThread();
-    await get().loadThreads();
   },
 }));
 
-/** 更新线程标题 */
 export async function renameThread(threadId: string, title: string): Promise<void> {
   await updateThreadMetadata(threadId, { title });
 }
 
-// ───────────────────────── 消息解析与上下文估算 ─────────────────────────
-
-function textOfContent(c: unknown): string {
-  if (typeof c === "string") return c;
-  if (Array.isArray(c)) {
-    return c
-      .filter((p) => p && typeof p === "object" && typeof (p as { text?: unknown }).text === "string")
-      .map((p) => (p as { text: string }).text)
-      .join("");
-  }
+function textOfContent(content: unknown): string {
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) return content.filter((part) => part?.type === "text" && typeof part.text === "string").map((part) => part.text).join("");
   return "";
 }
-
-function collectToolExecutions(m: Record<string, unknown>): ToolExecution[] {
-  const executions: ToolExecution[] = [];
-  const content = m.content;
-  if (Array.isArray(content)) {
-    for (const p of content) {
-      if (p && typeof p === "object" && (p as { type?: string }).type === "tool_call") {
-        const t = p as { id?: string; name?: string; args?: unknown };
-        executions.push({
-          id: t.id ?? generateUuidV7(),
-          name: t.name ?? "tool",
-          args: t.args,
-          status: "running",
-        });
-      }
-    }
+function callsOf(message: Record<string, unknown>): ToolExecution[] {
+  const calls = new Map<string, ToolExecution>();
+  const list = [ ...(Array.isArray(message.tool_calls) ? message.tool_calls : []),
+    ...(Array.isArray(message.content) ? message.content.filter((part) => part?.type === "tool_call") : []) ];
+  for (const call of list) {
+    const id = String(call.id ?? generateUuidV7());
+    calls.set(id, { id, name: String(call.name ?? "工具"), args: call.args ?? call.input, status: "running" });
   }
-  const toolCalls = m.tool_calls;
-  if (Array.isArray(toolCalls)) {
-    for (const tc of toolCalls) {
-      const t = tc as { id?: string; name?: string; args?: unknown; input?: unknown };
-      executions.push({
-        id: t.id ?? generateUuidV7(),
-        name: t.name ?? "tool",
-        args: t.args ?? t.input,
-        status: "running",
-      });
-    }
-  }
-  return executions;
+  return [...calls.values()];
 }
 
-/** 把后端原始消息数组聚合解析为现代清晰的 ChatMessage 列表 */
+/** 每轮一个终答，工具与内部草稿只留调用记录。历史无标记终答兼容。 */
 export function parseMessages(raw: unknown[]): ChatMessage[] {
-  const out: ChatMessage[] = [];
-
-  for (const m of raw) {
-    if (!m || typeof m !== "object") continue;
-    const mm = m as Record<string, unknown>;
-    const type = String(mm.type ?? (typeof mm._getType === "function" ? mm._getType() : ""));
-    const id = mm.id && typeof mm.id === "string" ? mm.id : generateUuidV7();
-
+  const result: ChatMessage[] = []; let turnId: string | undefined; let assistant: ChatMessage | undefined;
+  const ensureAssistant = (id: string) => {
+    if (!assistant) { assistant = { id: turnId ? `${turnId}:assistant` : id, role: "assistant", content: "", tools: [] }; result.push(assistant); }
+    return assistant;
+  };
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const message = item as Record<string, unknown>;
+    const type = String(message.type ?? ""); const id = String(message.id ?? generateUuidV7());
     if (type === "human" || type === "user") {
-      out.push({
-        id,
-        role: "user",
-        content: textOfContent(mm.content),
-        timestamp: typeof mm.created_at === "number" ? mm.created_at : Date.now(),
-      });
-    } else if (type === "ai" || type === "AIMessageChunk") {
-      let contentStr = textOfContent(mm.content);
-      let reasoningContent = "";
-
-      // 提取思维链来源 1: additional_kwargs.reasoning_content
-      const addKw = (mm.additional_kwargs as Record<string, unknown>) ?? {};
-      if (typeof addKw.reasoning_content === "string" && addKw.reasoning_content) {
-        reasoningContent = addKw.reasoning_content;
+      assistant = undefined; turnId = id; result.push({ id, role: "user", content: textOfContent(message.content) }); continue;
+    }
+    if (type === "ai" || type === "assistant") {
+      const kwargs = message.additional_kwargs as Record<string, unknown> ?? {};
+      const calls = callsOf(message);
+      if (calls.length) {
+        const target = ensureAssistant(id); const known = new Set(target.tools?.map((tool) => tool.id));
+        target.tools!.push(...calls.filter((tool) => !known.has(tool.id)));
       }
-
-      // 提取思维链来源 2: content 中的 <think>...</think> 标签
-      if (!reasoningContent && contentStr.includes("<think>")) {
-        const match = contentStr.match(/<think>([\s\S]*?)<\/think>/);
-        if (match) {
-          reasoningContent = match[1].trim();
-          contentStr = contentStr.replace(/<think>[\s\S]*?<\/think>/, "").trim();
-        }
-      }
-
-      // 提取 Token 用量与思考 Token 数量
-      const usageMeta = (mm.usage_metadata as Record<string, unknown>) ?? {};
-      const respMeta = (mm.response_metadata as Record<string, unknown>) ?? {};
-      const tokenUsage = (respMeta.token_usage as Record<string, unknown>) ?? {};
-      const tokenDetails =
-        (usageMeta.output_token_details as Record<string, unknown>) ??
-        (tokenUsage.completion_tokens_details as Record<string, unknown>) ??
-        {};
-
-      const reasoningTokens =
-        Number(tokenDetails.reasoning ?? tokenDetails.reasoning_tokens) || undefined;
-
-      const inputTokens = Number(usageMeta.input_tokens ?? tokenUsage.prompt_tokens) || 0;
-      const outputTokens = Number(usageMeta.output_tokens ?? tokenUsage.completion_tokens) || 0;
-      const totalTokens = Number(usageMeta.total_tokens ?? tokenUsage.total_tokens) || 0;
-
-      const modelName = String(respMeta.model_name ?? "");
-
-      const tools = collectToolExecutions(mm);
-
-      // 如果前一条也是 assistant，且前一条纯为 tool_calls 而当前条输出正文，优雅合并为一个统一回合
-      const lastMsg = out[out.length - 1];
-      if (lastMsg && lastMsg.role === "assistant" && (!lastMsg.content || !lastMsg.content.trim()) && tools.length === 0) {
-        lastMsg.content = contentStr;
-        if (reasoningContent && !lastMsg.reasoningContent) lastMsg.reasoningContent = reasoningContent;
-        if (reasoningTokens && !lastMsg.reasoningTokens) lastMsg.reasoningTokens = reasoningTokens;
-        if (totalTokens) {
-          lastMsg.usage = { inputTokens, outputTokens, totalTokens };
-        }
-        continue;
-      }
-
-      out.push({
-        id,
-        role: "assistant",
-        content: contentStr,
-        reasoningContent: reasoningContent || undefined,
-        reasoningTokens,
-        tools: tools.length > 0 ? tools : undefined,
-        usage: totalTokens ? { inputTokens, outputTokens, totalTokens } : undefined,
-        modelName: modelName || undefined,
-        timestamp: Date.now(),
-      });
-    } else if (type === "tool" || type === "ToolMessage") {
-      // 关键优化：Tool 消息不单独占位一排聊天气泡，而是归入前序最近的 Assistant 消息中
-      const toolCallId = String(mm.tool_call_id ?? "");
-      const resultContent = textOfContent(mm.content);
-      const isError = mm.status === "error";
-
-      let artifactId: string | undefined;
-      const artifactObj = mm.artifact as Record<string, unknown> | undefined;
-      if (artifactObj && typeof artifactObj.artifact_id === "string") {
-        artifactId = artifactObj.artifact_id;
-      }
-
-      // 从后往前寻找最近的 assistant 消息
-      let matched = false;
-      for (let i = out.length - 1; i >= 0; i--) {
-        const item = out[i];
-        if (item.role === "assistant") {
-          if (!item.tools) item.tools = [];
-          const existingTool = item.tools.find((t) => t.id === toolCallId);
-          if (existingTool) {
-            existingTool.result = resultContent;
-            existingTool.status = isError ? "error" : "completed";
-            existingTool.artifactId = artifactId;
-            matched = true;
-            break;
-          }
-        }
-      }
-
-      // 如果未严格匹配到 tool_call_id，追加挂在最后一个 assistant 消息下
-      if (!matched) {
-        for (let i = out.length - 1; i >= 0; i--) {
-          const item = out[i];
-          if (item.role === "assistant") {
-            if (!item.tools) item.tools = [];
-            item.tools.push({
-              id: toolCallId || generateUuidV7(),
-              name: String(mm.name ?? "工具执行"),
-              args: {},
-              result: resultContent,
-              status: isError ? "error" : "completed",
-              artifactId,
-            });
-            break;
-          }
-        }
-      }
+      if (kwargs.ui_visible === false || calls.length) continue;
+      let content = textOfContent(message.content).replace(/<think>[\s\S]*?<\/think>/g, "").replace(/<think>[\s\S]*$/, "").trim();
+      try { const data = JSON.parse(content); if (data && typeof data === "object" && (data.success === false || Number(data.code) >= 400)) content = "查询未完成，请调整条件或稍后重试。"; } catch {}
+      if (!content) continue;
+      const target = ensureAssistant(id); target.content = content;
+      const usage = message.usage_metadata as Record<string, number> | undefined;
+      if (usage) target.usage = { inputTokens: usage.input_tokens ?? 0, outputTokens: usage.output_tokens ?? 0, totalTokens: usage.total_tokens ?? 0 };
+      const metadata = message.response_metadata as Record<string, unknown> | undefined;
+      if (metadata?.model_name) target.modelName = String(metadata.model_name);
+    }
+    if (type === "tool" || type === "ToolMessage") {
+      const target = ensureAssistant(id); const callId = String(message.tool_call_id ?? id);
+      let tool = target.tools!.find((candidate) => candidate.id === callId);
+      if (!tool) { tool = { id: callId, name: String(message.name ?? "工具"), args: {}, status: "running" }; target.tools!.push(tool); }
+      tool.result = textOfContent(message.content);
+      const kwargs = message.additional_kwargs as Record<string, unknown> ?? {};
+      let businessFailure = false;
+      let correctionAllowed = false;
+      try { const data = JSON.parse(tool.result); businessFailure = data.success === false || Number(data.code) >= 400; correctionAllowed = data.correction_allowed === true; } catch {}
+      tool.status = message.status === "error" || businessFailure ? "error" : "completed";
+      if (tool.status === "error") tool.errorMessage = tool.name === "compute_artifact" && correctionAllowed ? "首次计算未完成，后续修正结果见本轮工具记录。" : typeof kwargs.error_message === "string" ? kwargs.error_message : "查询未完成，请调整条件或稍后重试。";
+      const archive = message.artifact as Record<string, unknown> | undefined;
+      if (archive?.storage_status === "stored" && typeof archive.artifact_id === "string" && archive.artifact_id.startsWith("art_")) tool.artifactId = archive.artifact_id;
+      // 派生计算也有已提交的归档引用。
+      try { const computed = JSON.parse(tool.result); if (tool.name === "compute_artifact" && typeof computed.derived_artifact_id === "string" && computed.derived_artifact_id.startsWith("art_")) tool.artifactId = computed.derived_artifact_id; } catch {}
     }
   }
-
-  return out;
+  return result.filter((message) => message.role === "user" || message.content || message.tools?.length);
 }
 
-/** 计算当前会话的上下文 Token 占用 */
+/** 仅作为离线历史粗估，容量展示优先使用后端有效输入。 */
 export function calculateTotalTokens(messages: ChatMessage[]): number {
-  // 优先从最后一条带有真实 usage 的 assistant 消息获取 totalTokens
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const u = messages[i].usage;
-    if (u && u.totalTokens > 0) {
-      return u.totalTokens;
-    }
-  }
-
-  // 兜底方案：遍历全量消息字符数按加权估算（中英文 1 字符 ≈ 0.55 tokens）
-  let totalChars = 0;
-  for (const m of messages) {
-    totalChars += m.content.length;
-    if (m.reasoningContent) totalChars += m.reasoningContent.length;
-    if (m.tools) {
-      for (const t of m.tools) {
-        totalChars += String(t.name).length;
-        totalChars += typeof t.args === "string" ? t.args.length : JSON.stringify(t.args ?? {}).length;
-        if (t.result) totalChars += t.result.length;
-      }
-    }
-  }
-  return Math.round(totalChars * 0.55);
+  return messages.reduce((total, message) => total + new TextEncoder().encode(message.content).length, 0);
 }

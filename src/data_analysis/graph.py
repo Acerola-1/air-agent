@@ -45,8 +45,8 @@ def _build_tool_node() -> ToolNode:
     - 富输出推送 + ToolMessage 压缩
     """
     return ToolNode(
-        tools=get_business_tools(),
-        handle_tool_errors=True,
+        tools=get_business_tools(include_computation=True),
+        handle_tool_errors=False,
         awrap_tool_call=composed_tool_wrapper,
     )
 
@@ -130,7 +130,10 @@ def build_graph(*, checkpointer: Any = None):
     builder.set_finish_point("finalize_output")
 
     compiled = builder.compile(checkpointer=checkpointer)
-    logger.info("data_analysis 节点流图编译完成: checkpointer={}", type(checkpointer).__name__ if checkpointer else "None")
+    logger.info(
+        "data_analysis 节点流图编译完成: checkpointer={}",
+        type(checkpointer).__name__ if checkpointer else "None",
+    )
     return compiled
 
 

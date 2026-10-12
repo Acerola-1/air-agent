@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:contracts": "node --test tests/chat-contract.test.cjs"
   },
   "dependencies": {
     "@assistant-ui/react": "0.15.4",
