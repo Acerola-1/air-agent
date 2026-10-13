@@ -1,0 +1,90 @@
+{
+  "status": "frozen_local_development",
+  "frozen_by": "Codex coordinator after independent takeover acceptance",
+  "source_commit": "9a1781e3f6d74ad99e5f325e14a69642f6474927",
+  "source_migration_head": "0010",
+  "scope": "本地独立开发与组合验收；不等于生产交付",
+  "release_gates_remaining": [
+    "change1 7.6真实企业MCP",
+    "change1 10.3六图/两前端完整长运行矩阵"
+  ],
+  "raw_status_note": "机器文件保留生成时freeze_candidate；以本记录的提交和SHA256判断本次本地冻结。后续兼容扩展在独立分支产生候选版本，不能倒改原冻结提交。",
+  "files": [
+    {
+      "path": "docs/contracts/agent-events-v1/event-envelope.schema.json",
+      "sha256": "682492ab91cdc66a66c3df0351c87b307d655ef7dea9ae90a2566689624f971d"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "sha256": "58daec578018a66aeaaffd9fed92e5944e8223bbc6d4cae9f8e3e89fce1d7048"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/metrics.json",
+      "sha256": "c959c851c21385a5a33f8e9f6478dca06b0b5205193818d8411d8674fc45bf58"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/openapi-agent-ledger.json",
+      "sha256": "43c3fa8c34d3de0ddbd292d280c5130cbefd53848f651776cf4592d1a9278ecb"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/states.json",
+      "sha256": "459c63790380559901f7ade64271cb2d51c2d2d2e8f3ed007cb5cd17c9c2e847"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "sha256": "7faf09825e28c4de822a924a35b5f8360a0cf71e1b40ae9b7ea603cb361e6057"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "sha256": "58daec578018a66aeaaffd9fed92e5944e8223bbc6d4cae9f8e3e89fce1d7048"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/metrics.json",
+      "sha256": "c959c851c21385a5a33f8e9f6478dca06b0b5205193818d8411d8674fc45bf58"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "sha256": "7faf09825e28c4de822a924a35b5f8360a0cf71e1b40ae9b7ea603cb361e6057"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/states.json",
+      "sha256": "459c63790380559901f7ade64271cb2d51c2d2d2e8f3ed007cb5cd17c9c2e847"
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "sha256": "70eb1c1950b9134f47aea059581a9897879b34e41ea497c64f9ed97bc599906b"
+    }
+  ],
+  "parallel_changes": [
+    "add-chat-feedback-interactions",
+    "complete-agent-observability"
+  ],
+  "shared_owner": "Codex coordinator",
+  "ownership": "docs/handoffs/parallel-03-05.md",
+  "migration_branches": {
+    "feedback": {
+      "revision": "0011_feedback",
+      "down_revision": "0010"
+    },
+    "observability": {
+      "revision": "0012_observability",
+      "down_revision": "0010"
+    }
+  },
+  "baseline_tests": {
+    "admin_passed": 160,
+    "ledger_passed": 84,
+    "frontend_contracts_passed": 31,
+    "root": {
+      "passed": 314,
+      "skipped": 75,
+      "known_failed": 5
+    },
+    "integration": {
+      "passed": 31,
+      "skipped": 7,
+      "known_failed": 1
+    },
+    "clean_frontend_build": "passed"
+  }
+}

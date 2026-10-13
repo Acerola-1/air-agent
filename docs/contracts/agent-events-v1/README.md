@@ -1,4 +1,4 @@
-# Agent 事件台账契约 v1（冻结候选）
+# Agent 事件台账契约 v1（本地开发已冻结）
 
 状态：**freeze_candidate** — 由 change `add-agent-event-ledger`（实施者：匿名02）产出，
 **待协调者独立验收**后才冻结。冻结前第 3/5 项不得据此改共享文件；冻结后由协调者在
@@ -58,3 +58,7 @@
 `browser.feedback`、`browser.copy`、`browser.timing`（第 3 项）；
 `runtime.model_usage`、`runtime.ttft`、`runtime.cost`、`runtime.span`、`runtime.tool_call`（第 5 项）。
 提交这些类型返回 `type_not_enabled`，**不得**视为"已采集"。
+
+## 协调者本地冻结（当前状态）
+
+2026-10-13独立接管验收通过；源码冻结提交`9a1781e3f6d74ad99e5f325e14a69642f6474927`。以freeze.json记录的提交/哈希为实际冻结依据，机器JSON与生成副本保留历史freeze_candidate字段而不改变已验收代码。上方“待验收”文字是冻结前历史说明；第3/5可从同一已准备规划包的提交在独立worktree启动，最小公共接线授权以docs/handoffs/parallel-03-05.md为准。真实企业MCP/完整长运行生产门禁保留，两个分支组合验收仍待执行。
