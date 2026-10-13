@@ -1,4 +1,4 @@
-"""归档迁移、授权、保留期和处理配额回归."""
+"""归档迁移、租户/用户/线程归属、保留期和处理配额回归（任务 6.2/6.3）."""
 
 from __future__ import annotations
 
@@ -20,13 +20,14 @@ def storage(tmp_path, monkeypatch):
     return path
 
 
-async def save(**extra):
+async def save(tenant_id: str = "ta", **extra):
     return await db.save_tool_artifact(
         tool_call_id="c",
         tool_name="test",
         raw_payload="tail777" * 1000,
-        user_id="u",
-        thread_id="t",
+        tenant_id=tenant_id,
+        user_id=extra.pop("user_id", "u"),
+        thread_id=extra.pop("thread_id", "t"),
         run_id="r",
         **extra,
     )
@@ -44,7 +45,9 @@ async def test_migration_ownership_and_delete(storage):
     connection.commit()
     connection.close()
     artifact = await save()
-    record = await db.get_tool_artifact(artifact, user_id="u", thread_id="t")
+    record = await db.get_tool_artifact(
+        artifact, tenant_id="ta", user_id="u", thread_id="t"
+    )
     assert record["char_length"] == 7000
     assert (
         29
@@ -54,16 +57,53 @@ async def test_migration_ownership_and_delete(storage):
         / 86400
         < 31
     )
-    assert await db.get_tool_artifact(artifact, user_id="other", thread_id="t") is None
-    assert await db.get_tool_artifact(artifact, user_id="u", thread_id="other") is None
-    assert await db.get_tool_artifact("old", user_id="u", thread_id="t") is None
+    assert (
+        await db.get_tool_artifact(
+            artifact, tenant_id="ta", user_id="other", thread_id="t"
+        )
+        is None
+    )
+    assert (
+        await db.get_tool_artifact(
+            artifact, tenant_id="ta", user_id="u", thread_id="other"
+        )
+        is None
+    )
+    # 6.3：跨企业读取被拒（同用户同线程也不行）
+    assert (
+        await db.get_tool_artifact(artifact, tenant_id="tb", user_id="u", thread_id="t")
+        is None
+    )
+    assert (
+        await db.list_tool_artifacts(tenant_id="tb", user_id="u", thread_id="t") == []
+    )
+    # 历史无租户行（'old'）不因新归属规则变得可读
+    assert (
+        await db.get_tool_artifact("old", tenant_id="ta", user_id="u", thread_id="t")
+        is None
+    )
     derived = await save(kind="derived", parent_artifact_id=artifact)
-    await db.delete_thread_artifacts(user_id="u", thread_id="other")
-    assert await db.get_tool_artifact(derived, user_id="u", thread_id="t")
-    await db.delete_thread_artifacts(user_id="u", thread_id="t")
-    await db.delete_thread_artifacts(user_id="u", thread_id="t")
-    assert await db.get_tool_artifact(artifact, user_id="u", thread_id="t") is None
-    assert await db.list_tool_artifacts(user_id="u", thread_id="t") == []
+    await db.delete_thread_artifacts(tenant_id="ta", user_id="u", thread_id="other")
+    assert await db.get_tool_artifact(
+        derived, tenant_id="ta", user_id="u", thread_id="t"
+    )
+    # 删除 A 企业该线程不影响 B 企业同名线程（6.3）
+    b_artifact = await save(tenant_id="tb")
+    await db.delete_thread_artifacts(tenant_id="ta", user_id="u", thread_id="t")
+    await db.delete_thread_artifacts(tenant_id="ta", user_id="u", thread_id="t")
+    assert (
+        await db.get_tool_artifact(artifact, tenant_id="ta", user_id="u", thread_id="t")
+        is None
+    )
+    assert (
+        await db.list_tool_artifacts(tenant_id="ta", user_id="u", thread_id="t") == []
+    )
+    assert (
+        await db.get_tool_artifact(
+            b_artifact, tenant_id="tb", user_id="u", thread_id="t"
+        )
+        is not None
+    )
 
 
 @pytest.mark.anyio
@@ -75,7 +115,7 @@ async def test_expiry_clears_payload(storage):
         (past, artifact),
     )
     with pytest.raises(db.ArtifactExpired):
-        await db.get_tool_artifact(artifact, user_id="u", thread_id="t")
+        await db.get_tool_artifact(artifact, tenant_id="ta", user_id="u", thread_id="t")
     await db.cleanup_expired_artifacts()
     rows = await db._query(
         "SELECT raw_payload,status FROM tool_artifact_storage WHERE artifact_id=?",
@@ -88,18 +128,26 @@ async def test_expiry_clears_payload(storage):
 @pytest.mark.anyio
 async def test_attempt_and_total_deadline(storage):
     artifact = await save()
-    await db.claim_computation(artifact, "r", attempt=False)
-    assert (await db.claim_computation(artifact, "r"))["attempt"] == 1
-    assert (await db.claim_computation(artifact, "r"))["attempt"] == 2
+    await db.claim_computation(
+        artifact, "r", tenant_id="ta", user_id="u", attempt=False
+    )
+    assert (await db.claim_computation(artifact, "r", tenant_id="ta", user_id="u"))[
+        "attempt"
+    ] == 1
+    assert (await db.claim_computation(artifact, "r", tenant_id="ta", user_id="u"))[
+        "attempt"
+    ] == 2
     with pytest.raises(db.ComputationLimit):
-        await db.claim_computation(artifact, "r")
-    await db.claim_computation(artifact, "r2", attempt=False)
+        await db.claim_computation(artifact, "r", tenant_id="ta", user_id="u")
+    await db.claim_computation(
+        artifact, "r2", tenant_id="ta", user_id="u", attempt=False
+    )
     await db._query(
         "UPDATE artifact_computations SET started_at=? WHERE run_id=?",
         ((datetime.now(UTC) - timedelta(seconds=100)).isoformat(), "r2"),
     )
     with pytest.raises(db.ComputationLimit):
-        await db.claim_computation(artifact, "r2")
+        await db.claim_computation(artifact, "r2", tenant_id="ta", user_id="u")
 
 
 @pytest.mark.anyio
@@ -116,15 +164,27 @@ async def test_pg_failure_never_falls_back(storage, monkeypatch):
 async def test_zero_retention_and_required_owner(storage, monkeypatch):
     monkeypatch.setattr(config, "TOOL_ARTIFACT_RETENTION_DAYS", 0)
     artifact = await save()
-    assert (await db.get_tool_artifact(artifact, user_id="u", thread_id="t"))[
-        "expires_at"
-    ] is None
+    assert (
+        await db.get_tool_artifact(artifact, tenant_id="ta", user_id="u", thread_id="t")
+    )["expires_at"] is None
     with pytest.raises(PermissionError):
         await db.save_tool_artifact(
             tool_call_id="c",
             tool_name="test",
             raw_payload="x",
+            tenant_id="ta",
             user_id="",
+            thread_id="t",
+            run_id="r",
+        )
+    # 缺企业归属同样拒绝
+    with pytest.raises(PermissionError):
+        await db.save_tool_artifact(
+            tool_call_id="c",
+            tool_name="test",
+            raw_payload="x",
+            tenant_id="",
+            user_id="u",
             thread_id="t",
             run_id="r",
         )

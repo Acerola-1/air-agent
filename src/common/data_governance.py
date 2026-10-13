@@ -87,11 +87,21 @@ async def invoke_with_data_deadline(
                 "资料处理的模型阶段超时，尚未完成。请重试。"
             ) from exc
     try:
-        _, _, run_id = runtime_scope(run_config)
+        tenant_id, user_id, _, run_id = runtime_scope(run_config)
         remaining = []
         for artifact_id in pending:
-            claim = await claim_computation(artifact_id, run_id, attempt=False)
+            claim = await claim_computation(
+                artifact_id,
+                run_id,
+                tenant_id=tenant_id,
+                user_id=user_id,
+                attempt=False,
+            )
             remaining.append(claim["remaining_seconds"])
+        # F02：claim 循环可能耗时，草稿生成外呼前再复查一次运行身份
+        from common.identity.runtime import guard_runtime_call
+
+        await guard_runtime_call(dict(run_config or {}))
         response = await asyncio.wait_for(
             model.ainvoke(
                 input_messages, config={"tags": ["nostream", "internal-draft"]}

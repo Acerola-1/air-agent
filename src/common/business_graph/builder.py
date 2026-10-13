@@ -29,6 +29,7 @@ from common.business_graph.prompting import DEFAULT_BUSINESS_SYSTEM_PROMPT
 from common.business_graph.skill_content import create_load_skill_tool
 from common.business_graph.state import BusinessGraphState
 from common.business_graph.tool_wrappers import composed_tool_wrapper
+from common.event_ledger.lifecycle import make_ledger_finalize_node
 from common.runtime_tools import get_business_tools
 from common.skill_router import SkillSemanticRouter
 
@@ -124,6 +125,15 @@ def build_business_graph(
         ),
     )
 
+    # 台账生命周期落点（change add-agent-event-ledger）：终态与可见回答版本在
+    # 图内节点落账，保持编译结果是 Graph 类型（with_listeners 会变成
+    # RunnableBinding，平台加载器按 "Graph or Graph factory" 校验会拒绝）。
+    # 节点内部失败关闭：无台账上下文/台账不可用时直接返回，不改变既有行为。
+    builder.add_node(
+        "ledger_finalize",
+        make_ledger_finalize_node(name),
+    )
+
     builder.add_edge(START, "classify_intent")
 
     # 意图车道分流：input_overflow 直达 END；data_query 走技能路由；闲聊/知识车道直达 prepare_model
@@ -133,7 +143,7 @@ def build_business_graph(
         {
             "resolve_skill": "resolve_skill",
             "prepare_model": "prepare_model",
-            "__end__": END,
+            "__end__": "ledger_finalize",
         },
     )
 
@@ -145,7 +155,7 @@ def build_business_graph(
         _route_after_model,
         {
             "execute_tools": "execute_tools",
-            "__end__": END,
+            "__end__": "ledger_finalize",
         },
     )
 
@@ -154,9 +164,11 @@ def build_business_graph(
         _route_after_tools,
         {
             "call_model": "call_model",
-            "__end__": END,
+            "__end__": "ledger_finalize",
         },
     )
+
+    builder.add_edge("ledger_finalize", END)
 
     graph = builder.compile(checkpointer=checkpointer)
     logger.info("业务图节点流编译完成: name={}，skills_dir={}", name, skills_dir)

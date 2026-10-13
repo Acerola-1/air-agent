@@ -17,7 +17,7 @@ type Stat = {
 };
 
 export default function OverviewPage() {
-  const { user, can } = useSession();
+  const { user, ctx, can } = useSession();
   const [stats, setStats] = useState<Stat[]>([
     { label: "用户", value: null, hint: "账号总数", href: "/system/users", icon: Users },
     { label: "角色", value: null, hint: "含内置角色", href: "/system/roles", icon: ShieldCheck },
@@ -98,7 +98,7 @@ export default function OverviewPage() {
         </CardHeader>
         <CardContent className="text-muted-foreground space-y-2 text-sm">
           <p>
-            你当前拥有 <span className="text-foreground font-medium">{user?.permissions.length ?? 0}</span>{" "}
+            你当前拥有 <span className="text-foreground font-medium">{ctx?.permissions.length ?? 0}</span>{" "}
             个权限码。左侧菜单按权限过滤——没有权限的页面不会出现在这里。
           </p>
           <p>接口侧同样会校验权限，所以即使手输地址也会被拒（403）。</p>

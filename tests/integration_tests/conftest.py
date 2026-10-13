@@ -20,3 +20,7 @@ for key in (
     "MAIN_LLM_API_KEY",
 ):
     os.environ.setdefault(key, "test")
+
+# 进程内集成测试不经过 LangGraph custom auth（无 auth user），
+# 企业运行守卫的强制模式由真实实例验收覆盖（docs/reviews）。
+os.environ.setdefault("TENANT_ENFORCE_RUNTIME_IDENTITY", "false")

@@ -18,6 +18,7 @@ import {
   BarChart3Icon,
   SearchIcon,
   FileTextIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 import { useChatStore, type ChatMessage } from "@/lib/chat-store";
 import { useChatMode } from "@/lib/chat-mode-store";
@@ -27,6 +28,7 @@ import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
 import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
 import { ContextMeter } from "@/components/chat/ContextMeter";
+import { TenantBadge } from "@/components/chat/TenantBadge";
 import { ThinkingBlock } from "@/components/chat/ThinkingBlock";
 import { ToolStepsBlock } from "@/components/chat/ToolStepsBlock";
 import { useArtifactStore } from "@/components/artifact/ArtifactProvider";
@@ -63,6 +65,7 @@ const EXAMPLE_PROMPTS = [
 export function ChatPanel() {
   const messages = useChatStore((s) => s.messages);
   const isStreaming = useChatStore((s) => s.isStreaming);
+  const stopPending = useChatStore((s) => s.stopPending);
   const streamingText = useChatStore((s) => s.streamingText);
   const streamingReasoning = useChatStore((s) => s.streamingReasoning);
   const error = useChatStore((s) => s.error);
@@ -74,12 +77,28 @@ export function ChatPanel() {
   const openThread = useChatStore((s) => s.openThread);
   const sendMessage = useChatStore((s) => s.sendMessage);
   const stopStreaming = useChatStore((s) => s.stopStreaming);
+  const recordNavigationStop = useChatStore((s) => s.recordNavigationStop);
+  const regenerateLast = useChatStore((s) => s.regenerateLast);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatMode = useChatMode();
+  const lastAssistantIndex = (() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      if (messages[i].role === "assistant") return i;
+    }
+    return -1;
+  })();
 
   const following = useRef(true);
   useEffect(() => { following.current = true; }, [activeThreadId]);
+
+  // 页面导航离开/刷新：把"离开"写成独立停止意图（origin=navigation，不冒充已取消）。
+  // 用 pagehide（含 bfcache）而非 beforeunload；sendBeacon 尽力送达，不阻塞卸载。
+  useEffect(() => {
+    const onPageHide = () => recordNavigationStop();
+    window.addEventListener("pagehide", onPageHide);
+    return () => window.removeEventListener("pagehide", onPageHide);
+  }, [recordNavigationStop]);
 
   // 仅在用户接近底部时跟随，用户上翻时保持阅读位置。
   useEffect(() => {
@@ -154,7 +173,15 @@ export function ChatPanel() {
               </div>
             </div>
           ) : (
-            messages.map((m) => <MessageItem key={m.id} message={m} />)
+            messages.map((m, index) => (
+              <MessageItem
+                key={m.id}
+                message={m}
+                // 重新生成只对**最后一轮**助手回答开放：按钮语义是"重做这次回答"，
+                // 不支持对历史轮次回放（第 3 项反馈迭代时再扩展）。
+                isLatestAssistant={index === lastAssistantIndex}
+              />
+            ))
           )}
 
           <ProcessingNotice status={contextStatus} />
@@ -173,7 +200,7 @@ export function ChatPanel() {
             <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-xs text-destructive">
               <p className="font-semibold mb-0.5">请求处理遇到问题</p>
               <p className="opacity-90">{error}</p>
-              {failedInput && <Button type="button" variant="outline" size="sm" className="mt-2" disabled={isStreaming} onClick={() => void sendMessage(failedInput, chatMode)}>重新发送</Button>}
+              {failedInput && <Button type="button" variant="outline" size="sm" className="mt-2" disabled={isStreaming} onClick={() => void sendMessage(failedInput, chatMode, "retry")}>重新发送</Button>}
               {!failedInput && activeThreadId && <Button type="button" variant="outline" size="sm" className="mt-2" disabled={loadingThread || isStreaming} onClick={() => void openThread(activeThreadId)}>重新读取会话</Button>}
             </div>
           )}
@@ -183,7 +210,7 @@ export function ChatPanel() {
       {/* 底部悬浮输入面板 */}
       <div className="bg-background/95 backdrop-blur-md px-4 py-3 border-t border-border/40">
         <Composer
-          disabled={isStreaming || loadingThread}
+          disabled={isStreaming || stopPending || loadingThread}
           onSend={(text) => void sendMessage(text, chatMode)}
           onStop={() => stopStreaming()}
         />
@@ -194,8 +221,18 @@ export function ChatPanel() {
 
 // ───────────────────────── 消息组件 ─────────────────────────
 
-function MessageItem({ message }: { message: ChatMessage }) {
+function MessageItem({
+  message,
+  isLatestAssistant,
+}: {
+  message: ChatMessage;
+  isLatestAssistant?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
+  // 重新生成需要知道当前是否可发起（流式中/停止未确认时禁用）
+  const busy = useChatStore((s) => s.isStreaming || s.stopPending);
+  const regenerateLast = useChatStore((s) => s.regenerateLast);
+  const chatMode = useChatMode();
 
   if (message.role === "user") {
     return (
@@ -245,6 +282,18 @@ function MessageItem({ message }: { message: ChatMessage }) {
         {/* 底部轻量操作工具栏 */}
         {message.content && (
           <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity">
+            {isLatestAssistant && (
+              <button
+                type="button"
+                onClick={() => void regenerateLast(chatMode)}
+                disabled={busy}
+                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40"
+                aria-label="重新生成"
+              >
+                <RotateCcwIcon className="size-3" />
+                <span>重新生成</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={copyFullContent}
@@ -360,10 +409,11 @@ function Composer({
           {/* 上下文容量监控胶囊指示器 */}
           <ContextMeter />
 
-          {/* 登录用户信息与登出按钮 */}
+          {/* 登录用户、企业与登出 */}
           <div className="ml-auto hidden items-center gap-2 text-[11px] sm:inline-flex">
             {username ? (
               <>
+                <TenantBadge />
                 <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-foreground">
                   {username}
                 </span>

@@ -6,15 +6,34 @@
 
 import type {
   AuditLog,
-  Me,
+  Department,
+  McpBinding,
+  Member,
   Page,
   Permission,
   PermissionNode,
   Region,
   Role,
   RoleDetail,
+  SessionContext,
+  Tenant,
+  TenantListItem,
   User,
 } from "./types";
+
+/** R02：页面感知的企业上下文声明（SessionProvider 写入）。
+ *  所有请求携带 `x-tenant-id` / `x-tenant-context-version`，服务端与实时会话
+ *  比对：缺失/不一致的写操作明确 403/409，旧标签页不再能悄悄写入新企业。 */
+type TenantClaim = { tenantId: string; version: number };
+let tenantClaim: TenantClaim | null = null;
+export function setTenantRequestClaim(next: TenantClaim | null): void {
+  tenantClaim = next;
+}
+
+let conflictListener: (() => void) | null = null;
+export function onTenantContextConflict(fn: (() => void) | null): void {
+  conflictListener = fn;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -49,6 +68,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (init.body !== undefined && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
+  if (tenantClaim && !headers.has("x-tenant-id")) {
+    headers.set("x-tenant-id", tenantClaim.tenantId || "none");
+    headers.set("x-tenant-context-version", String(tenantClaim.version));
+  }
 
   let res: Response;
   try {
@@ -69,7 +92,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
   }
 
-  if (!res.ok) throw new ApiError(res.status, extractMessage(body, res.status));
+  if (!res.ok) {
+    if (res.status === 409 && !path.startsWith("/auth/")) conflictListener?.();
+    throw new ApiError(res.status, extractMessage(body, res.status));
+  }
   return body as T;
 }
 
@@ -83,10 +109,22 @@ const put = <T,>(path: string, data: unknown) =>
 const del = <T,>(path: string) => request<T>(path, { method: "DELETE" });
 
 export const authApi = {
-  login: (account: string, password: string) => post<Me>("/auth/login", { account, password }),
+  login: (account: string, password: string) =>
+    post<SessionContext>("/auth/login", { account, password }),
   logout: () => post<void>("/auth/logout"),
-  me: () => get<Me>("/auth/me"),
+  me: () => get<SessionContext>("/auth/me"),
   menus: () => get<PermissionNode[]>("/auth/menus"),
+  tenants: () => get<TenantListItem[]>("/auth/tenants"),
+  switchTenant: (tenantId: string, expectedCtxVersion: number) =>
+    post<SessionContext>("/auth/switch-tenant", {
+      tenant_id: tenantId,
+      expected_ctx_version: expectedCtxVersion,
+    }),
+  changePassword: (oldPassword: string, newPassword: string) =>
+    post<void>("/auth/change-password", {
+      old_password: oldPassword,
+      new_password: newPassword,
+    }),
   myFollowedRegions: () => get<Region[]>("/auth/me/followed-regions"),
   setMyFollowedRegions: (regionCodes: string[]) =>
     put<Region[]>("/auth/me/followed-regions", { region_codes: regionCodes }),
@@ -130,8 +168,14 @@ export const usersApi = {
 
 export const rolesApi = {
   list: () => get<Role[]>("/roles"),
-  create: (data: { code: string; name: string; description?: string; sort?: number }) =>
-    post<RoleDetail>("/roles", data),
+  create: (data: {
+    code: string;
+    name: string;
+    description?: string;
+    sort?: number;
+    scope?: "platform" | "tenant";
+    tenant_id?: string | null;
+  }) => post<RoleDetail>("/roles", data),
   get: (id: string) => get<RoleDetail>(`/roles/${id}`),
   update: (id: string, data: { name?: string; description?: string; sort?: number }) =>
     patch<RoleDetail>(`/roles/${id}`, data),
@@ -143,6 +187,8 @@ export const rolesApi = {
 export const permissionsApi = {
   list: () => get<Permission[]>("/permissions"),
   tree: () => get<PermissionNode[]>("/permissions/tree"),
+  /** R11：企业管理员配置企业角色用的"本企业可授予"目录（role:assign_permission 即可读）。 */
+  grantableTree: () => get<PermissionNode[]>("/permissions/grantable-tree"),
 };
 
 export const regionsApi = {
@@ -162,4 +208,61 @@ export const auditApi = {
     const qs = search.toString();
     return get<Page<AuditLog>>(`/audit-logs${qs ? `?${qs}` : ""}`);
   },
+};
+
+
+export const tenantsApi = {
+  list: (q?: string) => get<Tenant[]>(`/tenants${q ? `?q=${encodeURIComponent(q)}` : ""}`),
+  create: (data: { code: string; name: string }) => post<Tenant>("/tenants", data),
+  get: (id: string) => get<Tenant>(`/tenants/${id}`),
+  update: (id: string, data: { name?: string; status?: "active" | "suspended" }) =>
+    patch<Tenant>(`/tenants/${id}`, data),
+};
+
+export const membersApi = {
+  list: (tenantId: string, params: { page?: number; size?: number; q?: string; status?: string } = {}) => {
+    const search = new URLSearchParams();
+    if (params.page) search.set("page", String(params.page));
+    if (params.size) search.set("size", String(params.size));
+    if (params.q) search.set("q", params.q);
+    if (params.status) search.set("status", params.status);
+    const qs = search.toString();
+    return get<Page<Member>>(`/tenants/${tenantId}/members${qs ? `?${qs}` : ""}`);
+  },
+  link: (tenantId: string, data: { user_id?: string; account?: string; role_codes?: string[] }) =>
+    post<Member>(`/tenants/${tenantId}/members`, data),
+  update: (
+    tenantId: string,
+    membershipId: string,
+    data: { department_id?: string | null; status?: "active" | "disabled" }
+  ) => patch<Member>(`/tenants/${tenantId}/members/${membershipId}`, data),
+  setRoles: (tenantId: string, membershipId: string, roleCodes: string[]) =>
+    put<Member>(`/tenants/${tenantId}/members/${membershipId}/roles`, {
+      role_codes: roleCodes,
+    }),
+  remove: (tenantId: string, membershipId: string) =>
+    del<void>(`/tenants/${tenantId}/members/${membershipId}`),
+};
+
+export const departmentsApi = {
+  list: () => get<Department[]>("/departments"),
+  create: (data: { dept_code: string; name: string; parent_id?: string | null }) =>
+    post<Department>("/departments", data),
+  update: (id: string, data: { name?: string; parent_id?: string | null }) =>
+    patch<Department>(`/departments/${id}`, data),
+  remove: (id: string) => del<void>(`/departments/${id}`),
+};
+
+export const bindingsApi = {
+  list: () => get<McpBinding[]>("/mcp-bindings"),
+  upsert: (data: {
+    tenant_id: string;
+    membership_id?: string | null;
+    server_key: string;
+    external_subject: string;
+    credential_ref: string;
+    protocol_version: string;
+    status?: "active" | "disabled";
+  }) => put<McpBinding>("/mcp-bindings", data),
+  remove: (id: string) => del<void>(`/mcp-bindings/${id}`),
 };

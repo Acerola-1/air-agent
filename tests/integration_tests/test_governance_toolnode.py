@@ -25,15 +25,24 @@ from common.storage import artifact_db
 @pytest.fixture
 def isolated(tmp_path, monkeypatch):
     monkeypatch.delenv("DATABASE_URI", raising=False)
-    monkeypatch.setenv("AUTH_SECRET", "test-only-scope-secret")
+    monkeypatch.setenv("ARCHIVE_SCOPE_KEYS", json.dumps(["test-only-scope-secret"]))
     monkeypatch.setattr(
         artifact_db, "_get_sqlite_path", lambda: str(tmp_path / "archive.db")
     )
     monkeypatch.setattr(artifact_db, "_initialized", False)
+    # v2 归档授权：tenantId + userId + aud + 版本（与 common.artifact_scope 对齐）
     body = (
         base64.urlsafe_b64encode(
             json.dumps(
-                {"userId": "u", "threadId": "t", "exp": time.time() + 3600}
+                {
+                    "v": 2,
+                    "kid": "k1",
+                    "tenantId": "ta",
+                    "userId": "u",
+                    "threadId": "t",
+                    "aud": "air-agent-archive",
+                    "exp": time.time() + 3600,
+                }
             ).encode()
         )
         .decode()
@@ -82,6 +91,18 @@ async def test_real_mcp_retry_manifest_and_full_compute(isolated, monkeypatch):
 
     monkeypatch.setattr(wrappers, "get_mcp_tool_names", lambda: ["fetch_mcp"])
     monkeypatch.setattr(wrappers, "_MCP_RETRY_BACKOFF_SECONDS", 0)
+    # MCP 执行改由企业授权层承担；本测试模拟授权通过后的真实工具执行
+    from langchain_core.messages import ToolMessage
+
+    async def _authorized(request):
+        payload = await fetch_mcp.ainvoke({})
+        return ToolMessage(
+            content=payload,
+            tool_call_id=str(request.tool_call.get("id") or ""),
+            name="fetch_mcp",
+        )
+
+    monkeypatch.setattr(wrappers, "execute_mcp_tool_request", _authorized)
     runtime = graph([fetch_mcp, compute_artifact])
     state = await runtime.ainvoke(
         {
@@ -118,7 +139,14 @@ async def test_real_mcp_retry_manifest_and_full_compute(isolated, monkeypatch):
     computed = json.loads(result["messages"][-1].content)
     assert computed["result"] == sum(range(10001))
     assert result["data_status"]["status"] == "completed"
-    assert len(await artifact_db.list_tool_artifacts(user_id="u", thread_id="t")) == 2
+    assert (
+        len(
+            await artifact_db.list_tool_artifacts(
+                tenant_id="ta", user_id="u", thread_id="t"
+            )
+        )
+        == 2
+    )
 
 
 @pytest.mark.anyio
@@ -160,6 +188,7 @@ async def test_bubble_up_on_retry(isolated, monkeypatch):
     handler = AsyncMock(
         side_effect=[ConnectionError("transient"), GraphBubbleUp("interrupt")]
     )
+    monkeypatch.setattr(wrappers, "execute_mcp_tool_request", handler)
     with pytest.raises(GraphBubbleUp):
         await wrappers.composed_tool_wrapper(request, handler)
 
@@ -170,6 +199,7 @@ async def test_code_correction_limit_and_scope_refusal(isolated):
         tool_call_id="raw",
         tool_name="source",
         raw_payload='[{"value":7}]',
+        tenant_id="ta",
         user_id="u",
         thread_id="t",
         run_id="r",
@@ -238,6 +268,7 @@ async def test_model_generation_shares_phase_timeout(isolated, monkeypatch):
         tool_call_id="raw",
         tool_name="source",
         raw_payload="[]",
+        tenant_id="ta",
         user_id="u",
         thread_id="t",
         run_id="r",
@@ -303,4 +334,11 @@ async def test_parallel_large_outputs_merge_status_without_conflict(isolated):
     )
     assert len(state["data_status"]["artifacts"]) == 2
     assert state["data_status"]["status"] == "started"
-    assert len(await artifact_db.list_tool_artifacts(user_id="u", thread_id="t")) == 2
+    assert (
+        len(
+            await artifact_db.list_tool_artifacts(
+                tenant_id="ta", user_id="u", thread_id="t"
+            )
+        )
+        == 2
+    )

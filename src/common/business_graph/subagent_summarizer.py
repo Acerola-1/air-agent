@@ -15,11 +15,16 @@ async def summarize_large_tool_output(
     tool_args: dict[str, Any],
     raw_output: str,
     timeout_seconds: float | None = None,
+    run_config: dict[str, Any] | None = None,
 ) -> tuple[str, dict[str, object]]:
-    """全量归纳非结构化资料，失败向上传播."""
+    """全量归纳非结构化资料，失败向上传播.
+
+    F02：透传 run_config 使摘要外呼逐次经过运行守卫（撤权后不再发送）。
+    """
     result, coverage = await summarize_complete_text(
         raw_output,
         instruction=f"问题：{user_question}\n来源：{tool_name}\n参数：{json.dumps(tool_args, ensure_ascii=False)}\n完整归纳问题相关资料；统计类结论必须依据完整数据，不能凭摘要猜测。",
         timeout_seconds=timeout_seconds,
+        run_config=run_config,
     )
     return result, coverage

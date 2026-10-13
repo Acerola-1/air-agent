@@ -1,0 +1,390 @@
+{
+  "contract": "agent-events-samples",
+  "major_version": 1,
+  "status": "freeze_candidate",
+  "produced_by": "anonymous-02/add-agent-event-ledger",
+  "fixtures": {
+    "tenant_id": "11111111-1111-4111-8111-111111111111",
+    "user_id": "22222222-2222-4222-8222-222222222222",
+    "membership_id": "33333333-3333-4333-8333-333333333333",
+    "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+    "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+  },
+  "reason_codes": {
+    "ok": "通过",
+    "unknown_type": "事件类型未登记",
+    "type_not_enabled": "类型已登记但当前未启用（含第 3/5 预留）",
+    "source_not_allowed": "来源不允许提交该类型的事实",
+    "missing_field": "缺少信封必填字段",
+    "missing_required_payload_field": "缺少类型要求的载荷字段",
+    "forbidden_payload_key": "载荷含禁止键（票据/凭据/全文）",
+    "payload_field_not_allowed": "载荷字段不在白名单",
+    "invalid_enum_value": "载荷枚举值不在字典内（如 state/origin/evidence_source）",
+    "schema_version_unsupported": "未知主版本",
+    "bad_timestamp": "occurred_at 非法或非 UTC-Z",
+    "bad_uuid": "标识不是合法 UUID",
+    "payload_too_large": "单条载荷超限"
+  },
+  "cases": [
+    {
+      "name": "request-accepted-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "request.accepted",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "thread_id": "t-1001",
+        "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+      }
+    },
+    {
+      "name": "run-admission-confirmed-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.admission_confirmed",
+        "occurred_at": "2026-10-13T02:00:01.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "run_id": "01a1310a-6efb-7ae2-9415-99052b6a154c",
+        "payload": {
+          "platform_run_id": "01a1310a-6efb-7ae2-9415-99052b6a154c",
+          "admission_outcome": "confirmed"
+        }
+      }
+    },
+    {
+      "name": "run-state-observed-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.state_observed",
+        "occurred_at": "2026-10-13T02:00:05.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "run_id": "01a1310a-6efb-7ae2-9415-99052b6a154c",
+        "payload": {
+          "state": "succeeded",
+          "evidence_source": "platform_read",
+          "platform_status": "success",
+          "state_revision": 3,
+          "cancel_requested": false
+        }
+      }
+    },
+    {
+      "name": "run-cancel-requested-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.cancel_requested",
+        "occurred_at": "2026-10-13T02:00:03.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": { "origin": "user_stop", "phase": "processing" }
+      }
+    },
+    {
+      "name": "run-resumed-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.resumed",
+        "occurred_at": "2026-10-13T02:00:09.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": { "resume_index": 1, "platform_run_id": "01a1310a-6f50-7d42-a474-140b4703f275" }
+      }
+    },
+    {
+      "name": "answer-confirmed-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "answer.confirmed",
+        "occurred_at": "2026-10-13T02:00:06.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        "message_id": "09a56546-3370-4efc-b412-f6826cc5c27c",
+        "payload": { "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd", "content_version": 1 }
+      }
+    },
+    {
+      "name": "answer-partial-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "answer.partial",
+        "occurred_at": "2026-10-13T02:00:04.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": { "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd", "content_version": 1 }
+      }
+    },
+    {
+      "name": "trace-linked-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "trace.linked",
+        "occurred_at": "2026-10-13T02:00:07.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": {
+          "provider": "langfuse",
+          "project_scope": "air-agent-prod",
+          "trace_id": "trace-abc",
+          "primary": true,
+          "link_source": "runtime_callback"
+        }
+      }
+    },
+    {
+      "name": "resource-deleted-valid",
+      "expect": { "valid": true, "reason": "ok" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "resource.deleted",
+        "occurred_at": "2026-10-13T02:10:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "thread_id": "t-1001",
+        "payload": { "resource_type": "thread", "resource_id": "t-1001", "deletion_state": "requested" }
+      }
+    },
+    {
+      "name": "browser-terminal-claim-invalid",
+      "expect": { "valid": false, "reason": "source_not_allowed" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.state_observed",
+        "occurred_at": "2026-10-13T02:00:08.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": { "state": "succeeded", "evidence_source": "browser_observed", "state_revision": 1 }
+      }
+    },
+    {
+      "name": "unknown-type-invalid",
+      "expect": { "valid": false, "reason": "unknown_type" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.teleported",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {}
+      }
+    },
+    {
+      "name": "future-major-version-invalid",
+      "expect": { "valid": false, "reason": "schema_version_unsupported" },
+      "event": {
+        "schema_version": "2.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "request.accepted",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+      }
+    },
+    {
+      "name": "missing-tenant-invalid",
+      "expect": { "valid": false, "reason": "missing_field" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "request.accepted",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "server",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+      }
+    },
+    {
+      "name": "forbidden-payload-key-invalid",
+      "expect": { "valid": false, "reason": "forbidden_payload_key" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.admission_confirmed",
+        "occurred_at": "2026-10-13T02:00:01.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "platform_run_id": "01a1310a-6efb-7ae2-9415-99052b6a154c",
+          "admission_outcome": "confirmed",
+          "runtime_ticket": "eyJraWQiOiJ2MSJ9.secret"
+        }
+      }
+    },
+    {
+      "name": "payload-field-not-allowed-invalid",
+      "expect": { "valid": false, "reason": "payload_field_not_allowed" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "request.accepted",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "graph_id": "basic-qa",
+          "operation_kind": "initial",
+          "prompt_full_text": "用户原问题全文不应进入事件载荷"
+        }
+      }
+    },
+    {
+      "name": "reserved-browser-type-not-enabled-invalid",
+      "expect": { "valid": false, "reason": "type_not_enabled" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.feedback",
+        "occurred_at": "2026-10-13T02:20:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        "payload": { "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd", "rating": 1 }
+      }
+    },
+    {
+      "name": "reserved-runtime-type-not-enabled-invalid",
+      "expect": { "valid": false, "reason": "type_not_enabled" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "runtime.model_usage",
+        "occurred_at": "2026-10-13T02:00:06.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": { "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc", "model": "gpt-x", "total_tokens": 1 }
+      }
+    },
+    {
+      "name": "bad-occurred-at-invalid",
+      "expect": { "valid": false, "reason": "bad_timestamp" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "request.accepted",
+        "occurred_at": "2026-10-13 02:00:00",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+      }
+    },
+    {
+      "name": "bad-uuid-invalid",
+      "expect": { "valid": false, "reason": "bad_uuid" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "not-a-uuid",
+        "event_type": "request.accepted",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+      }
+    },
+    {
+      "name": "missing-required-payload-field-invalid",
+      "expect": { "valid": false, "reason": "missing_required_payload_field" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.state_observed",
+        "occurred_at": "2026-10-13T02:00:05.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": { "state": "succeeded", "evidence_source": "platform_read" }
+      }
+    },
+    {
+      "name": "unknown-state-value-invalid",
+      "expect": { "valid": false, "reason": "invalid_enum_value" },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "run.state_observed",
+        "occurred_at": "2026-10-13T02:00:05.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": { "state": "probably_fine", "evidence_source": "platform_read", "state_revision": 1 }
+      }
+    }
+  ]
+}

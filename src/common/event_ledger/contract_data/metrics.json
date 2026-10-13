@@ -1,0 +1,115 @@
+{
+  "contract": "agent-metrics",
+  "major_version": 1,
+  "status": "freeze_candidate",
+  "produced_by": "anonymous-02/add-agent-event-ledger",
+  "time": {
+    "storage": "UTC",
+    "business_timezone": "Asia/Shanghai",
+    "windows": "半开区间 [start, end)",
+    "fact_time_field": "occurred_at（事实时间，非接收日）",
+    "cohort_default": "窗口内**受理**的运行尝试",
+    "cohort_named_variants": {
+      "ended_in_window": "窗口内**结束**的尝试（必须显式命名，不与默认合并）"
+    }
+  },
+  "quality_labels": {
+    "measured": "已真实采集",
+    "not_collected": "尚未接入（返回 null + 标签，禁止伪零）",
+    "unknown": "采集到但无法判定",
+    "estimated": "估算（不得冒充实测）",
+    "historical_unattributed": "历史数据无可信归属",
+    "zero": "真实零值（与 not_collected 严格区分）"
+  },
+  "metrics": {
+    "questions": {
+      "zh": "提问量",
+      "numerator": "唯一已确认受理的 request_id 去重计数",
+      "excludes": ["仅 reservation", "admission_unknown"],
+      "separate_line": "admitting 计数（另列，不计入提问量）"
+    },
+    "active_users": {
+      "zh": "活跃用户",
+      "numerator": "窗口内有效提问的 user_id 去重",
+      "scope": "租户窗口内"
+    },
+    "attempts": {
+      "zh": "运行尝试",
+      "numerator": "agent_run_attempts 计数",
+      "excludes": ["内部模型/工具 retry（不新建 attempt）"]
+    },
+    "resumes": {
+      "zh": "人工恢复次数",
+      "numerator": "agent_run_resumes 计数",
+      "relationship": "不增加提问量与尝试量"
+    },
+    "technical_completion_rate": {
+      "zh": "技术完成率",
+      "numerator": "succeeded",
+      "denominator": "succeeded + failed + cancelled + 可信 timed_out",
+      "excludes_from_denominator": ["waiting_input", "status_unknown", "admitting", "admission_unknown", "queued", "running"],
+      "must_also_show": ["各状态计数", "未结束数"]
+    },
+    "user_stop_intent": {
+      "zh": "用户停止意图",
+      "numerator": "origin=user_stop 的 run.cancel_requested",
+      "denominator": "已开始尝试（含 running 与已结束）",
+      "separate_line": "queued-stop；实际 cancelled 是另一指标"
+    },
+    "actual_cancelled": {
+      "zh": "实际取消",
+      "numerator": "终态为 cancelled 的尝试"
+    },
+    "server_latency_ms": {
+      "zh": "服务耗时",
+      "definition": "服务端受理时刻 → 实际终态时刻（墙钟或同进程单调时钟）",
+      "must_not": ["与浏览器墙钟相减", "用回调接收延迟伪造执行时间"],
+      "separate_line": "人工等待时间"
+    },
+    "first_content_ms": {
+      "zh": "浏览器首可见终答正文耗时",
+      "definition": "浏览器单调时钟（performance.now）测得的首段**可见最终正文**时刻",
+      "reserved_for": "change-3",
+      "must_not": ["用进度事件代替", "当作模型 TTFT"],
+      "v1_status": "not_collected"
+    },
+    "model_ttft_ms": {
+      "zh": "单次模型 TTFT",
+      "reserved_for": "change-5",
+      "v1_status": "not_collected"
+    },
+    "latency_percentiles": {
+      "zh": "延迟分位数",
+      "definition": "由该窗口有效明细或可合并分布计算 P50/P95/P99",
+      "must_not": ["平均每日 P95"],
+      "must_report": ["sample_count", "missing_count"]
+    },
+    "trace_coverage": {
+      "zh": "Trace 映射覆盖率",
+      "definition": "有主 Trace 映射的尝试 / 窗口内尝试",
+      "v1_status": "measured（映射本身）；完整 Langfuse 采集属 change-5"
+    },
+    "feedback_rate": { "zh": "反馈率", "reserved_for": "change-3", "v1_status": "not_collected" },
+    "copy_rate": { "zh": "复制率", "reserved_for": "change-3", "v1_status": "not_collected" },
+    "usage_tokens": { "zh": "Token 用量", "reserved_for": "change-5", "v1_status": "not_collected" },
+    "cost": { "zh": "成本", "reserved_for": "change-5", "v1_status": "not_collected" }
+  },
+  "response_required_fields": [
+    "metric_version",
+    "as_of",
+    "projected_at",
+    "data_lag_seconds",
+    "window",
+    "sample_count",
+    "missing_count",
+    "measurement_source",
+    "status"
+  ],
+  "delivery_worker_defaults": {
+    "reconcile_scan_seconds": 30,
+    "stalled_after_seconds": 60,
+    "batch_size": 100,
+    "max_delivery_attempts": 8,
+    "lease_seconds": 60
+  }
+}

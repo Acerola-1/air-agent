@@ -130,6 +130,7 @@ def reset_checkpointer_cache() -> None:
     with _saver_lock:
         _saver = None
 
+
 # ==================== thread_meta 表(供 ThreadList 查询) ====================
 
 
@@ -250,4 +251,3 @@ def touch_thread_meta(thread_id: str) -> None:
 def list_threads(graph_id: str | None = None) -> list[dict[str, Any]]:
     """跨 loop 同步读 thread 列表."""
     return _run_async_blocking(_list_threads_async(graph_id))
-

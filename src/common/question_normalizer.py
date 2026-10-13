@@ -22,14 +22,10 @@ class QuestionNormalizer:
     )
 
     # 完整日期：2026年5月1日、2026年3月15日
-    _DATE_FULL = re.compile(
-        r"\d{4}年(?:\d{1,2}月)?(?:\d{1,2}[日号])?"
-    )
+    _DATE_FULL = re.compile(r"\d{4}年(?:\d{1,2}月)?(?:\d{1,2}[日号])?")
 
     # ISO格式日期：2026-05-27
-    _DATE_ISO = re.compile(
-        r"\d{4}-\d{2}-\d{2}"
-    )
+    _DATE_ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
 
     # 季度：2026年第一季度、第一季度
     _QUARTER = re.compile(
@@ -38,9 +34,7 @@ class QuestionNormalizer:
     )
 
     # 半年：上半年、下半年
-    _HALF_YEAR = re.compile(
-        r"[上下]半年"
-    )
+    _HALF_YEAR = re.compile(r"[上下]半年")
 
     # 月份：2026年4月、本月、上个月、下个月
     _MONTH_PERIOD = re.compile(
@@ -66,9 +60,7 @@ class QuestionNormalizer:
     )
 
     # 具体小时：15时、14时
-    _HOUR = re.compile(
-        r"\d{1,2}时"
-    )
+    _HOUR = re.compile(r"\d{1,2}时")
 
     # 时间修饰词：今年以来、本月、今日、实时、当日、昨天、前天、明天
     _TIME_MODIFIERS = re.compile(
@@ -85,18 +77,14 @@ class QuestionNormalizer:
     # ========== 地点相关模式 ==========
 
     # 国控站点
-    _STATION_TYPE = re.compile(
-        r"国控站点"
-    )
+    _STATION_TYPE = re.compile(r"国控站点")
 
     # 省市区县镇街道：南浔区、杭州市、浙江省
     # 排除：
     #   - "某" 开头的（某市、某省等占位符）
     #   - "xx" 或 "XX" 开头的（xx市等占位符）
     #   - 数字开头的（如"168重点城市"中的"城市"）
-    _REGION_ADMIN = re.compile(
-        r"(?<![某xX\d])[一-龥]{2,10}(?:省|市|区|县|镇|乡|街道)"
-    )
+    _REGION_ADMIN = re.compile(r"(?<![某xX\d])[一-龥]{2,10}(?:省|市|区|县|镇|乡|街道)")
 
     # 城市简称/特定名称（在行政区划之后，避免重复）
     _CITY_NAME = re.compile(
@@ -109,9 +97,7 @@ class QuestionNormalizer:
     # ========== 其他需要归一化的模式 ==========
 
     # 浓度单位
-    _UNIT = re.compile(
-        r"μg/m³|mg/m³"
-    )
+    _UNIT = re.compile(r"μg/m³|mg/m³")
 
     # 固定专有名词（不应被替换的地理/区域概念，保持原样）
     _FIXED_GEO_TERMS: tuple[str, ...] = (

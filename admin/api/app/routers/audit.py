@@ -8,17 +8,18 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.deps import SessionDep, require_permission
 from app.models import AuditLog, User
 from app.schemas import AuditLogOut, Page
+from app.services.identity import Identity
 
 router = APIRouter(tags=["audit"])
 
-CanRead = Annotated[User, Depends(require_permission("audit:read"))]
+CanRead = Annotated[Identity, Depends(require_permission("audit:read"))]
 
 
 async def _account_map(session: AsyncSession, actor_ids: list[uuid.UUID]) -> dict[uuid.UUID, str]:
@@ -33,21 +34,25 @@ async def _account_map(session: AsyncSession, actor_ids: list[uuid.UUID]) -> dic
 @router.get("", response_model=Page[AuditLogOut], summary="审计日志（分页）")
 async def list_audit_logs(
     session: SessionDep,
-    _actor: CanRead,
+    actor: CanRead,
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=200),
     action: str | None = Query(default=None, max_length=64, description="按动作精确筛选"),
     actor_id: uuid.UUID | None = Query(default=None, description="按操作人筛选"),
 ) -> Page[AuditLogOut]:
     stmt = select(AuditLog)
+    # 企业上下文：显式限定本企业（RLS 之外的第二道条件，count/分页同源）；
+    # 平台上下文不限定，可查看含历史域的全量
+    if not actor.platform_admin:
+        if actor.tenant_id is None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="尚未选择企业")
+        stmt = stmt.where(AuditLog.tenant_id == actor.tenant_id)
     if action:
         stmt = stmt.where(AuditLog.action == action)
     if actor_id:
         stmt = stmt.where(AuditLog.actor_id == actor_id)
 
-    total = await session.scalar(
-        select(func.count()).select_from(stmt.order_by(None).subquery())
-    )
+    total = await session.scalar(select(func.count()).select_from(stmt.order_by(None).subquery()))
     rows = (
         await session.scalars(
             stmt.order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
@@ -62,6 +67,9 @@ async def list_audit_logs(
             AuditLogOut(
                 id=log.id,
                 actor_id=log.actor_id,
+                actor_membership_id=log.actor_membership_id,
+                tenant_id=log.tenant_id,
+                platform_scope=log.platform_scope,
                 # 优先用冗余存的账号快照（用户被删也能追溯）；
                 # 仅迁移回填不到的存量数据才回退到 join
                 actor_account=log.actor_account
@@ -69,6 +77,7 @@ async def list_audit_logs(
                 action=log.action,
                 target_type=log.target_type,
                 target_id=log.target_id,
+                request_id=log.request_id,
                 detail=log.detail,
                 # psycopg 把 INET 读成 ipaddress 对象，响应里统一转成字符串
                 ip=str(log.ip) if log.ip is not None else None,

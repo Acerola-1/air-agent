@@ -1,87 +1,60 @@
-/** 认证服务：登录/注册/登出/会话查询（node server 端使用）.
+/** 认证服务：全部委托统一身份域（admin API）。
  *
- *  - 密码：bcrypt 哈希（user-store.ts，存 data/users.json）
- *  - 会话：HMAC 签名 cookie（session-token.ts），httpOnly + sameSite=lax
- *  - 登录后前端把 user.id 写入 localStorage `air_agent_user_id`，
- *    线程 metadata.user_id 按账号隔离历史（机制与匿名 UUID 一致）
+ *  - 会话：admin 签发的不透明 HttpOnly cookie（`air_agent_session`），Next 仅转发；
+ *  - JSON 账号库与公开注册已退出线上（迁移工具单独读取旧文件）；
+ *  - Node 侧 `getSessionContext()` 返回已验证上下文；拿不到即失败关闭。
  */
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
-import { signSession, verifySession } from "@/lib/session-token";
 import {
-  createUser,
-  findUserById,
-  findUserByUsername,
-  validateCredentials,
-  verifyPassword,
-  type StoredUser,
-} from "@/lib/user-store";
+  AdminApiError,
+  type AdminSessionContext,
+  loginViaAdmin,
+  logoutViaAdmin,
+  meViaAdmin,
+} from "@/lib/admin-api";
 
 export const SESSION_COOKIE = "air_agent_session";
 
-function getSecret(): string {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) throw new Error("AUTH_SECRET 未设置（.env / .env.example）");
-  return secret;
-}
+export type LoginResult =
+  | { ok: true; ctx: AdminSessionContext; setCookies: string[] }
+  | { ok: false; error: string; status: number };
 
-const COOKIE_OPTS = {
-  httpOnly: true,
-  sameSite: "lax" as const,
-  path: "/",
-  maxAge: 60 * 60 * 24 * 30, // 30 天
-  // 生产环境（https）启用 secure；本地 http 不开
-  secure: process.env.NODE_ENV === "production",
-};
-
-function setSessionCookie(res: NextResponse, token: string): NextResponse {
-  res.cookies.set(SESSION_COOKIE, token, COOKIE_OPTS);
-  return res;
-}
-
-function clearSessionCookie(res: NextResponse): NextResponse {
-  res.cookies.set(SESSION_COOKIE, "", { ...COOKIE_OPTS, maxAge: 0 });
-  return res;
-}
-
-export async function register(username: string, password: string): Promise<
-  | { ok: true; user: StoredUser }
-  | { ok: false; error: string }
-> {
-  const invalid = validateCredentials(username, password);
-  if (invalid) return { ok: false, error: invalid };
-  const user = createUser(username, password);
-  if (!user) return { ok: false, error: "用户名已存在" };
-  return { ok: true, user };
-}
-
-export async function login(username: string, password: string): Promise<
-  | { ok: true; user: StoredUser }
-  | { ok: false; error: string }
-> {
-  const user = findUserByUsername(username);
-  if (!user || !verifyPassword(user, password)) {
-    return { ok: false, error: "用户名或密码错误" };
+export async function loginViaUnified(
+  account: string,
+  password: string,
+  origin: string | null
+): Promise<LoginResult> {
+  try {
+    const { ctx, setCookies } = await loginViaAdmin(account, password, origin);
+    return { ok: true, ctx, setCookies };
+  } catch (err) {
+    if (err instanceof AdminApiError) {
+      return {
+        ok: false,
+        error: err.status === 503 ? err.message : "账号或密码错误",
+        status: err.status,
+      };
+    }
+    return { ok: false, error: "登录失败，请稍后重试", status: 503 };
   }
-  return { ok: true, user };
 }
 
-/** 从请求 cookie 恢复当前会话用户；未登录返回 null */
-export async function getSessionUser(): Promise<StoredUser | null> {
+export async function logoutViaUnified(cookieHeader: string, origin: string | null) {
+  try {
+    await logoutViaAdmin(cookieHeader, origin);
+  } catch {
+    // 服务端撤销失败时仍清本地 cookie：会话过期后自然失效
+  }
+}
+
+/** 从请求 cookie 解析统一会话上下文；未登录/撤销返回 null。 */
+export async function getSessionContext(): Promise<AdminSessionContext | null> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
-  const payload = token ? await verifySession(token, getSecret()) : null;
-  if (!payload) return null;
-  return findUserById(payload.userId) ?? null;
-}
-
-export { getSecret, setSessionCookie, clearSessionCookie };
-
-/** 生成会话 cookie 的响应（供 login/register 共用） */
-export async function buildSessionResponse(
-  user: StoredUser,
-): Promise<NextResponse> {
-  const token = await signSession(user.id, user.username, getSecret());
-  const res = NextResponse.json({ id: user.id, username: user.username });
-  return setSessionCookie(res, token);
+  if (!token) return null;
+  try {
+    return await meViaAdmin(`${SESSION_COOKIE}=${token}`);
+  } catch {
+    return null;
+  }
 }

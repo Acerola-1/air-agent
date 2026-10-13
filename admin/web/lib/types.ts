@@ -32,6 +32,9 @@ export type Role = {
   created_at: string;
   permission_count: number;
   user_count: number;
+  /** 平台角色 or 企业角色（统一身份协议）。 */
+  scope: "platform" | "tenant";
+  tenant_id: string | null;
 };
 
 export type RoleDetail = Role & {
@@ -88,3 +91,89 @@ export type Page<T> = {
 export type AuditAction =
   | string
   | undefined;
+
+
+// ---------------------------------------------------------- 企业身份（统一会话协议）
+
+export type TenantBrief = {
+  id: string;
+  code: string;
+  name: string;
+  status: string;
+};
+
+export type MembershipBrief = {
+  id: string;
+  tenant_id: string;
+  department_id: string | null;
+  status: string;
+  revision: number;
+  role_codes: string[];
+};
+
+export type TenantListItem = {
+  tenant: TenantBrief;
+  membership: MembershipBrief;
+};
+
+export type SessionContext = {
+  user: User;
+  session: {
+    session_id: string;
+    active_tenant_id: string | null;
+    ctx_version: number;
+    created_at: string;
+    expires_at: string;
+  };
+  current_tenant: TenantBrief | null;
+  membership: MembershipBrief | null;
+  permissions: string[];
+  platform_admin: boolean;
+  context_version: number;
+  tenants: TenantListItem[];
+  needs_tenant_selection: boolean;
+};
+
+export type Tenant = {
+  id: string;
+  code: string;
+  name: string;
+  status: string;
+  auth_revision: number;
+  created_at: string;
+};
+
+export type Member = {
+  id: string;
+  tenant_id: string;
+  user_id: string;
+  account: string;
+  display_name: string;
+  user_is_active: boolean;
+  department_id: string | null;
+  status: string;
+  revision: number;
+  role_codes: string[];
+  created_at: string;
+};
+
+export type Department = {
+  id: string;
+  tenant_id: string;
+  dept_code: string;
+  name: string;
+  parent_id: string | null;
+  created_at: string;
+};
+
+export type McpBinding = {
+  id: string;
+  tenant_id: string;
+  membership_id: string | null;
+  server_key: string;
+  external_subject: string;
+  protocol_version: string;
+  auth_revision: number;
+  status: string;
+  credential_configured: boolean;
+};

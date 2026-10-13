@@ -1,9 +1,12 @@
 """用户管理接口。
 
-权限码：user:read / user:create / user:update / user:delete /
-user:assign_role / user:reset_password，关注城市另用 followed:read / followed:manage。
+平台职责接口（任务 4.2/4.3 收敛）：本路由只服务**全局账号**管理，要求平台
+权限码（user:read / user:create / user:update / user:delete / user:assign_role /
+user:reset_password，均 grantable_to_tenants=false）。租户管理员没有这些码，
+旧接口对其直接 403——不存在“接口兼容获得平台管理能力”的旁路；企业成员/部门/
+角色管理走 /tenants/{tenant_id}/members 等新接口。
 
-自我保护：不允许删除或停用自己——否则管理员会把自己锁在后台之外。
+自我保护：不允许删除或停用自己——否则管理员会把自己锁在系统之外。
 """
 
 from __future__ import annotations
@@ -12,7 +15,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.deps import SessionDep, require_permission
@@ -35,17 +38,18 @@ from app.services.followed_regions import (
     list_followed_regions,
     set_followed_regions,
 )
+from app.services.identity import Identity
 
 router = APIRouter(tags=["users"])
 
-CanRead = Annotated[User, Depends(require_permission("user:read"))]
-CanCreate = Annotated[User, Depends(require_permission("user:create"))]
-CanUpdate = Annotated[User, Depends(require_permission("user:update"))]
-CanDelete = Annotated[User, Depends(require_permission("user:delete"))]
-CanAssignRole = Annotated[User, Depends(require_permission("user:assign_role"))]
-CanResetPassword = Annotated[User, Depends(require_permission("user:reset_password"))]
-CanReadFollowed = Annotated[User, Depends(require_permission("followed:read"))]
-CanManageFollowed = Annotated[User, Depends(require_permission("followed:manage"))]
+CanRead = Annotated[Identity, Depends(require_permission("user:read"))]
+CanCreate = Annotated[Identity, Depends(require_permission("user:create"))]
+CanUpdate = Annotated[Identity, Depends(require_permission("user:update"))]
+CanDelete = Annotated[Identity, Depends(require_permission("user:delete"))]
+CanAssignRole = Annotated[Identity, Depends(require_permission("user:assign_role"))]
+CanResetPassword = Annotated[Identity, Depends(require_permission("user:reset_password"))]
+CanReadFollowed = Annotated[Identity, Depends(require_permission("followed:read"))]
+CanManageFollowed = Annotated[Identity, Depends(require_permission("followed:manage"))]
 
 
 async def _roles_by_user(
@@ -82,9 +86,7 @@ async def _followed_by_user(
     return result
 
 
-def _to_out(
-    user: User, roles: list[Role], followed: list[str]
-) -> UserOut:
+def _to_out(user: User, roles: list[Role], followed: list[str]) -> UserOut:
     return UserOut(
         id=user.id,
         account=user.account,
@@ -104,12 +106,22 @@ async def _get_user_or_404(session: AsyncSession, user_id: uuid.UUID) -> User:
     return user
 
 
-async def _resolve_role_ids(session: AsyncSession, role_codes: list[str]) -> list[uuid.UUID]:
+async def _resolve_role_ids(
+    session: AsyncSession, role_codes: list[str], *, platform_only: bool = False
+) -> list[uuid.UUID]:
     if not role_codes:
         return []
     wanted = set(role_codes)
-    rows = await session.execute(select(Role.code, Role.id).where(Role.code.in_(wanted)))
-    found = dict(rows.all())
+    stmt = select(Role.code, Role.id, Role.scope).where(Role.code.in_(wanted))
+    rows = await session.execute(stmt)
+    found = {}
+    for code, role_id, scope in rows.all():
+        if platform_only and scope != "platform":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"角色 {code} 不是平台角色；企业角色请走成员接口",
+            )
+        found[code] = role_id
     unknown = wanted - set(found)
     if unknown:
         raise HTTPException(
@@ -145,14 +157,10 @@ async def list_users(
             .where(Role.code == role_code)
         )
 
-    total = await session.scalar(
-        select(func.count()).select_from(stmt.order_by(None).subquery())
-    )
+    total = await session.scalar(select(func.count()).select_from(stmt.order_by(None).subquery()))
     rows = (
         await session.scalars(
-            stmt.order_by(User.created_at.desc())
-            .offset((page - 1) * size)
-            .limit(size)
+            stmt.order_by(User.created_at.desc()).offset((page - 1) * size).limit(size)
         )
     ).all()
     ids = [user.id for user in rows]
@@ -170,9 +178,7 @@ async def list_users(
     )
 
 
-@router.post(
-    "", response_model=UserOut, status_code=status.HTTP_201_CREATED, summary="新建用户"
-)
+@router.post("", response_model=UserOut, status_code=status.HTTP_201_CREATED, summary="新建用户")
 async def create_user(
     payload: UserCreate, request: Request, session: SessionDep, actor: CanCreate
 ) -> UserOut:
@@ -191,8 +197,8 @@ async def create_user(
 
     record_audit(
         session,
-        actor_id=actor.id,
-        actor_account=actor.account,
+        actor_id=actor.user.id,
+        actor_account=actor.user.account,
         action="user.create",
         target_type="user",
         target_id=str(user.id),
@@ -225,10 +231,8 @@ async def update_user(
     user = await _get_user_or_404(session, user_id)
     changes = payload.model_dump(exclude_unset=True)
 
-    if user.id == actor.id and changes.get("is_active") is False:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="不能停用自己的账号"
-        )
+    if user.id == actor.user.id and changes.get("is_active") is False:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不能停用自己的账号")
 
     for field, value in changes.items():
         setattr(user, field, value)
@@ -236,18 +240,18 @@ async def update_user(
 
     record_audit(
         session,
-        actor_id=actor.id,
-        actor_account=actor.account,
+        actor_id=actor.user.id,
+        actor_account=actor.user.account,
         action="user.update",
         target_type="user",
         target_id=str(user.id),
         detail=changes,
         request=request,
     )
-    await session.commit()
-
+    # 先读关联再提交：GUC 是事务本地，commit 后 user_roles 会重新不可见
     roles_map = await _roles_by_user(session, [user.id])
     followed_map = await _followed_by_user(session, [user.id])
+    await session.commit()
     return _to_out(user, roles_map.get(user.id, []), followed_map.get(user.id, []))
 
 
@@ -256,17 +260,15 @@ async def delete_user(
     user_id: uuid.UUID, request: Request, session: SessionDep, actor: CanDelete
 ) -> None:
     user = await _get_user_or_404(session, user_id)
-    if user.id == actor.id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="不能删除自己的账号"
-        )
+    if user.id == actor.user.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="不能删除自己的账号")
 
     account = user.account
     await session.delete(user)
     record_audit(
         session,
-        actor_id=actor.id,
-        actor_account=actor.account,
+        actor_id=actor.user.id,
+        actor_account=actor.user.account,
         action="user.delete",
         target_type="user",
         target_id=str(user_id),
@@ -286,10 +288,18 @@ async def reset_password(
 ) -> None:
     user = await _get_user_or_404(session, user_id)
     user.password_hash = hash_password(payload.password)
+    # 有权主体改密：auth_revision 递增 + 撤销全部既有会话（任务 3.1）
+    user.auth_revision += 1
+    await session.execute(
+        text(
+            "UPDATE auth_sessions SET revoked_at = now() WHERE user_id = :u AND revoked_at IS NULL"
+        ),
+        {"u": str(user_id)},
+    )
     record_audit(
         session,
-        actor_id=actor.id,
-        actor_account=actor.account,
+        actor_id=actor.user.id,
+        actor_account=actor.user.account,
         action="user.reset_password",
         target_type="user",
         target_id=str(user.id),
@@ -307,42 +317,39 @@ async def set_user_roles(
     actor: CanAssignRole,
 ) -> UserOut:
     user = await _get_user_or_404(session, user_id)
-    role_ids = await _resolve_role_ids(session, list(dict.fromkeys(payload.role_codes)))
+    role_ids = await _resolve_role_ids(
+        session, list(dict.fromkeys(payload.role_codes)), platform_only=True
+    )
 
-    existing = (
-        await session.scalars(select(UserRole).where(UserRole.user_id == user.id))
-    ).all()
+    existing = (await session.scalars(select(UserRole).where(UserRole.user_id == user.id))).all()
     for row in existing:
         await session.delete(row)
     await session.flush()
 
     for role_id in role_ids:
-        session.add(UserRole(user_id=user.id, role_id=role_id, granted_by=actor.id))
+        session.add(UserRole(user_id=user.id, role_id=role_id, granted_by=actor.user.id))
     await session.flush()
 
     record_audit(
         session,
-        actor_id=actor.id,
-        actor_account=actor.account,
+        actor_id=actor.user.id,
+        actor_account=actor.user.account,
         action="user.assign_role",
         target_type="user",
         target_id=str(user.id),
         detail={"role_codes": payload.role_codes},
         request=request,
     )
-    await session.commit()
-
     roles_map = await _roles_by_user(session, [user.id])
     followed_map = await _followed_by_user(session, [user.id])
+    await session.commit()
     return _to_out(user, roles_map.get(user.id, []), followed_map.get(user.id, []))
 
 
 # --------------------------------------------------------------------------- 关注城市
 
 
-@router.get(
-    "/{user_id}/followed-regions", response_model=list[str], summary="用户的关注城市编码"
-)
+@router.get("/{user_id}/followed-regions", response_model=list[str], summary="用户的关注城市编码")
 async def get_followed_regions(
     user_id: uuid.UUID, session: SessionDep, _actor: CanReadFollowed
 ) -> list[str]:
@@ -371,8 +378,8 @@ async def put_followed_regions(
 
     record_audit(
         session,
-        actor_id=actor.id,
-        actor_account=actor.account,
+        actor_id=actor.user.id,
+        actor_account=actor.user.account,
         action="user.set_followed_regions",
         target_type="user",
         target_id=str(user_id),

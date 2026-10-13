@@ -34,7 +34,9 @@ def test_output_guards_no_internal_exposure_ban() -> None:
 
 def test_main_agent_guard_no_process_first_person() -> None:
     """确认 MAIN_AGENT 护栏已删除过程化第一人称和工具步骤提及约束."""
-    assert "不得提及前面执行过哪些工具或内部步骤" not in MAIN_AGENT_TOOL_USE_OUTPUT_GUARD
+    assert (
+        "不得提及前面执行过哪些工具或内部步骤" not in MAIN_AGENT_TOOL_USE_OUTPUT_GUARD
+    )
     assert "不得使用第一人称解释执行过程" not in MAIN_AGENT_TOOL_USE_OUTPUT_GUARD
     assert "我正在/我需要/我先/我再/我已" not in MAIN_AGENT_TOOL_USE_OUTPUT_GUARD
 

@@ -11,10 +11,11 @@ from __future__ import annotations
 import uuid
 
 import pytest
+from ctx_client import ContextClient
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import select
 
-from app.db import SessionLocal
+from app.db import OwnerSessionLocal
 from app.main import app
 from app.models import Role, User, UserRole
 from app.security import hash_password
@@ -24,7 +25,7 @@ SMOKE_PREFIX = "tmp_adm_"
 
 
 async def _make_user(account: str, role_codes: list[str]) -> uuid.UUID:
-    async with SessionLocal() as session:
+    async with OwnerSessionLocal() as session:
         user = User(
             account=account,
             display_name=f"测试-{account}",
@@ -34,9 +35,7 @@ async def _make_user(account: str, role_codes: list[str]) -> uuid.UUID:
         session.add(user)
         await session.flush()
         if role_codes:
-            roles = (
-                await session.scalars(select(Role).where(Role.code.in_(role_codes)))
-            ).all()
+            roles = (await session.scalars(select(Role).where(Role.code.in_(role_codes)))).all()
             for role in roles:
                 session.add(UserRole(user_id=user.id, role_id=role.id))
         await session.commit()
@@ -44,7 +43,7 @@ async def _make_user(account: str, role_codes: list[str]) -> uuid.UUID:
 
 
 async def _drop_user(user_id: uuid.UUID) -> None:
-    async with SessionLocal() as session:
+    async with OwnerSessionLocal() as session:
         victim = await session.get(User, user_id)
         if victim is not None:
             await session.delete(victim)
@@ -52,7 +51,7 @@ async def _drop_user(user_id: uuid.UUID) -> None:
 
 
 async def _login(account: str, password: str = PASSWORD) -> AsyncClient:
-    client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+    client = ContextClient(transport=ASGITransport(app=app), base_url="http://test")
     res = await client.post("/auth/login", json={"account": account, "password": password})
     assert res.status_code == 200, res.text
     return client
@@ -87,7 +86,8 @@ async def test_admin_sees_both_top_menus(admin: AsyncClient) -> None:
     res = await admin.get("/auth/menus")
     assert res.status_code == 200
     names = [node["name"] for node in res.json()]
-    assert names == ["系统管理", "业务管理"]
+    # 新权限树：super_admin 额外看到企业管理顶层目录
+    assert names == ["系统管理", "企业管理", "业务管理"]
 
 
 async def test_viewer_sees_only_read_menus(viewer: AsyncClient) -> None:
@@ -131,8 +131,9 @@ async def test_no_role_user_has_no_permissions() -> None:
     uid = await _make_user(account, [])
     client = await _login(account)
     try:
-        me = (await client.get("/auth/me")).json()
-        assert me["permissions"] == []
+        ctx = (await client.get("/auth/me")).json()
+        assert ctx["user"]["id"]
+        assert ctx["permissions"] == []
         assert (await client.get("/users")).status_code == 403
         assert (await client.get("/permissions/tree")).status_code == 403
         # 但自己的关注城市可以管
@@ -180,7 +181,7 @@ async def test_user_crud_lifecycle(admin: AsyncClient) -> None:
         assert patched.json()["is_active"] is False
 
         # 停用后不能再登录
-        blocked = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+        blocked = ContextClient(transport=ASGITransport(app=app), base_url="http://test")
         res = await blocked.post(
             "/auth/login", json={"account": account, "password": "initial-pass"}
         )
@@ -224,11 +225,9 @@ async def test_role_assignment_changes_permissions(admin: AsyncClient) -> None:
 
 
 async def test_admin_cannot_delete_or_disable_self(admin: AsyncClient) -> None:
-    me = (await admin.get("/auth/me")).json()
+    me = (await admin.get("/auth/me")).json()["user"]
     assert (await admin.delete(f"/users/{me['id']}")).status_code == 400
-    assert (
-        await admin.patch(f"/users/{me['id']}", json={"is_active": False})
-    ).status_code == 400
+    assert (await admin.patch(f"/users/{me['id']}", json={"is_active": False})).status_code == 400
 
 
 async def test_reset_password(admin: AsyncClient) -> None:
@@ -243,13 +242,13 @@ async def test_reset_password(admin: AsyncClient) -> None:
             await admin.put(f"/users/{uid}/password", json={"password": "new-password"})
         ).status_code == 204
 
-        old = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+        old = ContextClient(transport=ASGITransport(app=app), base_url="http://test")
         assert (
             await old.post("/auth/login", json={"account": account, "password": "old-password"})
         ).status_code == 401
         await old.aclose()
 
-        new = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+        new = ContextClient(transport=ASGITransport(app=app), base_url="http://test")
         assert (
             await new.post("/auth/login", json={"account": account, "password": "new-password"})
         ).status_code == 200
@@ -264,6 +263,8 @@ async def test_reset_password(admin: AsyncClient) -> None:
 async def test_builtin_roles_cannot_be_deleted(admin: AsyncClient) -> None:
     roles = (await admin.get("/roles")).json()
     for role in roles:
+        if role["scope"] != "platform":
+            continue  # 企业模板在平台无企业上下文时不可删除（404 属预期），此处验证平台内置
         assert role["is_system"] is True
         assert (await admin.delete(f"/roles/{role['id']}")).status_code == 400
 
@@ -271,7 +272,8 @@ async def test_builtin_roles_cannot_be_deleted(admin: AsyncClient) -> None:
 async def test_role_crud(admin: AsyncClient) -> None:
     code = f"tmp_role_{uuid.uuid4().hex[:6]}"
     created = await admin.post(
-        "/roles", json={"code": code, "name": "临时角色", "description": "测试用"}
+        "/roles",
+        json={"code": code, "name": "临时角色", "description": "测试用", "scope": "platform"},
     )
     assert created.status_code == 201
     rid = created.json()["id"]
@@ -279,7 +281,7 @@ async def test_role_crud(admin: AsyncClient) -> None:
 
     try:
         assert (
-            await admin.post("/roles", json={"code": code, "name": "重复"})
+            await admin.post("/roles", json={"code": code, "name": "重复", "scope": "platform"})
         ).status_code == 409
 
         # 给这个角色分配两条权限
@@ -341,9 +343,7 @@ async def test_followed_regions_via_api(admin: AsyncClient) -> None:
         assert "最多 5 个" in over.json()["detail"]
 
         # 非法编码被拒
-        bad = await admin.put(
-            f"/users/{uid}/followed-regions", json={"region_codes": ["999999"]}
-        )
+        bad = await admin.put(f"/users/{uid}/followed-regions", json={"region_codes": ["999999"]})
         assert bad.status_code == 400
 
         # 重复去重
@@ -393,14 +393,20 @@ async def test_audit_log_records_mutations(admin: AsyncClient) -> None:
 
 
 async def test_viewer_cannot_manage_others_followed_regions(viewer: AsyncClient) -> None:
-    """改别人的关注城市需要 followed:manage，viewer 没有。"""
-    async with SessionLocal() as session:
-        root_id = await session.scalar(select(User.id).where(User.account == "root"))
-    assert root_id is not None
-    res = await viewer.put(
-        f"/users/{root_id}/followed-regions", json={"region_codes": ["110000"]}
-    )
-    assert res.status_code == 403
+    """改别人的关注城市需要 followed:manage，viewer 没有。
+
+    目标账号现场创建：清洁专用库没有默认 root 账号（生产拒绝 root/root），
+    旧版依赖 `root` 用户会让新库复现失真。
+    """
+    target = f"{SMOKE_PREFIX}followed_target_{uuid.uuid4().hex[:8]}"
+    target_id = await _make_user(target, [])
+    try:
+        res = await viewer.put(
+            f"/users/{target_id}/followed-regions", json={"region_codes": ["110000"]}
+        )
+        assert res.status_code == 403
+    finally:
+        await _drop_user(target_id)
 
 
 async def test_audit_survives_actor_deletion(admin: AsyncClient) -> None:

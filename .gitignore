@@ -355,3 +355,4 @@ db/*.db-wal
 .mimosa/
 # TypeScript 增量编译产物
 *.tsbuildinfo
+.env.langgraph

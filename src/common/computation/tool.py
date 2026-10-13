@@ -35,7 +35,7 @@ async def compute_artifact(
     runtime: ToolRuntime,
 ) -> str | Command[str]:
     """对当前会话归档的完整 JSON 只读计算。code 必须为同步 JavaScript 函数体，末尾必须 return {result:聚合/筛选结果,scope:'时间、站点、因子、过滤条件和单位说明'}。data 为完整冻结 JSON；helpers.scan(JSON_pointer,callback) 完整遍历记录；helpers.finite(value) 检查数值；helpers.pollutionLevel(factor,value,period,timestamp,unit) 使用已确认规则。所有统计范围必须经 scan。示例：let n=0; helpers.scan('',()=>n++); return {result:{count:n},scope:'完整数组，无筛选'}; 只有一次错误修正机会."""
-    user_id, thread_id, run_id = runtime_scope(runtime.config)
+    tenant_id, user_id, thread_id, run_id = runtime_scope(runtime.config)
     writer = runtime.stream_writer
     writer(
         event_payload(
@@ -49,14 +49,18 @@ async def compute_artifact(
     claim: dict[str, Any] | None = None
     try:
         record = await get_tool_artifact(
-            artifact_id, user_id=user_id, thread_id=thread_id
+            artifact_id, tenant_id=tenant_id, user_id=user_id, thread_id=thread_id
         )
         if record is None:
             raise PermissionError("资料不属于当前已授权会话或不存在")
         if record["kind"] != "raw":
             raise ValueError("请使用原始资料进行完整计算")
         claim = await claim_computation(
-            artifact_id, run_id, started_at=runtime.state.get("data_model_started_at")
+            artifact_id,
+            run_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            started_at=runtime.state.get("data_model_started_at"),
         )
         result = await execute_code(
             record["raw_payload"], code, remaining_seconds=claim["remaining_seconds"]
@@ -68,6 +72,7 @@ async def compute_artifact(
             tool_call_id=runtime.tool_call_id or "",
             tool_name="compute_artifact",
             raw_payload=payload,
+            tenant_id=tenant_id,
             user_id=user_id,
             thread_id=thread_id,
             run_id=run_id,

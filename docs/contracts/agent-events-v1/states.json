@@ -1,0 +1,102 @@
+{
+  "contract": "agent-run-states",
+  "major_version": 1,
+  "status": "freeze_candidate",
+  "produced_by": "anonymous-02/add-agent-event-ledger",
+  "states": {
+    "admitting": {
+      "zh": "受理中",
+      "terminal": false,
+      "counts_as_ended": false,
+      "summary": "可信受理事务进行中"
+    },
+    "admission_unknown": {
+      "zh": "受理结果待确认",
+      "terminal": false,
+      "counts_as_ended": false,
+      "summary": "上游可能已受理但未取得确认；不得自动重发"
+    },
+    "queued": {
+      "zh": "排队",
+      "terminal": false,
+      "counts_as_ended": false,
+      "summary": "已确认受理，尚未开始推进"
+    },
+    "running": {
+      "zh": "运行中",
+      "terminal": false,
+      "counts_as_ended": false,
+      "summary": "平台运行推进中"
+    },
+    "waiting_input": {
+      "zh": "等待人工",
+      "terminal": false,
+      "counts_as_ended": false,
+      "summary": "原生中断等待人工输入；不以恢复操作新建提问"
+    },
+    "succeeded": {
+      "zh": "正常完成",
+      "terminal": true,
+      "counts_as_ended": true,
+      "summary": "有可信完成证据"
+    },
+    "failed": {
+      "zh": "失败",
+      "terminal": true,
+      "counts_as_ended": true,
+      "summary": "有可信失败证据"
+    },
+    "cancelled": {
+      "zh": "实际取消",
+      "terminal": true,
+      "counts_as_ended": true,
+      "summary": "平台确认已取消（非仅用户意图）"
+    },
+    "timed_out": {
+      "zh": "可信超时",
+      "terminal": true,
+      "counts_as_ended": true,
+      "summary": "有实际 deadline/平台超时证据"
+    },
+    "status_unknown": {
+      "zh": "状态待确认",
+      "terminal": false,
+      "counts_as_ended": false,
+      "summary": "平台不可用/对象缺失/证据不足；可继续查询，不判成功/取消/超时"
+    }
+  },
+  "evidence_sources": {
+    "platform_read": { "rank": 3, "zh": "受授权平台原生状态回读" },
+    "runtime_callback": { "rank": 2, "zh": "可信 runtime 回调" },
+    "browser_observed": { "rank": 1, "zh": "浏览器感知（最低，只作补充）" }
+  },
+  "terminal_precedence": {
+    "rule": "同一尝试的有效终态由 rank 更高的来源裁定；低 rank 不得覆盖高 rank 终态；冲突保留两侧事实并记录修订。",
+    "start_event_after_terminal": "历史事实保留，当前状态不回退为 running"
+  },
+  "cancel_origins": {
+    "user_stop": "用户主动停止",
+    "navigation": "页面导航离开",
+    "tenant_switch": "企业切换",
+    "transport_disconnect": "传输断连（无用户停止动作）",
+    "permission_revocation": "权限撤销",
+    "unknown": "未知原因，不猜测归因为 user_stop"
+  },
+  "cancel_phases": {
+    "queued": "尚未开始",
+    "processing": "运行中",
+    "output": "输出中",
+    "unknown": "阶段未知"
+  },
+  "client_state_flags": {
+    "stop_requested": "用户已请求停止（意图）",
+    "cancel_confirmed": "平台已确认取消（事实）",
+    "stop_pending": "停止未确认（前端展示态）",
+    "transport_connected": "连接状态，独立于主状态"
+  },
+  "notes": [
+    "waiting_input 与 status_unknown 都不计入已结束分母。",
+    "浏览器流结束/onDone/signal.aborted 都不是终态证据。",
+    "取消已完成运行平台返回 404；不得把 404 当已终态或已取消。"
+  ]
+}

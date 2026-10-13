@@ -4,17 +4,23 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { TenantSwitcher } from "@/components/tenant-switcher";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/session";
 
 /** 受保护的外壳：加载会话 → 未登录跳登录页 → 否则渲染侧边栏 + 内容。 */
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, error, refresh } = useSession();
+  const { ctx, user, loading, error, refresh } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user && !error) router.replace("/login");
-  }, [loading, user, error, router]);
+    if (loading || error || !user) {
+      if (!loading && !user && !error) router.replace("/login");
+      return;
+    }
+    // 已登录但多企业未选择：管理界面同样先进选择页（平台管理员无企业可用平台域）
+    if (ctx?.needs_tenant_selection) router.replace("/select-tenant");
+  }, [loading, user, error, ctx, router]);
 
   if (loading) {
     return (
@@ -41,6 +47,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex min-h-dvh">
       <AppSidebar />
       <main className="min-w-0 flex-1 overflow-x-hidden">
+        <div className="border-border flex justify-end border-b px-6 py-2">
+          <TenantSwitcher />
+        </div>
         <div className="mx-auto max-w-6xl px-6 py-6">{children}</div>
       </main>
     </div>

@@ -1,25 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/session-token";
 
-/** 路由保护：未登录访问页面 → 重定向 /login；访问 /api/*（认证接口除外）→ 401。
- *  中间件只做 HMAC 签名 + 过期校验（edge 无 fs，不查 users.json）。 */
-export async function middleware(req: NextRequest) {
-  const token = req.cookies.get("air_agent_session")?.value;
-  const secret = process.env.AUTH_SECRET ?? "";
-  const payload = token ? await verifySession(token, secret) : null;
-  if (payload) return NextResponse.next();
+/** 路由保护：仅做导航层检查（cookie 是否存在且为新协议格式）。
+ *
+ * 真正的授权在每个业务请求：/api/* Node 代理向 admin API 实时确认身份，
+ * LangGraph 侧执行票据+归属校验。旧 HMAC cookie（首段非 UUID）不放行导航，
+ * 强制走登录页重新获取统一会话。
+ */
+export function middleware(req: NextRequest) {
+  const value = req.cookies.get("air_agent_session")?.value ?? "";
+  const uuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\..+/i;
+  if (uuidLike.test(value)) return NextResponse.next();
 
   if (req.nextUrl.pathname.startsWith("/api")) {
     return NextResponse.json({ error: "未登录" }, { status: 401 });
   }
   const url = new URL("/login", req.url);
+  if (value) url.searchParams.set("relogin", "1");
   url.searchParams.set("next", req.nextUrl.pathname);
   return NextResponse.redirect(url);
 }
 
 export const config = {
   matcher: [
-    // 保护除认证接口 /login 和静态资源外的所有路由
     "/((?!_next/static|_next/image|favicon.ico|login|api/auth|api/health).*)",
   ],
 };

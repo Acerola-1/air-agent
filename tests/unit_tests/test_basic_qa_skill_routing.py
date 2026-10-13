@@ -21,7 +21,9 @@ import pytest
 
 from common.skill_router import SkillSemanticRouter
 
-BASIC_QA_SKILLS_DIR = Path(__file__).resolve().parents[2] / "src" / "basic_qa" / "skills"
+BASIC_QA_SKILLS_DIR = (
+    Path(__file__).resolve().parents[2] / "src" / "basic_qa" / "skills"
+)
 
 requires_real_api = pytest.mark.skipif(
     os.environ.get("SILICONFLOW_API_KEY", "test") == "test",
@@ -77,7 +79,9 @@ ROUTING_CASES: list[tuple[str, str]] = [
     ROUTING_CASES,
     ids=[f"{q[:20]}→{s}" for q, s in ROUTING_CASES],
 )
-def test_basic_qa_skill_routing(router: SkillSemanticRouter, question: str, expected_skill: str) -> None:
+def test_basic_qa_skill_routing(
+    router: SkillSemanticRouter, question: str, expected_skill: str
+) -> None:
     """验证用户问题能正确路由到预期 Skill."""
     candidates = router.match(question)
 
@@ -101,27 +105,31 @@ def test_basic_qa_skill_routing_summary(router: SkillSemanticRouter) -> None:
         candidates = router.match(question)
         if candidates:
             matched = candidates[0]
-            results.append({
-                "question": question,
-                "expected": expected,
-                "matched": matched.name,
-                "score": matched.similarity_score,
-                "correct": matched.name == expected,
-            })
+            results.append(
+                {
+                    "question": question,
+                    "expected": expected,
+                    "matched": matched.name,
+                    "score": matched.similarity_score,
+                    "correct": matched.name == expected,
+                }
+            )
         else:
-            results.append({
-                "question": question,
-                "expected": expected,
-                "matched": None,
-                "score": None,
-                "correct": False,
-            })
+            results.append(
+                {
+                    "question": question,
+                    "expected": expected,
+                    "matched": None,
+                    "score": None,
+                    "correct": False,
+                }
+            )
 
     correct = sum(1 for r in results if r["correct"])
     total = len(results)
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"basic-qa Skill 路由测试摘要: {correct}/{total} 通过")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
     for r in results:
         mark = "✓" if r["correct"] else "✗"
         score_str = f"{r['score']:.3f}" if r["score"] is not None else "N/A"
@@ -132,6 +140,6 @@ def test_basic_qa_skill_routing_summary(router: SkillSemanticRouter) -> None:
             f"{str(matched_str):<30} "
             f"(期望: {r['expected']})"
         )
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
 
     assert correct == total, f"有 {total - correct} 条路由结果不符合预期，详见上方摘要"

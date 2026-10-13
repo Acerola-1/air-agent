@@ -1,10 +1,10 @@
 "use client";
 
-/** 全局会话状态：当前用户、可见菜单、权限判定。
+/** 全局会话状态：统一身份（用户 + 当前企业 + 权限）与可见菜单。
  *
- * 会话是 httpOnly cookie，JS 读不到，所以登录状态只能问后端 `/auth/me`。
- * 路由守卫只做 UX（未登录跳登录页）；真正的授权在 API 侧，前端 gate 只是
- * 少让人点到会 403 的按钮。
+ * 会话是 httpOnly cookie，JS 读不到，登录状态只能问 `/auth/me`（服务端实时解析）。
+ * 路由守卫只做 UX；真正授权在 API 侧。企业切换带 context_version：并发切换
+ * 冲突时服务端返回 409，本上下文随即刷新（旧页面的操作被拒绝而非静默改企业）。
  */
 
 import {
@@ -17,24 +17,28 @@ import {
   type ReactNode,
 } from "react";
 
-import { ApiError, authApi } from "./api";
-import type { Me, PermissionNode } from "./types";
+import { ApiError, authApi, onTenantContextConflict, setTenantRequestClaim } from "./api";
+import type { PermissionNode, SessionContext, User } from "./types";
 
 type SessionValue = {
-  user: Me | null;
+  /** 完整统一会话上下文（null=未登录）。 */
+  ctx: SessionContext | null;
+  user: User | null;
   menus: PermissionNode[];
   loading: boolean;
   error: string | null;
-  /** 是否拥有某个权限码（可传多个，要求全部拥有）。 */
   can: (...codes: string[]) => boolean;
   refresh: () => Promise<void>;
   logout: () => Promise<void>;
+  switchTenant: (
+    tenantId: string
+  ) => Promise<{ ok: boolean; conflict?: boolean; message?: string }>;
 };
 
-const SessionContext = createContext<SessionValue | null>(null);
+const SessionStateContext = createContext<SessionValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<Me | null>(null);
+  const [ctx, setCtx] = useState<SessionContext | null>(null);
   const [menus, setMenus] = useState<PermissionNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,13 +47,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const [me, menuTree] = await Promise.all([authApi.me(), authApi.menus()]);
-      setUser(me);
+      const [meData, menuTree] = await Promise.all([authApi.me(), authApi.menus()]);
+      setCtx(meData);
       setMenus(menuTree);
+      // R02：登记页面感知企业上下文，后续业务请求携带声明
+      setTenantRequestClaim(
+        meData
+          ? { tenantId: meData.current_tenant?.id ?? "none", version: meData.context_version }
+          : null
+      );
     } catch (err) {
-      // 401/403 是"未登录"的正常状态，不是错误；其它才是真的出问题
+      // 401/403 是"未登录/会话撤销"的正常状态，不是错误；其它才是真的出问题
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        setUser(null);
+        setCtx(null);
         setMenus([]);
       } else {
         setError(err instanceof Error ? err.message : "加载会话失败");
@@ -63,33 +73,83 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  // R02：业务请求收到 409 上下文冲突 → 刷新实时会话并给出可读提示（旧标签页
+  // 不继续展示/写入旧企业数据）。
+  useEffect(() => {
+    onTenantContextConflict(() => {
+      void refresh().then(() =>
+        setError("企业上下文已被其他标签页变更，页面已重新加载；请以当前企业为准继续操作。")
+      );
+    });
+    return () => onTenantContextConflict(null);
+  }, [refresh]);
+
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
     } finally {
-      setUser(null);
+      setCtx(null);
       setMenus([]);
     }
   }, []);
 
+  const switchTenant = useCallback(
+    async (tenantId: string) => {
+      if (!ctx) return { ok: false, message: "未登录" };
+      try {
+        const next = await authApi.switchTenant(tenantId, ctx.context_version);
+        setCtx(next);
+        setMenus(await authApi.menus());
+        setTenantRequestClaim({
+          tenantId: next.current_tenant?.id ?? "none",
+          version: next.context_version,
+        });
+        return { ok: true };
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 409) {
+          await refresh();
+          return { ok: false, conflict: true, message: err.message };
+        }
+        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+          await refresh();
+          return { ok: false, message: err.message };
+        }
+        return { ok: false, message: err instanceof Error ? err.message : "切换失败" };
+      }
+    },
+    [ctx, refresh]
+  );
+
   const can = useCallback(
     (...codes: string[]) => {
-      if (!user) return false;
-      return codes.every((code) => user.permissions.includes(code));
+      if (!ctx) return false;
+      return codes.every((code) => ctx.permissions.includes(code));
     },
-    [user]
+    [ctx]
   );
 
   const value = useMemo<SessionValue>(
-    () => ({ user, menus, loading, error, can, refresh, logout }),
-    [user, menus, loading, error, can, refresh, logout]
+    () => ({
+      ctx,
+      user: ctx ? ctx.user : null,
+      menus,
+      loading,
+      error,
+      can,
+      refresh,
+      logout,
+      switchTenant,
+    }),
+    [ctx, menus, loading, error, can, refresh, logout, switchTenant]
   );
 
-  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  return (
+    <SessionStateContext.Provider value={value}>{children}</SessionStateContext.Provider>
+  );
 }
 
 export function useSession(): SessionValue {
-  const ctx = useContext(SessionContext);
-  if (!ctx) throw new Error("useSession 必须在 SessionProvider 内使用");
-  return ctx;
+  const current = useContext(SessionStateContext);
+  if (!current) throw new Error("useSession 必须在 SessionProvider 内使用");
+  return current;
 }

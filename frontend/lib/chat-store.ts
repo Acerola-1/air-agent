@@ -5,7 +5,10 @@ import { generateUuidV7 } from "@/lib/uuidv7";
 import { getUserIdentity } from "@/lib/user-identity";
 import {
   searchThreads, createThread, getThreadState, updateThreadMetadata, deleteThread,
-  streamRun, cancelRun, deriveTitle,
+  streamRun, cancelRun, deriveTitle, ThreadAccessError,
+  getRunStatus, listRecentRuns, notifyIfContextConflict,
+  newSubmissionKey, setSubmissionContext, confirmRunAdmission, recordStopIntent,
+  recordNavigationStopBeacon,
   type LgThread, type ContextMetrics, type ProcessingStatus, type ThreadValues,
 } from "@/lib/langgraph-api";
 
@@ -23,18 +26,111 @@ export type ChatMessage = {
 
 type ChatState = {
   graphId: string; threads: LgThread[]; activeThreadId: string | null; messages: ChatMessage[];
+  /** 企业切换：丢弃当前视图与列表缓存（不得残留旧企业数据） */
+  clearForTenant: () => void;
   isStreaming: boolean; streamingText: string; streamingReasoning: string; totalContextTokens: number;
+  stopPending: boolean;
   contextMetrics: ContextMetrics | null; contextStatus: ProcessingStatus | null; dataStatus: ProcessingStatus | null;
   error: string | null; failedInput: string | null; loadingThreads: boolean; loadingThread: boolean;
   switchGraph: (graphId: string) => Promise<void>; loadThreads: () => Promise<void>;
   openThread: (threadId: string) => Promise<void>; newThread: () => void;
-  sendMessage: (text: string, chatMode: string) => Promise<void>; stopStreaming: () => void;
+  sendMessage: (
+    text: string,
+    chatMode: string,
+    operationKind?: "initial" | "retry" | "regenerate",
+  ) => Promise<void>;
+  /** 重新生成：对上一条用户问题发起 regenerate（关联原 request，新增 attempt）。 */
+  regenerateLast: (chatMode: string) => Promise<void>;
+  /** R10：停止并等待后端取消确认；confirmed=false 表示未确认（不得谎称已停止） */
+  stopStreaming: () => Promise<StopOutcome>;
+  /** 页面卸载（导航离开/刷新）：记录 origin=navigation 的停止意图，尽力送达。 */
+  recordNavigationStop: () => void;
   removeThread: (threadId: string) => Promise<void>;
 };
 let generation = 0;
 let listRequest = 0;
-type ActiveRun = { generation: number; controller: AbortController; threadId: string | null; runId: string | null };
+type ActiveRun = { generation: number; controller: AbortController; threadId: string | null; runId: string | null; admitted?: boolean };
+export type StopOutcome = { confirmed: boolean; reason?: "backend" | "context_changed" | "unknown" };
+// F05：可信终态 = 服务端 run.get 返回的运行状态进入这些值；
+// 404/不可见/状态缺失/查询失败都不是"已取消"的事实。
+const TERMINAL_RUN_STATUSES = new Set(["cancelled", "success", "error", "failed", "timeout"]);
+const STOP_CONFIRM_TIMEOUT_MS = 15000;
+const STOP_LIST_RESOLVE_MS = 3000;
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** F05：轮询服务端到可信终态才确认；一切不明确结果返回未确认。 */
+async function waitForTerminalStatus(
+  threadId: string,
+  runId: string,
+  deadlineMs: number
+): Promise<StopOutcome> {
+  const deadline = Date.now() + deadlineMs;
+  for (;;) {
+    try {
+      const obs = await getRunStatus(threadId, runId);
+      if (!obs.found) return { confirmed: false, reason: "unknown" }; // 不可见 ≠ 已取消
+      if (obs.status === null) return { confirmed: false, reason: "unknown" };
+      if (TERMINAL_RUN_STATUSES.has(obs.status)) return { confirmed: true };
+      if (Date.now() >= deadline) return { confirmed: false, reason: "backend" };
+    } catch (err) {
+      notifyIfContextConflict(err);
+      const status = (err as { status?: number })?.status;
+      if (status === 409) return { confirmed: false, reason: "context_changed" };
+      return { confirmed: false, reason: "backend" };
+    }
+    await sleep(300);
+  }
+}
+
+/** F05：向服务端请求停止并等待**可信终态**。
+ *
+ * - cancel 接受（202）与拒绝一律不单独作数，终态必须来自 runs.get 轮询；
+ * - 409（本栈唯一现实来源=代理 context_changed）→ 未确认并触发上下文刷新；
+ * - 无 run_id 时先短窗口从运行列表找回活动运行；列表为空且最近运行不处于
+ *   终态（提交/迟到元数据竞争）→ 未确认，绝不当作已取消事实。
+ */
+async function confirmRunStopped(threadId: string | null, run: ActiveRun | null): Promise<StopOutcome> {
+  if (!threadId) return { confirmed: true }; // 从未发起本地流：无外部运行需要确认
+  if (!run) return { confirmed: true };
+  let target = run.runId;
+  if (!target) {
+    const deadline = Date.now() + STOP_LIST_RESOLVE_MS;
+    for (;;) {
+      try {
+        if (run.runId) { target = run.runId; break; }
+        const recent = await listRecentRuns(threadId);
+        const active = recent.find((r) => ["pending", "running"].includes(String(r.status)));
+        if (active) { target = active.run_id; break; }
+        // 没有本次 run_id 时，上一轮的终态不能证明本次尚在受理的提交已停止。
+      } catch (err) {
+        notifyIfContextConflict(err);
+        const status = (err as { status?: number })?.status;
+        if (status === 409) return { confirmed: false, reason: "context_changed" };
+        return { confirmed: false, reason: "backend" };
+      }
+      if (Date.now() >= deadline) return { confirmed: false, reason: "unknown" };
+      await sleep(400);
+    }
+  }
+  if (!target) return { confirmed: false, reason: "unknown" };
+  try {
+    await cancelRun(threadId, target);
+  } catch (err) {
+    const status = (err as { status?: number })?.status;
+    if (status === 409) {
+      notifyIfContextConflict(err);
+      return { confirmed: false, reason: "context_changed" };
+    }
+    // 404 = "no matching runs to cancel"（多半已终态）——仍需 runs.get 见证终态
+  }
+  return waitForTerminalStatus(threadId, target, STOP_CONFIRM_TIMEOUT_MS);
+}
 let activeRun: ActiveRun | null = null;
+let pendingStopRun: ActiveRun | null = null;
+let stopPromise: Promise<StopOutcome> | null = null;
 const emptyView = { messages: [] as ChatMessage[], isStreaming: false, streamingText: "", streamingReasoning: "",
   totalContextTokens: 0, contextMetrics: null, contextStatus: null, dataStatus: null, error: null, failedInput: null, loadingThread: false };
 
@@ -70,7 +166,15 @@ function sameRun(run: ActiveRun) {
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
-  graphId: "basic-qa", threads: [], activeThreadId: null, ...emptyView, loadingThreads: false,
+  graphId: "basic-qa", threads: [], activeThreadId: null, ...emptyView, loadingThreads: false, stopPending: false,
+  clearForTenant: () => {
+    cancelActive();
+    generation += 1;
+    listRequest += 1;
+    pendingStopRun = null;
+    stopPromise = null;
+    set({ threads: [], activeThreadId: null, ...emptyView, stopPending: false });
+  },
   switchGraph: async (graphId) => {
     generation++; cancelActive();
     set({ graphId, activeThreadId: null, threads: [], ...emptyView });
@@ -83,7 +187,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       const threads = await searchThreads(graphId, getUserIdentity());
       if (request === listRequest && get().graphId === graphId) set({ threads, loadingThreads: false });
-    } catch {
+    } catch (err) {
+      notifyIfContextConflict(err);
       if (request === listRequest && get().graphId === graphId) set({ loadingThreads: false, error: "会话列表暂时无法读取，请重试。" });
     }
   },
@@ -93,20 +198,27 @@ export const useChatStore = create<ChatState>((set, get) => ({
     try {
       const values = await getThreadState(threadId);
       if (generation === epoch && get().activeThreadId === threadId) set(fromValues(values));
-    } catch {
-      if (generation === epoch) set({ loadingThread: false, error: "会话暂时无法读取，请重试。" });
+    } catch (error) {
+      notifyIfContextConflict(error);
+      if (generation === epoch) set({ loadingThread: false,
+        error: error instanceof ThreadAccessError ? error.message : "会话暂时无法读取，请重试。" });
     }
   },
   newThread: () => {
     generation++; cancelActive();
     set({ activeThreadId: null, ...emptyView });
   },
-  sendMessage: async (text, chatMode) => {
+  sendMessage: async (text, chatMode, operationKind = "initial") => {
     const previous = get(); const trimmed = text.trim();
-    if (previous.isStreaming || !trimmed) return;
+    if (previous.isStreaming || previous.stopPending || !trimmed) return;
     const run: ActiveRun = { generation: ++generation, controller: new AbortController(), threadId: previous.activeThreadId, runId: null };
     activeRun = run;
     const userMsg: ChatMessage = { id: generateUuidV7(), role: "user", content: trimmed, timestamp: Date.now() };
+    // 稳定提交键：同一次提交的重试复用同一键（服务端按同键同内容幂等、不同内容 409）。
+    const submissionKey = newSubmissionKey();
+    // 操作类型参与台账受理：initial/retry/regenerate。retry/regenerate 由服务端
+    // 解析来源尝试并关联原 request（提问量不增加）。
+    setSubmissionContext({ submissionKey, userMessageId: userMsg.id, operationKind });
     set({ messages: [...previous.messages, userMsg], isStreaming: true, streamingText: "", streamingReasoning: "", error: null, failedInput: null,
       contextStatus: null, dataStatus: null, contextMetrics: null });
     try {
@@ -123,7 +235,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
         handlers: {
           onRun: (runId) => {
             run.runId = runId;
-            if (!sameRun(run)) void cancelRun(threadId, runId).catch(() => {});
+            if (!sameRun(run)) { void cancelRun(threadId, runId).catch(() => {}); return; }
+            // 台账受理关联确认：服务端回读平台 run metadata 校验标记后才确认；
+            // 失败保持"受理中"，不改写本地终态。
+            void confirmRunAdmission(threadId, runId).then((ok) => {
+              if (ok && sameRun(run)) run.admitted = true;
+            }).catch(() => {});
           },
           onValues: (values) => {
             if (!sameRun(run) || get().activeThreadId !== threadId) return;
@@ -177,23 +294,87 @@ export const useChatStore = create<ChatState>((set, get) => ({
     } finally {
       if (sameRun(run)) {
         activeRun = null;
+        setSubmissionContext(null);
         set({ isStreaming: false, streamingText: "", streamingReasoning: "" });
         void get().loadThreads();
       }
     }
   },
-  stopStreaming: () => {
-    const threadId = get().activeThreadId; const epoch = ++generation;
-    cancelActive();
-    set({ isStreaming: false, streamingText: "", streamingReasoning: "" });
-    if (threadId) void getThreadState(threadId).then((values) => {
-      if (generation === epoch && get().activeThreadId === threadId) set(fromValues(values));
-    }).catch(() => {
-      if (generation === epoch) set({ error: "已请求停止；会话状态暂时无法刷新，请重试。" });
+  /** 页面卸载（导航离开/刷新）时的停止意图：独立于用户主动停止。
+   *
+   * 运行中或停止未确认时记录 origin=navigation；无活动运行则不产生事实。
+   */
+  recordNavigationStop: () => {
+    const run = activeRun ?? pendingStopRun;
+    if (!run) return;
+    recordNavigationStopBeacon({
+      threadId: run.threadId,
+      runId: run.runId,
+      origin: "navigation",
     });
   },
+  regenerateLast: async (chatMode: string) => {
+    const state = get();
+    if (state.isStreaming || state.stopPending || !state.activeThreadId) return;
+    const local = [...state.messages].reverse().find((m) => m.role === "user");
+    let content = local?.content ?? "";
+    if (!content) {
+      // 刷新/重开线程后本地可能尚无消息：回读会话取最后一条用户问题，
+      // 仍以 regenerate 受理（关联原 request）。取不到则不发起，避免凭空提问。
+      try {
+        const values = await getThreadState(state.activeThreadId);
+        const view = fromValues(values);
+        content =
+          [...view.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+      } catch {
+        return;
+      }
+    }
+    if (!content) return;
+    await get().sendMessage(content, chatMode, "regenerate");
+  },
+  stopStreaming: async () => {
+    if (stopPromise) return stopPromise;
+    const run = activeRun ?? pendingStopRun;
+    const threadId = run?.threadId ?? get().activeThreadId; const epoch = ++generation;
+    pendingStopRun = run;
+    activeRun = null;
+    run?.controller.abort();
+    // 停止意图独立记录（不冒充已取消）：run_id 可能尚未到达，服务端按 attempt/thread 关联。
+    void recordStopIntent({
+      threadId,
+      runId: run?.runId ?? null,
+      origin: "user_stop",
+      phase: run?.runId ? "processing" : "unknown",
+    });
+    set({ isStreaming: false, stopPending: run !== null, streamingText: "", streamingReasoning: "" });
+    // R10：等待服务端取消终态确认后才返回；未确认由调用方（企业切换）拒绝继续
+    const confirmation = confirmRunStopped(threadId, run);
+    stopPromise = confirmation;
+    let stopped: StopOutcome;
+    try {
+      stopped = await confirmation;
+    } finally {
+      if (stopPromise === confirmation) stopPromise = null;
+    }
+    if (pendingStopRun === run) {
+      if (stopped.confirmed) pendingStopRun = null;
+      set({ stopPending: !stopped.confirmed, ...(!stopped.confirmed
+        ? { error: "停止尚未确认，请再次点击停止后重试；确认前不能切换企业或发送新问题。" }
+        : {}) });
+    }
+    if (threadId && epoch === generation && get().activeThreadId === threadId) {
+      void getThreadState(threadId).then((values) => {
+        if (epoch === generation && get().activeThreadId === threadId) set(fromValues(values));
+      }).catch((err: unknown) => {
+        notifyIfContextConflict(err);
+        if (epoch === generation) set({ error: "已请求停止；会话状态暂时无法刷新，请重试。" });
+      });
+    }
+    return stopped;
+  },
   removeThread: async (threadId) => {
-    if (get().activeThreadId === threadId) get().stopStreaming();
+    if (get().activeThreadId === threadId) void get().stopStreaming();
     try {
       await deleteThread(threadId);
       if (get().activeThreadId === threadId) get().newThread();

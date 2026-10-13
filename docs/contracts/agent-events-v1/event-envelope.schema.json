@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://air-agent.local/contracts/agent-events-v1/event-envelope.schema.json",
+  "title": "Agent Event Envelope v1",
+  "description": "企业事件台账 v1 信封。语义约束（来源/类型白名单、payload 字段白名单、禁用键、未启用类型）以 event-registry.json 为准；本 schema 只描述结构，二者共同构成契约。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "source",
+    "tenant_id",
+    "user_id",
+    "membership_id",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$",
+      "description": "主版本必须为 1；未知主版本一律拒绝"
+    },
+    "event_id": { "type": "string", "format": "uuid" },
+    "event_type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$",
+      "description": "必须存在于 event-registry.json 的 event_types"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$",
+      "description": "事实发生时间（UTC，须带 Z 后缀）"
+    },
+    "received_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "服务端接收时间；由服务端覆盖，客户端提交值被忽略"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["runtime", "server", "system", "browser"],
+      "description": "服务端认证的生产者类别；不接受浏览器自行声明 runtime"
+    },
+    "tenant_id": { "type": "string", "format": "uuid" },
+    "user_id": { "type": "string", "format": "uuid" },
+    "membership_id": { "type": "string", "format": "uuid" },
+    "thread_id": { "type": ["string", "null"] },
+    "request_id": { "type": ["string", "null"], "format": "uuid" },
+    "attempt_id": { "type": ["string", "null"], "format": "uuid" },
+    "run_id": { "type": ["string", "null"] },
+    "answer_id": { "type": ["string", "null"], "format": "uuid" },
+    "message_id": { "type": ["string", "null"] },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "state_revision": { "type": "integer", "minimum": 1 },
+        "source_revision": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "description": "字段白名单由 event-registry.json 的 payload_fields 决定；禁止携带全文、票据、凭据"
+    }
+  }
+}

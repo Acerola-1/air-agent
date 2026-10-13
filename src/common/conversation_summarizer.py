@@ -82,6 +82,7 @@ async def summarize_conversation_history(
     keep_turns: int | None = None,
     timeout_seconds: float | None = None,
     watermark: str | None = None,
+    run_config: dict[str, Any] | None = None,
 ) -> str:
     """全量归纳水位之后的历史，失败向上传播."""
     early, _ = split_messages_by_turns(
@@ -95,6 +96,7 @@ async def summarize_conversation_history(
         text,
         instruction="整合会话背景、用户约束、已确认事实及引用，保留新历史完整语义。",
         timeout_seconds=timeout_seconds,
+        run_config=run_config,
     )
     return result
 
@@ -135,7 +137,10 @@ async def update_conversation_summary(
         if not early[-1].id:
             raise ValueError("历史消息缺少稳定 ID，不能安全推进覆盖")
         summary = await summarize_conversation_history(
-            messages, state.get("summary"), watermark=watermark
+            messages,
+            state.get("summary"),
+            watermark=watermark,
+            run_config=run_config,
         )
         after_messages = [
             *prefix,

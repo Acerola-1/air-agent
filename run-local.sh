@@ -82,20 +82,23 @@ echo "$NEXT_PID" > "$NEXT_PID_FILE"
 disown "$NEXT_PID" 2>/dev/null || true
 echo "  前端 Next.js   PID=$NEXT_PID  (log: $NEXT_LOG_FILE)"
 
-# Readiness probe 1: 等待 langgraph-api 容器加载完 6 个图
-echo "  等待 langgraph-api 就绪..."
+# Readiness probe 1: 服务就绪 + 认证真实生效（无凭据必须 401，不再匿名放行）
+echo "  等待 langgraph-api 就绪（custom auth）..."
+AUTH_READY=false
 for i in {1..90}; do
-  if curl -sf -X POST "http://localhost:${LANGGRAPH_PORT}/assistants/search" \
-       -H "Content-Type: application/json" -d '{}' >/dev/null 2>&1; then
-    COUNT=$(curl -s -X POST "http://localhost:${LANGGRAPH_PORT}/assistants/search" \
-            -H "Content-Type: application/json" -d '{}' | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null)
-    if [ "$COUNT" = "6" ]; then
-      echo "  ✓ 就绪: $COUNT 个 assistant 已注册"
-      break
-    fi
+  CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://localhost:${LANGGRAPH_PORT}/assistants/search" \
+         -H "Content-Type: application/json" -d '{}' 2>/dev/null)
+  if [ "$CODE" = "401" ]; then
+    echo "  ✓ 就绪: langgraph-api 已加载且匿名请求被拒绝（custom auth 生效）"
+    echo "    说明: 6 图数量与合法运行由前端代理 + admin 票据端到端验收（见 docs/reviews/tenant-identity-access-acceptance.md）"
+    AUTH_READY=true
+    break
   fi
   sleep 1
 done
+if [ "$AUTH_READY" != true ]; then
+  echo "  [WARN] 90s 内未观察到认证生效信号（期望匿名 401）；请检查容器日志" >&2
+fi
 
 # Readiness probe 2: 等待 Next.js 前端可访问
 echo "  等待 Next.js 前端就绪..."

@@ -69,12 +69,60 @@ def _is_mcp_tool(request: Any) -> bool:
     return tool_name_str in set(get_mcp_tool_names())
 
 
+async def execute_mcp_tool_request(request: Any) -> ToolMessage:
+    """企业授权执行路径（两种图机制共用；任务 7.2/7.3）.
+
+    直接 handler(request) 只会触达 schema 代理（其协程拒绝直接执行）。这里按
+    已认证运行身份解析绑定后调用真实工具；授权错误转为可读降级 ToolMessage，
+    响应不含凭据。调用**每次**重新解析绑定，重试天然复查授权。
+    """
+    from common.mcp_authorization import McpAuthorizationError
+    from common.mcp_scoped import execute_mcp_tool, get_factory
+
+    name = str(request.tool_call.get("name") or "")
+    tool_call_id = str(request.tool_call.get("id") or "")
+    server_key = get_factory().server_of(name) or ""
+    run_config = getattr(request.runtime, "config", {}) or {}
+    try:
+        payload = await execute_mcp_tool(
+            server_key, name, dict(request.tool_call.get("args") or {}), run_config
+        )
+    except McpAuthorizationError as exc:
+        logger.warning("MCP 调用被授权层拒绝: tool={}, reason={}", name, str(exc)[:200])
+        content = json.dumps(
+            {"code": 403, "success": False, "message": str(exc)}, ensure_ascii=False
+        )
+        return ToolMessage(
+            content=content,
+            tool_call_id=tool_call_id,
+            name=name or None,
+            status="error",
+        )
+    content = (
+        payload
+        if isinstance(payload, str)
+        else json.dumps(payload, ensure_ascii=False, default=str)
+    )
+    return ToolMessage(content=content, tool_call_id=tool_call_id, name=name or None)
+
+
 async def _invoke_mcp_with_retry(
     request: Any,
     handler: Callable[[Any], Awaitable[Any]],
     first_exc: Exception,
 ) -> Any:
-    """MCP 工具失败后的代码级重试；重试耗尽则降级为 _mcp_fallback."""
+    """MCP 工具失败后的代码级重试；重试耗尽则降级为 _mcp_fallback.
+
+    F02/7.3：每次重试发送前重新核验身份与绑定授权（revalidate 查真实身份库）；
+    授权拒绝直接终止重试并返回可读拒绝，不被瞬时错误重试吞掉。
+    """
+    from common.identity.runtime import (
+        RuntimeIdentityError,
+        identity_from_request,
+        revalidate,
+    )
+
+    identity = identity_from_request(request)
     last_exc = first_exc
     tool_name_str = str(request.tool_call.get("name") or "")
     for attempt in range(1, _MCP_RETRY_ATTEMPTS + 1):
@@ -87,10 +135,27 @@ async def _invoke_mcp_with_retry(
             last_exc,
         )
         await asyncio.sleep(_MCP_RETRY_BACKOFF_SECONDS)
+        if identity is not None:
+            try:
+                await revalidate(identity)
+            except RuntimeIdentityError as exc:
+                return ToolMessage(
+                    content=f"授权状态已变化，重试被拒绝：{exc}",
+                    tool_call_id=str(request.tool_call.get("id") or ""),
+                    name=tool_name_str,
+                    status="error",
+                )
         try:
             return await handler(request)
         except GraphBubbleUp:
             raise
+        except RuntimeIdentityError as exc:
+            return ToolMessage(
+                content=f"授权状态已变化，重试被拒绝：{exc}",
+                tool_call_id=str(request.tool_call.get("id") or ""),
+                name=tool_name_str,
+                status="error",
+            )
         except Exception as exc:
             last_exc = exc
     return _mcp_fallback(request, last_exc)
@@ -180,19 +245,50 @@ async def composed_tool_wrapper(
     # 1. 动态绑定工具实例
     request = _bind_tool_instance(request)
 
-    # 2. 执行工具
+    # 1.5 企业运行守卫：授权撤销/停用后下一次工具调用拒绝执行（任务 5.4/7.3）。
+    # F02：走统一的请求级可信来源（get_config 环境/ToolRuntime.config/server_info），
+    # 不再依赖 request.runtime.config 单一形状。
+    from common.identity.runtime import RuntimeIdentityError, guard_request_call
+
     try:
-        result = await handler(request)
+        await guard_request_call(request)
+    except RuntimeIdentityError as exc:
+        return ToolMessage(
+            content=json.dumps(
+                {
+                    "code": 403,
+                    "success": False,
+                    "message": f"授权状态已变化，工具调用被拒绝：{exc}",
+                },
+                ensure_ascii=False,
+            ),
+            tool_call_id=str(request.tool_call.get("id") or ""),
+            name=str(request.tool_call.get("name") or ""),
+            status="error",
+        )
+
+    # 2. 执行工具
+    #    MCP 工具走企业授权执行层（每次调用重新解析绑定，重试前复查授权）；
+    #    本地工具维持原 handler 路径。
+    mcp = _is_mcp_tool(request)
+
+    async def _run(req: Any) -> Any:
+        if mcp:
+            return await execute_mcp_tool_request(req)
+        return await handler(req)
+
+    try:
+        result = await _run(request)
     except GraphBubbleUp:
         # ⚠️ 关键: 人机交互中断异常必须向上冒泡，严禁降级捕获！
         raise
     except Exception as exc:
         if (
-            _is_mcp_tool(request)
+            mcp
             and not isinstance(exc, (ValueError, TypeError))
             and getattr(exc, "status_code", 500) >= 500
         ):
-            result = await _invoke_mcp_with_retry(request, handler, exc)
+            result = await _invoke_mcp_with_retry(request, _run, exc)
         else:
             result = _global_fallback(request, exc)
 
@@ -242,11 +338,12 @@ async def composed_tool_wrapper(
     if len(content_str) > config.TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS:
         artifact_id = None
         try:
-            user_id, thread_id, run_id = runtime_scope(run_config)
+            tenant_id, user_id, thread_id, run_id = runtime_scope(run_config)
             artifact_id = await save_tool_artifact(
                 tool_call_id=tool_call_id,
                 tool_name=tool_name_str,
                 raw_payload=content_str,
+                tenant_id=tenant_id,
                 user_id=user_id,
                 thread_id=thread_id,
                 run_id=run_id,
@@ -255,7 +352,13 @@ async def composed_tool_wrapper(
                 raise ValueError("资料超出当前单批全量处理配额，尚未完成")
             manifest = None if is_error else build_manifest(content_str, artifact_id)
             if manifest is not None:
-                await claim_computation(artifact_id, run_id, attempt=False)
+                await claim_computation(
+                    artifact_id,
+                    run_id,
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                    attempt=False,
+                )
                 reduced = json.dumps(manifest, ensure_ascii=False)
                 data_status = event_payload(
                     run_config,
@@ -285,9 +388,11 @@ async def composed_tool_wrapper(
                     tool_name=tool_name_str,
                     tool_args=request.tool_call.get("args") or {},
                     raw_output=content_str,
+                    run_config=dict(run_config or {}),
                 )
                 await update_artifact_summary(
                     artifact_id,
+                    tenant_id=tenant_id,
                     user_id=user_id,
                     thread_id=thread_id,
                     summary=reduced,

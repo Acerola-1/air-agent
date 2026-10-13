@@ -83,6 +83,8 @@ class Config:
         "MCP_SERVER_URL",
         "IPP Air 服务的 MCP 服务器 URL。",
     )
+    # 绑定/授权作用域使用的服务键（docs/mcp-auth-contract.md 登记的 server_key）
+    MCP_SERVER_NAME: str = _get_env_optional("MCP_SERVER_NAME", "ipp")
 
     # ==================== 元数据 API 配置 ====================
     METADATA_API_URL: str = _get_env_optional(

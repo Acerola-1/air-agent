@@ -185,6 +185,10 @@ class BusinessGraphNodes:
             )
             return update
 
+        # F02：运行期技能路由同样是外部 embedding 外呼——发请求前复查
+        from common.identity.runtime import guard_runtime_call
+
+        await guard_runtime_call(dict(config or {}))
         candidates = await self._router.amatch(question)
         if not candidates:
             logger.info(
@@ -243,9 +247,15 @@ class BusinessGraphNodes:
         elif intent == INTENT_KNOWLEDGE:
             system_prompt = build_knowledge_system_prompt(configurable)
         else:
+            # F02：请求期公共工具目录刷新是实际外呼，先复查身份
+            # （与启动 prewarm 的构建期批量 embedding 分道处理）。
+            from common.identity.runtime import guard_runtime_call
+
+            await guard_runtime_call(dict(config or {}))
             await ensure_mcp_tools()
             system_prompt = build_system_prompt(
                 base_prompt=self._base_system_prompt,
+                graph_name=self._graph_name,
                 skill_rules_content=state.get("skill_rules_content", ""),
                 configurable=configurable,
             )
@@ -299,6 +309,21 @@ class BusinessGraphNodes:
 
         最多重试 3 次；空回复时追加引导消息重试一次。
         """
+        # F02：企业运行守卫在**每次实际外呼前**执行——首次、代码级重试、
+        # 空回复重试各自复查；授权拒绝转为可读状态，不进入重试、不降级。
+        from common.identity.runtime import RuntimeIdentityError, guard_runtime_call
+
+        async def _guard_or_message() -> Any:
+            try:
+                await guard_runtime_call(dict(config or {}))
+            except RuntimeIdentityError as exc:
+                return AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}")
+            return None
+
+        blocked = await _guard_or_message()
+        if blocked is not None:
+            return visible_result(blocked, config)
+
         recent = state.get("messages", [])
         last_human = max(
             (
@@ -354,11 +379,20 @@ class BusinessGraphNodes:
         data_model_started_at = datetime.now(UTC).isoformat()
         response = None
         for attempt in range(3):
+            blocked = await _guard_or_message()
+            if blocked is not None:
+                return {**visible_result(blocked, config, metrics=metrics)}
             try:
                 response = await invoke_with_data_deadline(
                     model_with_tools, full_messages, messages, config
                 )
                 break
+            except RuntimeIdentityError as exc:
+                return visible_result(
+                    AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}"),
+                    config,
+                    metrics=metrics,
+                )
             except DataProcessingFailure as exc:
                 status = emit_event(
                     config,
@@ -393,6 +427,9 @@ class BusinessGraphNodes:
             and not get_message_content(response).strip()
         ):
             logger.info("业务图模型空回复，追加引导消息重试")
+            blocked = await _guard_or_message()
+            if blocked is not None:
+                return {**visible_result(blocked, config, metrics=metrics)}
             nudge_messages = [
                 *full_messages,
                 response,
@@ -413,6 +450,12 @@ class BusinessGraphNodes:
                     response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
                 else:
                     response = nudge_response
+            except RuntimeIdentityError as exc:
+                return visible_result(
+                    AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}"),
+                    config,
+                    metrics=metrics,
+                )
             except Exception as exc:
                 logger.warning("业务图模型空回复重试失败: {}，使用兜底消息", exc)
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)

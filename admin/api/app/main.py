@@ -14,26 +14,45 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.config import get_settings
-from app.db import engine
-from app.routers import audit, auth, permissions, regions, roles, users
+from app.db import engine_dispose_all
+from app.routers import (
+    audit,
+    auth,
+    bindings,
+    departments,
+    ledger,
+    permissions,
+    regions,
+    roles,
+    tenants,
+    users,
+)
 
 settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
-    # 早失败：AUTH_SECRET 缺失时签发的 cookie 前端验不过，问题会很难定位
-    if not settings.auth_secret:
+    # 早失败（任务 2.5/3.3：配置缺失必须失败关闭，绝不回退匿名/JSON 身份）
+    if not settings.runtime_database_uri:
         raise RuntimeError(
-            "AUTH_SECRET 未设置。session token 依赖它，请确认仓库根目录 .env 存在。"
+            "RUNTIME_DATABASE_URI 未设置：请求路径必须走非 owner 运行角色（RLS 生效）。"
+        )
+    if not settings.runtime_ticket_key_pairs:
+        raise RuntimeError("RUNTIME_TICKET_KEYS 未设置：无法签发/校验运行票据。")
+    if not settings.internal_api_token:
+        raise RuntimeError(
+            "INTERNAL_API_TOKEN 未设置：内部票据端点将全部拒绝，等于服务不可用；拒绝启动。"
         )
     yield
-    await engine.dispose()
+    await engine_dispose_all()
 
 
 app = FastAPI(
     title="air_agent admin API",
-    description="用户后台：RBAC 权限、用户/角色管理、行政区划关注城市",
+    description=(
+        "统一身份后台：企业/成员/角色 RBAC、可撤销会话、运行票据、MCP 绑定、行政区划关注城市"
+    ),
     version=__version__,
     lifespan=lifespan,
 )
@@ -47,11 +66,15 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/auth")
+app.include_router(tenants.router, prefix="/tenants")
+app.include_router(departments.router, prefix="/departments")
 app.include_router(users.router, prefix="/users")
 app.include_router(roles.router, prefix="/roles")
 app.include_router(permissions.router, prefix="/permissions")
 app.include_router(regions.router, prefix="/regions")
 app.include_router(audit.router, prefix="/audit-logs")
+app.include_router(bindings.router, prefix="/mcp-bindings")
+app.include_router(ledger.router, prefix="/agent")
 
 
 @app.get("/health", tags=["meta"], summary="健康检查")

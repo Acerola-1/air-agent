@@ -1,10 +1,28 @@
 import "server-only";
 import { createHmac } from "node:crypto";
 
-/** 同源服务签发当前用户的单线程授权，模型和浏览器不能自行改写归属。 */
-export function signArtifactScope(userId: string, threadId: string): string {
-  const secret = process.env.AUTH_SECRET;
-  if (!secret) throw new Error("会话服务配置缺失");
-  const body = Buffer.from(JSON.stringify({ userId, threadId, exp: Math.floor(Date.now() / 1000) + 3600 })).toString("base64url");
-  return `${body}.${createHmac("sha256", secret).update(body).digest("hex")}`;
+/** 归档 scope v2 签发（同源服务 → LangGraph 归档路由与工具链）。
+ *
+ * `{v:2, tenantId, userId, threadId, aud, exp}`，独立密钥 ARCHIVE_SCOPE_KEYS；
+ * 与 LangGraph `common/artifact_scope.py` 的验签格式字节兼容。
+ * 客户端与模型都无法伪造：密钥只在服务端环境。
+ */
+export function signArtifactScope(tenantId: string, userId: string, threadId: string): string {
+  const raw = (process.env.ARCHIVE_SCOPE_KEYS ?? "").trim().replace(/^'|'$/g, "");
+  if (!raw) throw new Error("归档授权签名未配置（ARCHIVE_SCOPE_KEYS）");
+  const keys = JSON.parse(raw) as string[];
+  if (!Array.isArray(keys) || !keys.length) throw new Error("归档授权签名配置无效");
+  const body = Buffer.from(
+    JSON.stringify({
+      v: 2,
+      kid: "k1",
+      tenantId,
+      userId,
+      threadId,
+      aud: "air-agent-archive",
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    })
+  ).toString("base64url");
+  const signature = createHmac("sha256", keys[0]).update(body).digest("hex");
+  return `${body}.${signature}`;
 }

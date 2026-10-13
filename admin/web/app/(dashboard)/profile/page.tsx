@@ -12,7 +12,7 @@ import { useSession } from "@/lib/session";
 import { formatDateTime } from "@/lib/utils";
 
 export default function ProfilePage() {
-  const { user, refresh } = useSession();
+  const { user, ctx, refresh } = useSession();
   const [codes, setCodes] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -95,7 +95,7 @@ export default function ProfilePage() {
           </div>
           <div className="flex gap-3">
             <span className="text-muted-foreground w-20 shrink-0">权限数</span>
-            <span className="tabular-nums">{user?.permissions.length ?? 0}</span>
+            <span className="tabular-nums">{ctx?.permissions.length ?? 0}</span>
           </div>
         </CardContent>
       </Card>

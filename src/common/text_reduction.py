@@ -43,9 +43,18 @@ def split_text_for_budget(text: str, instruction: str) -> list[str]:
 
 
 async def summarize_complete_text(
-    text: str, *, instruction: str, timeout_seconds: float | None = None
+    text: str,
+    *,
+    instruction: str,
+    timeout_seconds: float | None = None,
+    run_config: dict[str, object] | None = None,
 ) -> tuple[str, dict[str, object]]:
-    """全量分块和分层合并，返回覆盖证据；任意失败向上传播."""
+    """全量分块和分层合并，返回覆盖证据；任意失败向上传播.
+
+    F02：每次摘要模型外呼前执行运行守卫（run_config 携带平台注入的
+    langgraph_auth_user）；强制模式下无运行身份直接拒绝，长会话/大输出
+    整理不再绕过撤权链。
+    """
     timeout = timeout_seconds or config.DATA_PROCESSING_TIMEOUT_SECONDS
     deadline = monotonic() + timeout
     calls = 0
@@ -57,6 +66,9 @@ async def summarize_complete_text(
             HumanMessage(content=f"{instruction}\n资料：\n{part}"),
         ]
         enforce_request_budget(messages, summary_model=True)
+        from common.identity.runtime import guard_runtime_call
+
+        await guard_runtime_call(dict(run_config or {}))
         calls += 1
         if calls > config.SUMMARY_MAX_BATCHES * 2:
             raise ValueError("摘要合并次数超限，未完成")

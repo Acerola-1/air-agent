@@ -35,7 +35,9 @@ def test_skill_main_files_do_not_repeat_global_time_rules() -> None:
             assert fragment not in source, skill_file
 
 
-def test_intelligent_analysis_skills_do_not_include_unconnected_tool_placeholders() -> None:
+def test_intelligent_analysis_skills_do_not_include_unconnected_tool_placeholders() -> (
+    None
+):
     skill_docs = sorted(Path("src/intelligent_analysis/skills").rglob("*.md"))
 
     assert skill_docs

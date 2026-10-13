@@ -1,6 +1,6 @@
 # Air Agent 企业化总体路线图
 
-日期：2026-10-12。状态：总体方向已确认；只有第 1 个 change 已展开为完整实施计划。本文不是全部功能已经实现的声明。
+日期：2026-10-12。状态：总体方向已确认；第 1、2 个 change 已展开为完整实施计划，第 1 项正在实施。本文不是全部功能已经实现的声明。
 
 ## 1. 已确认的产品边界
 
@@ -129,7 +129,7 @@
 
 ## 8. OpenSpec change 展开与依赖
 
-第 0 项是本文和首期共享契约，不再创建一个覆盖全工程的大 change。以下 10 个实施 change 按阶段滚动展开；后续名称与范围是计划，尚未创建。
+第 0 项是本文和首期共享契约，不再创建一个覆盖全工程的大 change。以下 10 个实施 change 按阶段滚动展开；第 1、2 项已创建，其他名称与范围仍是计划。
 
 | 编号 | change | 交付与验收概要 | 依赖 |
 |---|---|---|---|
@@ -145,6 +145,8 @@
 | 10 | `harden-enterprise-delivery` | 集成迁移、备份恢复、负载、故障与隔离回归、灰度及回滚演练 | 已交付各 change |
 
 执行顺序：1 → 2 → 3/5 → 6 → 4/7/8 → 9/10。允许并行前先稳定接口并按文件划分实施责任；不要让多个 AI 同时改 auth、代理、共享状态或迁移。
+
+这里的 9/10 不表示最终交付可以在依赖未完成时验收；第 10 项的矩阵/脚本可提前准备，最终回归等待目标实现集成。多对话的独立工作区、测试环境及共享文件责任见 [并行实施安排](enterprise-agent-parallel-work.md)。
 
 首期运营后台包含 1、2、3、5、6；后续加入选择、诉求与质量；最后形成治理闭环。每阶段都有可用成果。安全测试、迁移与回滚从 1 起开展，不能后置到 10 才补。
 
@@ -179,3 +181,12 @@
 完整计划：[add-tenant-identity-access](../openspec/changes/add-tenant-identity-access/proposal.md)。实施说明：[handoff.md](../openspec/changes/add-tenant-identity-access/handoff.md)。可粘贴目标提示：[通用 /goal](handoffs/tenant-identity-goal.md)。
 
 参考讨论：[Agent 后台设计指南](chatgpt-conversation://6acc48b4-a6b8-83ec-bbac-14e78a2323dc)、[热门问题分析方案](chatgpt-conversation://6acc46a1-cf30-83ec-a6d7-e676c7e1d29a)。它们提供产品方向；实现能力和版本以当前仓库/真实联调为准。
+
+## 12. 第二个实施包
+
+完整计划：[add-agent-event-ledger](../openspec/changes/add-agent-event-ledger/proposal.md)。实施说明：[handoff.md](../openspec/changes/add-agent-event-ledger/handoff.md)。可粘贴目标提示：[通用 /goal](handoffs/agent-event-ledger-goal.md)。第一项独立验收并核对实际身份接口后再实施第二项；其 v1 事件契约验收冻结后，第 3/5 项可以分别开对话、独立工作区并行。
+
+
+### 当前协调状态：匿名01结束，change2本地放行
+
+匿名01第二次修复仍未独立完成，用户累计耗时8小时19分，诊断评分68/100。Codex已接管关键补修，独立报告与匿名评分分开。change1完成44/46任务，真实企业MCP与完整矩阵仍为生产门禁；不归档。change2使用接管后的工作树指纹开始本地实施，交另一匿名模型，提示见`docs/handoffs/agent-event-ledger-goal.md`。第3/5的并行仍等待事件v1契约独立验收冻结。

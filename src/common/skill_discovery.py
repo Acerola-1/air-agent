@@ -125,7 +125,9 @@ def _single_candidate_payload(
         instructions = "\n\n=====\n\n".join(part for part in (body, references) if part)
 
     if instructions:
-        next_step = "已加载该 Skill 的完整规则，请直接据此执行数据获取与回答，无需再读取文件。"
+        next_step = (
+            "已加载该 Skill 的完整规则，请直接据此执行数据获取与回答，无需再读取文件。"
+        )
     else:
         next_step = "请读取 skill_path 对应的完整 Skill 说明，再执行查询。"
 

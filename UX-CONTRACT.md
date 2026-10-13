@@ -63,3 +63,13 @@ CSS 变量／Tailwind 运行时为 tokens 所有者，DESIGN.md 记录语义与�
 ## Context measurement
 
 未知模型的输入近似量显示 ≈，提示明确说明系统规则、聊天与工具结果、工具定义及请求开销。回答完成后仪表优先显示最近主模型实际输入，准备阶段显示估算；提供商最近实际 usage 独立展示，估算不是聊天历史字符数。普通城市查询不能因字节上界被错误拒绝。
+
+## 企业切换与停止确认
+
+业务来源：`openspec/changes/add-tenant-identity-access/specs/unified-revocable-session/spec.md`。
+
+企业切换由 TenantBadge 管理，复用 shared Dialog / Button，与 GraphSwitcher 使用相同弹层语义；原生 select 保留系统键盘和选择行为。活动回答或停止待确认时先打开应用内确认框，初始焦点在“取消切换”，Escape 退出后焦点回到企业选择。后台确认等待期间禁用重复操作。
+
+chat-store 的 stopPending 独立于本地流结束：未知状态保留运行引用和停止重试入口，确认前不接受新问题，也不允许第二次切换绕过停止。缺本次 run_id 时，上一轮终态不算本次停止；迟到元数据继续关联原运行。上下文冲突清除旧企业视图，旧异步确认不能覆盖新企业状态。
+
+验证：聊天契约覆盖迟到ID、旧终态和重复操作；真实浏览器验证确认框、取消按钮焦点、停止后企业切换与列表清空；签发及资源授权另以真实HTTP/PG复验。

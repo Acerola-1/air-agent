@@ -112,14 +112,28 @@ def build_mode_context(configurable: dict[str, Any] | None) -> str:
 def build_system_prompt(
     *,
     base_prompt: str,
+    graph_name: str = "",
     skill_rules_content: str = "",
     configurable: dict[str, Any] | None = None,
 ) -> str:
     """组装完整的系统提示词.
 
     组装顺序: 基础提示 + output_guard(含 anti-residue) + 时间上下文 + mode 上下文 + Skill 规则
+
+    ``base_prompt`` 若已在 Langfuse 中维护（``air-agent/<graph>/base-system``），
+    则使用远程版本；未配置或不可达时回落到传入的代码内默认值。远程解析放在此
+    函数（请求期）而非建图期，Langfuse 的 TTL 后台刷新才会对运行中的应用生效。
     """
-    parts = [with_main_agent_tool_use_output_guard(base_prompt)]
+    resolved_base = base_prompt
+    if graph_name:
+        from common.langfuse_prompts import get_managed_prompt
+
+        resolved_base = get_managed_prompt(
+            f"air-agent/{graph_name}/base-system",
+            base_prompt,
+        )
+
+    parts = [with_main_agent_tool_use_output_guard(resolved_base)]
     parts.append(build_time_context())
     parts.append(build_mode_context(configurable))
 

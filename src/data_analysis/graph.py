@@ -22,6 +22,7 @@ from langgraph.prebuilt import ToolNode
 from loguru import logger
 
 from common.business_graph.tool_wrappers import composed_tool_wrapper
+from common.event_ledger.lifecycle import make_ledger_finalize_node
 from common.langfuse_tracing import with_langfuse_tracing
 from common.runtime_tools import get_business_tools
 from data_analysis.nodes import (
@@ -126,8 +127,11 @@ def build_graph(*, checkpointer: Any = None):
         },
     )
 
-    # 出口
-    builder.set_finish_point("finalize_output")
+    # 出口：经台账收尾节点落终态与可见回答版本（change add-agent-event-ledger）。
+    # 保持编译结果是 Graph 类型；节点在缺受理上下文/台账不可用时直接返回。
+    builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
+    builder.add_edge("finalize_output", "ledger_finalize")
+    builder.set_finish_point("ledger_finalize")
 
     compiled = builder.compile(checkpointer=checkpointer)
     logger.info(

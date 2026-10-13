@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import httpx
 from langchain_openai import ChatOpenAI
 from loguru import logger
 from pydantic import SecretStr
 
 from common.config import config
 from common.config.logging_config import LoggingConfigurator
+from common.identity.outbound import TenantOutboundAuth
 
 LoggingConfigurator.configure()
 logger.info("模型注册表初始化开始")
@@ -28,7 +30,9 @@ class ModelRegistry:
         temperature=0.1,
         max_completion_tokens=config.MAIN_LLM_MAX_OUTPUT_TOKENS,
         timeout=120,
-        max_retries=1,
+        # 重试由节点执行并再次验证授权；SDK 内部重发会绕过运行守卫。
+        max_retries=0,
+        http_async_client=httpx.AsyncClient(auth=TenantOutboundAuth()),
     )
 
     summary_llm = ChatOpenAI(
@@ -40,4 +44,5 @@ class ModelRegistry:
         timeout=config.DATA_PROCESSING_TIMEOUT_SECONDS,
         max_retries=0,
         tags=["nostream", "internal-summary"],
+        http_async_client=httpx.AsyncClient(auth=TenantOutboundAuth()),
     )

@@ -32,8 +32,9 @@ def bad_overflow_mcp_tool(region: str) -> str:
     prefix = '{"status": "success", "total": 3000, "data": ['
     item = '{"district": "某某区县", "aqi": 42, "pm25": 15},'
     fill_count = (500_000 // len(item)) + 10
-    return prefix + (item * fill_count) + '{"district": "海淀区", "aqi": 35, "pm25": 10}]}'
-
+    return (
+        prefix + (item * fill_count) + '{"district": "海淀区", "aqi": 35, "pm25": 10}]}'
+    )
 
 
 class GuardTestState(TypedDict):
@@ -42,11 +43,16 @@ class GuardTestState(TypedDict):
 
 def test_mcp_500k_overflow_end_to_end(tmp_path, monkeypatch):
     """端到端验证 50 万字符超限拦截、落库、Subagent提炼与数据保真."""
+
     async def _run():
         # 隔离数据库
         test_db = tmp_path / "integration_test.db"
-        monkeypatch.setattr("common.storage.artifact_db._get_sqlite_path", lambda: str(test_db))
-        monkeypatch.setattr("common.storage.artifact_db._is_pg_configured", lambda: False)
+        monkeypatch.setattr(
+            "common.storage.artifact_db._get_sqlite_path", lambda: str(test_db)
+        )
+        monkeypatch.setattr(
+            "common.storage.artifact_db._is_pg_configured", lambda: False
+        )
         monkeypatch.setattr("common.storage.artifact_db._initialized", False)
 
         # Mock Subagent 的大模型推理输出（模拟精准抽取海淀区）
@@ -81,12 +87,51 @@ def test_mcp_500k_overflow_end_to_end(tmp_path, monkeypatch):
         ai_msg = AIMessage(
             content="",
             tool_calls=[
-                {"id": normal_call_id, "name": "normal_weather_tool", "args": {"city": "北京"}},
-                {"id": overflow_call_id, "name": "bad_overflow_mcp_tool", "args": {"region": ""}},
+                {
+                    "id": normal_call_id,
+                    "name": "normal_weather_tool",
+                    "args": {"city": "北京"},
+                },
+                {
+                    "id": overflow_call_id,
+                    "name": "bad_overflow_mcp_tool",
+                    "args": {"region": ""},
+                },
             ],
         )
 
-        thread_config = {"configurable": {"thread_id": "thread_test_500k"}}
+        import base64 as _b64
+        import hashlib as _hl
+        import hmac as _hm
+        import json as _json
+        import time as _t
+
+        monkeypatch.setenv("ARCHIVE_SCOPE_KEYS", _json.dumps(["it-scope-key"]))
+        _body = (
+            _b64.urlsafe_b64encode(
+                _json.dumps(
+                    {
+                        "v": 2,
+                        "kid": "k1",
+                        "tenantId": "ta",
+                        "userId": "u",
+                        "threadId": "thread_test_500k",
+                        "aud": "air-agent-archive",
+                        "exp": _t.time() + 3600,
+                    }
+                ).encode()
+            )
+            .decode()
+            .rstrip("=")
+        )
+        _sig = _hm.new(b"it-scope-key", _body.encode(), _hl.sha256).hexdigest()
+        thread_config = {
+            "configurable": {
+                "thread_id": "thread_test_500k",
+                "__artifact_scope": f"{_body}.{_sig}",
+                "processing_run_id": "run_it",
+            }
+        }
 
         # 4. 执行图流转（验证 5.4.1: 主图未发生上下文超窗或异常崩溃）
         final_state = await graph.ainvoke(
@@ -102,7 +147,10 @@ def test_mcp_500k_overflow_end_to_end(tmp_path, monkeypatch):
 
         # 验证 5.4.4: 前面调用的正常工具数据未被误裁，完整保留
         assert normal_tm.tool_call_id == normal_call_id
-        assert normal_tm.content == "【北京空气质量报告】AQI: 55, 良, 首要污染物: PM10, 站点均值正常。"
+        assert (
+            normal_tm.content
+            == "【北京空气质量报告】AQI: 55, 良, 首要污染物: PM10, 站点均值正常。"
+        )
         assert normal_tm.artifact is None
 
         # 验证 5.4.3: ToolMessage.content 成功被 Subagent 浓缩至安全长度
@@ -117,7 +165,9 @@ def test_mcp_500k_overflow_end_to_end(tmp_path, monkeypatch):
         assert artifact_id.startswith("art_")
         assert overflow_tm.artifact["char_length"] >= 500_000
 
-        db_record = await get_tool_artifact(artifact_id)
+        db_record = await get_tool_artifact(
+            artifact_id, tenant_id="ta", user_id="u", thread_id="thread_test_500k"
+        )
         assert db_record is not None
         assert db_record["tool_call_id"] == overflow_call_id
         assert db_record["tool_name"] == "bad_overflow_mcp_tool"

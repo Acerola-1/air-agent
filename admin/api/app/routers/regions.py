@@ -12,11 +12,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.deps import SessionDep, get_current_user
+from app.deps import SessionDep, get_identity
 from app.models import Region
 from app.schemas import RegionOut
 
-router = APIRouter(tags=["regions"], dependencies=[Depends(get_current_user)])
+router = APIRouter(tags=["regions"], dependencies=[Depends(get_identity)])
 
 
 async def _parents_with_children(session: AsyncSession, codes: list[str]) -> set[str]:
@@ -52,9 +52,7 @@ async def list_children(
         ).all()
 
     parents = await _parents_with_children(session, [region.code for region in rows])
-    return [
-        RegionOut.of(region, has_children=region.code in parents) for region in rows
-    ]
+    return [RegionOut.of(region, has_children=region.code in parents) for region in rows]
 
 
 @router.get("/search", response_model=list[RegionOut], summary="按名称搜索区划")
@@ -72,9 +70,7 @@ async def search_regions(
         )
     ).all()
     parents = await _parents_with_children(session, [region.code for region in rows])
-    return [
-        RegionOut.of(region, has_children=region.code in parents) for region in rows
-    ]
+    return [RegionOut.of(region, has_children=region.code in parents) for region in rows]
 
 
 @router.get("/{code}", response_model=RegionOut, summary="区划详情")

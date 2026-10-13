@@ -26,6 +26,13 @@ for key in (
 ):
     os.environ.setdefault(key, "test")
 
+# 单元测试默认关闭企业运行守卫强制（guard 专项测试自行开启并注入身份）
+os.environ.setdefault("TENANT_ENFORCE_RUNTIME_IDENTITY", "false")
+
+# R07：本地测试允许受控 fixture 协议（v1-fixture）。生产 compose/Dockerfile
+# 不设置该变量 → 登记表即使含 fixture 条目也在门禁处禁用，企业 MCP 保持安全禁用。
+os.environ.setdefault("TENANT_MCP_FIXTURE_MODE", "true")
+
 
 @pytest.fixture(autouse=True)
 def _clear_permission_fact_caches():

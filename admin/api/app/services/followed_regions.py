@@ -20,7 +20,13 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Region, User, UserFollowedRegion
+from app.models import (
+    MembershipFollowedRegion,
+    Region,
+    TenantMembership,
+    User,
+    UserFollowedRegion,
+)
 
 MAX_FOLLOWED_REGIONS = 5
 
@@ -95,5 +101,65 @@ async def set_followed_regions(
 
     for code in unique_codes:
         session.add(UserFollowedRegion(user_id=user_id, region_code=code))
+    await session.flush()
+    return regions
+
+
+# --------------------------------------------------------------- 成员作用域（企业上下文）
+
+
+async def _lock_membership(session: AsyncSession, membership_id: uuid.UUID) -> None:
+    locked = await session.scalar(
+        select(TenantMembership.id).where(TenantMembership.id == membership_id).with_for_update()
+    )
+    if locked is None:
+        raise FollowedRegionsError("成员身份不存在")
+
+
+async def list_membership_followed_regions(
+    session: AsyncSession, membership_id: uuid.UUID
+) -> list[Region]:
+    rows = (
+        await session.scalars(
+            select(Region)
+            .join(
+                MembershipFollowedRegion,
+                MembershipFollowedRegion.region_code == Region.code,
+            )
+            .where(MembershipFollowedRegion.membership_id == membership_id)
+            .order_by(MembershipFollowedRegion.created_at, Region.code)
+        )
+    ).all()
+    return list(rows)
+
+
+async def set_membership_followed_regions(
+    session: AsyncSession, membership_id: uuid.UUID, tenant_id: uuid.UUID, codes: list[str]
+) -> list[Region]:
+    """整体替换成员（企业作用域）的关注城市。同一账号在不同企业偏好互不影响。"""
+    unique_codes = list(dict.fromkeys(codes))
+    if len(unique_codes) > MAX_FOLLOWED_REGIONS:
+        raise TooManyRegionsError(f"关注城市最多 {MAX_FOLLOWED_REGIONS} 个")
+
+    await _lock_membership(session, membership_id)
+    regions = await _resolve_regions(session, unique_codes)
+
+    existing = (
+        await session.scalars(
+            select(MembershipFollowedRegion).where(
+                MembershipFollowedRegion.membership_id == membership_id
+            )
+        )
+    ).all()
+    for row in existing:
+        await session.delete(row)
+    await session.flush()
+
+    for code in unique_codes:
+        session.add(
+            MembershipFollowedRegion(
+                membership_id=membership_id, region_code=code, tenant_id=tenant_id
+            )
+        )
     await session.flush()
     return regions

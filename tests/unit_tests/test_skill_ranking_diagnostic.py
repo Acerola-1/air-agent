@@ -14,10 +14,7 @@ import numpy as np
 import pytest
 
 INTELLIGENT_ANALYSIS_SKILLS_DIR = (
-    Path(__file__).resolve().parents[2]
-    / "src"
-    / "intelligent_analysis"
-    / "skills"
+    Path(__file__).resolve().parents[2] / "src" / "intelligent_analysis" / "skills"
 )
 
 QUERY = "小时播报:分析下湖州市今天的六参空气质量情况,并出具一份报告"
@@ -47,7 +44,9 @@ def _cosine(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
-def test_skill_ranking_huzhou_hourly_report_print_ranking(capsys: pytest.CaptureFixture[str]) -> None:
+def test_skill_ranking_huzhou_hourly_report_print_ranking(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """打印 QUERY 对 intelligent-analysis 所有 skill 的 embedding 分数排行.
 
     不做阈值裁剪 / max_candidate 限制，真实还原 router 内部构建的 utterances 索引
@@ -64,7 +63,11 @@ def test_skill_ranking_huzhou_hourly_report_print_ranking(capsys: pytest.Capture
     import os
     import sys
 
-    for k in ("SILICONFLOW_API_KEY", "SILICONFLOW_BASE_URL", "SILICONFLOW_EMBEDDING_MODEL"):
+    for k in (
+        "SILICONFLOW_API_KEY",
+        "SILICONFLOW_BASE_URL",
+        "SILICONFLOW_EMBEDDING_MODEL",
+    ):
         if env_vals.get(k):
             os.environ[k] = env_vals[k]
 
@@ -151,7 +154,9 @@ def test_skill_ranking_huzhou_hourly_report_print_ranking(capsys: pytest.Capture
     assert "today-target-analysis" in skill_names, "缺少 today-target-analysis 技能"
 
 
-def test_amatch_returns_top3_candidates_for_huzhou_query(capsys: pytest.CaptureFixture[str]) -> None:
+def test_amatch_returns_top3_candidates_for_huzhou_query(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     """验证 amatch 现在返回最多 3 个候选（方案 A：top3 让模型选）.
 
     之前 limit=1 时只返回 top1（today-target-analysis），导致错配。
@@ -167,7 +172,11 @@ def test_amatch_returns_top3_candidates_for_huzhou_query(capsys: pytest.CaptureF
     import os
     import sys
 
-    for k in ("SILICONFLOW_API_KEY", "SILICONFLOW_BASE_URL", "SILICONFLOW_EMBEDDING_MODEL"):
+    for k in (
+        "SILICONFLOW_API_KEY",
+        "SILICONFLOW_BASE_URL",
+        "SILICONFLOW_EMBEDDING_MODEL",
+    ):
         if env_vals.get(k):
             os.environ[k] = env_vals[k]
 
@@ -205,9 +214,7 @@ def test_amatch_returns_top3_candidates_for_huzhou_query(capsys: pytest.CaptureF
     assert len(candidates) > 1, (
         f"amatch 仍只返回 1 个候选，limit=3 未生效；candidates={candidates}"
     )
-    assert len(candidates) <= 3, (
-        f"amatch 返回了 {len(candidates)} 个候选，应 <=3"
-    )
+    assert len(candidates) <= 3, f"amatch 返回了 {len(candidates)} 个候选，应 <=3"
 
     candidate_names = {c.name for c in candidates}
     assert "broadcast-hour" in candidate_names, (

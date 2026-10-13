@@ -24,8 +24,13 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await authApi.login(account.trim(), password);
+      const result = await authApi.login(account.trim(), password);
       await refresh();
+      // 多企业且未选择当前企业：进入选择页，不自动落到第一家
+      if (result.needs_tenant_selection) {
+        router.replace("/select-tenant");
+        return;
+      }
       // 从 window 读取跳转目标，避免 useSearchParams 带来的 Suspense 要求
       const next = new URLSearchParams(window.location.search).get("next");
       router.replace(next && next.startsWith("/") ? next : "/");
