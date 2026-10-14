@@ -1,6 +1,6 @@
 {
   "date": "2026-10-15",
-  "status": "backup_only_no_deletions_yet",
+  "status": "completed",
   "containers": [
     {
       "name": "aa-takeover35-langgraph",
@@ -110,5 +110,38 @@
       "gzip_verified": true,
       "contains_credentials": "private_backup_not_for_git"
     }
-  ]
+  ],
+  "space_before": {
+    "du_kib": 172568188,
+    "filesystem_available_bytes": 398081130496
+  },
+  "removed": [
+    "aa-takeover35-langgraph",
+    "aa-observe04-langgraph-api",
+    "aa-observe04-redis",
+    "aa-feedback03-postgres",
+    "aa-takeover35-langfuse-worker",
+    "probe-pg",
+    "probe-redis",
+    "aa-feedback03-redis",
+    "aa-takeover35-langfuse-web",
+    "aa-takeover35-redis",
+    "aa-feedback03-langgraph",
+    "aa-takeover35-ephemeral-pg"
+  ],
+  "host_services_stopped": [
+    "admin_pid",
+    "frontend_pid"
+  ],
+  "deleted_volumes": [
+    "aa-feedback03-pgdata"
+  ],
+  "container_count_before": 32,
+  "container_count_after": 20,
+  "remaining_running_count": 11,
+  "space_after": {
+    "du_kib": 149807832,
+    "filesystem_available_bytes": 398812307456
+  },
+  "non_target_containers_preserved": true
 }
