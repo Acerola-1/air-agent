@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-15",
+  "feedback_waiver": "用户明确豁免最后系统剪贴板文本实机抽查，未伪造实测",
+  "specs": [
+    {
+      "change": "add-chat-feedback-interactions",
+      "capability": "agent-answer-feedback",
+      "requirements": 5,
+      "scenarios": 12
+    },
+    {
+      "change": "add-chat-feedback-interactions",
+      "capability": "agent-chat-interaction-events",
+      "requirements": 6,
+      "scenarios": 11
+    },
+    {
+      "change": "add-chat-feedback-interactions",
+      "capability": "agent-feedback-metrics",
+      "requirements": 5,
+      "scenarios": 6
+    },
+    {
+      "change": "complete-agent-observability",
+      "capability": "agent-capability-observability",
+      "requirements": 5,
+      "scenarios": 8
+    },
+    {
+      "change": "complete-agent-observability",
+      "capability": "agent-cost-accounting",
+      "requirements": 5,
+      "scenarios": 8
+    },
+    {
+      "change": "complete-agent-observability",
+      "capability": "agent-model-observability",
+      "requirements": 5,
+      "scenarios": 9
+    },
+    {
+      "change": "complete-agent-observability",
+      "capability": "agent-observability-access",
+      "requirements": 5,
+      "scenarios": 8
+    }
+  ]
+}

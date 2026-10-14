@@ -1,0 +1,29 @@
+{
+  "python_files": 76,
+  "checks": [
+    {
+      "check": [
+        "check",
+        "admin/api/app/config.py"
+      ],
+      "exit": 0,
+      "output": "All checks passed!\n"
+    },
+    {
+      "check": [
+        "format",
+        "--check"
+      ],
+      "exit": 0,
+      "output": "76 files already formatted\n"
+    },
+    {
+      "check": [
+        "-c",
+        "core.fsmonitor=false"
+      ],
+      "exit": 0,
+      "output": ""
+    }
+  ]
+}

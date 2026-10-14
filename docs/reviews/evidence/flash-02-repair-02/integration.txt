@@ -1,0 +1,8 @@
+E   ModuleNotFoundError: No module named 'common.business_graph.subagent_summarizer.ModelRegistry'; 'common.business_graph.subagent_summarizer' is not a package
+
+The above exception was the direct cause of the following exception:
+E   ImportError: import error in common.business_graph.subagent_summarizer.ModelRegistry: No module named 'common.business_graph.subagent_summarizer.ModelRegistry'; 'common.business_graph.subagent_summarizer' is not a package
+/Users/acerola/Dev/Python/air_agent/.venv/lib/python3.13/site-packages/_pytest/monkeypatch.py:88: ImportError: import error in common.business_graph.subagent_summarizer.ModelRegistry: No module named 'common.business_graph.subagent_summarizer.ModelRegistry'; 'common.business_graph.subagent_summarizer' is not a package
+=========================== short test summary info ============================
+FAILED tests/integration_tests/test_mcp_500k_guard.py::test_mcp_500k_overflow_end_to_end
+1 failed, 31 passed, 7 skipped in 75.53s (0:01:15)

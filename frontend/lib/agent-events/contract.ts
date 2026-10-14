@@ -51,6 +51,19 @@ export type ValidationResult = { valid: boolean; reason: string; detail?: string
 
 export const OPERATION_KINDS = ['initial', 'retry', 'regenerate', 'resume'] as const;
 
+// change complete-agent-observability 窄例外（与 Python 两份副本同规则）：
+// 仅 runtime.model_usage 的 runtime 来源、payload 顶层、以下登记白名单键允许
+// 非布尔非负整数计数；字符串/bool/负数/浮点/嵌套键仍拒绝，禁止键扫描优先。
+const NUMERIC_USAGE_EVENT_TYPES: ReadonlySet<string> = new Set(['runtime.model_usage']);
+const NUMERIC_USAGE_TOP_LEVEL_KEYS: ReadonlySet<string> = new Set([
+  'input_tokens',
+  'output_tokens',
+  'total_tokens',
+  'cache_read_tokens',
+  'cache_write_tokens',
+  'reasoning_tokens',
+]);
+
 const UUID_RE =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const TS_Z_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
@@ -121,10 +134,32 @@ export function validateEvent(
   }
   const p = payload as Record<string, unknown>;
 
+  // 禁止键硬拒绝优先于白名单。窄例外（与 Python 副本同序）：runtime.model_usage
+  // 的 runtime 来源、顶层登记键跳过 forbidden，形状判定落到下方专用原因码。
+  const numericExceptionActive =
+    NUMERIC_USAGE_EVENT_TYPES.has(eventType) && source === 'runtime';
   for (const key of iterKeys(p)) {
     const low = key.toLowerCase();
-    if (env.forbidden_payload_key_patterns.some((pat) => low.includes(pat))) {
-      return { valid: false, reason: 'forbidden_payload_key', detail: key };
+    if (!env.forbidden_payload_key_patterns.some((pat) => low.includes(pat))) {
+      continue;
+    }
+    if (numericExceptionActive && NUMERIC_USAGE_TOP_LEVEL_KEYS.has(key)) {
+      continue;
+    }
+    return { valid: false, reason: 'forbidden_payload_key', detail: key };
+  }
+  if (numericExceptionActive) {
+    for (const key of NUMERIC_USAGE_TOP_LEVEL_KEYS) {
+      if (key in p) {
+        const value = p[key];
+        if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
+          return {
+            valid: false,
+            reason: 'usage_tokens_not_non_negative_int',
+            detail: key,
+          };
+        }
+      }
     }
   }
   const allowed = new Set(entry.payload_fields);

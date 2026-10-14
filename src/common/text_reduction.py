@@ -75,9 +75,13 @@ async def summarize_complete_text(
         remaining = deadline - monotonic()
         if remaining <= 0:
             raise TimeoutError("资料整理总时限已到")
+        from common.observability.model_adapter import invocation_config
+
+        observed_config = invocation_config(dict(run_config or {}), role="summarizer")
         response = await asyncio.wait_for(
             ModelRegistry.summary_llm.ainvoke(
-                messages, config={"tags": ["nostream", "internal-summary"]}
+                messages,
+                config={**observed_config, "tags": ["nostream", "internal-summary"]},
             ),
             timeout=remaining,
         )

@@ -1,0 +1,11 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________________ test_comment_requires_both_permissions ____________________
+/tmp/test_feedback_integrity_review03.py:47: in test_comment_requires_both_permissions
+    assert opinion.status_code==403,values
+E   AssertionError: {'operations_without_operations_permission': 403, 'comment_without_operations_permission': 200, 'synthetic_private_comment_visible': True}
+E   assert 200 == 403
+E    +  where 200 = <Response [200 OK]>.status_code
+=========================== short test summary info ============================
+FAILED ::test_comment_requires_both_permissions - AssertionError: {'operation...
+1 failed in 2.18s

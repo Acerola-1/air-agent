@@ -1,0 +1,25 @@
+{
+  "bff_first": {
+    "status": 409,
+    "body": {
+      "detail": "该台账预留的启动权已被消费（可能并发或响应丢失），不得重复创建"
+    }
+  },
+  "bff_replay": {
+    "status": 202,
+    "body": {
+      "status": "admission_unknown",
+      "code": "run_admission_unknown",
+      "ledger_request_id": "b41845fd-0e08-4656-98d4-1b8528f088b6",
+      "ledger_attempt_id": "ce87066c-0e29-45bd-bc5f-6a93a973fd09",
+      "error": "本次提交已在受理中，等待确认后再重试；未重复执行。"
+    }
+  },
+  "native_legal": {
+    "status": 200
+  },
+  "native_graph_swap": {
+    "status": 200
+  },
+  "cleanup": 204
+}

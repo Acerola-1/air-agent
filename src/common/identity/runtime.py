@@ -155,6 +155,19 @@ async def revalidate(identity: RuntimeIdentity) -> None:
     F02：强制模式下**修订快照缺失或非法一律拒绝**（升级前旧运行上下文必须
     安全停止并由新请求重建可信身份），不得降级为仅查 active。
     """
+    _validate_identity_snapshot(identity)
+    try:
+        state = await fetch_identity_state(
+            identity.session_id,
+            user_id=identity.user_id,
+            tenant_id=identity.tenant_id,
+        )
+    except (IdentityBackendUnavailable, TicketError) as exc:
+        raise RuntimeIdentityRevoked("身份服务不可用，停止后续外部调用") from exc
+    _validate_identity_state(identity, state)
+
+
+def _validate_identity_snapshot(identity):
     if _enforce_enabled():
         # F02：企业部署（强制模式）下缺/非法快照一律拒绝——旧运行上下文必须
         # 安全停止并由新请求重建可信身份；非强制的本地测试模式仍按状态检查，
@@ -169,14 +182,9 @@ async def revalidate(identity: RuntimeIdentity) -> None:
             raise RuntimeIdentityRevoked(
                 "可信运行身份缺少修订快照：停止后续调用，请重新发起请求"
             )
-    try:
-        state = await fetch_identity_state(
-            identity.session_id,
-            user_id=identity.user_id,
-            tenant_id=identity.tenant_id,
-        )
-    except (IdentityBackendUnavailable, TicketError) as exc:
-        raise RuntimeIdentityRevoked("身份服务不可用，停止后续外部调用") from exc
+
+
+def _validate_identity_state(identity, state):
     if state is None or not state.session_active or not state.session_unexpired:
         raise RuntimeIdentityRevoked("会话已撤销或过期")
     if not state.user_active:
@@ -277,3 +285,23 @@ async def guard_runtime_call(config: dict[str, Any] | None) -> RuntimeIdentity |
 async def guard_model_call(config: Any) -> RuntimeIdentity | None:
     """RunnableConfig 是 dict-like，直接透传."""
     return await guard_runtime_call(dict(config) if config else None)
+
+
+def guard_runtime_call_sync(config: dict[str, Any] | None) -> RuntimeIdentity | None:
+    """同步模型发送边界与异步路径共用授权判断，数据库故障失败关闭."""
+    identity = identity_from_config(config)
+    if identity is None:
+        if _enforce_enabled():
+            raise RuntimeIdentityError("缺少已认证运行身份，拒绝发起外部调用")
+        return None
+    _validate_identity_snapshot(identity)
+    from common.identity.db import fetch_identity_state_sync
+
+    try:
+        state = fetch_identity_state_sync(
+            identity.session_id, user_id=identity.user_id, tenant_id=identity.tenant_id
+        )
+    except (IdentityBackendUnavailable, TicketError) as exc:
+        raise RuntimeIdentityRevoked("身份服务不可用，停止后续外部调用") from exc
+    _validate_identity_state(identity, state)
+    return identity

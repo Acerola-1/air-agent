@@ -1,0 +1,36 @@
+{
+  "trace_id": "045d45df56b32813552320b6f586a573",
+  "owned_status": 200,
+  "owned_sync_state": "confirmed",
+  "persisted_sync_state": "confirmed",
+  "returned_remote_ids": [
+    "57377a1696f40fef"
+  ],
+  "cross_tenant_status": 404,
+  "forged_status": 404,
+  "sensitive_response_fields": false,
+  "internal_health_without_token": 401,
+  "internal_health_with_token": 200,
+  "collector": {
+    "enabled": true,
+    "state": "initialized",
+    "limits": {
+      "queue": 1000,
+      "batch": 100,
+      "flush_seconds": 2.0,
+      "retries": 3
+    },
+    "stats": {
+      "enqueued": 9,
+      "written": 9,
+      "dropped": 0,
+      "failed": 0,
+      "retries": 0,
+      "queue_size": 0,
+      "in_flight": 0,
+      "pending": 0,
+      "queue_high_watermark": 4,
+      "last_drop_reason": ""
+    }
+  }
+}

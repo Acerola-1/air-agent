@@ -1,0 +1,54 @@
+{
+  "service_gateway_run": {
+    "status": 200,
+    "contains_private_text": false,
+    "response_keys": [
+      "run_id",
+      "thread_id",
+      "status",
+      "created_at",
+      "updated_at",
+      "metadata"
+    ]
+  },
+  "service_run": {
+    "status": 403,
+    "contains_private_text": false,
+    "response_keys": [
+      "detail"
+    ]
+  },
+  "service_state": {
+    "status": 403,
+    "contains_private_text": false,
+    "response_keys": [
+      "detail"
+    ]
+  },
+  "service_history": {
+    "status": 403,
+    "contains_private_text": false,
+    "response_keys": [
+      "detail"
+    ]
+  },
+  "run_counts": {
+    "user": 1,
+    "service": 1
+  },
+  "user_after_logout": 401,
+  "reconcile": [
+    {
+      "action": "admission_recovered",
+      "detail": "run_id=01a134d9-c434-75d3-b53f-faef4aea7fd7"
+    },
+    {
+      "action": "calibrated",
+      "detail": "platform_status=success"
+    }
+  ],
+  "claim_released": false,
+  "same_submission_retry_status": 409,
+  "platform_runs_after_retry": 1,
+  "cleanup": 204
+}

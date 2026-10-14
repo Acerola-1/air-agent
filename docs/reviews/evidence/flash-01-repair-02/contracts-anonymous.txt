@@ -1,0 +1,27 @@
+npm notice run frontend@0.0.0 test:contracts
+npm notice run node --test tests/chat-contract.test.cjs
+✔ context meter uses provider input after completion and labels preparation estimates (41.698625ms)
+✔ every intermediate frame excludes tool JSON and internal summaries from body (5.609042ms)
+✔ old run callbacks and completion cannot clear a newer run (2.963ms)
+✔ stop sends server cancellation and ignores late metadata safely (2.050292ms)
+✔ legacy double answer merges, marked draft hidden, archives require actual stored status (1.789334ms)
+✔ SDK error event becomes failed completion, metadata and custom consumed (1.505041ms)
+✔ proxy: unified identity gates, ticket upstream, v2 scope, tenant checks (1822.757333ms)
+✔ archive scope v2 signing requires configured keys (2.422833ms)
+✔ stopStreaming only confirms after server reaches terminal run status (605.598958ms)
+✔ stopStreaming reports unconfirmed when cancellation and status both fail (4.71275ms)
+✔ stop cancel 409 is context_changed, never a false confirmation (3.140667ms)
+✔ stop after 404 cancel confirms only on observed terminal status (3.402583ms)
+✔ stop treats missing/unknown run status as unconfirmed (5.056042ms)
+✔ stop with empty run list within grace window is unconfirmed unknown (3211.006625ms)
+✔ stop recovers late run id from recent runs and waits terminal (4.259667ms)
+✔ stop before run id arrives recovers the active run from the run list (4.380334ms)
+✔ proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surfaces 409 (3.532375ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5858.378

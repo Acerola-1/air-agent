@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import time as _obs_time
 from collections.abc import Awaitable, Callable
 from typing import Any
 
@@ -27,6 +28,11 @@ from common.business_graph.subagent_summarizer import summarize_large_tool_outpu
 from common.config import config
 from common.context import get_message_content
 from common.data_manifest import build_manifest, parse_payload
+from common.observability.context import (
+    current_observation_config,
+    observation_context_from_config,
+)
+from common.observability.tool_adapter import record_tool_exception, record_tool_result
 from common.runtime_events import event_payload
 from common.runtime_tools import get_mcp_tool_names, tool_name
 from common.storage.artifact_db import (
@@ -82,15 +88,22 @@ async def execute_mcp_tool_request(request: Any) -> ToolMessage:
     name = str(request.tool_call.get("name") or "")
     tool_call_id = str(request.tool_call.get("id") or "")
     server_key = get_factory().server_of(name) or ""
-    run_config = getattr(request.runtime, "config", {}) or {}
+    run_config = current_observation_config(request.runtime)
+    run_config["metadata"] = {
+        **(run_config.get("metadata") or {}),
+        "obs_tool_call_id": tool_call_id,
+    }
     try:
         payload = await execute_mcp_tool(
             server_key, name, dict(request.tool_call.get("args") or {}), run_config
         )
     except McpAuthorizationError as exc:
-        logger.warning("MCP 调用被授权层拒绝: tool={}, reason={}", name, str(exc)[:200])
+        logger.warning(
+            "MCP 调用被授权层拒绝: tool={}, category={}", name, type(exc).__name__
+        )
         content = json.dumps(
-            {"code": 403, "success": False, "message": str(exc)}, ensure_ascii=False
+            {"code": 403, "success": False, "message": "当前授权不允许调用该工具"},
+            ensure_ascii=False,
         )
         return ToolMessage(
             content=content,
@@ -103,7 +116,12 @@ async def execute_mcp_tool_request(request: Any) -> ToolMessage:
         if isinstance(payload, str)
         else json.dumps(payload, ensure_ascii=False, default=str)
     )
-    return ToolMessage(content=content, tool_call_id=tool_call_id, name=name or None)
+    return ToolMessage(
+        content=content,
+        tool_call_id=tool_call_id,
+        name=name or None,
+        status="error" if getattr(payload, "is_error", False) else "success",
+    )
 
 
 async def _invoke_mcp_with_retry(
@@ -132,7 +150,7 @@ async def _invoke_mcp_with_retry(
             attempt,
             _MCP_RETRY_ATTEMPTS,
             tool_name_str,
-            last_exc,
+            type(last_exc).__name__,
         )
         await asyncio.sleep(_MCP_RETRY_BACKOFF_SECONDS)
         if identity is not None:
@@ -165,10 +183,10 @@ def _mcp_fallback(request: Any, exc: Exception) -> ToolMessage:
     """构造 MCP 工具降级 ToolMessage（等效于 MCPResilienceMiddleware）."""
     tool_name_str = str(request.tool_call.get("name") or "")
     tool_call_id = str(request.tool_call.get("id") or "")
-    logger.exception(
+    logger.warning(
         "MCP 工具调用失败，已转为降级 ToolMessage: tool={}, error={}",
         tool_name_str,
-        exc,
+        type(exc).__name__,
     )
 
     # 推送降级状态事件
@@ -201,10 +219,10 @@ def _global_fallback(request: Any, exc: Exception) -> ToolMessage:
     """构造通用工具异常降级 ToolMessage（等效于 GlobalExceptionMiddleware）."""
     tool_name_str = str(request.tool_call.get("name") or "")
     tool_call_id = str(request.tool_call.get("id") or "")
-    logger.exception(
+    logger.warning(
         "工具调用失败，已转为降级 ToolMessage: tool={}, error={}",
         tool_name_str,
-        exc,
+        type(exc).__name__,
     )
     payload = {
         "code": 500,
@@ -217,6 +235,32 @@ def _global_fallback(request: Any, exc: Exception) -> ToolMessage:
         name=tool_name_str or None,
         status="error",
     )
+
+
+def _obs_service_key(mcp: bool, tool_name_str: str) -> str | None:
+    """观测用服务键：MCP 工具按工厂目录解析；本地工具 None."""
+    if not mcp:
+        return None
+    try:
+        from common.mcp_scoped import get_factory
+
+        return get_factory().server_of(tool_name_str)
+    except Exception:  # noqa: BLE001 - 观测失败开放
+        return None
+
+
+def _obs_attempt_index(tool_call_id: str) -> int:
+    """同 tool_call 的重试序号（进程内计数；跨进程由 tool_call_id 关联）."""
+    counter = _OBS_ATTEMPT_COUNTERS.setdefault(tool_call_id, 0)
+    _OBS_ATTEMPT_COUNTERS[tool_call_id] = counter + 1
+    if len(_OBS_ATTEMPT_COUNTERS) > 256:
+        # 有界防泄漏：只保留最近工具调用计数
+        for key in list(_OBS_ATTEMPT_COUNTERS)[:-256]:
+            _OBS_ATTEMPT_COUNTERS.pop(key, None)
+    return counter
+
+
+_OBS_ATTEMPT_COUNTERS: dict[str, int] = {}
 
 
 def _extract_user_question(request: Any) -> str:
@@ -245,6 +289,13 @@ async def composed_tool_wrapper(
     # 1. 动态绑定工具实例
     request = _bind_tool_instance(request)
 
+    # 观测注入：工具执行路径内的辅助模型调用（摘要等）继承回调（幂等）
+    from common.observability.model_adapter import ensure_model_observability
+
+    _runtime_config = current_observation_config(getattr(request, "runtime", None))
+    if isinstance(_runtime_config, dict):
+        ensure_model_observability(_runtime_config)
+
     # 1.5 企业运行守卫：授权撤销/停用后下一次工具调用拒绝执行（任务 5.4/7.3）。
     # F02：走统一的请求级可信来源（get_config 环境/ToolRuntime.config/server_info），
     # 不再依赖 request.runtime.config 单一形状。
@@ -253,6 +304,25 @@ async def composed_tool_wrapper(
     try:
         await guard_request_call(request)
     except RuntimeIdentityError as exc:
+        _obs_ctx = observation_context_from_config(
+            current_observation_config(getattr(request, "runtime", None))
+        )
+        if _obs_ctx is not None:
+            try:
+                await record_tool_result(
+                    _obs_ctx,
+                    logical_call_id=str(request.tool_call.get("id") or "") or None,
+                    tool_name=str(request.tool_call.get("name") or ""),
+                    service_key=_obs_service_key(
+                        _is_mcp_tool(request), str(request.tool_call.get("name") or "")
+                    ),
+                    status="permission_denied",
+                    error_category="authorization",
+                    duration_ms=0,
+                    tool_call_id=str(request.tool_call.get("id") or "") or None,
+                )
+            except Exception:  # noqa: BLE001 - 观测失败开放
+                pass
         return ToolMessage(
             content=json.dumps(
                 {
@@ -272,10 +342,36 @@ async def composed_tool_wrapper(
     #    本地工具维持原 handler 路径。
     mcp = _is_mcp_tool(request)
 
+    obs_ctx = observation_context_from_config(
+        current_observation_config(getattr(request, "runtime", None))
+    )
+    obs_tool_name = str(request.tool_call.get("name") or "")
+    obs_tool_call_id = str(request.tool_call.get("id") or "")
+    obs_started = _obs_time.monotonic()
+
     async def _run(req: Any) -> Any:
         if mcp:
-            return await execute_mcp_tool_request(req)
-        return await handler(req)
+            result = await execute_mcp_tool_request(req)
+        else:
+            from common.observability.model_adapter import model_tool_scope
+
+            with model_tool_scope(_runtime_config, obs_tool_call_id):
+                result = await handler(req)
+        if obs_ctx is not None and not mcp:
+            try:
+                await record_tool_result(
+                    obs_ctx,
+                    logical_call_id=obs_tool_call_id or None,
+                    tool_name=obs_tool_name,
+                    service_key=_obs_service_key(mcp, obs_tool_name),
+                    retry_index=_obs_attempt_index(obs_tool_call_id),
+                    duration_ms=int((_obs_time.monotonic() - obs_started) * 1000),
+                    tool_call_id=obs_tool_call_id or None,
+                    output=result.content if isinstance(result, ToolMessage) else None,
+                )
+            except Exception:  # noqa: BLE001 - 观测失败开放
+                pass
+        return result
 
     try:
         result = await _run(request)
@@ -283,12 +379,49 @@ async def composed_tool_wrapper(
         # ⚠️ 关键: 人机交互中断异常必须向上冒泡，严禁降级捕获！
         raise
     except Exception as exc:
+        if obs_ctx is not None and not mcp:
+            try:
+                await record_tool_exception(
+                    obs_ctx,
+                    logical_call_id=obs_tool_call_id or None,
+                    tool_name=obs_tool_name,
+                    service_key=_obs_service_key(mcp, obs_tool_name),
+                    duration_ms=int((_obs_time.monotonic() - obs_started) * 1000),
+                    tool_call_id=obs_tool_call_id or None,
+                    exc=exc,
+                )
+            except Exception:  # noqa: BLE001 - 观测失败开放
+                pass
         if (
             mcp
             and not isinstance(exc, (ValueError, TypeError))
             and getattr(exc, "status_code", 500) >= 500
         ):
             result = await _invoke_mcp_with_retry(request, _run, exc)
+            if obs_ctx is not None:
+                try:
+                    await record_tool_result(
+                        obs_ctx,
+                        logical_call_id=obs_tool_call_id or None,
+                        tool_name=obs_tool_name,
+                        service_key=_obs_service_key(mcp, obs_tool_name),
+                        status="succeeded"
+                        if not (
+                            isinstance(result, ToolMessage) and result.status == "error"
+                        )
+                        else "technical_error",
+                        fallback_kind="mcp_degraded"
+                        if getattr(result, "status", None) == "error"
+                        else "retry_recovered",
+                        network_attempted=False,
+                        duration_ms=int((_obs_time.monotonic() - obs_started) * 1000),
+                        tool_call_id=obs_tool_call_id or None,
+                        output=result.content
+                        if isinstance(result, ToolMessage)
+                        else None,
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
         else:
             result = _global_fallback(request, exc)
 

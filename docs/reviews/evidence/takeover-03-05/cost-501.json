@@ -1,0 +1,81 @@
+{
+  "recalculated": {
+    "scanned": 501,
+    "cost_revisions_written": 500,
+    "unchanged": 1
+  },
+  "replay": {
+    "scanned": 501,
+    "cost_revisions_written": 0,
+    "unchanged": 501
+  },
+  "summary": {
+    "by_currency": [
+      {
+        "priced": 1,
+        "currency": "CNY",
+        "subtotal": "0.0000600000"
+      },
+      {
+        "priced": 500,
+        "currency": "USD",
+        "subtotal": "0.0350000000"
+      }
+    ],
+    "by_currency_truncated": false,
+    "total_observations": 501,
+    "coverage": {
+      "measured": 501
+    },
+    "unpriced_observations": 0,
+    "partial_usage_observations": 0,
+    "complete_cost_known": true,
+    "by_user": [
+      {
+        "user_id": "7bf9e8ff-2614-4e56-a58e-804e9350ed4f",
+        "currency": "CNY",
+        "subtotal": "0.0000600000"
+      },
+      {
+        "user_id": "7bf9e8ff-2614-4e56-a58e-804e9350ed4f",
+        "currency": "USD",
+        "subtotal": "0.0350000000"
+      }
+    ],
+    "by_user_truncated": false,
+    "by_graph": [
+      {
+        "currency": "CNY",
+        "graph_id": "basic-qa",
+        "subtotal": "0.0000600000"
+      },
+      {
+        "currency": "USD",
+        "graph_id": "basic-qa",
+        "subtotal": "0.0350000000"
+      }
+    ],
+    "by_graph_truncated": false,
+    "capability_attribution": {
+      "mode": "shared_or_unattributed",
+      "by_currency": [
+        {
+          "currency": "CNY",
+          "subtotal": "0.0000600000"
+        },
+        {
+          "currency": "USD",
+          "subtotal": "0.0350000000"
+        }
+      ],
+      "truncated": false
+    },
+    "external_tool_cost": {
+      "measurement_status": "not_collected",
+      "amount": null
+    },
+    "as_of": "2026-10-14T11:11:17.415323+00:00",
+    "source": "observations_latest_cost_revision",
+    "metric_version": "obs-cost-v2"
+  }
+}

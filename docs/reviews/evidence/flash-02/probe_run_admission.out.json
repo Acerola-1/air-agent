@@ -1,0 +1,256 @@
+{
+  "thread_create": 200,
+  "claim_confirm": 200,
+  "create_with_run_id_status": 200,
+  "create_with_run_id_body": {
+    "run_id": "01a13109-ffc7-7772-98d2-2aef21190a8b",
+    "thread_id": "0482ef5f-6b8f-4857-89a0-17928f3b132d",
+    "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c",
+    "created_at": "2026-10-12T16:55:01.327341+00:00",
+    "updated_at": "2026-10-12T16:55:01.327341+00:00",
+    "status": "pending",
+    "metadata": {
+      "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c"
+    },
+    "kwargs": {
+      "input": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "probe prealloc run_id"
+          }
+        ]
+      },
+      "config": {
+        "configurable": {
+          "thread_id": "0482ef5f-6b8f-4857-89a0-17928f3b132d",
+          "graph_id": "basic-qa",
+          "langgraph_auth_user": {
+            "identity": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+            "tenant_id": "9fb2097c-46bf-4755-b025-1c3222f8aa91",
+            "session_id": "94cc955d-243f-4f28-8b57-45835cc149ef",
+            "permissions": [],
+            "display_name": "acc_alice",
+            "membership_id": "30cc1c41-6648-5763-9147-c9c9ff2f0df9",
+            "is_authenticated": true,
+            "user_auth_revision": 0,
+            "membership_revision": 1,
+            "session_ctx_version": 2,
+            "tenant_auth_revision": 1
+          },
+          "user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c",
+          "langgraph_request_id": "816cfc80-39dc-49cc-b5fd-46c69e87f582",
+          "langgraph_auth_user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "__after_seconds__": 0,
+          "__request_start_time_ms__": 1791824101315,
+          "langgraph_auth_permissions": [],
+          "run_id": "01a13109-ffc7-7772-98d2-2aef21190a8b"
+        },
+        "metadata": {
+          "created_by": "system",
+          "tenant_id": "9fb2097c-46bf-4755-b025-1c3222f8aa91",
+          "user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c"
+        }
+      },
+      "context": {},
+      "command": null,
+      "stream_mode": [
+        "values"
+      ],
+      "interrupt_before": null,
+      "interrupt_after": null,
+      "webhook": null,
+      "feedback_keys": null,
+      "temporary": false,
+      "subgraphs": false,
+      "resumable": false,
+      "checkpoint_during": true,
+      "durability": "async"
+    },
+    "multitask_strategy": "enqueue",
+    "langsmith_session_name": "ipp-agent-dev"
+  },
+  "prealloc_matches": false,
+  "duplicate_same_run_id_status": 200,
+  "duplicate_same_run_id_body": {
+    "run_id": "01a13109-ffe2-71f1-a879-09c933a023d8",
+    "thread_id": "0482ef5f-6b8f-4857-89a0-17928f3b132d",
+    "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c",
+    "created_at": "2026-10-12T16:55:01.353502+00:00",
+    "updated_at": "2026-10-12T16:55:01.353502+00:00",
+    "status": "pending",
+    "metadata": {
+      "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c"
+    },
+    "kwargs": {
+      "input": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "probe prealloc run_id"
+          }
+        ]
+      },
+      "config": {
+        "configurable": {
+          "thread_id": "0482ef5f-6b8f-4857-89a0-17928f3b132d",
+          "graph_id": "basic-qa",
+          "__after_seconds__": 0,
+          "user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c",
+          "langgraph_request_id": "8ef6d52c-f976-41f5-8187-002f49f58ecb",
+          "langgraph_auth_user": {
+            "identity": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+            "tenant_id": "9fb2097c-46bf-4755-b025-1c3222f8aa91",
+            "session_id": "94cc955d-243f-4f28-8b57-45835cc149ef",
+            "permissions": [],
+            "display_name": "acc_alice",
+            "membership_id": "30cc1c41-6648-5763-9147-c9c9ff2f0df9",
+            "is_authenticated": true,
+            "user_auth_revision": 0,
+            "membership_revision": 1,
+            "session_ctx_version": 2,
+            "tenant_auth_revision": 1
+          },
+          "langgraph_auth_user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "__request_start_time_ms__": 1791824101340,
+          "langgraph_auth_permissions": [],
+          "run_id": "01a13109-ffe2-71f1-a879-09c933a023d8"
+        },
+        "metadata": {
+          "created_by": "system",
+          "graph_id": "basic-qa",
+          "tenant_id": "9fb2097c-46bf-4755-b025-1c3222f8aa91",
+          "user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c"
+        }
+      },
+      "context": {},
+      "command": null,
+      "stream_mode": [
+        "values"
+      ],
+      "interrupt_before": null,
+      "interrupt_after": null,
+      "webhook": null,
+      "feedback_keys": null,
+      "temporary": false,
+      "subgraphs": false,
+      "resumable": false,
+      "checkpoint_during": true,
+      "durability": "async"
+    },
+    "multitask_strategy": "enqueue",
+    "langsmith_session_name": "ipp-agent-dev"
+  },
+  "run_get_status": 200,
+  "run_get_keys": [
+    "assistant_id",
+    "created_at",
+    "kwargs",
+    "langsmith_session_name",
+    "metadata",
+    "multitask_strategy",
+    "run_id",
+    "status",
+    "thread_id",
+    "updated_at"
+  ],
+  "run_get_sample": {
+    "run_id": "01a13109-ffc7-7772-98d2-2aef21190a8b",
+    "thread_id": "0482ef5f-6b8f-4857-89a0-17928f3b132d",
+    "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c",
+    "status": "running",
+    "metadata": {
+      "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c"
+    },
+    "created_at": "2026-10-12T16:55:01.327341+00:00",
+    "updated_at": "2026-10-12T16:55:01.337526+00:00",
+    "kwargs": {
+      "input": {
+        "messages": [
+          {
+            "role": "user",
+            "content": "probe prealloc run_id"
+          }
+        ]
+      },
+      "config": {
+        "configurable": {
+          "thread_id": "0482ef5f-6b8f-4857-89a0-17928f3b132d",
+          "graph_id": "basic-qa",
+          "__after_seconds__": 0,
+          "user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c",
+          "langgraph_request_id": "816cfc80-39dc-49cc-b5fd-46c69e87f582",
+          "langgraph_auth_user": {
+            "identity": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+            "tenant_id": "9fb2097c-46bf-4755-b025-1c3222f8aa91",
+            "session_id": "94cc955d-243f-4f28-8b57-45835cc149ef",
+            "permissions": [],
+            "display_name": "acc_alice",
+            "membership_id": "30cc1c41-6648-5763-9147-c9c9ff2f0df9",
+            "is_authenticated": true,
+            "user_auth_revision": 0,
+            "membership_revision": 1,
+            "session_ctx_version": 2,
+            "tenant_auth_revision": 1
+          },
+          "langgraph_auth_user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "__request_start_time_ms__": 1791824101315,
+          "langgraph_auth_permissions": [],
+          "run_id": "01a13109-ffc7-7772-98d2-2aef21190a8b"
+        },
+        "metadata": {
+          "created_by": "system",
+          "tenant_id": "9fb2097c-46bf-4755-b025-1c3222f8aa91",
+          "user_id": "de52abe0-cb8c-47fe-a5d2-9fd331e18625",
+          "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c"
+        }
+      },
+      "context": {},
+      "command": null,
+      "stream_mode": [
+        "values"
+      ],
+      "interrupt_before": null,
+      "interrupt_after": null,
+      "webhook": null,
+      "feedback_keys": null,
+      "temporary": false,
+      "subgraphs": false,
+      "resumable": false,
+      "checkpoint_during": true,
+      "durability": "async"
+    }
+  },
+  "unknown_run_get": 404,
+  "unknown_run_cancel": 404,
+  "stream_status": 200,
+  "stream_head": ": heartbeat\r\n\r\nevent: metadata\r\ndata: {\"run_id\":\"01a1310a-0038-7480-8c3c-33521939cf87\",\"attempt\":1}\r\n\r\nevent: values\r\ndata: {\"messages\":[{\"content\":\"probe prealloc run_id\",\"additional_kwargs\":{},\"response_metadata\":{},\"type\":\"human\",\"name\":null,\"id\":\"3eb2776a-056a-46fe-9163-392b45ffa419\"},{\"content\":\"您提到的内容不属于空气质量数据查询范畴，我无法直接响应这类请求。\\n\\n我是中科宇图的空气质量数据查询助手，可以为您提供以下业务服务：\\n\\n- **实时空气质量**：查询城市、区县或站点的 PM2.5、PM10、SO2、NO2、O3、CO 浓度及 AQI 等级\\n- **历史数据回顾**：按日、月、年维度检索空气质量指标与达标天数\\n- **空气质量排名**：城市、区县及省域范围内的综合指数与单项因子排名\\n- **预报信息**：未来空气质量预报及气象背景\\n- **污染分析**：浓度对比、相关性、污染贡献等统计特征\\n\\n如果您需要了解某个地区当前的空气状况，或想对比不同时间段的污染变",
+  "cancel_status": 404,
+  "cancel_again_status": 404,
+  "resume_on_run_status": 405,
+  "resume_on_run_body": {
+    "detail": "Method Not Allowed"
+  },
+  "runs_list_status": 200,
+  "runs_list_count": 3,
+  "runs_list_sample": [
+    {
+      "run_id": "01a1310a-0038-7480-8c3c-33521939cf87",
+      "status": "running"
+    },
+    {
+      "run_id": "01a13109-ffe2-71f1-a879-09c933a023d8",
+      "status": "success"
+    },
+    {
+      "run_id": "01a13109-ffc7-7772-98d2-2aef21190a8b",
+      "status": "success"
+    }
+  ],
+  "thread_delete": 204
+}

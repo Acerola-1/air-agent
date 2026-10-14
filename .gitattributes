@@ -1,0 +1,3 @@
+
+# 验收原始输出保留CRLF/行尾与字节证据；只对日志关闭空白告警
+docs/reviews/evidence/**/*.txt -text -whitespace

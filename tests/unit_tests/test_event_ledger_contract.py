@@ -34,6 +34,8 @@ EXPECTED = {
     "bad_uuid",
     "payload_too_large",
     "invalid_enum_value",
+    # change complete-agent-observability：runtime.model_usage 顶层计数窄例外
+    "usage_tokens_not_non_negative_int",
 }
 
 
@@ -72,8 +74,9 @@ def test_browser_cannot_claim_server_facts() -> None:
 
 
 def test_reserved_types_rejected_not_enabled() -> None:
+    """预留类型仍拒绝；change-3 启用 browser 三类后断言精确集合."""
     reserved = reserved_event_types()
-    assert len(reserved) >= 8
+    assert reserved == frozenset()
     for name in reserved:
         event = {
             "schema_version": "1.0",
@@ -89,7 +92,7 @@ def test_reserved_types_rejected_not_enabled() -> None:
         assert validate_event(event).reason == "type_not_enabled", name
 
 
-def test_enabled_types_are_the_v1_core_family() -> None:
+def test_enabled_types_are_the_integrated_v1_family() -> None:
     assert enabled_event_types() == {
         "request.accepted",
         "run.admission_confirmed",
@@ -100,6 +103,14 @@ def test_enabled_types_are_the_v1_core_family() -> None:
         "answer.partial",
         "trace.linked",
         "resource.deleted",
+        "browser.feedback",
+        "browser.copy",
+        "browser.timing",
+        "runtime.model_usage",
+        "runtime.ttft",
+        "runtime.cost",
+        "runtime.span",
+        "runtime.tool_call",
     }
 
 

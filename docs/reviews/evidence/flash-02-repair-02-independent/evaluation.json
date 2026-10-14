@@ -1,0 +1,19 @@
+{
+  "anonymous_model": "02",
+  "round": "repair2",
+  "duration_source": "user",
+  "duration_minutes": 154,
+  "cumulative_minutes": 375,
+  "independently_completed": false,
+  "takeover_by": "Codex coordinator",
+  "quality_diagnostic": 67,
+  "efficiency": 2,
+  "efficiency_scale": 5,
+  "prior_scores": [
+    60,
+    68
+  ],
+  "coordinator_results_excluded_from_model_score": true,
+  "implementation_token_usage": "not_collected",
+  "application_performance": "not_benchmarked"
+}

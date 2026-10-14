@@ -1,0 +1,86 @@
+[
+  {
+    "channel": "bff",
+    "graph": "basic-qa",
+    "stream": true,
+    "thread_id": "87d2d3ea-428a-44a8-b41d-945a7582e1c5",
+    "http_status": 200,
+    "sse_error": false,
+    "sse_frames": 7,
+    "attempt_id": "aed542d1-b699-496f-84f0-290fab3f198a",
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "f37ec8ac-ecdf-49f7-adef-2aa54b00b145",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18509,
+          "output_tokens": 31,
+          "total_tokens": 18540,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 27
+        },
+        "ttft_ms": 3169,
+        "first_piece_kind": "text",
+        "submission_id": "cf9a6d94-ef3a-4e9e-9015-5580ab7bc066"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "5176def16d52de748e1d0899aba2ac3e",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 25.173
+  },
+  {
+    "channel": "bff",
+    "graph": "deep-research",
+    "stream": true,
+    "thread_id": "822f5e50-3ee8-417d-a08c-922dba9c3970",
+    "http_status": 200,
+    "sse_error": false,
+    "sse_frames": 20,
+    "attempt_id": "2ab8bc31-06c5-4922-b664-03633f6f4933",
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "bb2d3cea-c75b-452c-9073-77f52f9914db",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 6924,
+          "output_tokens": 27,
+          "total_tokens": 6951,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 23
+        },
+        "ttft_ms": 1382,
+        "first_piece_kind": "text",
+        "submission_id": "a9bb7686-28a2-4a02-987c-b5ef006d72f4"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "dac66167a6432738c51a2e2ec02d6204",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 4.062
+  }
+]

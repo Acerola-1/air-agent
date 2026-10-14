@@ -1,0 +1,16 @@
+{
+  "databases": [
+    "air_agent_review02_ledger_7947acfc",
+    "air_agent_review02_api_7947acfc",
+    "air_agent_review02_rls_7947acfc",
+    "air_agent_review02_ledger_46da3eae",
+    "air_agent_review02_api_46da3eae",
+    "air_agent_review02_rls_46da3eae"
+  ],
+  "roles": [
+    "review_ledger_worker_7947acfc",
+    "review_ledger_worker_46da3eae"
+  ],
+  "secret_env_file_removed": true,
+  "business_database_untouched": true
+}

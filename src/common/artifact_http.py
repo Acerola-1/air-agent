@@ -209,3 +209,12 @@ async def confirm_thread_claim(request: Request) -> dict[str, Any]:
     except IdentityBackendUnavailable as exc:
         raise HTTPException(status_code=503, detail="归属确认不可用") from exc
     return {"confirmed": confirmed}
+
+
+@app.get("/internal/observability/health")
+async def observability_health(request: Request) -> dict[str, Any]:
+    """内部运维读取进程采集状态；不向企业普通用户披露全局计数."""
+    _require_internal_token(request)
+    from common.observability.collector import collector_health
+
+    return collector_health()

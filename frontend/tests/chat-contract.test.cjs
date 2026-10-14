@@ -70,9 +70,16 @@ function fixture(options = {}) {
     recordStopIntent: async(input)=>{ stopIntents.push(input); return true; },
     recordNavigationStopBeacon: (input)=>{ navigationStops.push(input); return true; },
     streamRun: (opts)=>{ const wait = deferred(); streams.push({...opts,wait}); return wait.promise; } };
+  const timingCalls = [];
+  const timingStubs = { hasVisibleTiming:()=>false, startTiming:()=>{timingCalls.push('start');return `m-${timingCalls.length}`;},
+    finishTiming:(id)=>timingCalls.push(['finish',id]),
+    timingFirstVisibleAnswer:(id)=>timingCalls.push(['first',id]),
+    timingDisplayComplete:(id)=>timingCalls.push(['complete',id]),
+    timingProgressSeen:(id)=>timingCalls.push(['progress',id]),
+    timingAttachAttempt:(id,a)=>timingCalls.push(['attach',id,a]) };
   const module = load('lib/chat-store.ts', { zustand, '@/lib/uuidv7':{ generateUuidV7:()=>`msg${++ids}` },
-    '@/lib/user-identity':{getUserIdentity:()=> 'user'}, '@/lib/langgraph-api':api });
-  return { ...module, streams, canceled, stopIntents, navigationStops, state, api, getSubmissionContext: ()=> submissionContext };
+    '@/lib/user-identity':{getUserIdentity:()=> 'user'}, '@/lib/langgraph-api':api, '@/lib/feedback/client':timingStubs });
+  return { ...module, streams, canceled, stopIntents, navigationStops, state, api, timingCalls, getSubmissionContext: ()=> submissionContext };
 }
 
 test('every intermediate frame excludes tool JSON and internal summaries from body', async()=>{
@@ -620,4 +627,13 @@ test('R01 代理：原生入口单点裁决——首笔成功、重放复用/待
     global.fetch = previous;
     if (oldBase === undefined) delete process.env.LANGGRAPH_API_URL; else process.env.LANGGRAPH_API_URL = oldBase;
   }
+});
+
+test('官方 interrupt 的权威状态确认本次已停止执行，不冒充业务已取消',async()=>{
+  const f=fixture({runStatuses:[{found:true,status:'interrupted'}]}),store=f.useChatStore;
+  const running=store.getState().sendMessage('问题','fast');await tick();
+  const stream=f.streams[0];stream.handlers.onRun('run-interrupted');await tick();
+  const result=await store.getState().stopStreaming();assert.equal(result.confirmed,true);
+  assert.equal(store.getState().stopPending,false);
+  stream.wait.resolve();await running;
 });

@@ -1,0 +1,11 @@
+{
+  "databases": [
+    "air_agent_ivrp02_ledger_08889f72",
+    "air_agent_ivrp02_api_08889f72",
+    "air_agent_ivrp02_rls_08889f72"
+  ],
+  "head": "0009",
+  "worker": "random_nonowner_test_role",
+  "migration": "0001_to_0009",
+  "notes": "3 套新空 PG；专用非 owner worker 已按 0007+0008+0009 授权；未使用业务库"
+}

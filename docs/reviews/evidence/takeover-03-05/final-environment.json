@@ -1,0 +1,99 @@
+{
+  "base_head": "0f2cd027941cdb6fa773ef8aba41940e692b7e52",
+  "migration_heads": [
+    {
+      "version_num": "0012o_delivery"
+    }
+  ],
+  "rls_tables": [
+    {
+      "relname": "agent_capability_spans",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_cost_revisions",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_feedback_comments",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_feedback_current",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_feedback_operations",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_model_observations",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_model_prices",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_observability_projection",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_observation_trace_links",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_tool_call_attempts",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    },
+    {
+      "relname": "agent_tool_calls",
+      "relrowsecurity": true,
+      "relforcerowsecurity": true
+    }
+  ],
+  "runtime_roles": [
+    {
+      "rolname": "air_agent_runtime",
+      "rolsuper": false,
+      "rolbypassrls": false
+    },
+    {
+      "rolname": "air_agent_ledger_worker",
+      "rolsuper": false,
+      "rolbypassrls": false
+    }
+  ],
+  "original_author_inputs": [
+    {
+      "run": "03",
+      "verified_files": 34,
+      "changed_original_files": []
+    },
+    {
+      "run": "04",
+      "verified_files": 42,
+      "changed_original_files": []
+    }
+  ],
+  "matrix_cases": 24,
+  "matrix_ledger_states": [
+    {
+      "state": "succeeded",
+      "n": 24
+    }
+  ],
+  "dependency_contracts_unchanged": [],
+  "production_mcp": "disabled_unverified",
+  "git_delivery": "uncommitted_unpushed_unarchived"
+}

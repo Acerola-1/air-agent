@@ -356,3 +356,6 @@ db/*.db-wal
 # TypeScript 增量编译产物
 *.tsbuildinfo
 .env.langgraph
+
+# 本地验收备份与私有运行配置（不提交）
+.local/

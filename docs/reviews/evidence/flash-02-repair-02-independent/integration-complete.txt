@@ -1,0 +1,229 @@
+....sssssss...........................F                                  [100%]
+=================================== FAILURES ===================================
+______________________ test_mcp_500k_overflow_end_to_end _______________________
+
+name = 'common.business_graph.subagent_summarizer.ModelRegistry', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ModuleNotFoundError: No module named 'common.business_graph.subagent_summarizer.ModelRegistry'; 'common.business_graph.subagent_summarizer' is not a package
+
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: ModuleNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/private/var/folders/sl/97x01_kj0xvcq_k7zhb7w4dm0000gn/T/pytest-of-acerola/pytest-1259/test_mcp_500k_overflow_end_to_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1143b1570>
+
+    def test_mcp_500k_overflow_end_to_end(tmp_path, monkeypatch):
+        """端到端验证 50 万字符超限拦截、落库、Subagent提炼与数据保真."""
+    
+        async def _run():
+            # 隔离数据库
+            test_db = tmp_path / "integration_test.db"
+            monkeypatch.setattr(
+                "common.storage.artifact_db._get_sqlite_path", lambda: str(test_db)
+            )
+            monkeypatch.setattr(
+                "common.storage.artifact_db._is_pg_configured", lambda: False
+            )
+            monkeypatch.setattr("common.storage.artifact_db._initialized", False)
+    
+            # Mock Subagent 的大模型推理输出（模拟精准抽取海淀区）
+            mock_subagent_llm = AsyncMock()
+            mock_subagent_llm.ainvoke.return_value = AIMessage(
+                content="【海淀区空气质量提炼】从全量数据中检索到海淀区指标：AQI 35，优，PM2.5 为 10μg/m³。"
+            )
+            monkeypatch.setattr(
+                "common.business_graph.subagent_summarizer.ModelRegistry.main_llm",
+                mock_subagent_llm,
+            )
+    
+            # 2. 构建带 Checkpointer 的 StateGraph
+            builder = StateGraph(GuardTestState)
+            tool_node = ToolNode(
+                tools=[normal_weather_tool, bad_overflow_mcp_tool],
+                handle_tool_errors=True,
+                awrap_tool_call=composed_tool_wrapper,
+            )
+            builder.add_node("tools", tool_node)
+            builder.add_edge(START, "tools")
+            builder.add_edge("tools", END)
+    
+            checkpointer = MemorySaver()
+            graph = builder.compile(checkpointer=checkpointer)
+    
+            # 3. 构造请求：先包含一个正常工具调用，紧接着包含一个 50 万字符的超限调用
+            normal_call_id = "call_normal_001"
+            overflow_call_id = "call_overflow_002"
+    
+            human_msg = HumanMessage(content="查询北京市和海淀区的空气质量")
+            ai_msg = AIMessage(
+                content="",
+                tool_calls=[
+                    {
+                        "id": normal_call_id,
+                        "name": "normal_weather_tool",
+                        "args": {"city": "北京"},
+                    },
+                    {
+                        "id": overflow_call_id,
+                        "name": "bad_overflow_mcp_tool",
+                        "args": {"region": ""},
+                    },
+                ],
+            )
+    
+            import base64 as _b64
+            import hashlib as _hl
+            import hmac as _hm
+            import json as _json
+            import time as _t
+    
+            monkeypatch.setenv("ARCHIVE_SCOPE_KEYS", _json.dumps(["it-scope-key"]))
+            _body = (
+                _b64.urlsafe_b64encode(
+                    _json.dumps(
+                        {
+                            "v": 2,
+                            "kid": "k1",
+                            "tenantId": "ta",
+                            "userId": "u",
+                            "threadId": "thread_test_500k",
+                            "aud": "air-agent-archive",
+                            "exp": _t.time() + 3600,
+                        }
+                    ).encode()
+                )
+                .decode()
+                .rstrip("=")
+            )
+            _sig = _hm.new(b"it-scope-key", _body.encode(), _hl.sha256).hexdigest()
+            thread_config = {
+                "configurable": {
+                    "thread_id": "thread_test_500k",
+                    "__artifact_scope": f"{_body}.{_sig}",
+                    "processing_run_id": "run_it",
+                }
+            }
+    
+            # 4. 执行图流转（验证 5.4.1: 主图未发生上下文超窗或异常崩溃）
+            final_state = await graph.ainvoke(
+                {"messages": [human_msg, ai_msg]},
+                config=thread_config,
+            )
+    
+            messages = final_state["messages"]
+            assert len(messages) == 4  # HumanMessage + AIMessage + 2 条 ToolMessage
+    
+            normal_tm: ToolMessage = messages[2]
+            overflow_tm: ToolMessage = messages[3]
+    
+            # 验证 5.4.4: 前面调用的正常工具数据未被误裁，完整保留
+            assert normal_tm.tool_call_id == normal_call_id
+            assert (
+                normal_tm.content
+                == "【北京空气质量报告】AQI: 55, 良, 首要污染物: PM10, 站点均值正常。"
+            )
+            assert normal_tm.artifact is None
+    
+            # 验证 5.4.3: ToolMessage.content 成功被 Subagent 浓缩至安全长度
+            assert overflow_tm.tool_call_id == overflow_call_id
+            assert len(overflow_tm.content) < 1500
+            assert "【海淀区空气质量提炼】" in overflow_tm.content
+            assert "AQI 35" in overflow_tm.content
+    
+            # 验证 5.4.2: 原始 50 万字符成功存入数据库专属表，能通过 artifact_id 查到
+            assert isinstance(overflow_tm.artifact, dict)
+            artifact_id = overflow_tm.artifact["artifact_id"]
+            assert artifact_id.startswith("art_")
+            assert overflow_tm.artifact["char_length"] >= 500_000
+    
+            db_record = await get_tool_artifact(
+                artifact_id, tenant_id="ta", user_id="u", thread_id="thread_test_500k"
+            )
+            assert db_record is not None
+            assert db_record["tool_call_id"] == overflow_call_id
+            assert db_record["tool_name"] == "bad_overflow_mcp_tool"
+            assert len(db_record["raw_payload"]) >= 500_000
+            assert "海淀区" in db_record["raw_payload"]
+    
+            # 验证 5.4.5: Checkpointer 存储的 checkpoint 大小保持轻量
+            saved_checkpoint = checkpointer.get(thread_config)
+            assert saved_checkpoint is not None
+            # checkpoint 中 ToolMessage.content 仅包含提炼内容，无 50 万原始字符
+            saved_messages = saved_checkpoint["channel_values"]["messages"]
+            saved_overflow_tm = saved_messages[-1]
+            assert len(saved_overflow_tm.content) < 1500
+            # 且 artifact 只有轻量引用
+            assert len(str(saved_overflow_tm.artifact)) < 300
+    
+>       asyncio.run(_run())
+
+tests/integration_tests/test_mcp_500k_guard.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+tests/integration_tests/test_mcp_500k_guard.py:63: in _run
+    monkeypatch.setattr(
+.venv/lib/python3.13/site-packages/_pytest/monkeypatch.py:107: in derive_importpath
+    target = resolve(module)
+             ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'common.business_graph.subagent_summarizer.ModelRegistry'
+
+    def resolve(name: str) -> object:
+        # Simplified from zope.dottedname.
+        parts = name.split(".")
+    
+        used = parts.pop(0)
+        found: object = importlib.import_module(used)
+        for part in parts:
+            used += "." + part
+            try:
+                found = getattr(found, part)
+            except AttributeError:
+                pass
+            else:
+                continue
+            # We use explicit un-nesting of the handling block in order
+            # to avoid nested exceptions.
+            try:
+                importlib.import_module(used)
+            except ImportError as ex:
+                expected = str(ex).split()[-1]
+                if expected == used:
+                    raise
+                else:
+>                   raise ImportError(f"import error in {used}: {ex}") from ex
+E                   ImportError: import error in common.business_graph.subagent_summarizer.ModelRegistry: No module named 'common.business_graph.subagent_summarizer.ModelRegistry'; 'common.business_graph.subagent_summarizer' is not a package
+
+.venv/lib/python3.13/site-packages/_pytest/monkeypatch.py:88: ImportError
+=========================== short test summary info ============================
+FAILED tests/integration_tests/test_mcp_500k_guard.py::test_mcp_500k_overflow_end_to_end
+1 failed, 31 passed, 7 skipped in 48.70s

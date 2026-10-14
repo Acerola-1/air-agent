@@ -100,10 +100,16 @@ class OutboxWorker:
         self,
         *,
         owner: str | None = None,
+        tenant_id: str | None = None,
         batch_size: int = DEFAULT_BATCH,
         max_attempts: int = DEFAULT_MAX_ATTEMPTS,
         lease_seconds: int = DEFAULT_LEASE_SECONDS,
-        consumers: tuple[str, ...] = ("run_projection", "deletion_cleanup"),
+        consumers: tuple[str, ...] = (
+            "run_projection",
+            "deletion_cleanup",
+            "observability_projection",
+            "external_trace_cleanup",
+        ),
     ) -> None:
         """构造 worker；`owner` 为租约持有者标识."""
         if not worker_enabled():
@@ -113,6 +119,7 @@ class OutboxWorker:
         self.owner = (
             owner or f"{os.uname().nodename}:{os.getpid()}:{uuid.uuid4().hex[:8]}"
         )
+        self.tenant_id = str(uuid.UUID(tenant_id)) if tenant_id else None
         self.batch_size = batch_size
         self.max_attempts = max_attempts
         self.lease_seconds = lease_seconds
@@ -134,12 +141,14 @@ class OutboxWorker:
                     await conn.execute(
                         """
                         SELECT o.id, o.tenant_id::text AS tenant_id, o.event_id::text AS event_id,
-                               o.consumer, o.attempt_count, o.consumer_version, o.thread_id,
+                               o.consumer, o.attempt_count, o.consumer_version,
+                               COALESCE(o.thread_id,e.thread_id) AS thread_id,
                                e.event_type, e.source
                         FROM agent_outbox o
                         JOIN agent_events e
                           ON e.event_id = o.event_id AND e.tenant_id = o.tenant_id
                         WHERE o.status IN ('pending', 'leased')
+                          AND (%(tenant)s::uuid IS NULL OR o.tenant_id=%(tenant)s::uuid)
                           AND o.available_at <= now()
                           AND o.consumer = ANY(%(consumers)s)
                           AND (o.lease_deadline IS NULL OR o.lease_deadline < now())
@@ -147,7 +156,11 @@ class OutboxWorker:
                         FOR UPDATE OF o SKIP LOCKED
                         LIMIT %(limit)s
                         """,
-                        {"consumers": list(self.consumers), "limit": self.batch_size},
+                        {
+                            "consumers": list(self.consumers),
+                            "limit": self.batch_size,
+                            "tenant": self.tenant_id,
+                        },
                     )
                 ).fetchall()
                 if not rows:
@@ -227,8 +240,12 @@ class OutboxWorker:
                     "SELECT set_config('air_agent.tenant_id', %(t)s, true)",
                     {"t": task.tenant_id},
                 )
-                if task.consumer == "deletion_cleanup":
+                if task.consumer in {"deletion_cleanup", "external_trace_cleanup"}:
                     await self._deletion_scope_guc(conn, task)
+                if task.consumer == "observability_projection":
+                    await conn.execute(
+                        "SELECT set_config('air_agent.agent_operations','on',true)"
+                    )
                 # 1) 代次/租约校验（同一事务内先做，保证不会先副作用后假确认）
                 lease = await (
                     await conn.execute(
@@ -266,6 +283,14 @@ class OutboxWorker:
                 # 3) 副作用
                 if task.consumer == "deletion_cleanup":
                     await self._apply_deletion(conn, task)
+                elif task.consumer == "external_trace_cleanup":
+                    from common.observability.external_cleanup import (
+                        cleanup_thread_traces,
+                    )
+
+                    await cleanup_thread_traces(conn, task)
+                elif task.consumer == "observability_projection":
+                    await self._apply_observability_projection(conn, task)
                 else:
                     await self._apply_run_projection(conn, task)
                 await self._bump_projection(conn, task)
@@ -291,6 +316,25 @@ class OutboxWorker:
             {"u": str(row["user_id"])},
         )
 
+    async def _apply_observability_projection(
+        self, conn: Any, task: OutboxTask
+    ) -> None:
+        await conn.execute(
+            "INSERT INTO agent_observability_projection (tenant_id,consumer,con"
+            "sumer_version,metric_version,last_event_at,projected_at,updated_at"
+            ") VALUES (%(t)s,%(c)s,%(v)s,'obs-v1',(SELECT occurred_at FROM agen"
+            "t_events WHERE tenant_id=%(t)s AND event_id=%(e)s),now(),now()) ON"
+            " CONFLICT(tenant_id,consumer) DO UPDATE SET last_event_at=GREATEST"
+            "(agent_observability_projection.last_event_at,EXCLUDED.last_event_"
+            "at),projected_at=now(),updated_at=now()",
+            {
+                "t": task.tenant_id,
+                "c": task.consumer,
+                "v": task.consumer_version,
+                "e": task.event_id,
+            },
+        )
+
     async def _apply_run_projection(self, conn: Any, task: OutboxTask) -> None:  # noqa: ANN401
         """运行投影：只更新口径状态，不改写业务事实（事实由写入路径维护）."""
         await conn.execute(
@@ -302,6 +346,33 @@ class OutboxWorker:
         if not task.thread_id:
             raise LedgerCleanupUnavailable("event has no thread scope")
         thread_id = task.thread_id
+        await conn.execute("SELECT set_config('air_agent.deletion_cleanup','on',true)")
+        for table in (
+            "agent_feedback_current",
+            "agent_feedback_comments",
+            "agent_feedback_operations",
+        ):
+            exists = await (
+                await conn.execute("SELECT to_regclass(%s)", (table,))
+            ).fetchone()
+            if exists and exists["to_regclass"]:
+                await conn.execute(
+                    f"DELETE FROM {table} WHERE tenant_id=%s AND thread_id=%s",
+                    (task.tenant_id, thread_id),
+                )
+        observations = await (
+            await conn.execute(
+                "SELECT to_regclass('agent_observation_trace_links') AS table_name"
+            )
+        ).fetchone()
+        if observations and observations["table_name"]:
+            await conn.execute(
+                "INSERT INTO agent_outbox (tenant_id,event_id,consumer,status,a"
+                "vailable_at,created_at,updated_at,thread_id) "
+                "VALUES (%s,%s,'external_trace_cleanup','pending',now(),now(),now(),%s) "
+                "ON CONFLICT (tenant_id,event_id,consumer) DO NOTHING",
+                (task.tenant_id, task.event_id, thread_id),
+            )
         deleted = await (
             await conn.execute(
                 "UPDATE agent_content_refs SET deleted_at = now()"
@@ -558,7 +629,8 @@ async def replay(
             await conn.execute(
                 "INSERT INTO agent_ledger_ops_audit"
                 " (tenant_id, operation, actor, dry_run, affected, scope, detail)"
-                " VALUES (%(t)s, 'replay', %(a)s, %(d)s, %(n)s, %(scope)s::jsonb, %(detail)s::jsonb)",
+                " VALUES (%(t)s, 'replay', %(a)s, %(d)s, %(n)s, %(scope)s::json"
+                "b, %(detail)s::jsonb)",
                 {
                     "t": tenant_id,
                     "a": actor,

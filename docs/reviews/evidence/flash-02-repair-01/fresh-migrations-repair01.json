@@ -1,0 +1,11 @@
+{
+  "databases": [
+    "air_agent_rp01_ledger_0a8418ae",
+    "air_agent_rp01_api_0a8418ae",
+    "air_agent_rp01_rls_0a8418ae"
+  ],
+  "head": "0008",
+  "worker": "random_nonowner_test_role",
+  "migration": "0001_to_0008",
+  "notes": "3 套新空 PG；专用非 owner worker 已按 0007+0008 授权；未使用业务库"
+}

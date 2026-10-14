@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 from langchain_core.messages import HumanMessage
+from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from loguru import logger
 from pydantic import BaseModel, Field
@@ -103,7 +104,7 @@ async def websearch_tool(query: str, top_k: int = 5) -> Dict[str, Any]:
             resp.raise_for_status()
             data = resp.json()
     except Exception as e:
-        logger.error(f"websearch_tool 调用失败: {e}")
+        logger.error("websearch_tool 调用失败: category={}", type(e).__name__)
         return {"snippets": [], "links": [], "error": str(e)}
 
     organic = data.get("organic", []) or []
@@ -122,7 +123,7 @@ async def websearch_tool(query: str, top_k: int = 5) -> Dict[str, Any]:
 
 
 @tool
-def parse_region_tool(question: str) -> Dict[str, Any]:
+def parse_region_tool(question: str, config: RunnableConfig) -> Dict[str, Any]:
     """解析用户问题中的行政区划信息,支持省市区的展开和查询.
 
     当用户问题包含省/市/区等地名且需要解析其下级区域列表时调用此工具。
@@ -170,6 +171,8 @@ def parse_region_tool(question: str) -> Dict[str, Any]:
         # deepseek 通道不支持强制结构化输出,改用 bind_tools(auto) +
         # 显式提示要求调用工具,再用 Pydantic 校验 tool_calls 参数。
         model_with_tool = ModelRegistry.main_llm.bind_tools([RegionExtraction])
+        from common.observability.model_adapter import invocation_config
+
         response = model_with_tool.invoke(
             [
                 HumanMessage(
@@ -179,7 +182,8 @@ def parse_region_tool(question: str) -> Dict[str, Any]:
                         "不要直接以文本回答。"
                     )
                 )
-            ]
+            ],
+            config=invocation_config(dict(config or {}), role="normalizer"),
         )
         tool_calls = getattr(response, "tool_calls", None) or []
         extraction_result = (
@@ -187,7 +191,7 @@ def parse_region_tool(question: str) -> Dict[str, Any]:
             if tool_calls
             else None
         )
-        logger.debug(f"LLM 提取结果: {extraction_result}")
+        logger.debug("区域抽取完成: has_result={}", extraction_result is not None)
 
         if extraction_result and extraction_result.items:
             municipalities = ["北京市", "上海市", "天津市", "重庆市"]
@@ -324,7 +328,7 @@ def parse_region_tool(question: str) -> Dict[str, Any]:
         }
 
     except Exception as e:
-        logger.error(f"区划解析失败: {e}")
+        logger.error("区划解析失败: category={}", type(e).__name__)
         return {"has_region": False, "regions": [], "raw_entities": []}
 
 

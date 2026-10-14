@@ -1,0 +1,21 @@
+{
+  "check": "Langfuse v4 events_only 真实写入/flush/回读",
+  "date": "2026-10-13",
+  "deployment": {
+    "mode": "events_only（/api/public/traces/{id} 404 属预期，v4 读路径在 events_core）",
+    "stack": ["langfuse-web:4", "langfuse-worker:4", "clickhouse:25.12", "postgres:17", "minio", "redis:7"],
+    "project": "air-agent"
+  },
+  "incidents": [
+    {"issue": "events_core 无新行", "root_cause": "langfuse-worker 容器未启动（otel-ingestion-queue 积压 16）", "fix": "container start air-agent-langfuse-worker", "verified": "队列清零、events_core 出现写入"},
+    {"issue": "clickhouse 查询 OOM", "root_cause": "容器内存 1g，主 compose 建议 2g", "fix": "重建为 --memory 2g（保留原数据卷）", "verified": "查询正常"}
+  ],
+  "write_path": "SDK 4.15.6 OTEL span → POST /api/public/otel/v1/traces (200) → Redis bull:otel-ingestion-queue → worker → ClickHouse events_core",
+  "verified_trace_ids": [
+    "b51b9328b8be67fdbf2763c1ca5fc546",
+    "e5fbb58335abad8c8d982ea3add605a6",
+    "44c28b64342e968d3dbcf7d93d4b6149"
+  ],
+  "readback": "events_core SELECT 按 trace_id/name 命中，project_id=air-agent",
+  "no_content_leak": "测试 span 只带 metadata 标识（project_scope/run），无 input/output 正文"
+}

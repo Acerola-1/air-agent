@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import datetime as dt
 import json
 import uuid
 from functools import lru_cache
@@ -34,6 +35,14 @@ class Settings(BaseSettings):
         extra="ignore",
         case_sensitive=False,
     )
+
+    agent_interactions_enabled: bool = False
+    agent_interactions_enabled_at: dt.datetime | None = None
+
+    @field_validator("agent_interactions_enabled_at", mode="before")
+    @classmethod
+    def empty_collection_timestamp(cls, value):
+        return None if value == "" else value
 
     ledger_content_retention_days: int = Field(default=90, ge=1, le=3650)
     ledger_content_retention_days_by_tenant: dict[str, int] = Field(default_factory=dict)

@@ -1,0 +1,13 @@
+{
+  "cases": 24,
+  "unchanged_explicit_graph_cases": 12,
+  "explicit_source": "runtime-matrix-before-graph-name-fix.json",
+  "reverified_deepagents_cases": 12,
+  "deepagents_source": "runtime-deep-final.json",
+  "merge_key": [
+    "channel",
+    "graph",
+    "stream"
+  ],
+  "note": "只替换受图标识修复影响的三图12条；历史未知状态保留在修复前证据。"
+}

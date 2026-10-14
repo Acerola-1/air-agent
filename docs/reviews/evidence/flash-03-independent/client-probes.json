@@ -1,0 +1,25 @@
+{
+  "late_mapping": {
+    "scope": "synthetic-tenant-B:synthetic-user",
+    "cached_old_answer": "synthetic-answer-A"
+  },
+  "negative_cache": {
+    "requests": 1,
+    "answer_after_confirmation": "",
+    "feedbackable": false
+  },
+  "late_submit": {
+    "scope": "synthetic-tenant-B:synthetic-user",
+    "old_result": {
+      "ok": true,
+      "rating": "positive",
+      "revision": 1
+    }
+  },
+  "queue_scope_race": {
+    "sent_answer_ids": [
+      "synthetic-answer-A"
+    ],
+    "queued_after_old_response": 0
+  }
+}

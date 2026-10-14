@@ -540,14 +540,14 @@ async def test_browser_events_all_reserved_types_rejected(ledger_env) -> None:
         assert body["accepted"] is False
         assert body["items"][0]["reason"] == "source_not_allowed"
         assert body["written"] == 0
-        # 预留类型：明确未启用
-        reserved = dict(forged, event_type="browser.feedback", source="browser")
+        # runtime五类仅允许可信执行侧，浏览器伪造必须继续拒绝。
+        reserved = dict(forged, event_type="runtime.model_usage", source="browser")
         res2 = await client.post(
             "/agent/events/browser",
             json={"events": [reserved]},
             headers={"origin": "http://localhost:3000"},
         )
-        assert res2.json()["items"][0]["reason"] == "type_not_enabled"
+        assert res2.json()["items"][0]["reason"] == "source_not_allowed"
     finally:
         await client.aclose()
 

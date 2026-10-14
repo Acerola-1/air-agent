@@ -64,23 +64,30 @@ test('browser cannot claim server terminal facts', () => {
 });
 
 test('reserved types are registered but rejected as not enabled', () => {
+  // change-3 启用 browser.feedback/copy/timing 后，预留集合精确为 runtime 五类；
+  // 非法来源（browser 声明 runtime 事实）仍被拒绝。
   const reserved = reservedEventTypes(canonicalRegistry);
-  assert.ok(reserved.length >= 8);
-  assert.ok(reserved.includes('browser.feedback'));
-  assert.ok(reserved.includes('runtime.model_usage'));
-  assert.ok(!enabledEventTypes(canonicalRegistry).includes('browser.feedback'));
+  assert.deepEqual([...reserved].sort(), []);
 });
 
-test('enabled types equal the v1 core family', () => {
+test('enabled types equal core plus browser and runtime', () => {
   assert.deepEqual(enabledEventTypes(canonicalRegistry).sort(), [
     'answer.confirmed',
     'answer.partial',
+    'browser.copy',
+    'browser.feedback',
+    'browser.timing',
     'request.accepted',
     'resource.deleted',
     'run.admission_confirmed',
     'run.cancel_requested',
     'run.resumed',
     'run.state_observed',
+    'runtime.cost',
+    'runtime.model_usage',
+    'runtime.span',
+    'runtime.tool_call',
+    'runtime.ttft',
     'trace.linked',
   ]);
 });

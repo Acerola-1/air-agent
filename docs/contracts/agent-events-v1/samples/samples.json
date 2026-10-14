@@ -1,8 +1,4 @@
 {
-  "contract": "agent-events-samples",
-  "major_version": 1,
-  "status": "freeze_candidate",
-  "produced_by": "anonymous-02/add-agent-event-ledger",
   "fixtures": {
     "tenant_id": "11111111-1111-4111-8111-111111111111",
     "user_id": "22222222-2222-4222-8222-222222222222",
@@ -12,25 +8,14 @@
     "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
     "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
   },
-  "reason_codes": {
-    "ok": "通过",
-    "unknown_type": "事件类型未登记",
-    "type_not_enabled": "类型已登记但当前未启用（含第 3/5 预留）",
-    "source_not_allowed": "来源不允许提交该类型的事实",
-    "missing_field": "缺少信封必填字段",
-    "missing_required_payload_field": "缺少类型要求的载荷字段",
-    "forbidden_payload_key": "载荷含禁止键（票据/凭据/全文）",
-    "payload_field_not_allowed": "载荷字段不在白名单",
-    "invalid_enum_value": "载荷枚举值不在字典内（如 state/origin/evidence_source）",
-    "schema_version_unsupported": "未知主版本",
-    "bad_timestamp": "occurred_at 非法或非 UTC-Z",
-    "bad_uuid": "标识不是合法 UUID",
-    "payload_too_large": "单条载荷超限"
-  },
+  "produced_by": "anonymous-03/add-chat-feedback-interactions",
   "cases": [
     {
       "name": "request-accepted-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -43,12 +28,18 @@
         "thread_id": "t-1001",
         "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+        "payload": {
+          "graph_id": "basic-qa",
+          "operation_kind": "initial"
+        }
       }
     },
     {
       "name": "run-admission-confirmed-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -69,7 +60,10 @@
     },
     {
       "name": "run-state-observed-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -92,7 +86,10 @@
     },
     {
       "name": "run-cancel-requested-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -103,12 +100,18 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "payload": { "origin": "user_stop", "phase": "processing" }
+        "payload": {
+          "origin": "user_stop",
+          "phase": "processing"
+        }
       }
     },
     {
       "name": "run-resumed-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -119,12 +122,18 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "payload": { "resume_index": 1, "platform_run_id": "01a1310a-6f50-7d42-a474-140b4703f275" }
+        "payload": {
+          "resume_index": 1,
+          "platform_run_id": "01a1310a-6f50-7d42-a474-140b4703f275"
+        }
       }
     },
     {
       "name": "answer-confirmed-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -137,12 +146,18 @@
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
         "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
         "message_id": "09a56546-3370-4efc-b412-f6826cc5c27c",
-        "payload": { "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd", "content_version": 1 }
+        "payload": {
+          "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "content_version": 1
+        }
       }
     },
     {
       "name": "answer-partial-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -153,12 +168,18 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "payload": { "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd", "content_version": 1 }
+        "payload": {
+          "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "content_version": 1
+        }
       }
     },
     {
       "name": "trace-linked-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -180,7 +201,10 @@
     },
     {
       "name": "resource-deleted-valid",
-      "expect": { "valid": true, "reason": "ok" },
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -191,12 +215,19 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "thread_id": "t-1001",
-        "payload": { "resource_type": "thread", "resource_id": "t-1001", "deletion_state": "requested" }
+        "payload": {
+          "resource_type": "thread",
+          "resource_id": "t-1001",
+          "deletion_state": "requested"
+        }
       }
     },
     {
       "name": "browser-terminal-claim-invalid",
-      "expect": { "valid": false, "reason": "source_not_allowed" },
+      "expect": {
+        "valid": false,
+        "reason": "source_not_allowed"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -207,12 +238,19 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "payload": { "state": "succeeded", "evidence_source": "browser_observed", "state_revision": 1 }
+        "payload": {
+          "state": "succeeded",
+          "evidence_source": "browser_observed",
+          "state_revision": 1
+        }
       }
     },
     {
       "name": "unknown-type-invalid",
-      "expect": { "valid": false, "reason": "unknown_type" },
+      "expect": {
+        "valid": false,
+        "reason": "unknown_type"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -227,7 +265,10 @@
     },
     {
       "name": "future-major-version-invalid",
-      "expect": { "valid": false, "reason": "schema_version_unsupported" },
+      "expect": {
+        "valid": false,
+        "reason": "schema_version_unsupported"
+      },
       "event": {
         "schema_version": "2.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -237,12 +278,18 @@
         "tenant_id": "11111111-1111-4111-8111-111111111111",
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
-        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+        "payload": {
+          "graph_id": "basic-qa",
+          "operation_kind": "initial"
+        }
       }
     },
     {
       "name": "missing-tenant-invalid",
-      "expect": { "valid": false, "reason": "missing_field" },
+      "expect": {
+        "valid": false,
+        "reason": "missing_field"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -251,12 +298,18 @@
         "source": "server",
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
-        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+        "payload": {
+          "graph_id": "basic-qa",
+          "operation_kind": "initial"
+        }
       }
     },
     {
       "name": "forbidden-payload-key-invalid",
-      "expect": { "valid": false, "reason": "forbidden_payload_key" },
+      "expect": {
+        "valid": false,
+        "reason": "forbidden_payload_key"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -275,7 +328,10 @@
     },
     {
       "name": "payload-field-not-allowed-invalid",
-      "expect": { "valid": false, "reason": "payload_field_not_allowed" },
+      "expect": {
+        "valid": false,
+        "reason": "payload_field_not_allowed"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -293,8 +349,11 @@
       }
     },
     {
-      "name": "reserved-browser-type-not-enabled-invalid",
-      "expect": { "valid": false, "reason": "type_not_enabled" },
+      "name": "browser-feedback-envelope-valid-rating-raw-value",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -305,12 +364,18 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-        "payload": { "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd", "rating": 1 }
+        "payload": {
+          "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "rating": 1
+        }
       }
     },
     {
-      "name": "reserved-runtime-type-not-enabled-invalid",
-      "expect": { "valid": false, "reason": "type_not_enabled" },
+      "name": "integrated-runtime-type-contract-case",
+      "expect": {
+        "valid": false,
+        "reason": "missing_required_payload_field"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -321,12 +386,19 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "payload": { "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc", "model": "gpt-x", "total_tokens": 1 }
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "model": "gpt-x",
+          "total_tokens": 1
+        }
       }
     },
     {
       "name": "bad-occurred-at-invalid",
-      "expect": { "valid": false, "reason": "bad_timestamp" },
+      "expect": {
+        "valid": false,
+        "reason": "bad_timestamp"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -336,12 +408,18 @@
         "tenant_id": "11111111-1111-4111-8111-111111111111",
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
-        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+        "payload": {
+          "graph_id": "basic-qa",
+          "operation_kind": "initial"
+        }
       }
     },
     {
       "name": "bad-uuid-invalid",
-      "expect": { "valid": false, "reason": "bad_uuid" },
+      "expect": {
+        "valid": false,
+        "reason": "bad_uuid"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "not-a-uuid",
@@ -351,12 +429,18 @@
         "tenant_id": "11111111-1111-4111-8111-111111111111",
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
-        "payload": { "graph_id": "basic-qa", "operation_kind": "initial" }
+        "payload": {
+          "graph_id": "basic-qa",
+          "operation_kind": "initial"
+        }
       }
     },
     {
       "name": "missing-required-payload-field-invalid",
-      "expect": { "valid": false, "reason": "missing_required_payload_field" },
+      "expect": {
+        "valid": false,
+        "reason": "missing_required_payload_field"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -367,12 +451,18 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "payload": { "state": "succeeded", "evidence_source": "platform_read" }
+        "payload": {
+          "state": "succeeded",
+          "evidence_source": "platform_read"
+        }
       }
     },
     {
       "name": "unknown-state-value-invalid",
-      "expect": { "valid": false, "reason": "invalid_enum_value" },
+      "expect": {
+        "valid": false,
+        "reason": "invalid_enum_value"
+      },
       "event": {
         "schema_version": "1.0",
         "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -383,8 +473,630 @@
         "user_id": "22222222-2222-4222-8222-222222222222",
         "membership_id": "33333333-3333-4333-8333-333333333333",
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "payload": { "state": "probably_fine", "evidence_source": "platform_read", "state_revision": 1 }
+        "payload": {
+          "state": "probably_fine",
+          "evidence_source": "platform_read",
+          "state_revision": 1
+        }
+      }
+    },
+    {
+      "name": "browser-feedback-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.feedback",
+        "occurred_at": "2026-10-13T03:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "rating": "positive",
+          "client_operation_id": "op-feedback-0001"
+        }
+      }
+    },
+    {
+      "name": "browser-feedback-bad-rating-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "payload_field_not_allowed"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.feedback",
+        "occurred_at": "2026-10-13T03:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "rating": "positive",
+          "score": 5
+        }
+      }
+    },
+    {
+      "name": "browser-feedback-missing-rating-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "missing_required_payload_field"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.feedback",
+        "occurred_at": "2026-10-13T03:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+        }
+      }
+    },
+    {
+      "name": "browser-copy-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.copy",
+        "occurred_at": "2026-10-13T03:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "copy_scope": "full",
+          "client_operation_id": "op-copy-0001"
+        }
+      }
+    },
+    {
+      "name": "browser-copy-missing-answer-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "missing_required_payload_field"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.copy",
+        "occurred_at": "2026-10-13T03:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "copy_scope": "full"
+        }
+      }
+    },
+    {
+      "name": "browser-timing-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.timing",
+        "occurred_at": "2026-10-13T03:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "clock": "monotonic",
+          "measurement_id": "m-1",
+          "first_visible_answer_ms": 1200,
+          "display_complete_ms": 3400,
+          "progress_seen": true,
+          "completion_state": "complete"
+        }
+      },
+      "extra": {
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+      }
+    },
+    {
+      "name": "browser-timing-missing-clock-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "missing_required_payload_field"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.timing",
+        "occurred_at": "2026-10-13T03:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "first_visible_answer_ms": 100
+        }
+      }
+    },
+    {
+      "name": "integrated-runtime-still-contract-case",
+      "expect": {
+        "valid": false,
+        "reason": "source_not_allowed"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "runtime.model_usage",
+        "occurred_at": "2026-10-13T03:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "model": "gpt-x",
+          "input_tokens": 1,
+          "output_tokens": 1,
+          "total_tokens": 2
+        },
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+      }
+    },
+    {
+      "name": "integrated-browser-type-contract-case",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "browser.feedback",
+        "occurred_at": "2026-10-13T02:20:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        "payload": {
+          "answer_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "rating": 1
+        }
+      }
+    },
+    {
+      "name": "runtime-model-usage-numeric-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "role": "main",
+          "input_tokens": 1000,
+          "output_tokens": 200,
+          "total_tokens": 1200,
+          "cache_read_tokens": 400,
+          "reasoning_tokens": 50,
+          "measurement_status": "measured",
+          "usage_source": "provider_final"
+        }
+      }
+    },
+    {
+      "name": "runtime-model-usage-string-tokens-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "usage_tokens_not_non_negative_int"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "role": "main",
+          "input_tokens": "1000",
+          "output_tokens": 200,
+          "total_tokens": 1200,
+          "cache_read_tokens": 400,
+          "reasoning_tokens": 50,
+          "measurement_status": "measured",
+          "usage_source": "provider_final"
+        }
+      }
+    },
+    {
+      "name": "runtime-model-usage-negative-tokens-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "usage_tokens_not_non_negative_int"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "role": "main",
+          "input_tokens": 1000,
+          "output_tokens": -5,
+          "total_tokens": 1200,
+          "cache_read_tokens": 400,
+          "reasoning_tokens": 50,
+          "measurement_status": "measured",
+          "usage_source": "provider_final"
+        }
+      }
+    },
+    {
+      "name": "runtime-model-usage-bool-tokens-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "usage_tokens_not_non_negative_int"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "role": "main",
+          "input_tokens": 1000,
+          "output_tokens": 200,
+          "total_tokens": true,
+          "cache_read_tokens": 400,
+          "reasoning_tokens": 50,
+          "measurement_status": "measured",
+          "usage_source": "provider_final"
+        }
+      }
+    },
+    {
+      "name": "runtime-model-usage-nested-secret-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "forbidden_payload_key"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "role": "main",
+          "input_tokens": 1000,
+          "output_tokens": 200,
+          "total_tokens": 1200,
+          "cache_read_tokens": 400,
+          "reasoning_tokens": 50,
+          "measurement_status": "measured",
+          "usage_source": "provider_final",
+          "extra": {
+            "api_key": "x"
+          }
+        }
+      }
+    },
+    {
+      "name": "runtime-model-usage-nested-tokens-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "payload_field_not_allowed"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "role": "main",
+          "input_tokens": 1000,
+          "output_tokens": 200,
+          "total_tokens": 1200,
+          "cache_read_tokens": 400,
+          "reasoning_tokens": 50,
+          "measurement_status": "measured",
+          "usage_source": "provider_final",
+          "detail": {
+            "input_tokens": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "runtime-model-usage-browser-source-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "source_not_allowed"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "role": "main",
+          "input_tokens": 1000,
+          "output_tokens": 200,
+          "total_tokens": 1200,
+          "cache_read_tokens": 400,
+          "reasoning_tokens": 50,
+          "measurement_status": "measured",
+          "usage_source": "provider_final"
+        }
+      }
+    },
+    {
+      "name": "runtime-ttft-input-tokens-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "forbidden_payload_key"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.ttft",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "ttft_ms": 120,
+          "clock": "monotonic",
+          "first_piece_kind": "reasoning",
+          "measurement_status": "measured",
+          "input_tokens": 5
+        }
+      }
+    },
+    {
+      "name": "runtime-ttft-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.ttft",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "ttft_ms": 120,
+          "clock": "monotonic",
+          "first_piece_kind": "reasoning",
+          "measurement_status": "measured"
+        }
+      }
+    },
+    {
+      "name": "runtime-cost-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.cost",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "amount": "0.0031",
+          "currency": "CNY",
+          "price_ref": "pv-0001",
+          "calculation_revision": 1,
+          "measurement_status": "measured"
+        }
+      }
+    },
+    {
+      "name": "runtime-span-skill-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.span",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "span_kind": "skill",
+          "span_name": "air-quality-basic-query",
+          "stage": "executed",
+          "status": "succeeded",
+          "duration_ms": 340,
+          "skill_id": "air-quality-basic-query",
+          "skill_version": "1",
+          "selection_source": "semantic-router"
+        }
+      }
+    },
+    {
+      "name": "runtime-tool-call-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.tool_call",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "logical_call_id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+          "tool_name": "query_air_quality",
+          "service_key": "ipp",
+          "tool_call_id": "call-1",
+          "retry_index": 0,
+          "status": "empty_result",
+          "duration_ms": 88
+        }
+      }
+    },
+    {
+      "name": "runtime-tool-call-args-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "payload_field_not_allowed"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.tool_call",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "tool_name": "query_air_quality",
+          "status": "succeeded",
+          "args": {
+            "city": "北京"
+          }
+        }
       }
     }
-  ]
+  ],
+  "major_version": 1,
+  "contract": "agent-events-samples",
+  "status": "freeze_candidate",
+  "reason_codes": {
+    "ok": "通过",
+    "unknown_type": "事件类型未登记",
+    "type_not_enabled": "类型已登记但当前未启用（含第 3/5 预留）",
+    "source_not_allowed": "来源不允许提交该类型的事实",
+    "missing_field": "缺少信封必填字段",
+    "missing_required_payload_field": "缺少类型要求的载荷字段",
+    "forbidden_payload_key": "载荷含禁止键（票据/凭据/全文）",
+    "payload_field_not_allowed": "载荷字段不在白名单",
+    "invalid_enum_value": "载荷枚举值不在字典内（如 state/origin/evidence_source）",
+    "schema_version_unsupported": "未知主版本",
+    "bad_timestamp": "occurred_at 非法或非 UTC-Z",
+    "bad_uuid": "标识不是合法 UUID",
+    "payload_too_large": "单条载荷超限",
+    "usage_tokens_not_non_negative_int": "runtime.model_usage 顶层登记数字键必须是非负整数（窄例外；字符串/bool/负数/浮点拒绝）"
+  }
 }

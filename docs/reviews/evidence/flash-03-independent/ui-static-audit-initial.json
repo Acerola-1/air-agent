@@ -1,0 +1,23 @@
+{
+  "findings": [
+    {
+      "category": "unresolved",
+      "file": "/Users/acerola/.codex/worktrees/feedback-03/air_agent/premium-audit.json",
+      "line": null,
+      "message": "Audit report artifact cannot be written: [Errno 1] Operation not permitted: '/Users/acerola/.codex/worktrees/feedback-03/air_agent/premium-audit.json'",
+      "remediation": "Choose a writable --output file or pass --no-write for stdout-only inspection.",
+      "ruleId": "output.write-failed",
+      "severity": "error"
+    }
+  ],
+  "mode": "strict",
+  "projectRoot": "/Users/acerola/.codex/worktrees/feedback-03/air_agent",
+  "schemaVersion": 1,
+  "summary": {
+    "errors": 1,
+    "total": 1,
+    "unresolved": 1,
+    "violations": 0,
+    "warnings": 0
+  }
+}

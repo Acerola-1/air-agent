@@ -1,0 +1,33 @@
+{
+  "boundary": "受控候选和模型；真实文件、DeepAgents工具执行器、身份核验和PG",
+  "spans": [
+    {
+      "stage": "matched",
+      "status": null,
+      "skill_version": null
+    },
+    {
+      "stage": "selected",
+      "status": null,
+      "skill_version": null
+    },
+    {
+      "stage": "loaded",
+      "status": "failed",
+      "skill_version": null
+    }
+  ],
+  "body_in_events": false,
+  "collector": {
+    "enqueued": 7,
+    "written": 7,
+    "dropped": 0,
+    "failed": 0,
+    "retries": 0,
+    "queue_size": 0,
+    "in_flight": 0,
+    "pending": 0,
+    "queue_high_watermark": 6,
+    "last_drop_reason": ""
+  }
+}

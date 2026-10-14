@@ -1,0 +1,12 @@
+{
+  "dropped_databases": [
+    "air_agent_ivrp01_ledger_94cd10cf",
+    "air_agent_ivrp01_api_94cd10cf",
+    "air_agent_ivrp01_rls_94cd10cf",
+    "air_agent_ivrp01_restore_70f85d2a"
+  ],
+  "dropped_test_worker_role": "ivrp01_ledger_worker_94cd10cf",
+  "remaining_databases": [],
+  "role_exists": false,
+  "scope": "only unique databases/role created by coordinator in this independent repair review; shared volumes and author environments preserved"
+}

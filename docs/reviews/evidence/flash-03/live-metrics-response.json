@@ -1,0 +1,44 @@
+{
+ "metric_version": "fb-v1",
+ "window": {
+  "start": "2026-10-06T15:32:11.260519+00:00",
+  "end": "2026-10-13T15:32:11.260519+00:00",
+  "half_open": "[start, end)"
+ },
+ "as_of": "2026-10-13T15:32:11.271691+00:00",
+ "data_lag_seconds": null,
+ "collection_enabled_at": "2026-10-13T14:00:00+00:00",
+ "feedback": {
+  "eligible_answers": 9,
+  "rated_answers": 2,
+  "positive": 2,
+  "negative": 0,
+  "satisfaction_rate": 1.0,
+  "coverage_rate": 0.2222,
+  "not_collected_answers": 0
+ },
+ "copy": {
+  "eligible_copyable_answers": 9,
+  "copy_events": 3,
+  "distinct_copied_answers": 1,
+  "copy_rate": 0.1111,
+  "not_collected_answers": 0
+ },
+ "browser_timing": {
+  "first_visible_answer": {
+   "count": 2,
+   "p50_ms": 2614.0,
+   "p95_ms": 2910.1,
+   "p99_ms": 2936.42
+  },
+  "display_complete": {
+   "count": 2,
+   "p50_ms": 2941.5,
+   "p95_ms": 3230.85,
+   "p99_ms": 3256.5699999999997
+  },
+  "invalid_measurements": 0,
+  "missing_measurements": 7,
+  "measurement_source": "browser_monotonic"
+ }
+}

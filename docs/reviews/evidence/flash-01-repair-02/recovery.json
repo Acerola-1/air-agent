@@ -1,0 +1,14 @@
+{
+  "schema": "0006",
+  "mode": "isolated_pg",
+  "checks": {
+    "before_cutover_restore": true,
+    "restored_schema_head": true,
+    "original_password_preserved": true,
+    "forward_repair_idempotent": true,
+    "new_writes_preserved": true,
+    "identity_preserved": true,
+    "rls_preserved": true
+  },
+  "passed": true
+}

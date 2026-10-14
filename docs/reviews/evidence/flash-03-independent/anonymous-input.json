@@ -1,0 +1,182 @@
+{
+  "run": "03",
+  "change": "add-chat-feedback-interactions",
+  "first_delivery_minutes": 131,
+  "duration_source": "用户明确提供2小时11分钟；不以作者估算7.3小时替代",
+  "head": "0f2cd027941cdb6fa773ef8aba41940e692b7e52",
+  "worktree": "/Users/acerola/.codex/worktrees/feedback-03/air_agent",
+  "status": "待独立验收",
+  "coordinator_product_changes": false,
+  "files": [
+    {
+      "path": "admin/api/app/main.py",
+      "sha256": "0a314754967958e4beaf5cf8c238d654b87495a2d2ff36aa586c60aa872e0fe3",
+      "bytes": 2906
+    },
+    {
+      "path": "admin/api/app/models.py",
+      "sha256": "95d9a37c54cf784826f331e7399204623b3adcc61344b8b85f0f9a9790d2ce7a",
+      "bytes": 29011
+    },
+    {
+      "path": "admin/api/app/models_feedback.py",
+      "sha256": "32bb1362aace79514f0c3709d6f60cb510b571b00c79fb8ebdd48d5d0a4c8d0a",
+      "bytes": 7075
+    },
+    {
+      "path": "admin/api/app/routers/feedback.py",
+      "sha256": "30fbbd6d3b76581453392503feded2fdd1310b2263ddd333f64b3d17781ffbfb",
+      "bytes": 7118
+    },
+    {
+      "path": "admin/api/app/services/feedback.py",
+      "sha256": "0a84bdef8c3a6fd739508c05f25a3aab29426d2bdde6e3be5d9c05a344c2ce36",
+      "bytes": 22141
+    },
+    {
+      "path": "admin/api/app/services/feedback_metrics.py",
+      "sha256": "73b08469d0298ea0c230b54d105efd2e001571e777d27dd00843ffd9a06d2011",
+      "bytes": 8312
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "sha256": "f3d320f2c4863a4aab4488b0718acd8ec48da7151cf0c915dc46bf1b9f07ea42",
+      "bytes": 97347
+    },
+    {
+      "path": "admin/api/migrations/versions/0011_feedback.py",
+      "sha256": "c13ef217ee1668110cede25b9bb0be0da46cea72fbd740f5b1ff4d2db1bef2a1",
+      "bytes": 10009
+    },
+    {
+      "path": "admin/api/tests/test_event_ledger_api.py",
+      "sha256": "a5d2d4b9a297897277d7c9244abef0fb49d3799b0614a63dc81e85531a342f0f",
+      "bytes": 76068
+    },
+    {
+      "path": "admin/api/tests/test_feedback_api.py",
+      "sha256": "0860124e72b3c625ea16a045f297d0cf8dadf763684855a122550fe1927a708d",
+      "bytes": 24523
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "sha256": "9df0cf91ecba2696c2af86a3f8b91be611d964da92cf1982d82c75539ed5f65d",
+      "bytes": 10441
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/openapi-agent-ledger.json",
+      "sha256": "f81d1cebda8d4d3c8a6794468573263bc4dffde22e67522c6dd8bde6fa742bf5",
+      "bytes": 35717
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "sha256": "bbfa484bcd4970486d763f08d08dbfedddb39a4cd9851ff15f131c06d117ff5d",
+      "bytes": 23233
+    },
+    {
+      "path": "docs/reviews/chat-feedback-interactions-acceptance.md",
+      "sha256": "57e726434b8ffc160f176ded66dcc48d141311a32dcd5a8debf35d8c6d9e141c",
+      "bytes": 17785
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-cancelled.png",
+      "sha256": "596496da8608229a66cf0673b3ec9bf97620f49974a6ec49051c1149a516c814",
+      "bytes": 113335
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-dislike-saved.png",
+      "sha256": "83c402f2a9ae88a2187c019af750ba7d25498aaf3b45c0da630b66d6cf626c89",
+      "bytes": 114033
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-like-copy.png",
+      "sha256": "6235bed2e8998150dcf435290d9586f9595d82170b2c0583ba8d56c15310a20f",
+      "bytes": 113735
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/live-db-counts.txt",
+      "sha256": "a18d1784eda2c8235c110d785cfb1b993d27e117b332da15eebf9c285044522b",
+      "bytes": 262
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/live-metrics-response.json",
+      "sha256": "1f8faf59ef0f9c38c76532d02e5f09c7a03dc9774b4fa3c8ee7445049ad8456f",
+      "bytes": 991
+    },
+    {
+      "path": "frontend/app/api/agent-events/browser/route.ts",
+      "sha256": "4f5cfa691edc54f81d3d0249c1fd04de685ffde075505f25144bc71919aec773",
+      "bytes": 1514
+    },
+    {
+      "path": "frontend/app/api/feedback/answers/[answerId]/route.ts",
+      "sha256": "9d5a3a0fbb2e1580c460d218bb8918b97da94f30d9144b9b0f75acbeb2703d3f",
+      "bytes": 1705
+    },
+    {
+      "path": "frontend/app/api/feedback/answers/route.ts",
+      "sha256": "104f7f9b71bcd6d702edffb7044ac0851b8384b4f6049e2a2a47541e3f30d76c",
+      "bytes": 1786
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "sha256": "8a6f0ef79df12c70d9df358526ffdf07c3a5ed2a48e926861ed07121ae1f7016",
+      "bytes": 22587
+    },
+    {
+      "path": "frontend/components/chat/feedback/FeedbackBar.tsx",
+      "sha256": "e7f09eb767b046a1cc71fc8efd643eeda9c0fa6372c1911df04e05c1a5c1a254",
+      "bytes": 8457
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "sha256": "b5f5b486af061b61811b741f7cb9eac4d5d708e72264d349b1ca06aa2c7d39aa",
+      "bytes": 14260
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "sha256": "6f610d71108302063c47df77a81eab39a52d694b698427518a415e7f4319e641",
+      "bytes": 26494
+    },
+    {
+      "path": "frontend/lib/feedback/client.ts",
+      "sha256": "b64ab0fdfe29bc06fa79b7e38f7cb09506b3ecf1d9fabe67d80ca7b492714788",
+      "bytes": 12836
+    },
+    {
+      "path": "frontend/lib/session-client.ts",
+      "sha256": "91d49baca81e28426c6c9ee70cbf502abaf00cdf7d5e595dfe41e7d7f0840054",
+      "bytes": 5014
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "sha256": "937b54ca2aeaaf523d42d44e8994c546b302c43d7850047acbb908d1424e6651",
+      "bytes": 4975
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "sha256": "1d5df73e0bd91edd52a266467c1e3d62289572c2b6e96808d3e67f83d961b632",
+      "bytes": 35636
+    },
+    {
+      "path": "openspec/changes/add-chat-feedback-interactions/tasks.md",
+      "sha256": "7c1116e26d83a1e39c4ee3a2d18d22f52e12c69de66e964ac7a0e84825612191",
+      "bytes": 5807
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "sha256": "9df0cf91ecba2696c2af86a3f8b91be611d964da92cf1982d82c75539ed5f65d",
+      "bytes": 10441
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "sha256": "bbfa484bcd4970486d763f08d08dbfedddb39a4cd9851ff15f131c06d117ff5d",
+      "bytes": 23233
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "sha256": "fdcc44766561e52a0d26d0c14c721e1207bb2824beee4876918f2cca13dd35a1",
+      "bytes": 6569
+    }
+  ]
+}

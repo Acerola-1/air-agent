@@ -1,0 +1,7 @@
+{
+  "old_network": "192.168.64.0/24",
+  "new_network": "192.168.66.0/24",
+  "primary_configuration_changed": false,
+  "owned_langfuse_web_port": 3008,
+  "source": "current container inspect network status"
+}

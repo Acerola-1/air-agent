@@ -1,0 +1,56 @@
+{
+  "service_run": {
+    "status": 200,
+    "contains_private_text": true,
+    "response_keys": [
+      "run_id",
+      "thread_id",
+      "assistant_id",
+      "created_at",
+      "updated_at",
+      "status",
+      "metadata",
+      "kwargs",
+      "multitask_strategy",
+      "langsmith_session_name"
+    ]
+  },
+  "service_state": {
+    "status": 200,
+    "contains_private_text": true,
+    "response_keys": [
+      "values",
+      "next",
+      "tasks",
+      "metadata",
+      "created_at",
+      "checkpoint",
+      "parent_checkpoint",
+      "interrupts",
+      "checkpoint_id",
+      "parent_checkpoint_id"
+    ]
+  },
+  "service_history": {
+    "status": 200,
+    "contains_private_text": true,
+    "response_keys": [
+      "list"
+    ]
+  },
+  "run_counts": {
+    "user": 1,
+    "service": 0
+  },
+  "user_after_logout": 401,
+  "reconcile": [
+    {
+      "action": "admission_released",
+      "detail": "no_platform_run_id;1"
+    }
+  ],
+  "claim_released": true,
+  "same_submission_retry_status": 200,
+  "platform_runs_after_retry": 2,
+  "cleanup": 204
+}

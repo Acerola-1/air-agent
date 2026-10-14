@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 /** 左侧线程列表：按 graph_id + user_id 过滤（由 chat-store.loadThreads 处理），
  *  支持新建 / 切换 / 删除。搜索为客户端过滤（MVP 够用）。 */
-export function ThreadSidebar() {
+export function ThreadSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const threads = useChatStore((s) => s.threads);
   const activeThreadId = useChatStore((s) => s.activeThreadId);
   const graphId = useChatStore((s) => s.graphId);
@@ -40,7 +40,7 @@ export function ThreadSidebar() {
         type="button"
         variant="default"
         className="w-full shrink-0 gap-2"
-        onClick={newThread}
+        onClick={() => { void newThread(); onNavigate?.(); }}
         disabled={isStreaming}
       >
         <PlusIcon className="size-4" />
@@ -82,7 +82,7 @@ export function ThreadSidebar() {
               >
                 <button
                   type="button"
-                  onClick={() => void openThread(threadId)}
+                  onClick={() => { void openThread(threadId); onNavigate?.(); }}
                   className={cn(
                     "flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-2 text-left",
                     active ? "text-accent-foreground" : "text-foreground",

@@ -1,0 +1,7 @@
+{
+  "request_id_found": true,
+  "detail_status": 404,
+  "content_status": 403,
+  "new_admission_status": 403,
+  "service_read_deleted_thread": 404
+}

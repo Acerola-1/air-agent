@@ -31,6 +31,17 @@ import { ContextMeter } from "@/components/chat/ContextMeter";
 import { TenantBadge } from "@/components/chat/TenantBadge";
 import { ThinkingBlock } from "@/components/chat/ThinkingBlock";
 import { ToolStepsBlock } from "@/components/chat/ToolStepsBlock";
+import { FeedbackBar } from "@/components/chat/feedback/FeedbackBar";
+import {
+  cachedAnswerByMessage,
+  loadAnswerMappings,
+  trackCopy,
+  timingDisplayComplete,
+  timingFirstVisibleAnswer,
+  finishTiming,
+  abandonTimingsOnUnload,
+  currentFeedbackEpoch,
+} from "@/lib/feedback/client";
 import { useArtifactStore } from "@/components/artifact/ArtifactProvider";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -80,6 +91,9 @@ export function ChatPanel() {
   const recordNavigationStop = useChatStore((s) => s.recordNavigationStop);
   const regenerateLast = useChatStore((s) => s.regenerateLast);
 
+  const activeTimingMessageId = useChatStore((s) => s.activeTimingMessageId);
+  const activeTimingId = useChatStore((s) => s.activeTimingId);
+  const activeTimingOutputComplete = useChatStore((s) => s.activeTimingOutputComplete);
   const scrollRef = useRef<HTMLDivElement>(null);
   const chatMode = useChatMode();
   const lastAssistantIndex = (() => {
@@ -92,10 +106,34 @@ export function ChatPanel() {
   const following = useRef(true);
   useEffect(() => { following.current = true; }, [activeThreadId]);
 
+  // 服务端权威回答映射：消息变化时对未映射的助手消息批量回读（最多 50 条/次）。
+  // 查询键是**真实 AI 消息 id**（台账 answer.message_id），不是轮次合成 ID。
+  const sessionCtx = useSessionStore((s) => s.ctx);
+  useEffect(() => {
+    const unmapped = messages
+      .filter((m) => m.role === "assistant" && m.content && m.answerId === undefined)
+      .map((m) => m.sourceMessageId || m.id);
+    if (!unmapped.length) return;
+    let cancelled = false;
+    void loadAnswerMappings(unmapped, true, activeThreadId).then(() => {
+      if (cancelled) return;
+      // 用缓存结果回填消息的 answerId（含"确认无映射"的空值，避免重复查询）
+      useChatStore.setState((state) => ({
+        messages: state.messages.map((m) => {
+          if (m.role !== "assistant" || m.answerId !== undefined) return m;
+          const found = cachedAnswerByMessage(m.sourceMessageId || m.id, activeThreadId);
+          if (!found) return m;
+          return { ...m, answerId: found.answer_id || null };
+        }),
+      }));
+    });
+    return () => { cancelled = true; };
+  }, [messages, activeThreadId]);
+
   // 页面导航离开/刷新：把"离开"写成独立停止意图（origin=navigation，不冒充已取消）。
   // 用 pagehide（含 bfcache）而非 beforeunload；sendBeacon 尽力送达，不阻塞卸载。
   useEffect(() => {
-    const onPageHide = () => recordNavigationStop();
+    const onPageHide = () => { abandonTimingsOnUnload(); recordNavigationStop(); };
     window.addEventListener("pagehide", onPageHide);
     return () => window.removeEventListener("pagehide", onPageHide);
   }, [recordNavigationStop]);
@@ -107,6 +145,31 @@ export function ChatPanel() {
       el.scrollTo({ top: el.scrollHeight, behavior: "auto" });
     }
   }, [messages, streamingText, streamingReasoning, isStreaming]);
+
+  // React commit之后等实际正文完成布局和一轮绘制；历史消息没有新测量。
+  useEffect(() => {
+    if (!activeTimingId) return;
+    const epoch = currentFeedbackEpoch();
+    let frame2 = 0;
+    const frame1 = requestAnimationFrame(() => {
+      frame2 = requestAnimationFrame(() => {
+        if (epoch !== currentFeedbackEpoch() || useChatStore.getState().activeTimingId !== activeTimingId) return;
+        const candidates = scrollRef.current?.querySelectorAll<HTMLElement>(isStreaming ? "[data-streaming-answer-body]" : "[data-answer-body]");
+        const node = isStreaming ? candidates?.[candidates.length-1] : Array.from(candidates ?? []).find(el => el.dataset.answerMessageId === activeTimingMessageId);
+        const rect = node?.getBoundingClientRect();
+        const parentRect = scrollRef.current?.getBoundingClientRect();
+        const style = node ? getComputedStyle(node) : null;
+        const visible = node?.textContent?.trim() && rect && parentRect && rect.width>0 && rect.height>0 && rect.bottom>Math.max(0,parentRect.top) && rect.top<Math.min(window.innerHeight,parentRect.bottom) && style?.visibility !== "hidden" && style?.display !== "none" && document.visibilityState === "visible";
+        if (visible) timingFirstVisibleAnswer(activeTimingId);
+        if (!isStreaming) {
+          if (visible && activeTimingOutputComplete && !error && !useChatStore.getState().stopPending) timingDisplayComplete(activeTimingId);
+          finishTiming(activeTimingId);
+          useChatStore.setState({activeTimingId: null, activeTimingMessageId: null});
+        }
+      });
+    });
+    return () => { cancelAnimationFrame(frame1); cancelAnimationFrame(frame2); };
+  }, [activeTimingId, activeTimingMessageId, activeTimingOutputComplete, streamingText, messages, isStreaming, error]);
 
   // 画布扫描：检测工具结果中的 artifact 引用
   const artifactStore = useArtifactStore();
@@ -180,6 +243,7 @@ export function ChatPanel() {
                 // 重新生成只对**最后一轮**助手回答开放：按钮语义是"重做这次回答"，
                 // 不支持对历史轮次回放（第 3 项反馈迭代时再扩展）。
                 isLatestAssistant={index === lastAssistantIndex}
+                feedbackEpoch={sessionCtx?.context_version ?? 0}
               />
             ))
           )}
@@ -224,15 +288,19 @@ export function ChatPanel() {
 function MessageItem({
   message,
   isLatestAssistant,
+  feedbackEpoch,
 }: {
   message: ChatMessage;
   isLatestAssistant?: boolean;
+  feedbackEpoch?: number;
 }) {
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
   // 重新生成需要知道当前是否可发起（流式中/停止未确认时禁用）
   const busy = useChatStore((s) => s.isStreaming || s.stopPending);
   const regenerateLast = useChatStore((s) => s.regenerateLast);
   const chatMode = useChatMode();
+  const mapping = useAnswerMapping(message);
 
   if (message.role === "user") {
     return (
@@ -245,9 +313,24 @@ function MessageItem({
   }
 
   // Assistant 助手回答
-  const copyFullContent = () => {
-    void navigator.clipboard.writeText(message.content);
+  // 复制：等待系统剪贴板写入**成功**后才显示成功并记录事件；拒绝/失败显示可恢复提示
+  const copyFullContent = async () => {
+    if (!message.content) return;
+    const copyEpoch = currentFeedbackEpoch();
+    setCopyFailed(false);
+    try {
+      await navigator.clipboard.writeText(message.content);
+    } catch {
+      if (copyEpoch !== currentFeedbackEpoch()) return;
+      setCopied(false);
+      setCopyFailed(true);
+      setTimeout(() => setCopyFailed(false), 3000);
+      return;
+    }
+    if (copyEpoch !== currentFeedbackEpoch()) return;
     setCopied(true);
+    // 复制成功 → 采集复制事件（有映射才统计；正文不上传）
+    if (mapping?.answer_id) trackCopy(mapping.answer_id);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -274,54 +357,94 @@ function MessageItem({
 
         {/* 最终回答正文 */}
         {message.content && (
-          <div className="text-sm">
+          <div data-answer-body data-answer-message-id={message.sourceMessageId || message.id} className="text-sm">
             <Markdown content={message.content} />
           </div>
         )}
 
         {/* 底部轻量操作工具栏 */}
         {message.content && (
-          <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity">
-            {isLatestAssistant && (
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity">
+              {isLatestAssistant && (
+                <button
+                  type="button"
+                  onClick={() => void regenerateLast(chatMode)}
+                  disabled={busy}
+                  className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40"
+                  aria-label="重新生成"
+                >
+                  <RotateCcwIcon className="size-3" />
+                  <span>重新生成</span>
+                </button>
+              )}
               <button
                 type="button"
-                onClick={() => void regenerateLast(chatMode)}
-                disabled={busy}
-                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40"
-                aria-label="重新生成"
+                onClick={() => void copyFullContent()}
+                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               >
-                <RotateCcwIcon className="size-3" />
-                <span>重新生成</span>
+                {copied ? (
+                  <>
+                    <CheckIcon className="size-3 text-emerald-500" />
+                    <span className="text-emerald-500">已复制</span>
+                  </>
+                ) : copyFailed ? (
+                  <>
+                    <CopyIcon className="size-3 text-red-500" />
+                    <span className="text-red-500">复制失败，请重试</span>
+                  </>
+                ) : (
+                  <>
+                    <CopyIcon className="size-3" />
+                    <span>复制</span>
+                  </>
+                )}
               </button>
-            )}
-            <button
-              type="button"
-              onClick={copyFullContent}
-              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-            >
-              {copied ? (
-                <>
-                  <CheckIcon className="size-3 text-emerald-500" />
-                  <span className="text-emerald-500">已复制</span>
-                </>
-              ) : (
-                <>
-                  <CopyIcon className="size-3" />
-                  <span>复制</span>
-                </>
-              )}
-            </button>
 
-            {message.usage && (
-              <span className="font-mono text-[10px] text-muted-foreground/80">
-                · {message.usage.totalTokens} tokens
-              </span>
-            )}
+              {message.usage && (
+                <span className="font-mono text-[10px] text-muted-foreground/80">
+                  · {message.usage.totalTokens} tokens
+                </span>
+              )}
+            </div>
+            {/* 评价栏：服务端确认映射才可评价 */}
+            <FeedbackBar
+              mapping={mapping}
+              hasContent={Boolean(message.content)}
+              epoch={feedbackEpoch ?? 0}
+            />
           </div>
         )}
       </div>
     </div>
   );
+}
+
+/** 消息 → 服务端回答映射（权威，不猜测）：缓存命中返回，否则视为未映射。 */
+function useAnswerMapping(message: ChatMessage) {
+  const threadForFeedback = useChatStore((s) => s.activeThreadId);
+  const [, force] = useState(0);
+  const mappingKey = message.sourceMessageId || message.id;
+  useEffect(() => {
+    if (message.role !== "assistant" || !message.content) return;
+    const found = cachedAnswerByMessage(mappingKey, threadForFeedback);
+    if (found?.answer_id) return;
+    let cancelled = false;
+    const epoch = currentFeedbackEpoch();
+    void (async () => {
+      for (const delay of [0, 300, 800, 1500]) {
+        if (delay) await new Promise(resolve => setTimeout(resolve, delay));
+        if (cancelled || epoch !== currentFeedbackEpoch()) return;
+        await loadAnswerMappings([mappingKey], true, threadForFeedback);
+        if (cancelled || epoch !== currentFeedbackEpoch()) return;
+        force(n => n + 1);
+        if (cachedAnswerByMessage(mappingKey, threadForFeedback)) return;
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [mappingKey, message.role, message.content, threadForFeedback]);
+  if (message.role !== "assistant" || !message.content) return null;
+  return cachedAnswerByMessage(mappingKey, threadForFeedback);
 }
 
 /** 流式生成中的占位与打字机卡片 */
@@ -346,7 +469,7 @@ function StreamingAssistantCard({
 
         {/* 流式正文 */}
         {streamingText ? (
-          <div>
+          <div data-streaming-answer-body>
             <Markdown content={streamingText} />
             <span className="ml-1 inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-emerald-500 align-middle" />
           </div>
@@ -410,11 +533,11 @@ function Composer({
           <ContextMeter />
 
           {/* 登录用户、企业与登出 */}
-          <div className="ml-auto hidden items-center gap-2 text-[11px] sm:inline-flex">
+          <div className="ml-auto inline-flex max-w-full flex-wrap items-center gap-2 text-[11px]">
             {username ? (
               <>
                 <TenantBadge />
-                <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-foreground">
+                <span className="hidden rounded-full bg-muted px-2 py-0.5 font-medium text-foreground sm:inline">
                   {username}
                 </span>
                 <button

@@ -1,0 +1,18 @@
+{
+  "dropped_databases": [
+    "air_agent_ivrp02_ledger_08889f72",
+    "air_agent_ivrp02_api_08889f72",
+    "air_agent_ivrp02_rls_08889f72",
+    "air_agent_ivrp02_ledger_fee6dbaa",
+    "air_agent_ivrp02_api_fee6dbaa",
+    "air_agent_ivrp02_rls_fee6dbaa"
+  ],
+  "dropped_roles": [
+    "ivrp02_ledger_worker_08889f72",
+    "ivrp02_ledger_worker_fee6dbaa"
+  ],
+  "remaining_databases": [],
+  "scope": "Only six random databases and two roles created by this coordinator review; business volume and author environments preserved",
+  "restore_database": "self-cleaned by isolated restore drill",
+  "browser_synthetic_thread": "retained as labelled user-visible acceptance sample; screenshot saved, no historical thread deleted"
+}

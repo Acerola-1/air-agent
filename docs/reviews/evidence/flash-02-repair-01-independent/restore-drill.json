@@ -1,0 +1,24 @@
+{
+  "before_backup": {
+    "content_live": 2,
+    "deletions": 0
+  },
+  "dump_lines": "3447",
+  "deleted_after_backup": 1,
+  "restored": {
+    "head": "0008",
+    "open_deletions": 0,
+    "content_not_yet_deleted": 1
+  },
+  "permission_regrant": "policies=18 grants=50 deleted_content_refs=1 open_deletions=1",
+  "after_reapply": {
+    "deletion_recorded": 1,
+    "deleted_thread_content_blocked": 1,
+    "other_content_preserved": 1
+  },
+  "rls_after_restore": {
+    "no_guc": 0,
+    "own_scope": 2,
+    "cross_tenant": 0
+  }
+}

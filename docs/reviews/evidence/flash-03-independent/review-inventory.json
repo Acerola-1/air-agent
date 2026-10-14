@@ -1,0 +1,292 @@
+{
+  "total_files": 34,
+  "reviewable_files": 25,
+  "reviewed_files": 25,
+  "skipped_files": 0,
+  "coverage_rate": 1.0,
+  "entries": [
+    {
+      "path": "admin/api/app/main.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "admin/api/app/models.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "status": "modified",
+      "insertions": 228,
+      "deletions": 24,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "modified",
+      "insertions": 234,
+      "deletions": 61,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/openapi-agent-ledger.json",
+      "status": "modified",
+      "insertions": 316,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "modified",
+      "insertions": 331,
+      "deletions": 38,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "insertions": 113,
+      "deletions": 33,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "modified",
+      "insertions": 19,
+      "deletions": 16,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "insertions": 37,
+      "deletions": 1,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/lib/session-client.ts",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "modified",
+      "insertions": 14,
+      "deletions": 5,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "insertions": 9,
+      "deletions": 2,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "modified",
+      "insertions": 234,
+      "deletions": 61,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "modified",
+      "insertions": 331,
+      "deletions": 38,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "admin/api/app/models_feedback.py",
+      "status": "added",
+      "insertions": 149,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "admin/api/app/routers/feedback.py",
+      "status": "added",
+      "insertions": 217,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "admin/api/app/services/feedback.py",
+      "status": "added",
+      "insertions": 589,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "admin/api/app/services/feedback_metrics.py",
+      "status": "added",
+      "insertions": 213,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "admin/api/migrations/versions/0011_feedback.py",
+      "status": "added",
+      "insertions": 226,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/live-metrics-response.json",
+      "status": "added",
+      "insertions": 44,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/app/api/agent-events/browser/route.ts",
+      "status": "added",
+      "insertions": 38,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/app/api/feedback/answers/[answerId]/route.ts",
+      "status": "added",
+      "insertions": 46,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/app/api/feedback/answers/route.ts",
+      "status": "added",
+      "insertions": 38,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/components/chat/feedback/FeedbackBar.tsx",
+      "status": "added",
+      "insertions": 216,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    },
+    {
+      "path": "frontend/lib/feedback/client.ts",
+      "status": "added",
+      "insertions": 389,
+      "deletions": 0,
+      "review_status": "reviewed",
+      "method": "源文件/差异/结构化契约核对及对应运行反例"
+    }
+  ],
+  "excluded_entries": [
+    {
+      "path": "admin/api/tests/test_event_ledger_api.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 2,
+      "exclude_reason": "default_path",
+      "review_status": "reviewed_as_supplement",
+      "reason": "测试/任务/报告/数据库计数或历史截图作为补充检查"
+    },
+    {
+      "path": "openspec/changes/add-chat-feedback-interactions/tasks.md",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 33,
+      "exclude_reason": "unsupported_ext",
+      "review_status": "reviewed_as_supplement",
+      "reason": "测试/任务/报告/数据库计数或历史截图作为补充检查"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "status": "modified",
+      "insertions": 14,
+      "deletions": 2,
+      "exclude_reason": "default_path",
+      "review_status": "reviewed_as_supplement",
+      "reason": "测试/任务/报告/数据库计数或历史截图作为补充检查"
+    },
+    {
+      "path": "admin/api/tests/test_feedback_api.py",
+      "status": "added",
+      "insertions": 590,
+      "deletions": 0,
+      "exclude_reason": "default_path",
+      "review_status": "reviewed_as_supplement",
+      "reason": "测试/任务/报告/数据库计数或历史截图作为补充检查"
+    },
+    {
+      "path": "docs/reviews/chat-feedback-interactions-acceptance.md",
+      "status": "added",
+      "insertions": 167,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext",
+      "review_status": "reviewed_as_supplement",
+      "reason": "测试/任务/报告/数据库计数或历史截图作为补充检查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-cancelled.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary",
+      "review_status": "skipped",
+      "reason": "作者历史截图，未用作本轮实际浏览器通过证据；已检查点踩截图，阻断反例由独立代码/PG证明"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-dislike-saved.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary",
+      "review_status": "reviewed_as_supplement",
+      "reason": "测试/任务/报告/数据库计数或历史截图作为补充检查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-like-copy.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary",
+      "review_status": "skipped",
+      "reason": "作者历史截图，未用作本轮实际浏览器通过证据；已检查点踩截图，阻断反例由独立代码/PG证明"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/live-db-counts.txt",
+      "status": "added",
+      "insertions": 10,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext",
+      "review_status": "reviewed_as_supplement",
+      "reason": "测试/任务/报告/数据库计数或历史截图作为补充检查"
+    }
+  ]
+}

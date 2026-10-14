@@ -1,0 +1,2 @@
+admin/api/migrations/versions/0012o_delivery.py:17:101: E501 Line too long (105 > 100)
+Found 3 errors (2 fixed, 1 remaining).

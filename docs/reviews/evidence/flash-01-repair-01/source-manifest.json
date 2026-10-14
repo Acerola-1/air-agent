@@ -1,0 +1,777 @@
+{
+  "base": "7b82c04",
+  "mode": "repair_targeted_review",
+  "original_input_manifest": "../flash-01/source-manifest.json",
+  "original_changed_file_count": 37,
+  "input_digest": "f38cf889ff05a2b78f000eecae47c079b4c6f2462a1f924095abcf7e26e70b2d",
+  "counts": {
+    "previously_reviewed_unchanged": 64,
+    "skipped": 16,
+    "reviewed": 47
+  },
+  "files": [
+    {
+      "path": ".gitignore",
+      "sha256": "8927d4bafd4c16d101045b56d7bf325c8df5be810ec085c4c1e2c4d7e77d0c02",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "Dockerfile",
+      "sha256": "671d67752743931c22e86cc7e4dd3e8d2e42950b6bd70f756871bb77a3fa2283",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/config.py",
+      "sha256": "655b169aa64b9c04dde4d6ef8fa6f64f5368c5d5264e7f31adf7e4cd63d9783b",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/db.py",
+      "sha256": "e249e510400ff6ec8e2863179de3b2ec4d378f439b2969e450d33a94d81db80d",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/deps.py",
+      "sha256": "091a9cccb124cb8f5c15b3d6747705dc9249937f131a96b84822d3708736c3f7",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/main.py",
+      "sha256": "40eaddd0c8a179be339cef7f68b047e113000e63981d2b473d9ef7df8402b13f",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/models.py",
+      "sha256": "b7ee34b081b9a7f8da8de4282c87c39926e1da5661d35497e64fd3adf73e8085",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/routers/audit.py",
+      "sha256": "c6fa0e131d81de1fdac88995a569cbe9afd8130e0466f9b3a3c00f27efa0e1ce",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/routers/auth.py",
+      "sha256": "a61f3898c45408326aa5a8ad7e9a6c7a94457f32e90ef96d4d8108e81be076ef",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/routers/bindings.py",
+      "sha256": "45fea3fb2a93e7e523a8e6030398c6922cac06641221cf0c62e3abe75fec43f6",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/routers/departments.py",
+      "sha256": "5da79bd0ce0dd47189e5e3339b88255c31cb3b7cf616a943ca53c9b9356428f9",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/routers/permissions.py",
+      "sha256": "29cbee9c2418a825ed36d7baff88be93aa6bcc812778db5200d1a0d3f3c3b444",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/routers/regions.py",
+      "sha256": "74ca864f4d212f2157f70323f2e673cf57224ab89181043fefa1e472894967a4",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/routers/roles.py",
+      "sha256": "f18e39761989e231b258ade20fe219b0a95bacb433855643958929ba8dc93125",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/routers/tenants.py",
+      "sha256": "e0dd81dd557f8763f9b0559543f79cab3395e8e8d9d690596521093cf0caa1e3",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/routers/users.py",
+      "sha256": "b72808430732b7d4e0c4dad4223925331856a2766bfd9a64d59666d2c659d51d",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/schemas.py",
+      "sha256": "13e485e302a93c8b8219a51f18210610c8ae5fa58597a7b0586abc9bb348d47b",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/security.py",
+      "sha256": "0a0bc3cf0f28f0a72ba9818ae6ef04849c0e19507e51e48bfd478b51907d7af2",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/app/services/audit.py",
+      "sha256": "441dac68902022bd2fa193c0476b1c3ae03d591a488b22ff18c1dc84e0a9f250",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/services/followed_regions.py",
+      "sha256": "8f63a6a3118fb5aa1778f12c1bffa7a3bdba665ae079ef85cacff559185ee727",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/services/identity.py",
+      "sha256": "c724e59e0c2e8fea57d4a9d64b63f12988735ee90518c6b478ae0adbcc339ffb",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/services/tenant_context.py",
+      "sha256": "4077a3644f196abbafb1860b92e13ab1eda65993729781444fa0ca8ce50abe54",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/app/services/tenant_seed.py",
+      "sha256": "ff88d01dac8092c65a2aa0a0955190e787e7fa9acfa613dd55e795306184f990",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/migrations/versions/0003_tenant_identity.py",
+      "sha256": "737f69b679fb8aab1c579df15c9754f7f43094551f1216f62e01d3fb90671588",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/migrations/versions/0004_tenant_artifact.py",
+      "sha256": "22ca4ceb4e38420529ef441d1b4764c1a5353820d262dab88c5335677b880d73",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/migrations/versions/0005_tenant_access_repair.py",
+      "sha256": "e029864ecc98f226f5d2803eb6ba2f1f4dca84a93d046f5aaf6514ba63cc9481",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/scripts/agent_e2e_fixture.py",
+      "sha256": "082638a7d8114dab2b483a5f9cfc30dffb497185c2d9fa802bdb462be7a3d1f3",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/scripts/bootstrap_tenant_db.py",
+      "sha256": "53611748e73f038d01bea6beb32abf6b75b576e481e8b523d71d086dfda81fb3",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/scripts/drill_recovery.sh",
+      "sha256": "287fa54276a8113b53a0d11797823ca58da14b739ac396203d3850289bf1ebb7",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/scripts/migrate_identity.py",
+      "sha256": "587abaf77a470058437bea5b8176f3f5ea1da8b6180227b39ef5216fcc0d70dd",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/scripts/seed.py",
+      "sha256": "6b350cd5c5fddf07a48d3be77adcb8e428bbd643c48c9df245c9170736e29bc3",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/api/tests/conftest.py",
+      "sha256": "6767934c76a7cf7aa04745cc595609581174780eba9e703e021ac38c64534233",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/api/tests/ctx_client.py",
+      "sha256": "265dcf48c44b89568162024c8ca94333b52ac0a60dd9388f33a31885f41483ea",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/departments/page.tsx",
+      "sha256": "82568b6a1645bec2e3053f9722ad854499e24f32f0d4f086c2748439ab1911e9",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/mcp/page.tsx",
+      "sha256": "d766cf292e575b0542f61236ea99340ba65fbe5356aff04be34dffea41e8c294",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/members/page.tsx",
+      "sha256": "7a8ec3f5ad2299cdeabcc6c265b6d6897bc8ca6bf78a07e71815695733b03376",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/roles/page.tsx",
+      "sha256": "2605e8646b142ef4628e7c97c6f100147e17276a9c1ced49ddc13ec1812e75c3",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/layout.tsx",
+      "sha256": "52be93dba344741fe64e2ba949b50b8419399b81b8fc10f03c3f6d2639f3c637",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/page.tsx",
+      "sha256": "6dcddc9ffd5e39746281294668e222d2fa920b3d966489beb8bfac6d5918536b",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/platform/tenants/page.tsx",
+      "sha256": "1284328865f5c48d13201267cb5d6f54ecc0d73429bd496f223f3ea531aed0d3",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/profile/page.tsx",
+      "sha256": "bb60cfaad29c12c50e420608c1645de9bb132e738f5d25569a6ae8f8770bce0c",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/select-tenant/page.tsx",
+      "sha256": "9c05ed67ddb71da0121fcd73103727b80589eac17844fec5ef6f84ef45dec0e4",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/app/login/page.tsx",
+      "sha256": "567a2e825a583f709fa1465f1e119d78ccca8c753188ef7f74d4797e0461a7b3",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/components/tenant-switcher.tsx",
+      "sha256": "7830e5fd936ff9caf3f02bd3612be385245107e04f50e2a293099dc1cc60635f",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/lib/api.ts",
+      "sha256": "e0afaad2a808a8f4d89069aa5a076f7dc8612c22a0bb20e86cc46966b63caec9",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/web/lib/session.tsx",
+      "sha256": "f44dbf930e13d2fb912572d576ab20d6e3bf55b4414a3cbc0da967338fd77c70",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "admin/web/lib/types.ts",
+      "sha256": "1b27be64a5279b2be74d031b438d7f0635331d4c018df59609710970e967b2ed",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "admin/web/next-env.d.ts",
+      "sha256": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "docker-compose.yaml",
+      "sha256": "653f23e644f80adac55440559939840fe52fede135f71977665fa924c4a3fca7",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/fresh-migrations.json",
+      "sha256": "9715ba8c85b3afc65edfc64d565813e87f431da3aea024206d75b98f3d6daa21",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/live-claim.json",
+      "sha256": "af89d208fb5054862511ef666a1c335b0620da124860c5d8c8cdf8e7108f5ad4",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/admin-proofs.json",
+      "sha256": "72969aa6cadc3ac129bac63bfba643d93f022214461874521e03ce805ae13fbd",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/admin_probe.py",
+      "sha256": "354e8aab59846adb22868131eee965a87b1f8d8cbb182016399f96c6c9e0c0b8",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/empty.json",
+      "sha256": "fef4bb98d76404541043f37cfc0e13f0ff60e362bdc99ef9867b9d2b59340aaa",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/empty_probe.py",
+      "sha256": "6297c738045ee20dd347d837a569c38f088eb5235d21046629a101161667ad19",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/live.json",
+      "sha256": "687da35ac3af34ef0f5ecba11c319581102225f541cc3c1338a0147e5262b678",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/live_probe.py",
+      "sha256": "ab5e611164745c4dcb4b4023f906a28eb903bfd8f2f31cfd5bcba7de507832af",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/run_admin_suite.py",
+      "sha256": "d68fbb774524646ae94a1135ad39f1c188c44643cb8f194f87f862cceb2c1422",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/runtime.json",
+      "sha256": "7eb5114b8486ab1ac3a22afa133d1d94461578451db24d7b494819bb6d14cf2b",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/runtime_probe.py",
+      "sha256": "cb7c093c8c5cc7234ce788b1417b1c61d2728a56013dc5ed00984d34f7e190ac",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/seed_rls_probe.py",
+      "sha256": "e68599ec8769d49aad83fa9b349aaea40d293fc496333772a2b9098cc9fcf6fc",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/setup_probe.py",
+      "sha256": "81dbd7db74947c2969aa19ce404216c848ad721ab1e4dcbd28e34ead72d190e9",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/source-manifest.json",
+      "sha256": "ce2f00d98fd32ac87c9a725fcfd72608bf4e0350ab2475f336839b47edb0905e",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "sha256": "47af809e22900a31da6687456a76e6a40caa8fda469e3ecb89191a4a59de9250",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "frontend/app/api/auth/login/route.ts",
+      "sha256": "cd7312b846928ec5fdb21b4bdd918ca74731000916760aef8315d54282c8c894",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/app/api/auth/logout/route.ts",
+      "sha256": "89200e1f5bb8b8078e3f276eab7b46834059d56d66fb8563382a5e04e188f9a8",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/app/api/auth/me/route.ts",
+      "sha256": "6db2a3df4a01c4aa32b99454a6ce7ddc83a68ff731947fe9fabd920a41c6ad60",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/app/api/auth/register/route.ts",
+      "sha256": "dda840032531c4adf237e47310d0f74b0f915f138ec747f4fa933226eb3f2882",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/app/api/auth/switch-tenant/route.ts",
+      "sha256": "83c6343b2fb4c8f3ffed001ab92606583db89220aa81cec9f6e9f014605b90ab",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/app/login/page.tsx",
+      "sha256": "ca1b8343da117074fe01ad03dd62405e8aab3e09da9236c9eb8f70ad1dfad27b",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "sha256": "bd9f11e141b8a14be10ccaac9a32b8e79c4fddc27481b1adf5d5dfd3ccd0c11e",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/components/chat/TenantBadge.tsx",
+      "sha256": "2b65214c68f2027758e956d6edfd2fe7cea4d074b55a909762c283df1833b610",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "frontend/lib/admin-api-contract.ts",
+      "sha256": "a6a7358f264516b8a67281f685ff0592addb450a7ae60a177a05e5535ae37444",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/lib/admin-api.ts",
+      "sha256": "9fd374123bb2491bfc1ec39eaf6b99168ba2c7b5d2d4f8c57f8adf65af1aa7fe",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "frontend/lib/artifact-scope.ts",
+      "sha256": "121ccbee829c247900a0fc55f22bf2402745fb0245f71cfbdae7d3c01cdc077d",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/lib/auth.ts",
+      "sha256": "c2ef090b7b6533ade0b0c7f315efa20403587ff30c87870c2808b2b05ffecb3a",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "sha256": "5b2561776f9af78bdb2649069776647dbcf823da4179b67be6d6efd560fe5776",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "sha256": "684d0b658da6706a27182fa7fdf537851de8641274acecb67b93d9dfc0b07a38",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "frontend/lib/session-client.ts",
+      "sha256": "2ce8e15bab530395edd44d93e716a001eec060d40c0ef2fe7277f6aca7fcde7c",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "frontend/middleware.ts",
+      "sha256": "2417177c7d18af3a245aaa58e587212ade7c8647026ae878d7aa3f544693ab79",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "sha256": "c7678c680263a21fa513090e69728f8e610a1b112e2ab3a10534c6737a516975",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "langgraph.json",
+      "sha256": "8db48bfcb383f9c102dc5d26f92a0d06882c53e234269db0c7fad0603754eddf",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/.openspec.yaml",
+      "sha256": "1dfdca412094f24473d8b842866201ec26f200b29b17064b03f1e4982c35a7b9",
+      "review_status": "skipped",
+      "reason": "Codex自己的规划或评审证据，非实施模型产品代码"
+    },
+    {
+      "path": "premium-audit.json",
+      "sha256": "33a3bb447bfac87370716ed73caef03517846a447e41373c735a996dc551a5c6",
+      "review_status": "skipped",
+      "reason": "生成的静态审计输出；本轮已独立运行同一审计，不能作为浏览器证据"
+    },
+    {
+      "path": "run-local.sh",
+      "sha256": "b6c77a55eaf30ef034063a24a455c390cb91d9e911a5f28cab8a0828e36f08f0",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "sha256": "397bcdb16e6b1a0a6c0c2f9438916d9e81fd838b03689c66ecf76997d526d88f",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/artifact_scope.py",
+      "sha256": "1a5e125a5b3a1d98ebc1091d54c35c6e3d3b5c1fd2dba963e3f9da45e544b5b3",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/artifacts/__init__.py",
+      "sha256": "b4f572940867a8557e4afc094b5a5800ddf255151baef770088cb19c7a25a5d0",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "sha256": "4f88e3c7954efb82519a2853e1226a242604c1993d3cd0dae017dd9248c7448c",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "sha256": "f6777b2fd8deed4d12b67144969bf2b3855715c8c732c13f37cfa2423330c82c",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/computation/tool.py",
+      "sha256": "b9d064af260d1d1ef0c3d15cde920c8ee91c5d4624908ac85a545bc592062798",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/config/checkpointing.py",
+      "sha256": "2e1177a9cf902bc2e109c3525264cac8fd5def66e0964daf357a638d1afa8da2",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/config/settings.py",
+      "sha256": "ff517a8dd8bb362453da4ae289f31cabb08915afbfa84ba5ad1c28a5958d38d5",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/data_governance.py",
+      "sha256": "05cd71f3af9a38fa9c6c823165b0ee2fde61fafc6975043c42ffea77afb49365",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/identity/__init__.py",
+      "sha256": "521845dce1cd0db779c7e82f3da4dbe6c93ffce67351515d351671be3d6e03e5",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "sha256": "33091111b73bac79981b72fd93f29162690d41fdb9f1be430f7e96c7c7eceb3c",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "sha256": "6ec874e127b780a226744cb5fd92475ef910e931a947e5ec5742a9e2ed6b26ff",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/identity/runtime.py",
+      "sha256": "e4619c5d9a0344330b7b4a98b41f37eb311c0418cf5f6d979eeafce1b4c0d072",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/identity/ticket.py",
+      "sha256": "31f25eba27a5fc320200c35e82d8acda8e2b2209266eb9f321327d66f4d0f358",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/mcp_authorization.py",
+      "sha256": "fbcb8c02aa5a1addad7b6ede1f728065c7b331f42418ef28b67128f7ba751a1e",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/mcp_client.py",
+      "sha256": "354265295a6aab9b2cea1f7fd88ea9b25ae38291d79ef3c07887acc481bd3950",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/mcp_scoped.py",
+      "sha256": "a354f9b6095c2a76edab2a1ee45ad89bf63abed1096d6dec93c6ec7619299d04",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/middleware/__init__.py",
+      "sha256": "902337444491da510408c7a4f77f8076f24de70ff6ca497853c4580cd1adf242",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "sha256": "7ccd23d06cf83e35d942aa3e300a3ca0396413682917c7fe4071cd8f291bece2",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/common/question_normalizer.py",
+      "sha256": "e730f17eb2dba3d6092d20a63d6eec6e5e233b737cee9188e3f3cccebce477d7",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/skill_discovery.py",
+      "sha256": "fa8931c9d61abf3cb2fffd453f4fadf3914e00722411ae67ec642b91d60c29dd",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "sha256": "c9eb440e50022ee6b16dc791dd61c1df3d7940846dc0b06198c4edd8d1e59a66",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/common/storage/artifact_db.py",
+      "sha256": "f35c7ef0e9169a303c1961906b9d797971454954b9933ebec480519d8e7d37e1",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "sha256": "861a8f305bd010ebfd67f7b48573f43abf5ec74c3bb95c880931a9242990dc32",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "sha256": "15acd0a70432b741025e9085545b027877ccd438b4453142706d7bffa4f80c2a",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "sha256": "936c2d8f8f04eb413d75738aab614406451cff3d0f0c7a1c1d2c2bee7c335254",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "tests/auth_probe/probe_auth.py",
+      "sha256": "13ba4d5406ac348d2ecdc4a91a889957962a89ffc88c94c0b96e8a000b3a60ed",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "tests/auth_probe/probe_graph.py",
+      "sha256": "5495f01103bcfe89e47d054c3614612c06421d07ba2f2f1d0839773e31642d1b",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "tests/auth_probe/probe_http.py",
+      "sha256": "b1c9275ec296672cf23849cb0ca7ffb3fc2f96ac1b3f3d4ef64bbf1158c6486a",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "tests/integration_tests/conftest.py",
+      "sha256": "3c2f372a909f815d3141e22cf0e8c923c22aedeebce29850e7948bc348a164f8",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "tests/integration_tests/test_artifact_tenant_rls_pg.py",
+      "sha256": "e78cb97bc302a9c388000cc9184d9325f86a47f2a84077f765322840bea549ca",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "tests/integration_tests/test_live_tenant_claims.py",
+      "sha256": "4ce6e475f50370f84b59eee9d48aa8f9d51b5ba9ce8e33315e44f40f50fe13fc",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "tests/mcp_fixture/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "tests/mcp_fixture/server.py",
+      "sha256": "e25a7b6428a2ec13004b46b61fedb091d8d2326bff05847335a0dde07278ffc6",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "tests/mcp_fixture/server_process.py",
+      "sha256": "e7ba81e29e87785d5fd8a1d4339568080e858a55fe7c3d1ddc1a13d8dd00fe3e",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "tests/mcp_probe/probe_mcp.py",
+      "sha256": "ecd28156f2e4167ae330122cca8dad7c824929cca6a7f91114d506de99a5a399",
+      "review_status": "previously_reviewed_unchanged",
+      "reason": "首交审查后内容未变；本轮共享回归另跑，未重复逐行审查"
+    },
+    {
+      "path": "tests/unit_tests/conftest.py",
+      "sha256": "cfb0619790d59497a76ca39e447388b869f7c58164e8a893ea1784674baccbc8",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "tests/unit_tests/test_guard_middleware_framework_compat.py",
+      "sha256": "4d1f0dd84bca1808616fcc4ad88278e80b22839a27adbf6f3f12f1488dcf5da3",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "tests/unit_tests/test_migration_ticket_auth.py",
+      "sha256": "51cf6c43c2085f2fb0f41ee1da27e40ac97e5ff5cf245f478f3d4e9233a274f5",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "tests/unit_tests/test_runtime_identity_revisions.py",
+      "sha256": "96396d4769b2f7c8d8c9f7562eb3ee54eb738a8fa103e36dc3769d6c34f3a3cb",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "tests/unit_tests/test_thread_claim_protocol.py",
+      "sha256": "73060e1f4f8a233098448e7149a742eaf80c79fd6318cc5a24e44f8d67589aa8",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    },
+    {
+      "path": "tests/unit_tests/test_ticket_key_rotation.py",
+      "sha256": "a1ff906440122d54dfcfc8a1587df43fdee4b1b6c38e03418ac5ecbd5921f91b",
+      "review_status": "reviewed",
+      "reason": "本轮定向审查相关调用链/接口和回归；不表示全部规格场景或浏览器实测完成"
+    }
+  ],
+  "limitations": "文件指纹与定向审查记录不是完整规格场景完成率。五组阻断未关闭，完整六图/浏览器/恢复未复验。"
+}

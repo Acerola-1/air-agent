@@ -1,0 +1,13 @@
+{
+  "resume_admission": {
+    "status": 200,
+    "creates_new_request": true
+  },
+  "other_member_deletion_status": 200,
+  "after_delete_requested": {
+    "detail_status": 200,
+    "content_status": 200,
+    "content_still_returned": true
+  },
+  "expired_content_still_returned": true
+}

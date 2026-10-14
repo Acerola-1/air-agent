@@ -1,0 +1,40 @@
+..........FFFFF                                                          [100%]
+=================================== FAILURES ===================================
+___________________________ test_real_concurrent_cas ___________________________
+/tmp/test_feedback_review03.py:52: in test_real_concurrent_cas
+    assert sorted(values['statuses'])==[200,409],values
+E   AssertionError: {'statuses': [200, 200], 'result_revisions': [2, 2], 'history_result_revisions': [1, 2, 2]}
+E   assert [200, 200] == [200, 409]
+E     
+E     At index 1 diff: 200 != 409
+E     Use -v to get more diff
+_________________ test_idempotency_payload_and_original_result _________________
+/tmp/test_feedback_review03.py:68: in test_idempotency_payload_and_original_result
+    assert altered.status_code==409 and target.status_code==409 and replay.json()['revision']==first.json()['revision'],result
+E   AssertionError: {'changed_comment_status': 200, 'changed_target_status': 200, 'changed_target_returns_old_answer': True, 'original_revision': 1, ...}
+E   assert (200 == 409)
+E    +  where 200 = <Response [200 OK]>.status_code
+___________________ test_copy_replay_outbox_and_mixed_batch ____________________
+/tmp/test_feedback_review03.py:83: in test_copy_replay_outbox_and_mixed_batch
+    assert first.status_code==200 and outboxes==1 and replay.status_code==200 and mixed.status_code==200 and fresh_count==1,result
+E   AssertionError: {'first_status': 200, 'outbox_count': 0, 'replay_status': 500, 'mixed_status': 500, ...}
+E   assert (200 == 200 and 0 == 1)
+E    +  where 200 = <Response [200 OK]>.status_code
+_______________________ test_deleted_feedback_and_timing _______________________
+/tmp/test_feedback_review03.py:98: in test_deleted_feedback_and_timing
+    assert replay.status_code==404 and not result['visible_deleted_operations'] and not result['late_timing_accepted'] and result['metrics_eligible_after_delete']==0,result
+E   AssertionError: {'deletion_status': 200, 'replay_after_delete': 200, 'visible_deleted_operations': 1, 'late_timing_accepted': True, ...}
+E   assert (200 == 404)
+E    +  where 200 = <Response [200 OK]>.status_code
+___________________ test_copy_answer_cohort_and_future_time ____________________
+/tmp/test_feedback_review03.py:120: in test_copy_answer_cohort_and_future_time
+    assert future_result is False and result['distinct_copied_answers']==0 and result['copy_rate']==0,result
+E   AssertionError: {'future_copy_accepted': True, 'eligible_copyable_answers': 1, 'copy_events': 2, 'distinct_copied_answers': 2, ...}
+E   assert (True is False)
+=========================== short test summary info ============================
+FAILED ::test_real_concurrent_cas - AssertionError: {'statuses': [200, 200], ...
+FAILED ::test_idempotency_payload_and_original_result - AssertionError: {'cha...
+FAILED ::test_copy_replay_outbox_and_mixed_batch - AssertionError: {'first_st...
+FAILED ::test_deleted_feedback_and_timing - AssertionError: {'deletion_status...
+FAILED ::test_copy_answer_cohort_and_future_time - AssertionError: {'future_c...
+5 failed, 10 passed in 15.71s

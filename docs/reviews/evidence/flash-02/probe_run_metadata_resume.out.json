@@ -1,0 +1,30 @@
+{
+  "thread_create": 200,
+  "create_status": 200,
+  "created_run_id": "01a1310a-6efb-7ae2-9415-99052b6a154c",
+  "create_response_metadata": {
+    "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c",
+    "ledger_marker": "ledger-probe-3f076a5d",
+    "ledger_request": "req-1"
+  },
+  "get_status": 200,
+  "get_metadata": {
+    "assistant_id": "0ed7587b-1f2b-5e16-a9cc-409e6f10767c",
+    "ledger_marker": "ledger-probe-3f076a5d",
+    "ledger_request": "req-1"
+  },
+  "get_status_field": "running",
+  "metadata_persisted": true,
+  "configurable_echo": {
+    "ledger_request_id": "req-xyz",
+    "ledger_attempt": "att-1"
+  },
+  "configurable_rejected_reserved": true,
+  "runs_count_status": 422,
+  "runs_search_status": 405,
+  "resume_status": 200,
+  "resume_run_id": "01a1310a-6f50-7d42-a474-140b4703f275",
+  "resume_same_run_id": false,
+  "resume_thread_id_same": true,
+  "delete": 204
+}

@@ -662,4 +662,6 @@ class MigrationLedger(Base):
 
 # 台账新域（change add-agent-event-ledger，迁移 0007）：独立模块，末尾导入完成
 # metadata 注册，避免把所有新表堆叠进本文件（设计 §8）。
+# 回答反馈域（change add-chat-feedback-interactions，迁移 0011_feedback）：同策略。
+from app import models_feedback as _models_feedback  # noqa: E402,F401  (注册 Base.metadata)
 from app import models_ledger as _models_ledger  # noqa: E402,F401  (注册 Base.metadata)

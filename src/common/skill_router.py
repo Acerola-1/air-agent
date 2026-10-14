@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -14,9 +15,13 @@ import openai
 import yaml
 from loguru import logger
 from pydantic import ConfigDict, PrivateAttr
-from semantic_router.encoders.base import DenseEncoder
 
-from common.question_normalizer import QuestionNormalizer
+# semantic-router间接导入LiteLLM；使用随包价格表，避免导入时请求远端价格JSON。
+# 应用实际费用使用自身版本化价格库，不采用此第三方默认价格表。
+os.environ.setdefault("LITELLM_LOCAL_MODEL_COST_MAP", "true")
+from semantic_router.encoders.base import DenseEncoder  # noqa: E402
+
+from common.question_normalizer import QuestionNormalizer  # noqa: E402
 
 _FRONTMATTER_RE = re.compile(r"\A---\r?\n(?P<body>.*?)\r?\n---\r?\n", re.DOTALL)
 

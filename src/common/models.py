@@ -33,6 +33,7 @@ class ModelRegistry:
         # 重试由节点执行并再次验证授权；SDK 内部重发会绕过运行守卫。
         max_retries=0,
         http_async_client=httpx.AsyncClient(auth=TenantOutboundAuth()),
+        http_client=httpx.Client(auth=TenantOutboundAuth()),
     )
 
     summary_llm = ChatOpenAI(
@@ -45,4 +46,5 @@ class ModelRegistry:
         max_retries=0,
         tags=["nostream", "internal-summary"],
         http_async_client=httpx.AsyncClient(auth=TenantOutboundAuth()),
+        http_client=httpx.Client(auth=TenantOutboundAuth()),
     )

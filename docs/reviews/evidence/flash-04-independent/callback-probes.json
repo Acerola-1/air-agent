@@ -1,0 +1,22 @@
+{
+  "standard_llm_result": [
+    {},
+    "usage_missing"
+  ],
+  "negative_usage": [
+    {
+      "output_tokens": 20,
+      "total_tokens": 19
+    },
+    "measured"
+  ],
+  "business_output": {
+    "{\"code\":403}": "succeeded",
+    "{\"success\":true,\"data\":[]}": "succeeded",
+    "{}": "succeeded",
+    "{\"success\":false,\"code\":400}": "technical_error"
+  },
+  "cost": "0.002880",
+  "ended_callback_states_retained": 10,
+  "empty_token_ttft": 0
+}

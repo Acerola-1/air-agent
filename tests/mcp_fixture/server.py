@@ -116,6 +116,18 @@ def _build_mcp() -> FastMCP:
             isError=False,
         )
 
+    @app.tool()
+    async def delayed_query(user_id: str, ctx: Context) -> CallToolResult:
+        """受控取消探针，不用于真实平台."""
+        subject = _identity_from_ctx(ctx)
+        CALLS.setdefault(subject, []).append({"user_id": user_id, "delayed": True})
+        await asyncio.sleep(2)
+        return CallToolResult(
+            content=[
+                {"type": "text", "text": json.dumps({"success": True, "data": [1]})}
+            ]
+        )
+
     return app
 
 

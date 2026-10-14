@@ -95,6 +95,8 @@ PERMISSION_TREE: list[tuple[str, str, int, str | None, str | None, str | None, i
     # 删除**他人**线程的独立管理权限：默认平台专属（企业管理员不含），
     # 即默认只有线程本人可以申请删除自己的会话（R05）。
     ("agent:thread:delete", "删除任意会话", BUTTON, "business:runs", None, None, 50, False),
+    # change complete-agent-observability：价格管理独立权限（不默认授予企业管理员）
+    ("agent:pricing:manage", "配置模型价格与重算", BUTTON, "business:runs", None, None, 60, True),
 ]
 
 # 平台内置角色（scope=platform）。企业管理员模板 tenant_admin 按企业实例化，

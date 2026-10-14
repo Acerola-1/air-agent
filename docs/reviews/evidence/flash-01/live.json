@@ -1,0 +1,23 @@
+{
+  "synthetic_bob_thread_created": 200,
+  "legacy_read_before_claim": 404,
+  "legacy_claim_create_status": 200,
+  "legacy_read_after_claim": 200,
+  "other_user_synthetic_marker_exposed": true,
+  "native_patch_keeps_trusted_owner": true,
+  "synthetic_thread_cleanup": 204,
+  "stale_tab_create_status": 200,
+  "stale_tab_wrote_into_new_tenant": true,
+  "archive_db_policies": [
+    {
+      "table": "tool_artifact_storage",
+      "rls_enabled": false,
+      "owner_role": "air_agent"
+    },
+    {
+      "table": "artifact_computations",
+      "rls_enabled": false,
+      "owner_role": "air_agent"
+    }
+  ]
+}

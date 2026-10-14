@@ -1,0 +1,31 @@
+sssssssssss.......ssssssssssssssssssssF                                  [100%]
+=================================== FAILURES ===================================
+______________________ test_mcp_500k_overflow_end_to_end _______________________
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ModuleNotFoundError: No module named 'common.business_graph.subagent_summarizer.ModelRegistry'; 'common.business_graph.subagent_summarizer' is not a package
+
+The above exception was the direct cause of the following exception:
+tests/integration_tests/test_mcp_500k_guard.py:187: in test_mcp_500k_overflow_end_to_end
+    asyncio.run(_run())
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/base_events.py:719: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+tests/integration_tests/test_mcp_500k_guard.py:63: in _run
+    monkeypatch.setattr(
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/_pytest/monkeypatch.py:107: in derive_importpath
+    target = resolve(module)
+             ^^^^^^^^^^^^^^^
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/_pytest/monkeypatch.py:88: in resolve
+    raise ImportError(f"import error in {used}: {ex}") from ex
+E   ImportError: import error in common.business_graph.subagent_summarizer.ModelRegistry: No module named 'common.business_graph.subagent_summarizer.ModelRegistry'; 'common.business_graph.subagent_summarizer' is not a package
+=========================== short test summary info ============================
+FAILED tests/integration_tests/test_mcp_500k_guard.py::test_mcp_500k_overflow_end_to_end
+1 failed, 7 passed, 31 skipped in 8.43s

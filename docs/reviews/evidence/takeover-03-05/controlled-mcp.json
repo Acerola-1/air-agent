@@ -1,0 +1,100 @@
+{
+  "boundary": "\u771f\u5b9e\u53d7\u63a7MCP+\u771f\u5b9e\u7ed1\u5b9a\u548cPG\uff1b\u751f\u4ea7\u4f01\u4e1a\u534f\u8bae\u4ecd\u7981\u7528",
+  "observations": [
+    {
+      "tenant_id": "f3eff942-9627-4445-82a5-3a77f0d6aec2",
+      "service_key": "controlled-one",
+      "tool_name": "delayed_query",
+      "logical_call_id": "de8d9719-2422-5bb7-a0ef-4236232bc035",
+      "retry_index": 0,
+      "status": "cancelled",
+      "network_attempted": true
+    },
+    {
+      "tenant_id": "f3eff942-9627-4445-82a5-3a77f0d6aec2",
+      "service_key": "controlled-one",
+      "tool_name": "flaky_query",
+      "logical_call_id": "99646665-70f3-503b-9384-ed495e500701",
+      "retry_index": 0,
+      "status": "technical_error",
+      "network_attempted": true
+    },
+    {
+      "tenant_id": "f3eff942-9627-4445-82a5-3a77f0d6aec2",
+      "service_key": "controlled-one",
+      "tool_name": "flaky_query",
+      "logical_call_id": "99646665-70f3-503b-9384-ed495e500701",
+      "retry_index": 1,
+      "status": "technical_error",
+      "network_attempted": true
+    },
+    {
+      "tenant_id": "f3eff942-9627-4445-82a5-3a77f0d6aec2",
+      "service_key": "controlled-one",
+      "tool_name": "flaky_query",
+      "logical_call_id": "99646665-70f3-503b-9384-ed495e500701",
+      "retry_index": 2,
+      "status": "succeeded",
+      "network_attempted": true
+    },
+    {
+      "tenant_id": "f3eff942-9627-4445-82a5-3a77f0d6aec2",
+      "service_key": "controlled-one",
+      "tool_name": "query_air",
+      "logical_call_id": "01aabcd2-09f4-52a4-9748-0bedc47e387f",
+      "retry_index": 0,
+      "status": "permission_denied",
+      "network_attempted": false
+    },
+    {
+      "tenant_id": "f3eff942-9627-4445-82a5-3a77f0d6aec2",
+      "service_key": "controlled-one",
+      "tool_name": "query_air",
+      "logical_call_id": "1e6bf856-5f3f-5f8b-b69a-8330d356917b",
+      "retry_index": 0,
+      "status": "succeeded",
+      "network_attempted": true
+    },
+    {
+      "tenant_id": "3deee72b-97ec-41d1-9cf4-2ca418db40d2",
+      "service_key": "controlled-one",
+      "tool_name": "query_air",
+      "logical_call_id": "98888b1f-b5bc-595d-b767-365b42177b80",
+      "retry_index": 0,
+      "status": "succeeded",
+      "network_attempted": true
+    },
+    {
+      "tenant_id": "f3eff942-9627-4445-82a5-3a77f0d6aec2",
+      "service_key": "controlled-two",
+      "tool_name": "query_air",
+      "logical_call_id": "c948a23b-7733-5d11-8002-ba28909a6496",
+      "retry_index": 0,
+      "status": "succeeded",
+      "network_attempted": true
+    },
+    {
+      "tenant_id": "3deee72b-97ec-41d1-9cf4-2ca418db40d2",
+      "service_key": "controlled-two",
+      "tool_name": "query_air",
+      "logical_call_id": "73f13c20-ce90-50fd-bd24-98addf21b977",
+      "retry_index": 0,
+      "status": "succeeded",
+      "network_attempted": true
+    }
+  ],
+  "collector": {
+    "enqueued": 9,
+    "written": 9,
+    "dropped": 0,
+    "failed": 0,
+    "retries": 0,
+    "queue_size": 0,
+    "in_flight": 0,
+    "pending": 0,
+    "queue_high_watermark": 3,
+    "last_drop_reason": ""
+  },
+  "cross_tenant_network_calls": 4,
+  "revoked_network_delta": 0
+}

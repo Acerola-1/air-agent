@@ -1,0 +1,47 @@
+{
+  "concurrent_cas": {
+    "statuses": [
+      200,
+      409
+    ],
+    "result_revisions": [
+      2,
+      null
+    ],
+    "history_result_revisions": [
+      1,
+      2
+    ]
+  },
+  "idempotency": {
+    "changed_comment_status": 409,
+    "changed_target_status": 409,
+    "changed_target_returns_old_answer": false,
+    "original_revision": 1,
+    "later_revision": 2,
+    "replay_revision": 1,
+    "replay_rating": "negative"
+  },
+  "copy_replay_and_outbox": {
+    "first_status": 200,
+    "outbox_count": 1,
+    "replay_status": 200,
+    "mixed_status": 200,
+    "valid_new_event_survived": 1
+  },
+  "copy_cohort": {
+    "future_copy_accepted": false,
+    "eligible_copyable_answers": 1,
+    "copy_events": 0,
+    "distinct_copied_answers": 0,
+    "copy_rate": 0.0,
+    "not_collected_answers": 0
+  },
+  "deletion": {
+    "deletion_status": 200,
+    "replay_after_delete": 404,
+    "visible_deleted_operations": 0,
+    "late_timing_accepted": false,
+    "metrics_eligible_after_delete": 0
+  }
+}

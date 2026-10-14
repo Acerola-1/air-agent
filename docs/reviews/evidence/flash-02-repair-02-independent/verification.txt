@@ -1,0 +1,6 @@
+Ruff selected production/migration/tests: PASS
+OpenSpec strict validation: PASS
+git diff --check: PASS
+OpenSpec total=38 complete=37 remaining=1 (8.4 actual freeze commit pending)
+Fresh independent PG final head=0010; coordinator-created databases/roles cleaned
+No commit/push/archive; mixed worktree and existing production gates preserved

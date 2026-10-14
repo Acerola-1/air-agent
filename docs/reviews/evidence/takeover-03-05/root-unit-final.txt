@@ -1,0 +1,41 @@
+...................ssssssssssssssssssssssss........................F.... [ 16%]
+................................................ssssssssssssssssssssssss [ 32%]
+ssssssssssssssssssssss.........sss......FFFF............................ [ 48%]
+........................................................................ [ 65%]
+........................................................................ [ 81%]
+..............................................ss........................ [ 97%]
+..........                                                               [100%]
+=================================== FAILURES ===================================
+___________ test_reset_checkpointer_cache_closes_previous_connection ___________
+tests/unit_tests/test_checkpointing.py:69: in test_reset_checkpointer_cache_closes_previous_connection
+    assert checkpointer.conn.closed is True
+E   assert False is True
+E    +  where False = <test_checkpointing.CloseableConnection object at 0x114ea4ec0>.closed
+E    +    where <test_checkpointing.CloseableConnection object at 0x114ea4ec0> = <test_checkpointing.CloseableCheckpointer object at 0x114ea4d70>.conn
+____________________ test_policy_route_fast_path_skips_llm _____________________
+tests/unit_tests/test_knowledge_route.py:16: in test_policy_route_fast_path_skips_llm
+    tools.clear_knowledge_route_cache()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+___________________ test_knowledge_route_fast_path_skips_llm ___________________
+tests/unit_tests/test_knowledge_route.py:23: in test_knowledge_route_fast_path_skips_llm
+    tools.clear_knowledge_route_cache()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+______________________ test_route_cache_reuses_llm_result ______________________
+tests/unit_tests/test_knowledge_route.py:30: in test_route_cache_reuses_llm_result
+    tools.clear_knowledge_route_cache()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+____________________ test_ambiguous_route_uses_llm_fallback ____________________
+tests/unit_tests/test_knowledge_route.py:50: in test_ambiguous_route_uses_llm_fallback
+    tools.clear_knowledge_route_cache()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection
+FAILED tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result
+FAILED tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback
+5 failed, 362 passed, 75 skipped in 38.17s

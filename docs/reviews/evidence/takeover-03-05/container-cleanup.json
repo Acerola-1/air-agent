@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-15",
+  "status": "backup_only_no_deletions_yet",
+  "containers": [
+    {
+      "name": "aa-takeover35-langgraph",
+      "image": "air-agent/langgraph-api:latest",
+      "mounts": [
+        {
+          "destination": "/deps/air_agent/src",
+          "type": "virtiofs",
+          "volume": null
+        }
+      ]
+    },
+    {
+      "name": "aa-observe04-langgraph-api",
+      "image": "air-agent/langgraph-api:latest",
+      "mounts": [
+        {
+          "destination": "/deps/air_agent/src",
+          "type": "virtiofs",
+          "volume": null
+        }
+      ]
+    },
+    {
+      "name": "aa-observe04-redis",
+      "image": "docker.io/library/redis:7-alpine",
+      "mounts": []
+    },
+    {
+      "name": "aa-feedback03-postgres",
+      "image": "docker.io/library/postgres:17-alpine",
+      "mounts": [
+        {
+          "destination": "/var/lib/postgresql/data",
+          "type": "volume",
+          "volume": "aa-feedback03-pgdata"
+        }
+      ]
+    },
+    {
+      "name": "aa-takeover35-langfuse-worker",
+      "image": "docker.io/langfuse/langfuse-worker:4",
+      "mounts": []
+    },
+    {
+      "name": "probe-pg",
+      "image": "docker.io/library/postgres:17-alpine",
+      "mounts": []
+    },
+    {
+      "name": "probe-redis",
+      "image": "docker.io/library/redis:7-alpine",
+      "mounts": []
+    },
+    {
+      "name": "aa-feedback03-redis",
+      "image": "docker.io/library/redis:7-alpine",
+      "mounts": []
+    },
+    {
+      "name": "aa-takeover35-langfuse-web",
+      "image": "docker.io/langfuse/langfuse:4",
+      "mounts": []
+    },
+    {
+      "name": "aa-takeover35-redis",
+      "image": "docker.io/library/redis:7-alpine",
+      "mounts": []
+    },
+    {
+      "name": "aa-feedback03-langgraph",
+      "image": "air-agent/langgraph-api:latest",
+      "mounts": [
+        {
+          "destination": "/deps/air_agent/src",
+          "type": "virtiofs",
+          "volume": null
+        }
+      ]
+    },
+    {
+      "name": "aa-takeover35-ephemeral-pg",
+      "image": "docker.io/library/postgres:17-alpine",
+      "mounts": [
+        {
+          "destination": "/var/lib/postgresql/data",
+          "type": "tmpfs",
+          "volume": null
+        }
+      ]
+    }
+  ],
+  "backups": [
+    {
+      "container": "aa-feedback03-postgres",
+      "path": ".local/acceptance-backups/2026-10-15/aa-feedback03-postgres.sql.gz",
+      "compressed_bytes": 13577643,
+      "sha256": "9a5774cc5eefb00e683a2de76d2806fc0a739127d6193dcef151e2f8f7820151",
+      "gzip_verified": true,
+      "contains_credentials": "private_backup_not_for_git"
+    },
+    {
+      "container": "aa-takeover35-ephemeral-pg",
+      "path": ".local/acceptance-backups/2026-10-15/aa-takeover35-ephemeral-pg.sql.gz",
+      "compressed_bytes": 808798,
+      "sha256": "213d8c2b15cb20eb4ac29cec5c7081a0e6db1a09d41bdeb8e578626d5c0fd907",
+      "gzip_verified": true,
+      "contains_credentials": "private_backup_not_for_git"
+    }
+  ]
+}

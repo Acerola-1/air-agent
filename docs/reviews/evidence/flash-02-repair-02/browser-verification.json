@@ -1,0 +1,82 @@
+{
+  "scope": "真实浏览器（ZCode 内置浏览器，真实 Chromium）对 UI 的实测；未使用 HTTP 探针代替",
+  "url": "http://127.0.0.1:3000",
+  "account": "acc_alice（本地验收 fixture 账号；口令经本地文件读取填入，未写入本文件与报告）",
+  "steps": [
+    {
+      "step": "登录",
+      "action": "登录页填账号/口令并提交",
+      "observed": "进入企业选择页（E2E企业A / E2E企业B）"
+    },
+    {
+      "step": "选择企业",
+      "action": "选择 E2E企业A",
+      "observed": "进入对话页，侧栏列出历史会话"
+    },
+    {
+      "step": "普通提交（F01 关键正向）",
+      "action": "输入『第二轮修复浏览器实测：只回答数字 3』并发送",
+      "observed": "用户气泡出现、助手显示『智能体正在调度模型与工具…』→ 数秒后渲染真实主模型回答（basic-qa，21061 tokens）",
+      "meaning": "修复前该路径首笔即 409『启动权已被消费』、重试 202；现首笔经 BFF→原生单点裁决成功启动"
+    },
+    {
+      "step": "刷新回读",
+      "action": "reload 页面 → 从侧栏重新打开该会话",
+      "observed": "原问题与完整回答、token 计数均可回读",
+      "meaning": "刷新后按线程回读一致"
+    },
+    {
+      "step": "停止",
+      "action": "发送长文任务后点击『停止生成』",
+      "observed": "前端进入保守态：『停止尚未确认，请再次点击停止后重试；确认前不能切换企业或发送新问题』；点击『重新读取会话』后横幅消失、界面恢复可用，且没有伪造终态",
+      "server_side": {
+        "platform_run_status": "interrupted",
+        "ledger": "cancel_requested=t, cancel_origin=user_stop"
+      },
+      "meaning": "停止意图落台账、平台运行确实被中断；前端在未确认前不冒充已停止（stopPending 语义保持）"
+    },
+    {
+      "step": "导航",
+      "action": "reload / 路由切换",
+      "observed": "页面正常，未产生伪装停止事实（导航停止事实由 chat-contract 用例断言）"
+    },
+    {
+      "step": "企业切换（刷新后）",
+      "action": "reload 重置前端内存态 → 在企业选择 <select> 选择 E2E企业B",
+      "observed": "selected=E2E企业B；侧栏切换为 B 企业视图（不再显示 A 企业会话）",
+      "note": "首次尝试切换被前端保守态拒绝（提示『停止尚未确认…确认前不能切换企业或发送新问题』）——这是既有 stopPending 语义（本轮未改 chat-store/ChatPanel/langgraph-api：mtime 仍为 02:12/02:14/01:57）；reload 后切换正常"
+    },
+    {
+      "step": "恢复（F02，浏览器内真实恢复）",
+      "action": "合成线程先经真实运行+取消产生平台 interrupted，再用服务级只读校准收敛为等待态；随后在**浏览器页面上下文**用真实 cookie 会话调用真实 BFF（POST /api/threads/{tid}/runs，x-operation-kind=resume，command.resume）",
+      "observed": "BFF 返回 200 与新的平台 run id；刷新页面后从侧栏打开该会话，可见**恢复后的真实模型回答**（同一提问，无重复提问气泡）",
+      "server_side_counts": {
+        "requests": 1,
+        "attempts": 1,
+        "resumes": 1,
+        "answers": 1,
+        "attempt_state": "succeeded",
+        "platform_run_id": "01a134a7-829b-70f1-a702-3cd7d6bb28d7（浏览器创建的恢复运行）",
+        "original_run_id": "01a134a7-5764-7463-b855-f5fbe5e88c90（被取消的初次运行）",
+        "evidence_file": "browser-resume-counts.json"
+      },
+      "meaning": "人工恢复保持原 request/attempt：提问 1、尝试 1、恢复事实 1；恢复映射保留原 run 关系",
+      "note": "UI 没有独立的『恢复』按钮（这六个图正常流程不产生人工中断），故恢复动作由浏览器页面发起、结果在 UI 回读；恢复的**执行与计数**另有真实三端用例 test_live_resume_roundtrip 覆盖"
+    },
+    {
+      "step": "删除（F04 用户路径）",
+      "action": "侧栏对本会话合成线程点击『删除会话』",
+      "observed": "删除登记成功：agent_thread_deletions 出现 state=requested、user_id 已记录的标记",
+      "api_after_ui_delete": "请求明细 404；原文 403（该账号无 agent:content:read，属权限结论）；新受理 403；服务级校准读取 404 —— 待删/已删一律禁读禁写"
+    },
+    {
+      "step": "停止状态的服务端事实核对",
+      "action": "直接查平台运行表与台账尝试",
+      "observed": "平台 run=interrupted（09:21:00 完成转换）；台账 cancel_requested=true / cancel_origin=user_stop",
+      "meaning": "停止确实生效；前端在宽限窗口内未观测到终态时保持保守态，不伪造已停止"
+    }
+  ],
+  "evidence_class": "本文件记录的是真实浏览器 + 真实 API + 真实主模型（basic-qa 图）；未使用模型替身；真实企业 MCP 仍安全禁用",
+  "web_note": "上表每一步均为真实浏览器操作；服务端事实另以平台库/台账库/管理 API 复核，未用替身模型",
+  "secrets": "本文件与同目录证据不含票据、口令、cookie 或正文原文（service-calibration.json 已按要求清除签发响应体）"
+}

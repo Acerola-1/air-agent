@@ -1,0 +1,390 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+______________ test_takeover_regenerate_reuses_original_snapshot _______________
+
+self = <sqlalchemy.engine.base.Connection object at 0x10a3f8710>
+dialect = <sqlalchemy.dialects.postgresql.psycopg.PGDialectAsync_psycopg object at 0x109411010>
+context = <sqlalchemy.dialects.postgresql.psycopg.PGExecutionContext_psycopg object at 0x10a3b7680>
+statement = <sqlalchemy.dialects.postgresql.psycopg.PGCompiler_psycopg object at 0x10a40c2d0>
+parameters = [{'id': UUID('6fc0f746-6350-49eb-a84e-041c723b924b'), 'tenant_id': UUID('696a6606-f3f7-4fc9-9357-1c9e87002ff8'), 'user_id': UUID('53664385-badc-4f39-bd48-e811a6e514df'), 'membership_id': UUID('d2d34e9f-1979-4340-b100-7a97d6ebcf2d'), ...}]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -> CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+>                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1969: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py:952: in do_execute
+    cursor.execute(statement, parameters)
+.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/psycopg.py:642: in execute
+    result = self.await_(self._cursor.execute(query, params, **kw))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py:132: in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py:196: in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <psycopg.AsyncCursor [closed] [IDLE] (host=localhost port=15432 user=air_agent_runtime database=air_agent_ivrp02_api_08889f72) at 0x10a437350>
+query = 'INSERT INTO agent_content_refs (id, tenant_id, user_id, membership_id, thread_id, request_id, message_id, content_ver...until)s::TIMESTAMP WITH TIME ZONE, %(deleted_at)s::TIMESTAMP WITH TIME ZONE, %(created_at)s::TIMESTAMP WITH TIME ZONE)'
+params = {'id': UUID('6fc0f746-6350-49eb-a84e-041c723b924b'), 'tenant_id': UUID('696a6606-f3f7-4fc9-9357-1c9e87002ff8'), 'user_id': UUID('53664385-badc-4f39-bd48-e811a6e514df'), 'membership_id': UUID('d2d34e9f-1979-4340-b100-7a97d6ebcf2d'), ...}
+prepare = None, binary = None
+
+    async def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool | None = None,
+    ) -> Self:
+        """
+        Execute a query or command to the database.
+        """
+        try:
+            async with self._conn.lock:
+                await self._conn.wait(
+                    self._execute_gen(query, params, prepare=prepare, binary=binary)
+                )
+        except e._NO_TRACEBACK as ex:
+>           raise ex.with_traceback(None)
+E           psycopg.errors.UniqueViolation: duplicate key value violates unique constraint "uq_agent_content_refs_request_live"
+
+.venv/lib/python3.13/site-packages/psycopg/cursor_async.py:117: UniqueViolation
+
+The above exception was the direct cause of the following exception:
+
+ledger_env = {'tenant_a': UUID('696a6606-f3f7-4fc9-9357-1c9e87002ff8'), 'tenant_b': UUID('b8dd3448-d886-4214-ae69-6552d77e742c'), 'user_a': UUID('53664385-badc-4f39-bd48-e811a6e514df'), 'user_b': UUID('2b0f580e-3bcb-4a86-9efc-3d651f5122b4')}
+
+    async def test_takeover_regenerate_reuses_original_snapshot(ledger_env):
+        env = ledger_env
+        thread = str(uuid.uuid4())
+        await _grant_thread(env['tenant_a'], env['user_a'], thread)
+        client = await _login(await _account_of(env['user_a']), env['tenant_a'])
+        try:
+            first = await client.post('/agent/requests', json={**_admit_body(thread,'snapshot-initial'),
+                                      'store_content':True, 'retention_days':1})
+            assert first.status_code == 200
+            initial = first.json()
+>           regen = await client.post('/agent/requests', json={**_admit_body(thread,'snapshot-regenerate'),
+                 'operation_kind':'regenerate','source_attempt_id':initial['attempt_id'],
+                 'store_content':True,'retention_days':3650})
+
+tests/test_event_ledger_api.py:1720: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/httpx/_client.py:1859: in post
+    return await self.request(
+tests/ctx_client.py:50: in request
+    response = await super().request(method, url, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/httpx/_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/httpx/_client.py:1629: in send
+    response = await self._send_handling_auth(
+.venv/lib/python3.13/site-packages/httpx/_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+.venv/lib/python3.13/site-packages/httpx/_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/httpx/_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/httpx/_transports/asgi.py:170: in handle_async_request
+    await self.app(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/applications.py:1163: in __call__
+    await super().__call__(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/applications.py:96: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/middleware/errors.py:186: in __call__
+    raise exc
+.venv/lib/python3.13/site-packages/starlette/middleware/errors.py:164: in __call__
+    await self.app(scope, receive, _send)
+.venv/lib/python3.13/site-packages/starlette/middleware/cors.py:88: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py:63: in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.13/site-packages/fastapi/middleware/asyncexitstack.py:18: in __call__
+    await self.app(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/routing.py:670: in __call__
+    await self.middleware_stack(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:2734: in app
+    await route.handle(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:1780: in handle
+    await self.original_router.handle(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:2789: in handle
+    await included_router._handle_selected(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:1800: in _handle_selected
+    await original_route.handle(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:1279: in handle
+    await app(scope, receive, send)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:158: in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:53: in wrapped_app
+    raise exc
+.venv/lib/python3.13/site-packages/starlette/_exception_handler.py:42: in wrapped_app
+    await app(scope, receive, sender)
+.venv/lib/python3.13/site-packages/fastapi/routing.py:144: in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/fastapi/routing.py:706: in app
+    raw_response = await run_endpoint_function(
+.venv/lib/python3.13/site-packages/fastapi/routing.py:352: in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/routers/ledger.py:77: in admit_request
+    result = await ledger_service.admit_request(
+app/services/ledger.py:536: in admit_request
+    await session.flush()
+.venv/lib/python3.13/site-packages/sqlalchemy/ext/asyncio/session.py:786: in flush
+    await greenlet_spawn(self.sync_session.flush, objects=objects)
+.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py:203: in greenlet_spawn
+    result = context.switch(value)
+             ^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4353: in flush
+    self._flush(objects)
+.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4488: in _flush
+    with util.safe_reraise():
+         ^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/sqlalchemy/util/langhelpers.py:122: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+.venv/lib/python3.13/site-packages/sqlalchemy/orm/session.py:4449: in _flush
+    flush_context.execute()
+.venv/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:465: in execute
+    rec.execute(self)
+.venv/lib/python3.13/site-packages/sqlalchemy/orm/unitofwork.py:641: in execute
+    util.preloaded.orm_persistence.save_obj(
+.venv/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:94: in save_obj
+    _emit_insert_statements(
+.venv/lib/python3.13/site-packages/sqlalchemy/orm/persistence.py:1049: in _emit_insert_statements
+    result = connection.execute(
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1421: in execute
+    return meth(
+.venv/lib/python3.13/site-packages/sqlalchemy/sql/elements.py:526: in _execute_on_connection
+    return connection._execute_clauseelement(
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1643: in _execute_clauseelement
+    ret = self._execute_context(
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1848: in _execute_context
+    return self._exec_single_context(
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1988: in _exec_single_context
+    self._handle_dbapi_exception(
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py:2365: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/base.py:1969: in _exec_single_context
+    self.dialect.do_execute(
+.venv/lib/python3.13/site-packages/sqlalchemy/engine/default.py:952: in do_execute
+    cursor.execute(statement, parameters)
+.venv/lib/python3.13/site-packages/sqlalchemy/dialects/postgresql/psycopg.py:642: in execute
+    result = self.await_(self._cursor.execute(query, params, **kw))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py:132: in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/sqlalchemy/util/_concurrency_py3k.py:196: in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <psycopg.AsyncCursor [closed] [IDLE] (host=localhost port=15432 user=air_agent_runtime database=air_agent_ivrp02_api_08889f72) at 0x10a437350>
+query = 'INSERT INTO agent_content_refs (id, tenant_id, user_id, membership_id, thread_id, request_id, message_id, content_ver...until)s::TIMESTAMP WITH TIME ZONE, %(deleted_at)s::TIMESTAMP WITH TIME ZONE, %(created_at)s::TIMESTAMP WITH TIME ZONE)'
+params = {'id': UUID('6fc0f746-6350-49eb-a84e-041c723b924b'), 'tenant_id': UUID('696a6606-f3f7-4fc9-9357-1c9e87002ff8'), 'user_id': UUID('53664385-badc-4f39-bd48-e811a6e514df'), 'membership_id': UUID('d2d34e9f-1979-4340-b100-7a97d6ebcf2d'), ...}
+prepare = None, binary = None
+
+    async def execute(
+        self,
+        query: Query,
+        params: Params | None = None,
+        *,
+        prepare: bool | None = None,
+        binary: bool | None = None,
+    ) -> Self:
+        """
+        Execute a query or command to the database.
+        """
+        try:
+            async with self._conn.lock:
+                await self._conn.wait(
+                    self._execute_gen(query, params, prepare=prepare, binary=binary)
+                )
+        except e._NO_TRACEBACK as ex:
+>           raise ex.with_traceback(None)
+E           sqlalchemy.exc.IntegrityError: (psycopg.errors.UniqueViolation) duplicate key value violates unique constraint "uq_agent_content_refs_request_live"
+E           [SQL: INSERT INTO agent_content_refs (id, tenant_id, user_id, membership_id, thread_id, request_id, message_id, content_version, content_snapshot, retention_until, deleted_at, created_at) VALUES (%(id)s::UUID, %(tenant_id)s::UUID, %(user_id)s::UUID, %(membership_id)s::UUID, %(thread_id)s::VARCHAR, %(request_id)s::UUID, %(message_id)s::VARCHAR, %(content_version)s::INTEGER, %(content_snapshot)s::VARCHAR, %(retention_until)s::TIMESTAMP WITH TIME ZONE, %(deleted_at)s::TIMESTAMP WITH TIME ZONE, %(created_at)s::TIMESTAMP WITH TIME ZONE)]
+E           [parameters: {'id': UUID('6fc0f746-6350-49eb-a84e-041c723b924b'), 'tenant_id': UUID('696a6606-f3f7-4fc9-9357-1c9e87002ff8'), 'user_id': UUID('53664385-badc-4f39-bd48-e811a6e514df'), 'membership_id': UUID('d2d34e9f-1979-4340-b100-7a97d6ebcf2d'), 'thread_id': 'c4ebe527-fe16-42cd-982e-fb648d0755c5', 'request_id': UUID('ba7ad597-5533-42fe-a9fc-8dbcb2b52edd'), 'message_id': 'um-1', 'content_version': 1, 'content_snapshot': '问题', 'retention_until': datetime.datetime(2036, 10, 10, 11, 27, 29, 27917, tzinfo=datetime.timezone.utc), 'deleted_at': None, 'created_at': datetime.datetime(2026, 10, 13, 11, 27, 29, 27917, tzinfo=datetime.timezone.utc)}]
+E           (Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+.venv/lib/python3.13/site-packages/psycopg/cursor_async.py:117: IntegrityError
+_________ test_takeover_fallback_operation_is_startable_and_replayable _________
+
+ledger_env = {'tenant_a': UUID('a92d8acc-2a38-4212-8ae5-252505f3ad1d'), 'tenant_b': UUID('99c466f2-1871-4865-922a-858e7f403f89'), 'user_a': UUID('f88885c7-e4d6-4913-8562-4e673a5a7ea6'), 'user_b': UUID('9031246a-50d3-4b48-904f-35da3340b3c5')}
+
+    async def test_takeover_fallback_operation_is_startable_and_replayable(ledger_env):
+        env = ledger_env
+        thread = str(uuid.uuid4())
+        await _grant_thread(env['tenant_a'], env['user_a'], thread)
+        client = await _login(await _account_of(env['user_a']), env['tenant_a'])
+        try:
+            body = {**_admit_body(thread,'fallback-regenerate'),'operation_kind':'regenerate'}
+            first = await client.post('/agent/requests', json=body)
+            assert first.status_code == 200 and first.json()['operation_kind'] == 'initial'
+            item = first.json()
+            claim = await client.post('/agent/runs/start-claim',headers={'x-internal-token':_internal_token()},
+                json={'submission_id':item['submission_id'],'attempt_id':item['attempt_id'],
+                      'thread_id':thread,'graph_id':'basic-qa','operation_kind':'initial','content':'问题'})
+>           assert claim.status_code == 200 and claim.json()['status'] == 'claimed'
+E           AssertionError: assert (200 == 200 and 'mismatch' == 'claimed'
+E            +  where 200 = <Response [200 OK]>.status_code
+E             
+E             - claimed
+E             + mismatch)
+
+tests/test_event_ledger_api.py:1744: AssertionError
+_____________ test_takeover_request_cannot_extend_server_retention _____________
+
+ledger_env = {'tenant_a': UUID('1431f0e9-98e5-4a1a-ade5-2fc1a8e90c2f'), 'tenant_b': UUID('6766b9cc-0fd5-4982-900b-07e6081b8f6f'), 'user_a': UUID('98319c65-9515-47a9-9ba7-c55445ae101f'), 'user_b': UUID('541254af-5141-491f-b102-e8a353f89cf3')}
+
+    async def test_takeover_request_cannot_extend_server_retention(ledger_env):
+        env = ledger_env
+        thread = str(uuid.uuid4())
+        await _grant_thread(env['tenant_a'], env['user_a'], thread)
+        client = await _login(await _account_of(env['user_a']), env['tenant_a'])
+        try:
+            admitted = await client.post('/agent/requests',json={**_admit_body(thread,'retention-bound'),
+                                       'store_content':True,'retention_days':3650})
+            assert admitted.status_code == 200
+            async with OwnerSessionLocal() as session:
+                days = await session.scalar(text('SELECT EXTRACT(EPOCH FROM (retention_until-created_at))/86400 '
+                        'FROM agent_content_refs WHERE request_id=CAST(:r AS uuid)'),
+                        {'r':admitted.json()['request_id']})
+>           assert days is not None and days <= 90
+E           AssertionError: assert (Decimal('3650.0000000000000000') is not None and Decimal('3650.0000000000000000') <= 90)
+
+tests/test_event_ledger_api.py:1764: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_event_ledger_api.py::test_takeover_regenerate_reuses_original_snapshot
+FAILED tests/test_event_ledger_api.py::test_takeover_fallback_operation_is_startable_and_replayable
+FAILED tests/test_event_ledger_api.py::test_takeover_request_cannot_extend_server_retention
+3 failed, 34 deselected in 2.80s

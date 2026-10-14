@@ -1,0 +1,28 @@
+✖ stop cannot confirm the previous answer while current run metadata is delayed (14.983458ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144.059542
+
+✖ failing tests:
+
+test at tests/chat-contract.test.cjs:451:1
+✖ stop cannot confirm the previous answer while current run metadata is delayed (14.983458ms)
+  AssertionError [ERR_ASSERTION]: 上一轮完成不能证明本轮提交已经停止
+  
+  true !== false
+  
+      at TestContext.<anonymous> (/Users/acerola/Dev/Python/air_agent/frontend/tests/chat-contract.test.cjs:456:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

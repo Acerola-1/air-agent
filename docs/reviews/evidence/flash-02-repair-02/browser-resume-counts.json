@@ -1,0 +1,15 @@
+{
+  "thread": "浏览器内发起恢复的合成线程（本轮自建）",
+  "requests": 1,
+  "attempts": 1,
+  "resumes": 1,
+  "answers": 1,
+  "content_snapshots_live": 0,
+  "attempt_state": "succeeded",
+  "platform_run_id": "01a134a7-829b-70f1-a702-3cd7d6bb28d7",
+  "original_run_id": "01a134a7-5764-7463-b855-f5fbe5e88c90",
+  "cancelled_run": "01a134a7-5764-7463-b855-f5fbe5e88c90",
+  "browser_resume_run": "01a134a7-829b-70f1-a702-3cd7d6bb28d7",
+  "readback": "刷新页面 → 侧栏打开该会话 → 显示原问题与恢复后的真实模型回答",
+  "note": "owner 只读查询；不含正文与任何凭据"
+}

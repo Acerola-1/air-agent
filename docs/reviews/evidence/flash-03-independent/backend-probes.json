@@ -1,0 +1,68 @@
+{
+  "concurrent_cas": {
+    "statuses": [
+      200,
+      200
+    ],
+    "result_revisions": [
+      2,
+      2
+    ],
+    "history_result_revisions": [
+      1,
+      2,
+      2
+    ]
+  },
+  "idempotency": {
+    "changed_comment_status": 200,
+    "changed_target_status": 200,
+    "changed_target_returns_old_answer": true,
+    "original_revision": 1,
+    "later_revision": 2,
+    "replay_revision": 2,
+    "replay_rating": "positive"
+  },
+  "copy_replay_and_outbox": {
+    "first_status": 200,
+    "outbox_count": 0,
+    "replay_status": 500,
+    "mixed_status": 500,
+    "valid_new_event_survived": 0
+  },
+  "deletion": {
+    "deletion_status": 200,
+    "replay_after_delete": 200,
+    "visible_deleted_operations": 1,
+    "late_timing_accepted": true,
+    "metrics_eligible_after_delete": 1
+  },
+  "copy_cohort": {
+    "future_copy_accepted": true,
+    "eligible_copyable_answers": 1,
+    "copy_events": 2,
+    "distinct_copied_answers": 2,
+    "copy_rate": 2.0,
+    "not_collected_answers": 0
+  },
+  "rls_and_parent_integrity": {
+    "without_context": 0,
+    "own_positive_control": 1,
+    "other_tenant": 0,
+    "after_transaction_no_context": 0,
+    "current_foreign_keys": 1,
+    "current_rows_after_parent_delete": 0
+  },
+  "comment_permission_split": {
+    "operations_without_operations_permission": 403,
+    "comment_without_operations_permission": 403,
+    "synthetic_private_comment_visible": false
+  },
+  "batch_size_limit": {
+    "bytes": 313622,
+    "status": 200,
+    "accepted": false,
+    "written": 0,
+    "batch_reason": "batch_too_large:313610"
+  }
+}

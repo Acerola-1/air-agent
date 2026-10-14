@@ -1,0 +1,16 @@
+{
+  "scope": "HEAD历史主规格校验，对照本次新增7份主规格各自strict通过",
+  "exit": 1,
+  "failed": [
+    "air-quality-forecast-skill-rules",
+    "chart-data-push",
+    "composite-backend-routing",
+    "forecast-data-bidirectional-rule",
+    "permission-check-subagent",
+    "silent-agent-output",
+    "skill-content-basic",
+    "skill-three-layer-system",
+    "subagent-architecture"
+  ],
+  "baseline_files_unchanged": true
+}

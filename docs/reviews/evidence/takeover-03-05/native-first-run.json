@@ -1,0 +1,65 @@
+{
+  "graph_load": {
+    "basic-qa": 200,
+    "intelligent-analysis": 200,
+    "data-analysis": 200,
+    "intelligent-report": 200,
+    "deep-research": 200,
+    "intelligent-tracing": 200
+  },
+  "thread_id": "01a137f4-2955-7742-8975-4aba9e616989",
+  "admission": {
+    "request_id": "0d18bea3-0df8-4916-8234-68d3e7c845c5",
+    "attempt_id": "f37e09a9-0d9b-4934-a5df-6e72d32ada89",
+    "submission_id": "47c7d691-f83b-45df-9356-2ee6507dd823"
+  },
+  "run_status": 200,
+  "elapsed_seconds": 8.608,
+  "result_keys": [
+    "messages",
+    "intent",
+    "system_prompt",
+    "context_metrics",
+    "data_status",
+    "data_model_started_at"
+  ],
+  "failure_category": null,
+  "observability_status": 200,
+  "observations": [
+    {
+      "observation_id": "efd3cf53-dce7-4c0d-b980-0f71f1a66179",
+      "attempt_id": "f37e09a9-0d9b-4934-a5df-6e72d32ada89",
+      "request_id": "0d18bea3-0df8-4916-8234-68d3e7c845c5",
+      "graph_id": "basic-qa",
+      "role": "main",
+      "model": "hy3",
+      "provider": "openai-compatible",
+      "status": "succeeded",
+      "started_at": "2026-10-14T01:08:31.124702+00:00",
+      "ended_at": "2026-10-14T01:08:38.036381+00:00",
+      "duration_ms": 6911,
+      "ttft_ms": null,
+      "first_piece_kind": null,
+      "usage": {
+        "input_tokens": 152,
+        "output_tokens": 399,
+        "total_tokens": 551,
+        "cache_read_tokens": 0,
+        "cache_write_tokens": null,
+        "reasoning_tokens": 339
+      },
+      "measurement_status": "measured",
+      "usage_source": "provider_final",
+      "retry_index": 0
+    }
+  ],
+  "trace_links": [
+    {
+      "provider": "langfuse",
+      "project_scope": "coordinator-acceptance",
+      "trace_id": "673d1d7aab6f03864a238826aa534d61",
+      "is_primary": false,
+      "link_source": "runtime_callback"
+    }
+  ]
+}

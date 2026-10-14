@@ -1,0 +1,20 @@
+..........................................F............................. [ 41%]
+.....................F.................................................. [ 82%]
+..............................                                           [100%]
+=================================== FAILURES ===================================
+_______________ test_browser_events_all_reserved_types_rejected ________________
+tests/test_event_ledger_api.py:551: in test_browser_events_all_reserved_types_rejected
+    assert res2.json()["items"][0]["reason"] == "type_not_enabled"
+E   AssertionError: assert 'source_not_allowed' == 'type_not_enabled'
+E     
+E     - type_not_enabled
+E     + source_not_allowed
+_______________________ test_ledger_openapi_has_no_drift _______________________
+tests/test_ledger_openapi_freeze.py:36: in test_ledger_openapi_has_no_drift
+    assert not added, f"新增台账路由必须先更新冻结件：{added}"
+E   AssertionError: 新增台账路由必须先更新冻结件：['/agent/observability/costs', '/agent/observability/metrics', '/agent/observability/observations', '/agent/observability/prices', '/agent/observability/prices/recalculate', '/agent/observability/runs/{attempt_id}', '/agent/observability/traces/{trace_id}']
+E   assert not ['/agent/observability/costs', '/agent/observability/metrics', '/agent/observability/observations', '/agent/observability/prices', '/agent/observability/prices/recalculate', '/agent/observability/runs/{attempt_id}', ...]
+=========================== short test summary info ============================
+FAILED tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected
+FAILED tests/test_ledger_openapi_freeze.py::test_ledger_openapi_has_no_drift
+2 failed, 172 passed in 130.63s (0:02:10)

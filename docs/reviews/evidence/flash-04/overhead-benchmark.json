@@ -1,0 +1,80 @@
+{
+ "check": "observability on/off overhead (local, external waits excluded)",
+ "conditions": "same process, fake model, same input, 35 samples x 2 rounds, warmup 5",
+ "groups": [
+  {
+   "enabled": false,
+   "samples": 35,
+   "p50_ms": 0.23,
+   "p95_ms": 0.716,
+   "mean_ms": 0.267,
+   "collector_stats": {
+    "enqueued": 0,
+    "written": 0,
+    "dropped": 0,
+    "failed": 0,
+    "retries": 0,
+    "queue_size": 0,
+    "queue_high_watermark": 0,
+    "last_drop_reason": ""
+   }
+  },
+  {
+   "enabled": true,
+   "samples": 35,
+   "p50_ms": 0.311,
+   "p95_ms": 0.817,
+   "mean_ms": 0.365,
+   "collector_stats": {
+    "enqueued": 0,
+    "written": 0,
+    "dropped": 0,
+    "failed": 0,
+    "retries": 0,
+    "queue_size": 0,
+    "queue_high_watermark": 0,
+    "last_drop_reason": ""
+   }
+  },
+  {
+   "enabled": false,
+   "samples": 35,
+   "p50_ms": 0.579,
+   "p95_ms": 1.537,
+   "mean_ms": 0.662,
+   "collector_stats": {
+    "enqueued": 0,
+    "written": 0,
+    "dropped": 0,
+    "failed": 0,
+    "retries": 0,
+    "queue_size": 0,
+    "queue_high_watermark": 0,
+    "last_drop_reason": ""
+   }
+  },
+  {
+   "enabled": true,
+   "samples": 35,
+   "p50_ms": 0.291,
+   "p95_ms": 1.015,
+   "mean_ms": 0.443,
+   "collector_stats": {
+    "enqueued": 0,
+    "written": 0,
+    "dropped": 0,
+    "failed": 0,
+    "retries": 0,
+    "queue_size": 0,
+    "queue_high_watermark": 0,
+    "last_drop_reason": ""
+   }
+  }
+ ],
+ "delta": {
+  "p50_ms": -0.103,
+  "p95_ms": -0.211
+ },
+ "threshold": "新增本地 P95 > 50ms 需修复或明确未过验收",
+ "note": "FakeModel 无外部等待；真实链路的外部模型/Langfuse等待单列不计入"
+}

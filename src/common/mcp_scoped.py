@@ -43,6 +43,18 @@ from common.mcp_authorization import (
 LoggingConfigurator.configure()
 
 
+class MCPResultText(str):
+    """保留既有文本返回形状，并在进程内携带协议isError事实."""
+
+    is_error: bool
+
+    def __new__(cls, value, *, is_error=False):
+        """创建带协议失败标记的兼容文本."""
+        result = super().__new__(cls, value)
+        result.is_error = is_error
+        return result
+
+
 # --------------------------------------------------------------------- 授权作用域注册表
 
 
@@ -156,6 +168,8 @@ class ScopedMCPToolFactory:
                 }
             },
             tool_interceptors=[_build_interceptor(binding)],
+            # SDK默认把isError吞成普通列表，会绕过既有重试并误计为成功。
+            handle_tool_errors=False,
         )
         return await client.get_tools(server_name=binding.server_key)
 
@@ -167,18 +181,62 @@ class ScopedMCPToolFactory:
         server_key: str,
         tool_name: str,
         args: dict[str, Any],
+        run_config: Any = None,
     ) -> Any:
         """执行一次授权调用：每次重新解析绑定（撤销/轮换即时生效）."""
-        binding = await resolve_binding(
-            tenant_id=identity.tenant_id,
-            membership_id=identity.membership_id,
-            server_key=server_key,
-        )
-        state = await self._ensure_discovered(binding)
-        tool = next((t for t in state.tools if t.name == tool_name), None)
-        if tool is None:
-            raise McpAuthorizationError("工具不在当前授权作用域已发现清单内")
-        result = await tool.ainvoke(args)
+        try:
+            binding = await resolve_binding(
+                tenant_id=identity.tenant_id,
+                membership_id=identity.membership_id,
+                server_key=server_key,
+            )
+            state = await self._ensure_discovered(binding)
+            tool = next((t for t in state.tools if t.name == tool_name), None)
+            if tool is None:
+                raise McpAuthorizationError("工具不在当前授权作用域已发现清单内")
+        except McpAuthorizationError:
+            from common.observability.context import observation_context_from_config
+            from common.observability.tool_adapter import record_tool_result
+
+            ctx = observation_context_from_config(run_config)
+            if (
+                ctx is not None
+                and ctx.tenant_id == identity.tenant_id
+                and ctx.user_id == identity.user_id
+            ):
+                await record_tool_result(
+                    ctx,
+                    logical_call_id=str(
+                        ((run_config or {}).get("metadata") or {}).get(
+                            "obs_tool_call_id"
+                        )
+                        or ""
+                    )
+                    or None,
+                    tool_name=tool_name,
+                    service_key=server_key,
+                    status="permission_denied",
+                    network_attempted=False,
+                )
+            raise
+        from langchain_core.tools import ToolException
+
+        from common.observability.tool_adapter import observed_tool_call
+
+        try:
+            result = await observed_tool_call(
+                run_config,
+                tool_name=tool_name,
+                service_key=server_key,
+                invoke=lambda: tool.ainvoke(args),
+            )
+        except ToolException as exc:
+            content = getattr(exc, "tool_content", None)
+            if content is None:
+                raise
+            # 与SDK原有handle_tool_errors=True保持业务文本兼容；采集层已准确
+            # 记录isError失败，不能把它吞成成功，也不改变既有调用方的异常契约。
+            return MCPResultText(_normalize_call_output(content), is_error=True)
         return _normalize_call_output(result)
 
     def register_catalog(self, tools: list[Any], *, server_key: str) -> None:
@@ -265,7 +323,9 @@ async def execute_mcp_tool(
     identity = identity_from_config(dict(run_config or {}))
     if identity is None:
         raise McpAuthorizationError("缺少已认证运行身份，MCP 调用被拒绝")
-    return await get_factory().call(identity, server_key, tool_name, args)
+    return await get_factory().call(
+        identity, server_key, tool_name, args, run_config=run_config
+    )
 
 
 def build_proxy_tools() -> list[StructuredTool]:

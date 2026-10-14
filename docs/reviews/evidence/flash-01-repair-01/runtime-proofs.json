@@ -1,0 +1,8 @@
+{
+  "missing_revision_snapshot_allowed": true,
+  "model_attempts": 2,
+  "runtime_checks_during_model_retry": 1,
+  "model_retry_sent_after_simulated_revision_revoke": true,
+  "summary_external_calls_without_identity": 1,
+  "summary_identity_checks": 0
+}

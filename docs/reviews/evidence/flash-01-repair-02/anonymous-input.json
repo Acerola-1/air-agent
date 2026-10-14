@@ -1,0 +1,123 @@
+{
+  "base": "7b82c04",
+  "user_repair_duration": "2h04m",
+  "user_total_duration": "8h19m",
+  "files": [
+    {
+      "path": "admin/api/app/routers/auth.py",
+      "sha256": "3d0f88cdd66f54468f8a9fb76ab7756a10dd2249951fcd8b32c46a4db915e40b"
+    },
+    {
+      "path": "admin/api/app/routers/roles.py",
+      "sha256": "cfffb202809dedf5da18cd512a16f607d32fa3d506e038765e64890ea25dd189"
+    },
+    {
+      "path": "admin/api/app/schemas.py",
+      "sha256": "a06af1df679aa1cfa439af8597ffa172d13965783f76fc826d152f396bfd22e8"
+    },
+    {
+      "path": "admin/api/migrations/versions/0006_claim_session.py",
+      "sha256": "d4507bf4b060a9115e066564ad3e07ea6b0decd777681a27ca7b7c479b462751"
+    },
+    {
+      "path": "admin/api/scripts/migrate_identity.py",
+      "sha256": "967825dc853e576c0eb6c54aa8b462dd7e80ba0b9836ccd9ef2408bac7ee944b"
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "sha256": "59705ff3da655ebf7f7de4e5c0d8e8d737f13bd26c2c1167835cce64dbf4253b"
+    },
+    {
+      "path": "frontend/lib/admin-api.ts",
+      "sha256": "7375251f510fbac5f5cd8cc0b7e5874797daf6b757c1c27e44b7e88b02718859"
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "sha256": "6bc4f313746d4f952364343100bdb5b68e7acd8ce8cc31e290f6700556d662fc"
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "sha256": "1d8bf6ee6f14ae3dd49ed41a4b4acf69872587ed6ae602f59ca5a108bbf19827"
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "sha256": "2bdaaaff437e688cf1aca3a5000aaff47639f890e4fc9e13a138f9e3e1f1fc96"
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "sha256": "b442a6cfa54eb0f5d13effd3ffb26ada4701d20fc8df765ba3e0f131e87398d5"
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "sha256": "0338bbeefbbb27d8168911921e3d7675bbea13452da94d69cb74f6f5f7f4d12e"
+    },
+    {
+      "path": "src/common/business_graph/subagent_summarizer.py",
+      "sha256": "1d6fda465eecdfcf4ef89cd5a17f57f4d87b66fdd8fe3a69253339038ca8f5e0"
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "sha256": "75c425a325bcf5b7495a9e81c0550dfb02aed46e4f628bde7dac5e4c40d00d69"
+    },
+    {
+      "path": "src/common/conversation_summarizer.py",
+      "sha256": "d3ae28ffe9e1ac3a099be7bcf03b7b1f9b2d2c669c03ffaf14e740d01de7b172"
+    },
+    {
+      "path": "src/common/data_governance.py",
+      "sha256": "a3830b9535cbaca1303edd32a7930b9b18ff2e8253bf1efdfc6c16846e616193"
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "sha256": "70fb0734f5d009e37dd11b238a4b8372874d7f41d4ef7078c5fdd1e188d8db07"
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "sha256": "53a24819ab53ec7151e87b931322697b10d2b5e9a0bc07c5fb13b17fd882d0a3"
+    },
+    {
+      "path": "src/common/identity/runtime.py",
+      "sha256": "5cbe2f61be330ab21257e26578cc17c8060deaff0f1012ad3c99ed5a1dd878aa"
+    },
+    {
+      "path": "src/common/text_reduction.py",
+      "sha256": "de35ba906031201f3eff7c83dbda76ab535c0384d0842a44a45bb1a2fd283527"
+    },
+    {
+      "path": "tests/integration_tests/test_live_tenant_claims.py",
+      "sha256": "b508acbf7e53a0ce523bb97e8249d88b16759f02abcd2f3f43ebd7e5e04c086a"
+    },
+    {
+      "path": "tests/unit_tests/test_per_call_outbound_guards.py",
+      "sha256": "7dcad71d333517fbe2db70663d00f450ae69aeacf5d20cda9ed470974ba8ac06"
+    },
+    {
+      "path": "tests/unit_tests/test_thread_claim_protocol.py",
+      "sha256": "b2a85d662614aa24fe90e90344625ef9038ff5758c34737bccd7f61837ceff83"
+    },
+    {
+      "path": "admin/api/tests/test_tenant_migration.py",
+      "sha256": "8036318c1fa39a2a7cc84f6830f4579aa1ddc466acf503c299fad36b018f7141"
+    },
+    {
+      "path": "admin/api/tests/test_tenant_api.py",
+      "sha256": "dd454b60c623d148d1f71cfabaf3b207400f29bda7464222aca9d0ffc3ffc4c1"
+    },
+    {
+      "path": "src/common/models.py",
+      "sha256": "31316233091fc7dedbbb044f3c467962396cf3571c286209287fe0fb6ec798b6"
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "sha256": "c9eb440e50022ee6b16dc791dd61c1df3d7940846dc0b06198c4edd8d1e59a66"
+    },
+    {
+      "path": "admin/api/scripts/drill_recovery.sh",
+      "sha256": "287fa54276a8113b53a0d11797823ca58da14b739ac396203d3850289bf1ebb7"
+    },
+    {
+      "path": "frontend/components/chat/TenantBadge.tsx",
+      "sha256": "2b65214c68f2027758e956d6edfd2fe7cea4d074b55a909762c283df1833b610"
+    }
+  ]
+}

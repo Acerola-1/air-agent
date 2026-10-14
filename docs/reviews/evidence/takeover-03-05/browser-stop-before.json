@@ -1,0 +1,14 @@
+{
+  "thread_id": "a32e5e3b-8367-44a5-9123-9ff210e32889",
+  "attempt_id": "3678c801-3704-44bd-9329-15bf7db48a6d",
+  "platform_run_id": "01a13a0b-d863-74f3-b97a-85af62daf5ce",
+  "ledger_state": "running",
+  "stop_intent": {
+    "phase": "processing",
+    "origin": "user_stop",
+    "requested_at": "2026-10-14T10:53:48.262330+00:00",
+    "platform_run_id": "01a13a0b-d863-74f3-b97a-85af62daf5ce"
+  },
+  "native_read_status": 200,
+  "native_run_status": "interrupted"
+}

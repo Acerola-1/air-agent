@@ -13,9 +13,14 @@ from langchain_quickjs import CodeInterpreterMiddleware
 from common.artifacts.create_artifact_tool import build_create_artifact_tool
 from common.event_ledger.lifecycle import LedgerLifecycleMiddleware
 from common.langfuse_tracing import with_langfuse_tracing
-from common.mcp_client import ensure_mcp_tools_sync, get_business_mcp_tools
+from common.mcp_client import get_business_mcp_tools
 from common.middleware import TenantRuntimeGuardMiddleware, TimeContextMiddleware
 from common.models import ModelRegistry
+from common.observability.deepagents_adapter import (
+    observed_subagents,
+    observed_summarization,
+)
+from common.observability.middleware import ObservabilityModelMiddleware
 from common.prompts import with_main_agent_tool_use_output_guard
 from common.skill_discovery import create_find_skill_tool
 from common.skill_router import SkillSemanticRouter
@@ -42,16 +47,24 @@ def _build_middleware() -> list[AgentMiddleware[Any, Any, Any]]:
         TenantRuntimeGuardMiddleware(),
         # 台账生命周期收尾（change add-agent-event-ledger）：deepagents 图用中间件
         # 作为扩展点；与五图节点共用同一 _on_graph_end 实现，失败开放。
-        LedgerLifecycleMiddleware("deep_research"),
+        LedgerLifecycleMiddleware("deep-research"),
+        ObservabilityModelMiddleware(),
+        observed_summarization(ModelRegistry.main_llm, _backend),
         CodeInterpreterMiddleware(ptc=[]),
     ]
 
 
 find_skill = create_find_skill_tool(SkillSemanticRouter(SKILLS_DIR))
 
-# MCP 工具懒加载：datacenter MCP 服务不可达时自动降级为空列表，图照常编译
-ensure_mcp_tools_sync()
+# 只读已发现的本地目录；图编译期间不做外部MCP发现。
 _mcp_tools = get_business_mcp_tools()
+
+_backend = CompositeBackend(
+    default=StateBackend(),
+    routes={
+        "/skills/": FilesystemBackend(root_dir=str(SKILLS_DIR), virtual_mode=True),
+    },
+)
 
 graph = with_langfuse_tracing(
     create_deep_agent(
@@ -59,14 +72,8 @@ graph = with_langfuse_tracing(
         tools=[find_skill, build_create_artifact_tool(), *_mcp_tools],
         system_prompt=with_main_agent_tool_use_output_guard(SYSTEM_PROMPT),
         middleware=_build_middleware(),
-        backend=CompositeBackend(
-            default=StateBackend(),
-            routes={
-                "/skills/": FilesystemBackend(
-                    root_dir=str(SKILLS_DIR), virtual_mode=True
-                ),
-            },
-        ),
+        backend=_backend,
+        subagents=observed_subagents(ModelRegistry.main_llm, _backend),
         checkpointer=None,
         name="deep-research",
     )

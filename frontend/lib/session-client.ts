@@ -4,6 +4,7 @@ import { create } from "zustand";
 import type { AdminSessionContext } from "@/lib/admin-api-contract";
 import { useChatStore } from "@/lib/chat-store";
 import { onTenantContextConflict, setTenantRequestContext } from "@/lib/langgraph-api";
+import { setFeedbackScope } from "@/lib/feedback/client";
 
 /** 当前登录会话（客户端）。
  *
@@ -45,6 +46,8 @@ function applyCtx(ctx: AdminSessionContext | null) {
       ? { tenantId: ctx.current_tenant?.id ?? "", contextVersion: ctx.context_version }
       : null
   );
+  // 反馈域作用域：企业/用户变化即清空映射/队列/迟到回调（spec：不串评价）
+  setFeedbackScope(ctx?.current_tenant?.id ?? "", ctx?.user.id ?? "", ctx?.context_version ?? 0);
   useSessionStore.setState({
     ctx,
     username: ctx ? ctx.user.account : null,

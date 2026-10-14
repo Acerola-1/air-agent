@@ -1,0 +1,21 @@
+{
+  "database": "aa_takeover35_ac54361b",
+  "head": "0011f_integrity",
+  "feedback_rls_catalog": [
+    {
+      "table": "agent_feedback_comments",
+      "enabled": true,
+      "forced": true
+    },
+    {
+      "table": "agent_feedback_current",
+      "enabled": true,
+      "forced": true
+    },
+    {
+      "table": "agent_feedback_operations",
+      "enabled": true,
+      "forced": true
+    }
+  ]
+}

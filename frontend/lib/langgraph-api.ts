@@ -249,12 +249,14 @@ export type StreamHandlers = {
   onCustom?: (event: Record<string, unknown>) => void;
   onRun?: (runId: string) => void;
   onDone?: (error?: Error) => void;
+  onTransportDisconnect?: () => void;
 };
 
 export async function streamRun(opts: {
   threadId: string; graphId: string; messages: { id?: string; type: string; content: unknown }[];
   config?: { configurable?: Record<string, unknown> }; signal?: AbortSignal; handlers: StreamHandlers;
 }): Promise<void> {  const { threadId, graphId, messages, config, signal, handlers } = opts;
+  let upstreamError = false;
   try {
     const stream = await apiClient().runs.stream(threadId, graphId, {
       input: { messages }, config, streamMode: ["values", "messages-tuple", "custom"], signal,
@@ -267,7 +269,7 @@ export async function streamRun(opts: {
         if (data?.run_id) handlers.onRun?.(data.run_id);
       }
       if (signal?.aborted) break;
-      if (chunk.event === "error") throw new Error("本次处理失败，已确认的内容仍保留。请重试。");
+      if (chunk.event === "error") { upstreamError = true; throw new Error("本次处理失败，已确认的内容仍保留。请重试。"); }
       if (chunk.event === "values") {
         const values = chunk.data as ThreadValues;
         if (Array.isArray(values?.messages)) handlers.onValues(values);
@@ -281,6 +283,7 @@ export async function streamRun(opts: {
     }
     handlers.onDone?.();
   } catch (error) {
+    if (!signal?.aborted && !upstreamError) handlers.onTransportDisconnect?.();
     handlers.onDone?.(signal?.aborted ? undefined : error instanceof Error ? error : new Error("本次处理失败，请重试。"));
   }
 }
@@ -290,7 +293,11 @@ export async function streamRun(opts: {
  *  服务端会回读平台 run metadata 校验本次台账标记后才确认；客户端伪造/错配不会
  *  被接受。失败不抛（保持"受理中"，由校准处理），也不改写本地终态。
  */
-export async function confirmRunAdmission(threadId: string, runId: string): Promise<boolean> {
+export async function confirmRunAdmission(
+  threadId: string,
+  runId: string,
+  onConfirmedAttempt?: (attemptId: string) => void,
+): Promise<boolean> {
   try {
     const res = await fetch("/api/agent-runs/confirm", {
       method: "POST",
@@ -299,7 +306,10 @@ export async function confirmRunAdmission(threadId: string, runId: string): Prom
       cache: "no-store",
     });
     if (!res.ok) return false;
-    const data = (await res.json()) as { confirmed?: boolean };
+    const data = (await res.json()) as { confirmed?: boolean; attempt_id?: string };
+    if (data.confirmed === true && typeof data.attempt_id === "string") {
+      onConfirmedAttempt?.(data.attempt_id);
+    }
     return data.confirmed === true;
   } catch {
     return false;

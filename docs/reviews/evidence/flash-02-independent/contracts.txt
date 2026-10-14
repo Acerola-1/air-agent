@@ -1,0 +1,38 @@
+✔ embedded frontend copy matches canonical contract files (1.344833ms)
+✔ every sample case matches the expected verdict (same set as Python) (1.002ms)
+✔ browser cannot claim server terminal facts (0.099792ms)
+✔ reserved types are registered but rejected as not enabled (0.385167ms)
+✔ enabled types equal the v1 core family (0.085666ms)
+✔ batch validation returns per-item results and enforces browser limits (0.531542ms)
+✔ forbidden payload key wins over whitelist (0.196209ms)
+✔ context meter uses provider input after completion and labels preparation estimates (52.091959ms)
+✔ every intermediate frame excludes tool JSON and internal summaries from body (10.575916ms)
+✔ old run callbacks and completion cannot clear a newer run (7.090916ms)
+✔ stop sends server cancellation and ignores late metadata safely (10.4865ms)
+✔ legacy double answer merges, marked draft hidden, archives require actual stored status (4.342417ms)
+✔ SDK error event becomes failed completion, metadata and custom consumed (5.897458ms)
+✔ proxy: unified identity gates, ticket upstream, v2 scope, tenant checks (2129.581375ms)
+✔ archive scope v2 signing requires configured keys (5.643875ms)
+✔ stopStreaming only confirms after server reaches terminal run status (610.193792ms)
+✔ stopStreaming reports unconfirmed when cancellation and status both fail (2.501291ms)
+✔ stop cancel 409 is context_changed, never a false confirmation (2.61575ms)
+✔ stop after 404 cancel confirms only on observed terminal status (2.658291ms)
+✔ stop treats missing/unknown run status as unconfirmed (3.382375ms)
+✔ stop with empty run list within grace window is unconfirmed unknown (3210.359166ms)
+✔ stop recovers late run id from recent runs and waits terminal (2.62075ms)
+✔ stop before run id arrives recovers the active run from the run list (2.996458ms)
+✔ proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surfaces 409 (3.108208ms)
+✔ stop cannot confirm the previous answer while current run metadata is delayed (3211.023167ms)
+✔ unconfirmed stop keeps the run for late metadata and blocks new submissions (3212.673417ms)
+✔ 页面导航离开记录 origin=navigation 的独立停止意图 (4.001375ms)
+✔ 无活动运行时的导航不产生停止事实 (1.962167ms)
+✔ 重新生成声明 regenerate 并复用上一条用户问题（不新增提问） (2.934958ms)
+✔ 重新发送声明 retry (2.363291ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12734.55475

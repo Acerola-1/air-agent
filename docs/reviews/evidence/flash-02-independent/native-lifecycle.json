@@ -1,0 +1,8 @@
+{
+  "native_create_status": 200,
+  "platform_status": "success",
+  "ledger_state": "admitting",
+  "platform_id_persisted": false,
+  "answer_count": 0,
+  "cleanup": 204
+}

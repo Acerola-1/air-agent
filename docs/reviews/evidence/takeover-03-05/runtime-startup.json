@@ -1,0 +1,12 @@
+{
+  "database": "aa_takeover35_ac54361b",
+  "native_database": "aa_takeover35_native_ac54361b",
+  "redis": "aa-takeover35-redis",
+  "native": "aa-takeover35-langgraph",
+  "ports": {
+    "admin": 8107,
+    "frontend": 3107,
+    "native": 2031,
+    "redis": 16401
+  }
+}

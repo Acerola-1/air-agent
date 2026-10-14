@@ -103,7 +103,8 @@ async def fetch_mcp_binding(
 async def binding_exists(tenant_id: str, server_key: str) -> bool:
     """该企业在该服务上是否存在任意绑定（供懒可用判定，不解析凭据）."""
     row = await _fetch_row(
-        "SELECT 1 AS x FROM mcp_identity_bindings WHERE tenant_id = %(t)s AND server_key = %(k)s LIMIT 1",
+        "SELECT 1 AS x FROM mcp_identity_bindings WHERE tenant_id = %(t)s AND s"
+        "erver_key = %(k)s LIMIT 1",
         {"t": tenant_id, "k": server_key},
         {"air_agent.tenant_id": tenant_id},
     )
@@ -226,6 +227,10 @@ async def fetch_identity_state(
             "air_agent.tenant_id": tenant_id,
         },
     )
+    return _identity_state_from_row(row)
+
+
+def _identity_state_from_row(row):
     if row is None:
         return None
     return IdentityState(
@@ -347,3 +352,24 @@ async def confirm_thread_claim(
         return True
     already = await _fetch_row(_OWNERSHIP_CONFIRMED_SAME, params, guc)
     return already is not None
+
+
+def fetch_identity_state_sync(
+    session_id: str, *, user_id: str, tenant_id: str
+) -> IdentityState | None:
+    """同步工具线程使用同一SQL/状态解析，避免跨事件循环共用异步池."""
+    try:
+        from psycopg.rows import dict_row
+
+        with psycopg.connect(_uri(), row_factory=dict_row, connect_timeout=2) as conn:
+            with conn.transaction():
+                for key, value in {
+                    "air_agent.session_id": session_id,
+                    "air_agent.user_id": user_id,
+                    "air_agent.tenant_id": tenant_id,
+                }.items():
+                    conn.execute("SELECT set_config(%s,%s,true)", (key, value))
+                row = conn.execute(_IDENTITY_SQL, {"session_id": session_id}).fetchone()
+        return _identity_state_from_row(row)
+    except psycopg.Error as exc:
+        raise IdentityBackendUnavailable("identity sync lookup unavailable") from exc

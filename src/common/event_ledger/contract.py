@@ -41,6 +41,22 @@ _OPERATION_KINDS = ("initial", "retry", "regenerate", "resume")
 # 载荷内需要按字典校验枚举的字段 → 字典来源
 _ENUM_FIELDS = ("state", "origin", "phase", "evidence_source", "operation_kind")
 
+# change complete-agent-observability 窄例外：仅 runtime.model_usage 的 runtime
+# 来源、payload **顶层**、以下登记白名单键允许"非布尔非负整数"计数。字符串 /
+# bool / 负数 / 浮点 / 嵌套键 / 其他类型一律仍走原规则；禁止键（token 等）扫描
+# 先于本例外，嵌套 secret 照常硬拒绝。不能扩大到其他 event_type 或来源。
+_NUMERIC_USAGE_EVENT_TYPES = frozenset({"runtime.model_usage"})
+_NUMERIC_USAGE_TOP_LEVEL_KEYS = frozenset(
+    {
+        "input_tokens",
+        "output_tokens",
+        "total_tokens",
+        "cache_read_tokens",
+        "cache_write_tokens",
+        "reasoning_tokens",
+    }
+)
+
 
 @lru_cache
 def registry() -> dict[str, Any]:
@@ -166,12 +182,32 @@ def validate_event(event: Any) -> ValidationResult:
         return ValidationResult(False, "missing_field", "payload")
 
     # 8. 禁止键（任意层级）：票据/凭据/全文永远是硬拒绝，优先于白名单判定——
-    #    即使某个危险键碰巧被登记进白名单也必须拒绝。
+    #    即使某个危险键碰巧被登记进白名单也必须拒绝。唯一例外：runtime.model_usage
+    #    的 runtime 来源、payload **顶层**、_NUMERIC_USAGE_TOP_LEVEL_KEYS 内的
+    #    登记键——设计 §3 授权的窄例外（usage 字段名必然含 "token" 子串）。
+    #    数值形状非法的例外键跳过 forbidden 判定，落到 8.5 给出专用原因码。
     patterns = tuple(env["forbidden_payload_key_patterns"])
+    numeric_exception_active = (
+        event_type in _NUMERIC_USAGE_EVENT_TYPES and source == "runtime"
+    )
     for key in _iter_keys(payload):
         low = key.lower()
-        if any(pat in low for pat in patterns):
-            return ValidationResult(False, "forbidden_payload_key", key)
+        if not any(pat in low for pat in patterns):
+            continue
+        if numeric_exception_active and key in _NUMERIC_USAGE_TOP_LEVEL_KEYS:
+            continue
+        return ValidationResult(False, "forbidden_payload_key", key)
+
+    # 8.5 窄例外的显式类型判定：顶层登记键必须是非布尔非负整数；字符串 / bool /
+    # 负数 / 浮点给出专用原因码。嵌套键不在例外内（_iter_keys 已扫描整棵树）。
+    if numeric_exception_active:
+        for key in _NUMERIC_USAGE_TOP_LEVEL_KEYS:
+            if key in payload:
+                value = payload[key]
+                if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                    return ValidationResult(
+                        False, "usage_tokens_not_non_negative_int", key
+                    )
 
     # 9. 字段白名单
     allowed = set(entry.get("payload_fields") or [])

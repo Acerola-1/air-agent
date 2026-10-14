@@ -1,0 +1,227 @@
+{
+  "schema_version": "1",
+  "mode": "workspace",
+  "repository": "/Users/acerola/.codex/worktrees/feedback-03/air_agent",
+  "total_files": 34,
+  "reviewable_count": 25,
+  "excluded_count": 9,
+  "total_insertions": 4855,
+  "total_deletions": 316,
+  "reviewable_files": [
+    {
+      "path": "admin/api/app/main.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/models.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "status": "modified",
+      "insertions": 228,
+      "deletions": 24
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "modified",
+      "insertions": 234,
+      "deletions": 61
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/openapi-agent-ledger.json",
+      "status": "modified",
+      "insertions": 316,
+      "deletions": 0
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "modified",
+      "insertions": 331,
+      "deletions": 38
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "insertions": 113,
+      "deletions": 33
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "modified",
+      "insertions": 19,
+      "deletions": 16
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "insertions": 37,
+      "deletions": 1
+    },
+    {
+      "path": "frontend/lib/session-client.ts",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "modified",
+      "insertions": 14,
+      "deletions": 5
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "insertions": 9,
+      "deletions": 2
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "modified",
+      "insertions": 234,
+      "deletions": 61
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "modified",
+      "insertions": 331,
+      "deletions": 38
+    },
+    {
+      "path": "admin/api/app/models_feedback.py",
+      "status": "added",
+      "insertions": 149,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/routers/feedback.py",
+      "status": "added",
+      "insertions": 217,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/services/feedback.py",
+      "status": "added",
+      "insertions": 589,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/services/feedback_metrics.py",
+      "status": "added",
+      "insertions": 213,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/migrations/versions/0011_feedback.py",
+      "status": "added",
+      "insertions": 226,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/live-metrics-response.json",
+      "status": "added",
+      "insertions": 44,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/app/api/agent-events/browser/route.ts",
+      "status": "added",
+      "insertions": 38,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/app/api/feedback/answers/[answerId]/route.ts",
+      "status": "added",
+      "insertions": 46,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/app/api/feedback/answers/route.ts",
+      "status": "added",
+      "insertions": 38,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/components/chat/feedback/FeedbackBar.tsx",
+      "status": "added",
+      "insertions": 216,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/lib/feedback/client.ts",
+      "status": "added",
+      "insertions": 389,
+      "deletions": 0
+    }
+  ],
+  "excluded_files": [
+    {
+      "path": "admin/api/tests/test_event_ledger_api.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 2,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "openspec/changes/add-chat-feedback-interactions/tasks.md",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 33,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "status": "modified",
+      "insertions": 14,
+      "deletions": 2,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_feedback_api.py",
+      "status": "added",
+      "insertions": 590,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/reviews/chat-feedback-interactions-acceptance.md",
+      "status": "added",
+      "insertions": 167,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-cancelled.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-dislike-saved.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/browser-like-copy.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-03/live-db-counts.txt",
+      "status": "added",
+      "insertions": 10,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    }
+  ]
+}

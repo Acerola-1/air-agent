@@ -1,0 +1,2094 @@
+{
+  "mode": "workspace",
+  "total_files": 329,
+  "reviewable_files": 222,
+  "reviewed_files": 15,
+  "skipped_files": 207,
+  "coverage_rate": 0.0676,
+  "coverage_denominator": "OCR reviewable entries; focused repair review, not full mixed worktree",
+  "files": [
+    {
+      "path": ".gitignore",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "Dockerfile",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/config.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/db.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/deps.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/main.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/models.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/routers/audit.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/routers/auth.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/routers/permissions.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/routers/regions.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/routers/roles.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/routers/users.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/schemas.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/security.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/services/audit.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/services/followed_regions.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/scripts/seed.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/layout.tsx",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/page.tsx",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/profile/page.tsx",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/login/page.tsx",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/lib/api.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/lib/session.tsx",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/lib/types.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/next-env.d.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docker-compose.yaml",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "status": "modified",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "frontend/app/api/auth/login/route.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/app/api/auth/logout/route.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/app/api/auth/me/route.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/app/api/auth/register/route.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/app/login/page.tsx",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/artifact-scope.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/auth.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/session-client.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/middleware.ts",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/package.json",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "langgraph.json",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "run-local.sh",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/artifact_scope.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/artifacts/__init__.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/business_graph/builder.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "提示词/Langfuse工作归属未确定，不归因匿名02，非本轮阻断路径"
+    },
+    {
+      "path": "src/common/business_graph/prompting.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "提示词/Langfuse工作归属未确定，不归因匿名02，非本轮阻断路径"
+    },
+    {
+      "path": "src/common/business_graph/subagent_summarizer.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/computation/tool.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/config/checkpointing.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/config/settings.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/conversation_summarizer.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/data_governance.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/mcp_client.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/middleware/__init__.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/models.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/question_normalizer.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/skill_discovery.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/storage/artifact_db.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/text_reduction.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/data_analysis/graph.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/integration_tests/conftest.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/unit_tests/conftest.py",
+      "status": "modified",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/models_ledger.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "admin/api/app/routers/bindings.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/routers/departments.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/routers/ledger.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "admin/api/app/routers/tenants.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/schemas_ledger.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "admin/api/app/services/event_contract.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/services/identity.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "admin/api/app/services/tenant_context.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/app/services/tenant_seed.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/migrations/versions/0003_tenant_identity.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/migrations/versions/0004_tenant_artifact.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/migrations/versions/0005_tenant_access_repair.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/migrations/versions/0006_claim_session.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/migrations/versions/0007_agent_event_ledger.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/migrations/versions/0008_ledger_start_claim_and_associations.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "admin/api/scripts/agent_e2e_fixture.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/scripts/bootstrap_tenant_db.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/scripts/drill_recovery.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/scripts/drill_recovery.sh",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/scripts/import_historical_ledger.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/scripts/migrate_identity.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/scripts/restore_ledger_permissions.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/tests/conftest.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/api/tests/ctx_client.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/departments/page.tsx",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/mcp/page.tsx",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/members/page.tsx",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/roles/page.tsx",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/platform/tenants/page.tsx",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/select-tenant/page.tsx",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "admin/web/components/tenant-switcher.tsx",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-envelope.schema.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/metrics.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/states.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/admin-proofs.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/admin_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/changed-inputs.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/fresh-migrations.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/live-claim.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/live_claim_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/migration-live.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/migration-proofs.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/migration_live_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/migration_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/run_fresh_admin.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/run_integration.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/runtime-proofs.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/runtime_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/source-manifest.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/stop-proofs.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/stop_probe.cjs",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/anonymous-input.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/change2-source-baseline.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/fresh-migrations.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/model-smoke.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/premium-audit.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/recovery.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/review-inventory.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/admin-proofs.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/admin_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/empty.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/empty_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/live.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/live_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/run_admin_suite.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/runtime.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/runtime_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/seed_rls_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/setup_probe.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/source-manifest.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/anonymous-input.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/association.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/cleanup.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/deletion-api.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/findings.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/fresh-migrations.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/live-admission.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/native-lifecycle.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/pg-boundaries.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_admission.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_association.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_deletion_api.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_native_lifecycle.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_pg_boundaries.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_rebuild.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_receipts.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/rebuild.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/receipt.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/review-inventory.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/setup_isolated.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-repair-01/baseline-fingerprint-check.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-repair-01/fresh-migrations-repair01.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-repair-01/restore-drill-r05.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-repair-01/restore_drill_r05.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-repair-01/setup_repair01_env.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-repair-01/upgrade_0007_to_0008.sh",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/e2e_ledger_chain.out.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/e2e_ledger_chain.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/e2e_proxy_chain.out.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/e2e_proxy_chain.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/probe_run_admission.out.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/probe_run_admission.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/probe_run_metadata_resume.out.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/probe_run_metadata_resume.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/restore_drill.sh",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/app/api/agent-runs/confirm/route.ts",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/app/api/agent-runs/stop-intent/route.ts",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/app/api/auth/switch-tenant/route.ts",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/components/chat/TenantBadge.tsx",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/admin-api-contract.ts",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/admin-api.ts",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/agent-events/contract.ts",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/lib/agent-ledger.ts",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "frontend/lib/run-admission.ts",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "frontend/scripts/gen-agent-events-contract.mjs",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/.openspec.yaml",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "premium-audit.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/event_ledger/__init__.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/event_ledger/__main__.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "src/common/event_ledger/contract.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/metrics.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/states.json",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/event_ledger/lifecycle.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "src/common/event_ledger/reconcile.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "src/common/event_ledger/store.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "src/common/event_ledger/worker.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "src/common/identity/__init__.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "status": "added",
+      "review_status": "reviewed",
+      "reason": "围绕首修启动/恢复/删除/事务/补偿的源码与相关断言评审"
+    },
+    {
+      "path": "src/common/identity/outbound.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/identity/runtime.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/identity/ticket.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/langfuse_prompts.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "提示词/Langfuse工作归属未确定，不归因匿名02，非本轮阻断路径"
+    },
+    {
+      "path": "src/common/mcp_authorization.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/mcp_scoped.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/auth_probe/probe_auth.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/auth_probe/probe_graph.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/auth_probe/probe_http.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/mcp_fixture/__init__.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/mcp_fixture/server.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/mcp_fixture/server_process.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    },
+    {
+      "path": "tests/mcp_probe/probe_mcp.py",
+      "status": "added",
+      "review_status": "skipped",
+      "reason": "混合工作树中的前次身份/其他模块或证据文件；本轮定向复验未逐行重审，相关回归按独立测试结果报告"
+    }
+  ],
+  "excluded_files": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "insertions": 44,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "UX-CONTRACT.md",
+      "status": "modified",
+      "insertions": 10,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "admin/api/README.md",
+      "status": "modified",
+      "insertions": 59,
+      "deletions": 8,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "admin/api/app/services/rbac.py",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 41,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "admin/api/tests/check_session_compat.sh",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 59,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "admin/api/tests/session_compat.mjs",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 77,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "admin/api/tests/session_compat.py",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 52,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "admin/api/tests/test_admin_api.py",
+      "status": "modified",
+      "insertions": 36,
+      "deletions": 30,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_auth_api.py",
+      "status": "modified",
+      "insertions": 128,
+      "deletions": 48,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_followed_regions.py",
+      "status": "modified",
+      "insertions": 19,
+      "deletions": 21,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_security.py",
+      "status": "modified",
+      "insertions": 196,
+      "deletions": 85,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/enterprise-agent-roadmap.md",
+      "status": "modified",
+      "insertions": 13,
+      "deletions": 2,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "frontend/lib/session-token.ts",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 67,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "frontend/lib/user-store.ts",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 80,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "openspec/changes/add-tenant-identity-access/tasks.md",
+      "status": "modified",
+      "insertions": 64,
+      "deletions": 45,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/integration_tests/test_governance_toolnode.py",
+      "status": "modified",
+      "insertions": 42,
+      "deletions": 4,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/integration_tests/test_mcp_500k_guard.py",
+      "status": "modified",
+      "insertions": 59,
+      "deletions": 9,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_artifact_db.py",
+      "status": "modified",
+      "insertions": 84,
+      "deletions": 24,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_basic_qa_skill_routing.py",
+      "status": "modified",
+      "insertions": 27,
+      "deletions": 19,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_data_analysis_output_guard.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 1,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_mcp_client.py",
+      "status": "modified",
+      "insertions": 102,
+      "deletions": 108,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_skill_prompt_rules.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 1,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_skill_ranking_diagnostic.py",
+      "status": "modified",
+      "insertions": 18,
+      "deletions": 11,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_tool_wrapper_retry.py",
+      "status": "modified",
+      "insertions": 43,
+      "deletions": 8,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_event_ledger_api.py",
+      "status": "added",
+      "insertions": 1262,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_event_ledger_contract_compat.py",
+      "status": "added",
+      "insertions": 96,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_tenant_api.py",
+      "status": "added",
+      "insertions": 978,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_tenant_migration.py",
+      "status": "added",
+      "insertions": 1061,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_tenant_schema.py",
+      "status": "added",
+      "insertions": 465,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/README.md",
+      "status": "added",
+      "insertions": 60,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/ownership.md",
+      "status": "added",
+      "insertions": 52,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/enterprise-agent-parallel-work.md",
+      "status": "added",
+      "insertions": 50,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/handoffs/agent-event-ledger-goal.md",
+      "status": "added",
+      "insertions": 19,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/handoffs/agent-event-ledger-review-01-goal.md",
+      "status": "added",
+      "insertions": 22,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/handoffs/tenant-identity-review-01-goal.md",
+      "status": "added",
+      "insertions": 13,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/handoffs/tenant-identity-review-02-goal.md",
+      "status": "added",
+      "insertions": 19,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/mcp-auth-contract.md",
+      "status": "added",
+      "insertions": 36,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/2026-10-12-langgraph-auth-probe.md",
+      "status": "added",
+      "insertions": 39,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/agent-event-ledger-acceptance.md",
+      "status": "added",
+      "insertions": 543,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/agent-event-ledger-repair-01.md",
+      "status": "added",
+      "insertions": 289,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/anonymous-model-scorecard.md",
+      "status": "added",
+      "insertions": 46,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/README.md",
+      "status": "added",
+      "insertions": 37,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/admin-build.txt",
+      "status": "added",
+      "insertions": 37,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/admin-tests.txt",
+      "status": "added",
+      "insertions": 3,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/chat-build.txt",
+      "status": "added",
+      "insertions": 39,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/root-integration.txt",
+      "status": "added",
+      "insertions": 229,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/root-unit.txt",
+      "status": "added",
+      "insertions": 71,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/ruff.txt",
+      "status": "added",
+      "insertions": 1,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/README.md",
+      "status": "added",
+      "insertions": 18,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/admin-anonymous.txt",
+      "status": "added",
+      "insertions": 5,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/admin-build.txt",
+      "status": "added",
+      "insertions": 37,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/admin-codex.txt",
+      "status": "added",
+      "insertions": 3,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/chat-build.txt",
+      "status": "added",
+      "insertions": 60,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/contracts-anonymous.txt",
+      "status": "added",
+      "insertions": 27,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/contracts-codex.txt",
+      "status": "added",
+      "insertions": 27,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/integration-codex.txt",
+      "status": "added",
+      "insertions": 229,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/json-resume-before.txt",
+      "status": "added",
+      "insertions": 47,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/migration-codex.txt",
+      "status": "added",
+      "insertions": 2,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/sdk-retry-before.txt",
+      "status": "added",
+      "insertions": 54,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/stop-race-before.txt",
+      "status": "added",
+      "insertions": 28,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/ui-switch-dialog.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/unit-anonymous.txt",
+      "status": "added",
+      "insertions": 71,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/unit-codex.txt",
+      "status": "added",
+      "insertions": 71,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/README.md",
+      "status": "added",
+      "insertions": 45,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/README.md",
+      "status": "added",
+      "insertions": 33,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/admin.txt",
+      "status": "added",
+      "insertions": 3,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/build.txt",
+      "status": "added",
+      "insertions": 19,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/contracts.txt",
+      "status": "added",
+      "insertions": 38,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/integration.txt",
+      "status": "added",
+      "insertions": 229,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/ledger.txt",
+      "status": "added",
+      "insertions": 2,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/types.txt",
+      "status": "added",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/unit.txt",
+      "status": "added",
+      "insertions": 71,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-repair-01/clean-build-after.txt",
+      "status": "added",
+      "insertions": 68,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/task-1.2-image-capabilities.md",
+      "status": "added",
+      "insertions": 56,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/flash-blind-01-add-tenant-identity-access.md",
+      "status": "added",
+      "insertions": 84,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/flash-blind-01-repair-01-review.md",
+      "status": "added",
+      "insertions": 108,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/flash-blind-01-repair-02-review.md",
+      "status": "added",
+      "insertions": 58,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/flash-blind-02-add-agent-event-ledger.md",
+      "status": "added",
+      "insertions": 114,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/tenant-identity-access-acceptance.md",
+      "status": "added",
+      "insertions": 145,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/tenant-identity-access-repair-01.md",
+      "status": "added",
+      "insertions": 396,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/tenant-identity-access-repair-02.md",
+      "status": "added",
+      "insertions": 330,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/design.md",
+      "status": "added",
+      "insertions": 173,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/handoff.md",
+      "status": "added",
+      "insertions": 53,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/proposal.md",
+      "status": "added",
+      "insertions": 38,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/agent-event-delivery/spec.md",
+      "status": "added",
+      "insertions": 70,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/agent-metric-contract/spec.md",
+      "status": "added",
+      "insertions": 62,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/agent-request-identity/spec.md",
+      "status": "added",
+      "insertions": 77,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/agent-run-lifecycle/spec.md",
+      "status": "added",
+      "insertions": 74,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/tenant-event-access/spec.md",
+      "status": "added",
+      "insertions": 63,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/tasks.md",
+      "status": "added",
+      "insertions": 163,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/integration_tests/test_artifact_tenant_rls_pg.py",
+      "status": "added",
+      "insertions": 216,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/integration_tests/test_live_tenant_claims.py",
+      "status": "added",
+      "insertions": 837,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_archive_http_live_auth.py",
+      "status": "added",
+      "insertions": 69,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_artifact_scope_v2.py",
+      "status": "added",
+      "insertions": 170,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "status": "added",
+      "insertions": 171,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_lifecycle.py",
+      "status": "added",
+      "insertions": 195,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_review02_regressions.py",
+      "status": "added",
+      "insertions": 967,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_store.py",
+      "status": "added",
+      "insertions": 661,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_guard_middleware_framework_compat.py",
+      "status": "added",
+      "insertions": 101,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_mcp_scoped_authorization.py",
+      "status": "added",
+      "insertions": 546,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_migration_ticket_auth.py",
+      "status": "added",
+      "insertions": 182,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_outbound_identity_transport.py",
+      "status": "added",
+      "insertions": 102,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_per_call_outbound_guards.py",
+      "status": "added",
+      "insertions": 327,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_runtime_identity_revisions.py",
+      "status": "added",
+      "insertions": 141,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_tenant_runtime_guard.py",
+      "status": "added",
+      "insertions": 220,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_thread_claim_protocol.py",
+      "status": "added",
+      "insertions": 142,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_ticket_key_rotation.py",
+      "status": "added",
+      "insertions": 99,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    }
+  ]
+}

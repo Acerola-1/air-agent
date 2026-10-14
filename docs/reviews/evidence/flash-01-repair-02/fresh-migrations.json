@@ -1,0 +1,30 @@
+{
+  "databases": [
+    "air_agent_review02_api_85b80cd6",
+    "air_agent_review02_rls_85b80cd6"
+  ],
+  "migrations": [
+    {
+      "db": "air_agent_review02_api_85b80cd6",
+      "exit": 0,
+      "revisions": [
+        "INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, 审计日志冗余存操作人账号",
+        "INFO  [alembic.runtime.migration] Running upgrade 0002 -> 0003, 企业身份域：租户/部门/成员/角色作用域/可撤销会话/MCP 绑定/线程归属/迁移台账 + RLS",
+        "INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, 归档存储租户维度：tool_artifact_storage 增加 tenant_id 与索引",
+        "INFO  [alembic.runtime.migration] Running upgrade 0004 -> 0005, 轮次01 修复：归属 pending 状态、受限列授权、归档/计算 RLS 与维护角色（R01/R03/R08）",
+        "INFO  [alembic.runtime.migration] Running upgrade 0005 -> 0006, 线程归属认领会话绑定列（轮次复验 F01）"
+      ]
+    },
+    {
+      "db": "air_agent_review02_rls_85b80cd6",
+      "exit": 0,
+      "revisions": [
+        "INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, 审计日志冗余存操作人账号",
+        "INFO  [alembic.runtime.migration] Running upgrade 0002 -> 0003, 企业身份域：租户/部门/成员/角色作用域/可撤销会话/MCP 绑定/线程归属/迁移台账 + RLS",
+        "INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, 归档存储租户维度：tool_artifact_storage 增加 tenant_id 与索引",
+        "INFO  [alembic.runtime.migration] Running upgrade 0004 -> 0005, 轮次01 修复：归属 pending 状态、受限列授权、归档/计算 RLS 与维护角色（R01/R03/R08）",
+        "INFO  [alembic.runtime.migration] Running upgrade 0005 -> 0006, 线程归属认领会话绑定列（轮次复验 F01）"
+      ]
+    }
+  ]
+}

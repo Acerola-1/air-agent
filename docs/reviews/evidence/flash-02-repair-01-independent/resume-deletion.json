@@ -1,0 +1,21 @@
+{
+  "resume": {
+    "same_request": true,
+    "same_attempt": true,
+    "start_claim_status": 200,
+    "decision": {
+      "status": "mismatch",
+      "start_claim_token": null,
+      "platform_run_id": null,
+      "state": null,
+      "detail": "content",
+      "reserved_graph_id": null,
+      "reserved_operation_kind": null
+    }
+  },
+  "delete_pending_content_status": 404,
+  "after_cleanup": {
+    "request_detail_status": 200,
+    "new_write_status": 200
+  }
+}

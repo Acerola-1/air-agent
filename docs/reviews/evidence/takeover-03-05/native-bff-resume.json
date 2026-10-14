@@ -1,0 +1,41 @@
+{
+  "entry": "\u539f\u751f\u8fd0\u884c\u53d7\u63a7interrupt\u2192BFF\u771f\u5b9e\u6062\u590d",
+  "thread_id": "01a13a04-911b-7cc3-a99c-ff4566513157",
+  "request_id": "e6e3489b-3e95-4281-939c-787f70e04e93",
+  "attempt_id": "4122626d-9508-483a-851b-34c401a506a6",
+  "attempts": 1,
+  "platform_run_ids": [
+    "01a13a04-918c-7f71-b08f-f82214512869",
+    "01a13a04-93e4-75e2-a516-f28287bb952f"
+  ],
+  "submissions": [
+    {
+      "id": "e0e7f22e-9d0f-44da-bdf2-2f9bdc0ab855",
+      "operation_kind": "initial",
+      "platform_run_id": "01a13a04-918c-7f71-b08f-f82214512869"
+    },
+    {
+      "id": "62a94fcb-2396-4f2b-a98f-cced7b5862b9",
+      "operation_kind": "resume",
+      "platform_run_id": "01a13a04-93e4-75e2-a516-f28287bb952f"
+    }
+  ],
+  "observations": [
+    {
+      "submission_id": "e0e7f22e-9d0f-44da-bdf2-2f9bdc0ab855",
+      "platform_run_id": "01a13a04-918c-7f71-b08f-f82214512869",
+      "status": "started",
+      "total_tokens": null
+    },
+    {
+      "submission_id": "62a94fcb-2396-4f2b-a98f-cced7b5862b9",
+      "platform_run_id": "01a13a04-93e4-75e2-a516-f28287bb952f",
+      "status": "succeeded",
+      "total_tokens": 8395
+    }
+  ],
+  "interrupt_next": [
+    "call_model"
+  ],
+  "passed": true
+}

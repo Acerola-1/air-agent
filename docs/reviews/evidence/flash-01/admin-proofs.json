@@ -1,0 +1,11 @@
+{
+  "enterprise_roles_api_status": 200,
+  "enterprise_permission_tree_status": 403,
+  "platform_link_tenant_admin_error": "IntegrityError",
+  "suspended_tenant_department_write_status": 201,
+  "admin_stale_write_status": 201,
+  "admin_stale_write_wrong_tenant": true,
+  "same_name_preflight_clean": true,
+  "same_name_silently_reused_pg": true,
+  "previous_ticket_valid_during_rotation": false
+}

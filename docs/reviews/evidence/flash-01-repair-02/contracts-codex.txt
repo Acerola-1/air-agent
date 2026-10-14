@@ -1,0 +1,27 @@
+✔ context meter uses provider input after completion and labels preparation estimates (108.031542ms)
+✔ every intermediate frame excludes tool JSON and internal summaries from body (9.488209ms)
+✔ old run callbacks and completion cannot clear a newer run (3.10225ms)
+✔ stop sends server cancellation and ignores late metadata safely (3.57925ms)
+✔ legacy double answer merges, marked draft hidden, archives require actual stored status (2.384917ms)
+✔ SDK error event becomes failed completion, metadata and custom consumed (2.654709ms)
+✔ proxy: unified identity gates, ticket upstream, v2 scope, tenant checks (1830.309042ms)
+✔ archive scope v2 signing requires configured keys (2.249125ms)
+✔ stopStreaming only confirms after server reaches terminal run status (606.952208ms)
+✔ stopStreaming reports unconfirmed when cancellation and status both fail (3.201666ms)
+✔ stop cancel 409 is context_changed, never a false confirmation (3.132375ms)
+✔ stop after 404 cancel confirms only on observed terminal status (3.355584ms)
+✔ stop treats missing/unknown run status as unconfirmed (6.294958ms)
+✔ stop with empty run list within grace window is unconfirmed unknown (3217.681708ms)
+✔ stop recovers late run id from recent runs and waits terminal (4.288125ms)
+✔ stop before run id arrives recovers the active run from the run list (3.224167ms)
+✔ proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surfaces 409 (5.212709ms)
+✔ stop cannot confirm the previous answer while current run metadata is delayed (3216.535666ms)
+✔ unconfirmed stop keeps the run for late metadata and blocks new submissions (3219.310959ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12417.306583

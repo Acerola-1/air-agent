@@ -4,13 +4,7 @@
 import type { EventRegistry, StatesContract } from './contract';
 
 export const EVENT_REGISTRY: EventRegistry = {
-  "contract": "agent-events",
   "major_version": 1,
-  "schema_version": "1.0",
-  "status": "freeze_candidate",
-  "updated_at": "2026-10-13T00:00:00Z",
-  "produced_by": "anonymous-02/add-agent-event-ledger",
-  "notes": "冻结候选：协调者独立验收通过前不得视为已冻结。第 3/5 项不得据此提前并行改共享文件。",
   "sources": {
     "runtime": {
       "trust": "server",
@@ -32,11 +26,13 @@ export const EVENT_REGISTRY: EventRegistry = {
     },
     "browser": {
       "trust": "client",
-      "description": "浏览器交互扩展（反馈/复制/浏览器计时）；v1 全部类型预留未启用",
+      "description": "浏览器交互扩展（反馈/复制/浏览器计时）；change-3启用浏览器三类；change-5启用可信运行侧五类",
       "authentication": "统一会话 + 活跃成员",
       "may_claim_terminal_facts": false
     }
   },
+  "status": "freeze_candidate",
+  "notes": "change-3/5组合兼容扩展：浏览器三类型与可信运行侧五类型分别校验来源；禁止浏览器伪造usage。",
   "envelope": {
     "required": [
       "schema_version",
@@ -88,6 +84,9 @@ export const EVENT_REGISTRY: EventRegistry = {
       "server_single_event_bytes": 65536
     }
   },
+  "produced_by": "anonymous-03/add-chat-feedback-interactions",
+  "schema_version": "1.0",
+  "updated_at": "2026-10-13T14:00:00Z",
   "event_types": {
     "request.accepted": {
       "enabled": true,
@@ -109,49 +108,183 @@ export const EVENT_REGISTRY: EventRegistry = {
       ],
       "summary": "可信受理：逻辑提问被接受并建立尝试（不含正文）"
     },
-    "run.admission_confirmed": {
+    "browser.copy": {
       "enabled": true,
       "sources": [
-        "runtime",
-        "server",
-        "system"
+        "browser"
       ],
-      "family": "run",
+      "family": "browser",
       "payload_fields": [
-        "platform_run_id",
-        "admission_outcome",
-        "admission_unknown_reason",
-        "admitted_at"
+        "answer_id",
+        "copy_scope",
+        "client_operation_id"
       ],
       "required_payload_fields": [
-        "platform_run_id",
-        "admission_outcome"
+        "answer_id"
       ],
-      "summary": "平台运行创建结果确认（confirmed 或 admission_unknown）"
+      "summary": "复制埋点（change-3 启用）；clipboard 成功后才投递，不含正文"
     },
-    "run.state_observed": {
+    "runtime.model_usage": {
       "enabled": true,
       "sources": [
-        "runtime",
-        "server",
-        "system"
+        "runtime"
       ],
-      "family": "run",
+      "family": "observability",
+      "reserved_for": "change-5",
       "payload_fields": [
-        "state",
-        "evidence_source",
-        "platform_status",
-        "state_revision",
-        "cancel_requested",
-        "transport_connected",
-        "waiting_kind"
-      ],
-      "required_payload_fields": [
-        "state",
-        "evidence_source",
+        "attempt_id",
+        "model",
+        "provider",
+        "observation_id",
+        "logical_call_id",
+        "submission_id",
+        "role",
+        "input_tokens",
+        "output_tokens",
+        "total_tokens",
+        "cache_read_tokens",
+        "cache_write_tokens",
+        "reasoning_tokens",
+        "measurement_status",
+        "usage_source",
         "state_revision"
       ],
-      "summary": "带证据与修订号的主状态观测；乱序/重复不得静默覆盖更强证据"
+      "required_payload_fields": [
+        "attempt_id",
+        "model",
+        "observation_id",
+        "measurement_status"
+      ],
+      "summary": "模型 usage（缓存/推理是 usage 子集，不得重复加到总量）"
+    },
+    "resource.deleted": {
+      "enabled": true,
+      "sources": [
+        "server",
+        "system"
+      ],
+      "family": "resource",
+      "payload_fields": [
+        "resource_type",
+        "resource_id",
+        "deletion_state",
+        "deleted_at"
+      ],
+      "required_payload_fields": [
+        "resource_type",
+        "resource_id",
+        "deletion_state"
+      ],
+      "summary": "会话/原文删除标记；删除优先于投影重建与重投"
+    },
+    "browser.timing": {
+      "enabled": true,
+      "sources": [
+        "browser"
+      ],
+      "family": "browser",
+      "payload_fields": [
+        "attempt_id",
+        "measurement_id",
+        "first_visible_answer_ms",
+        "display_complete_ms",
+        "clock",
+        "progress_seen",
+        "completion_state"
+      ],
+      "required_payload_fields": [
+        "attempt_id",
+        "clock"
+      ],
+      "summary": "浏览器首可见终答正文耗时（performance.now 单调时钟；change-3 启用）"
+    },
+    "trace.linked": {
+      "enabled": true,
+      "sources": [
+        "runtime",
+        "server"
+      ],
+      "family": "trace",
+      "payload_fields": [
+        "provider",
+        "project_scope",
+        "trace_id",
+        "primary",
+        "link_source"
+      ],
+      "required_payload_fields": [
+        "provider",
+        "trace_id",
+        "primary"
+      ],
+      "summary": "Trace 映射（非秘密逻辑标识）；主 Trace 选择依据可审计"
+    },
+    "answer.confirmed": {
+      "enabled": true,
+      "sources": [
+        "runtime",
+        "server"
+      ],
+      "family": "answer",
+      "payload_fields": [
+        "answer_id",
+        "message_id",
+        "content_version",
+        "confirmed_at"
+      ],
+      "required_payload_fields": [
+        "answer_id",
+        "content_version"
+      ],
+      "summary": "用户可见最终正文版本确认；内部推理/工具输出/草稿不得使用"
+    },
+    "runtime.tool_call": {
+      "enabled": true,
+      "sources": [
+        "runtime"
+      ],
+      "family": "observability",
+      "reserved_for": "change-5",
+      "payload_fields": [
+        "attempt_id",
+        "observation_id",
+        "logical_call_id",
+        "tool_name",
+        "service_key",
+        "tool_call_id",
+        "retry_index",
+        "status",
+        "duration_ms",
+        "skill_id",
+        "fallback_kind",
+        "error_category"
+      ],
+      "required_payload_fields": [
+        "attempt_id",
+        "observation_id",
+        "tool_name",
+        "status"
+      ],
+      "summary": "工具/MCP 调用观测"
+    },
+    "answer.partial": {
+      "enabled": true,
+      "sources": [
+        "runtime",
+        "server"
+      ],
+      "family": "answer",
+      "payload_fields": [
+        "answer_id",
+        "message_id",
+        "content_version",
+        "observed_at"
+      ],
+      "required_payload_fields": [
+        "answer_id",
+        "content_version"
+      ],
+      "summary": "已展示但未确认的部分正文"
     },
     "run.cancel_requested": {
       "enabled": true,
@@ -192,161 +325,52 @@ export const EVENT_REGISTRY: EventRegistry = {
       ],
       "summary": "人工恢复操作；不增加逻辑提问，平台运行映射追加一条"
     },
-    "answer.confirmed": {
+    "run.state_observed": {
       "enabled": true,
       "sources": [
         "runtime",
-        "server"
-      ],
-      "family": "answer",
-      "payload_fields": [
-        "answer_id",
-        "message_id",
-        "content_version",
-        "confirmed_at"
-      ],
-      "required_payload_fields": [
-        "answer_id",
-        "content_version"
-      ],
-      "summary": "用户可见最终正文版本确认；内部推理/工具输出/草稿不得使用"
-    },
-    "answer.partial": {
-      "enabled": true,
-      "sources": [
-        "runtime",
-        "server"
-      ],
-      "family": "answer",
-      "payload_fields": [
-        "answer_id",
-        "message_id",
-        "content_version",
-        "observed_at"
-      ],
-      "required_payload_fields": [
-        "answer_id",
-        "content_version"
-      ],
-      "summary": "已展示但未确认的部分正文"
-    },
-    "trace.linked": {
-      "enabled": true,
-      "sources": [
-        "runtime",
-        "server"
-      ],
-      "family": "trace",
-      "payload_fields": [
-        "provider",
-        "project_scope",
-        "trace_id",
-        "primary",
-        "link_source"
-      ],
-      "required_payload_fields": [
-        "provider",
-        "trace_id",
-        "primary"
-      ],
-      "summary": "Trace 映射（非秘密逻辑标识）；主 Trace 选择依据可审计"
-    },
-    "resource.deleted": {
-      "enabled": true,
-      "sources": [
         "server",
         "system"
       ],
-      "family": "resource",
+      "family": "run",
       "payload_fields": [
-        "resource_type",
-        "resource_id",
-        "deletion_state",
-        "deleted_at"
+        "state",
+        "evidence_source",
+        "platform_status",
+        "state_revision",
+        "cancel_requested",
+        "transport_connected",
+        "waiting_kind"
       ],
       "required_payload_fields": [
-        "resource_type",
-        "resource_id",
-        "deletion_state"
+        "state",
+        "evidence_source",
+        "state_revision"
       ],
-      "summary": "会话/原文删除标记；删除优先于投影重建与重投"
+      "summary": "带证据与修订号的主状态观测；乱序/重复不得静默覆盖更强证据"
     },
     "browser.feedback": {
-      "enabled": false,
+      "enabled": true,
       "sources": [
         "browser"
       ],
       "family": "browser",
-      "reserved_for": "change-3",
       "payload_fields": [
         "answer_id",
         "rating",
         "reason_code",
-        "comment_ref"
+        "comment_ref",
+        "expected_revision",
+        "client_operation_id"
       ],
       "required_payload_fields": [
         "answer_id",
         "rating"
       ],
-      "summary": "[预留] 回答点赞/点踩；第 3 项实施"
-    },
-    "browser.copy": {
-      "enabled": false,
-      "sources": [
-        "browser"
-      ],
-      "family": "browser",
-      "reserved_for": "change-3",
-      "payload_fields": [
-        "answer_id",
-        "copy_scope"
-      ],
-      "required_payload_fields": [
-        "answer_id"
-      ],
-      "summary": "[预留] 复制埋点；第 3 项实施"
-    },
-    "browser.timing": {
-      "enabled": false,
-      "sources": [
-        "browser"
-      ],
-      "family": "browser",
-      "reserved_for": "change-3",
-      "payload_fields": [
-        "attempt_id",
-        "first_visible_answer_ms",
-        "clock",
-        "progress_seen"
-      ],
-      "required_payload_fields": [
-        "attempt_id",
-        "clock"
-      ],
-      "summary": "[预留] 浏览器首可见终答正文耗时（performance.now 单调时钟）；第 3 项实施"
-    },
-    "runtime.model_usage": {
-      "enabled": false,
-      "sources": [
-        "runtime"
-      ],
-      "family": "observability",
-      "reserved_for": "change-5",
-      "payload_fields": [
-        "attempt_id",
-        "model",
-        "input_tokens",
-        "output_tokens",
-        "total_tokens"
-      ],
-      "required_payload_fields": [
-        "attempt_id",
-        "model"
-      ],
-      "summary": "[预留] 模型 usage；第 5 项实施（缓存/推理是 usage 子集，不得重复加到总量）"
+      "summary": "回答点赞/点踩（change-3 启用）；意见正文不进入载荷"
     },
     "runtime.ttft": {
-      "enabled": false,
+      "enabled": true,
       "sources": [
         "runtime"
       ],
@@ -354,17 +378,21 @@ export const EVENT_REGISTRY: EventRegistry = {
       "reserved_for": "change-5",
       "payload_fields": [
         "attempt_id",
+        "observation_id",
         "ttft_ms",
-        "clock"
+        "clock",
+        "first_piece_kind",
+        "measurement_status"
       ],
       "required_payload_fields": [
         "attempt_id",
-        "ttft_ms"
+        "observation_id",
+        "measurement_status"
       ],
-      "summary": "[预留] 单次模型 TTFT；第 5 项实施"
+      "summary": "单次模型 TTFT"
     },
     "runtime.cost": {
-      "enabled": false,
+      "enabled": true,
       "sources": [
         "runtime"
       ],
@@ -372,19 +400,42 @@ export const EVENT_REGISTRY: EventRegistry = {
       "reserved_for": "change-5",
       "payload_fields": [
         "attempt_id",
+        "observation_id",
         "amount",
         "currency",
-        "price_ref"
+        "price_ref",
+        "calculation_revision",
+        "measurement_status"
       ],
       "required_payload_fields": [
         "attempt_id",
-        "amount",
-        "currency"
+        "observation_id",
+        "measurement_status"
       ],
-      "summary": "[预留] 成本；缺价格/usage 时不是零；第 5 项实施"
+      "summary": "成本；缺价格/usage 时不是零"
+    },
+    "run.admission_confirmed": {
+      "enabled": true,
+      "sources": [
+        "runtime",
+        "server",
+        "system"
+      ],
+      "family": "run",
+      "payload_fields": [
+        "platform_run_id",
+        "admission_outcome",
+        "admission_unknown_reason",
+        "admitted_at"
+      ],
+      "required_payload_fields": [
+        "platform_run_id",
+        "admission_outcome"
+      ],
+      "summary": "平台运行创建结果确认（confirmed 或 admission_unknown）"
     },
     "runtime.span": {
-      "enabled": false,
+      "enabled": true,
       "sources": [
         "runtime"
       ],
@@ -392,37 +443,26 @@ export const EVENT_REGISTRY: EventRegistry = {
       "reserved_for": "change-5",
       "payload_fields": [
         "attempt_id",
+        "observation_id",
+        "parent_observation_id",
         "span_kind",
         "span_name",
-        "duration_ms"
+        "stage",
+        "status",
+        "duration_ms",
+        "skill_id",
+        "skill_version",
+        "selection_source"
       ],
       "required_payload_fields": [
         "attempt_id",
+        "observation_id",
         "span_kind"
       ],
-      "summary": "[预留] 服务端 span；第 5 项实施"
-    },
-    "runtime.tool_call": {
-      "enabled": false,
-      "sources": [
-        "runtime"
-      ],
-      "family": "observability",
-      "reserved_for": "change-5",
-      "payload_fields": [
-        "attempt_id",
-        "tool_name",
-        "status",
-        "duration_ms"
-      ],
-      "required_payload_fields": [
-        "attempt_id",
-        "tool_name",
-        "status"
-      ],
-      "summary": "[预留] 工具/MCP 调用观测；第 5 项实施"
+      "summary": "服务端 span"
     }
-  }
+  },
+  "contract": "agent-events"
 } as EventRegistry;
 
 export const RUN_STATES: StatesContract = {

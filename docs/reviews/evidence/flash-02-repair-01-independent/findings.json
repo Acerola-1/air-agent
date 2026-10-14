@@ -1,0 +1,50 @@
+[
+  {
+    "id": "F01",
+    "path": "frontend/app/api/[..._path]/route.ts",
+    "start_line": 209,
+    "severity": "high",
+    "category": "bug",
+    "content": "BFF消费启动权后原生再次消费，合法首笔409，重试202。"
+  },
+  {
+    "id": "F02",
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 672,
+    "severity": "high",
+    "category": "bug",
+    "content": "恢复复用旧attempt却验证初次content_digest，本次resume被mismatch拒绝。"
+  },
+  {
+    "id": "F03",
+    "path": "src/common/identity/langgraph_auth.py",
+    "start_line": 531,
+    "severity": "high",
+    "category": "security",
+    "content": "准入图来自客户端ledger_graph_id，实际换图200；结束检测不能阻止业务副作用。"
+  },
+  {
+    "id": "F04",
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 1222,
+    "severity": "high",
+    "category": "security",
+    "content": "删除标记只在未completed时生效，完成后回读/新受理200，重放有相同遗漏。"
+  },
+  {
+    "id": "F05",
+    "path": "src/common/event_ledger/store.py",
+    "start_line": 1023,
+    "severity": "high",
+    "category": "bug",
+    "content": "原生成功终态缺platform_run_id却被active-only补偿排除；服务校准认证仍缺。"
+  },
+  {
+    "id": "F06",
+    "path": "frontend/lib/agent-ledger.ts",
+    "start_line": 60,
+    "severity": "medium",
+    "category": "bug",
+    "content": "正常BFF默认不存正文且无不可漂移引用，热门问题分析原问题来源未接通。"
+  }
+]

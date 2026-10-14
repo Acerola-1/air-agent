@@ -169,8 +169,8 @@ async def resolve_skill(
 
     if matched is None:
         logger.info(
-            "数据分析 Skill 匹配失配：menu_name={}，降级为通用分析",
-            raw_menu_name,
+            "数据分析 Skill 匹配失配：has_menu={}，降级为通用分析",
+            bool(raw_menu_name),
         )
         return {
             "selected_skill": None,
@@ -203,12 +203,25 @@ async def resolve_skill(
 
     # 合并 SKILL.md 正文与 references 内容
     skill_rules = _merge_skill_content(skill_body, references_content)
+    from common.observability.skill_adapter import emit_skill_stage
+
+    for stage in ("matched", "selected", "loaded"):
+        emit_skill_stage(
+            config,
+            matched.skill_name,
+            stage,
+            body=skill_rules,
+            status=("succeeded" if skill_rules.strip() else "failed")
+            if stage == "loaded"
+            else None,
+            source="menu-mapping",
+        )
 
     skill_path = f"/skills/{matched.skill_name}/SKILL.md"
 
     logger.info(
-        "数据分析 Skill 匹配成功：menu_name={}，skill={}，mode={}，allowed_tools={}",
-        raw_menu_name,
+        "数据分析 Skill 匹配成功：has_menu={}，skill={}，mode={}，allowed_tools={}",
+        bool(raw_menu_name),
         matched.skill_name,
         mode,
         allowed_tools,
@@ -324,6 +337,9 @@ async def call_model(
             config,
         )
 
+    from common.observability.model_adapter import ensure_model_observability
+
+    ensure_model_observability(config)
     model = ModelRegistry.main_llm
     system_prompt = state.get("system_prompt", "")
 
@@ -384,12 +400,19 @@ async def call_model(
         model_with_tools = model
 
     # 重试调用模型（最多 3 次）
+    from common.observability.model_adapter import model_call_scope
+
+    observed_scope = model_call_scope(config, role="main")
     data_model_started_at = datetime.now(UTC).isoformat()
     response = None
     for attempt in range(3):
         try:
             response = await invoke_with_data_deadline(
-                model_with_tools, full_messages, messages, config
+                model_with_tools,
+                full_messages,
+                messages,
+                config,
+                invocation_metadata=observed_scope.runtime_metadata(),
             )
             break
         except DataProcessingFailure as exc:
@@ -405,7 +428,9 @@ async def call_model(
                 "data_status": status,
             }
         except Exception as exc:
-            logger.exception("数据分析模型调用失败 (attempt {}): {}", attempt + 1, exc)
+            logger.warning(
+                "数据分析模型调用失败 (attempt {}): {}", attempt + 1, type(exc).__name__
+            )
             if attempt < 2:
                 await asyncio.sleep(0.5 * (attempt + 1))
             else:
@@ -450,7 +475,9 @@ async def call_model(
             else:
                 response = nudge_response
         except Exception as exc:
-            logger.warning("数据分析模型空回复重试失败: {}，使用兜底消息", exc)
+            logger.warning(
+                "数据分析模型空回复重试失败: {}，使用兜底消息", type(exc).__name__
+            )
             response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
     return {
@@ -502,6 +529,12 @@ async def finalize_output(
     )
 
     # 调用清洗 LLM 流式生成清洗后的答案
+    from common.observability.model_adapter import ensure_model_observability
+
+    ensure_model_observability(config)
+    from common.observability.model_adapter import invocation_config
+
+    observed_config = invocation_config(config, role="cleanup")
     model = ModelRegistry.main_llm
     prompt = _FINAL_OUTPUT_CLEANUP_PROMPT.format(answer=answer)
     full_cleaned = ""
@@ -511,7 +544,7 @@ async def finalize_output(
             enforce_request_budget([HumanMessage(content=prompt)])
             async for chunk in model.astream(
                 [HumanMessage(content=prompt)],
-                config={"tags": ["nostream", "internal-cleanup"]},
+                config={**observed_config, "tags": ["nostream", "internal-cleanup"]},
             ):
                 if (getattr(chunk, "response_metadata", {}) or {}).get(
                     "finish_reason"
@@ -540,6 +573,11 @@ async def finalize_output(
         cleaned = _SERVICE_UNAVAILABLE_MESSAGE
 
     original = _last_answer_message(state)
+    from common.observability.skill_adapter import record_loaded_execution
+
+    record_loaded_execution(
+        config, succeeded=bool(cleaned) and cleaned != _SERVICE_UNAVAILABLE_MESSAGE
+    )
     return visible_result(
         original.model_copy(update={"content": cleaned})
         if original

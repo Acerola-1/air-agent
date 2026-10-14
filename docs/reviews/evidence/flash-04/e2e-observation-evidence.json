@@ -1,0 +1,24 @@
+{
+ "check": "E2E observation/billing evidence (anonymous run 04)",
+ "db": "aa_observe04_app@0012_observability",
+ "rls": "runtime role + tenant GUC",
+ "model_observations": 39,
+ "main_role": 30,
+ "retry_logical_sharing": {
+  "logical_call_id": "0b6c5c70...",
+  "attempts": 3
+ },
+ "runtime_events": {
+  "runtime.model_usage": 36,
+  "runtime.span": 70
+ },
+ "observability_outbox": 106,
+ "cost_revisions_measured": 1,
+ "fixture_billing": {
+  "price_ref": "pv-71281f88bd78",
+  "currency": "CNY",
+  "amount": "0.0028800000"
+ },
+ "skill_spans": 70,
+ "price_versions": 1
+}

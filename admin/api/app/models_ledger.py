@@ -350,6 +350,7 @@ class AgentOutbox(Base):
     tenant_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
     event_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
     consumer: Mapped[str] = mapped_column(Text, nullable=False)
+    thread_id: Mapped[str | None] = mapped_column(Text)
     available_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     lease_owner: Mapped[str | None] = mapped_column(Text)
     lease_deadline: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))

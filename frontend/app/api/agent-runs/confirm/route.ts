@@ -34,6 +34,15 @@ export async function POST(req: NextRequest) {
   if (!base) return NextResponse.json({ error: "对话服务地址未配置" }, { status: 503 });
 
   const store = req.headers.get("cookie") ?? "";
+  // 原生准入钩子可能已完成映射，此时pending列表为空。
+  // 按平台run回读本人提交的可信关联，不能把平台UUID误作台账attempt UUID。
+  const known = await adminFetch(
+    `/agent/feedback/attempts/resolve?thread_id=${encodeURIComponent(threadId)}&platform_run_id=${encodeURIComponent(runId)}`,
+    { cookie: store }
+  );
+  if (known.status === 200) {
+    return NextResponse.json({ confirmed: true, ...(known.json as { attempt_id: string; submission_id: string }) });
+  }
   const candidates = await adminFetch(
     `/agent/runs/pending-attempts?thread_id=${encodeURIComponent(threadId)}`,
     { cookie: store }
@@ -96,5 +105,5 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ confirmed: false, reason: "confirm_failed" });
   }
-  return NextResponse.json({ confirmed: true });
+  return NextResponse.json({ confirmed: true, attempt_id: matched.attempt_id });
 }

@@ -73,3 +73,13 @@ CSS 变量／Tailwind 运行时为 tokens 所有者，DESIGN.md 记录语义与�
 chat-store 的 stopPending 独立于本地流结束：未知状态保留运行引用和停止重试入口，确认前不接受新问题，也不允许第二次切换绕过停止。缺本次 run_id 时，上一轮终态不算本次停止；迟到元数据继续关联原运行。上下文冲突清除旧企业视图，旧异步确认不能覆盖新企业状态。
 
 验证：聊天契约覆盖迟到ID、旧终态和重复操作；真实浏览器验证确认框、取消按钮焦点、停止后企业切换与列表清空；签发及资源授权另以真实HTTP/PG复验。
+
+## 回答反馈、采集与窄屏（2026-10-14）
+
+业务来源：`openspec/changes/add-chat-feedback-interactions/`、`complete-agent-observability/`。评价所有者为`components/chat/feedback/FeedbackBar`，异步/队列所有者为`lib/feedback/client.ts`，实际DOM计时所有者为`ChatPanel`。点赞/点踩针对服务端确认的回答版本；草稿不改变已保存值，保存等待禁用，失败保留意见，冲突先回读修订。旧企业/用户/context_version/epoch的结果不得更新当前视图。
+
+成功复制先等待浏览器剪贴板Promise，再显示提示并采集无正文事件；拒绝时显示可恢复失败，不记复制成功。系统剪贴板物理文本一致性在当前IAB中未证实，继续单独抽查。正文可见使用DOM布局与绘制；history、工具和推理不算首正文。平台run通过本人可信提交映射回读为attempt，未确认不猜关联。
+
+停止使用本次run的权威状态；`interrupted`代表本次执行已停止，可解除stopPending，但用户停止意图、人工暂停/可恢复和业务cancelled仍独立。网络断开不等于取消。
+
+小于md时会话列表由首页的共享Dialog承载，含标题/说明、焦点圈定、Escape关闭、触发器焦点恢复；选择会话关闭弹窗。md及以上保留侧栏。窄屏企业选择不隐藏，用户名称可隐藏腾出空间，反馈随正文自然换行。390×844与原视口已实看；原生select保留系统键盘语义。

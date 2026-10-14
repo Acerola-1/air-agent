@@ -1,0 +1,10 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________________ test_batch_bytes_limit_is_enforced ______________________
+/tmp/test_feedback_integrity_review03.py:60: in test_batch_bytes_limit_is_enforced
+    assert not result['accepted'] and result['written']==0,result
+E   AssertionError: {'bytes': 313622, 'status': 200, 'accepted': True, 'written': 30, ...}
+E   assert (not True)
+=========================== short test summary info ============================
+FAILED ::test_batch_bytes_limit_is_enforced - AssertionError: {'bytes': 31362...
+1 failed in 1.73s

@@ -1,0 +1,21 @@
+{
+  "database": "aa_feedback03_review_e57b99bb",
+  "head": "0011_feedback",
+  "feedback_rls_catalog": [
+    {
+      "table": "agent_feedback_comments",
+      "enabled": true,
+      "forced": false
+    },
+    {
+      "table": "agent_feedback_current",
+      "enabled": true,
+      "forced": false
+    },
+    {
+      "table": "agent_feedback_operations",
+      "enabled": true,
+      "forced": false
+    }
+  ]
+}

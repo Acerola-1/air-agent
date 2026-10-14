@@ -4,6 +4,13 @@ import { create } from "zustand";
 import { generateUuidV7 } from "@/lib/uuidv7";
 import { getUserIdentity } from "@/lib/user-identity";
 import {
+  finishTiming,
+  startTiming,
+  timingAttachAttempt,
+  timingProgressSeen,
+  hasVisibleTiming,
+} from "@/lib/feedback/client";
+import {
   searchThreads, createThread, getThreadState, updateThreadMetadata, deleteThread,
   streamRun, cancelRun, deriveTitle, ThreadAccessError,
   getRunStatus, listRecentRuns, notifyIfContextConflict,
@@ -22,12 +29,19 @@ export type ChatMessage = {
   reasoningContent?: string; reasoningTokens?: number; tools?: ToolExecution[];
   usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
   modelName?: string; timestamp?: number;
+  /** 产生终答正文的真实 AI 消息 id（台账 answer.message_id 权威映射键） */
+  sourceMessageId?: string;
+  /** 服务端权威回答关联（映射成功后填充；仅已确认最终回答开放评价/复制） */
+  answerId?: string | null;
 };
 
 type ChatState = {
   graphId: string; threads: LgThread[]; activeThreadId: string | null; messages: ChatMessage[];
   /** 企业切换：丢弃当前视图与列表缓存（不得残留旧企业数据） */
   clearForTenant: () => void;
+  activeTimingId: string | null;
+  activeTimingMessageId: string | null;
+  activeTimingOutputComplete: boolean;
   isStreaming: boolean; streamingText: string; streamingReasoning: string; totalContextTokens: number;
   stopPending: boolean;
   contextMetrics: ContextMetrics | null; contextStatus: ProcessingStatus | null; dataStatus: ProcessingStatus | null;
@@ -49,11 +63,12 @@ type ChatState = {
 };
 let generation = 0;
 let listRequest = 0;
-type ActiveRun = { generation: number; controller: AbortController; threadId: string | null; runId: string | null; admitted?: boolean };
+type ActiveRun = { generation: number; controller: AbortController; threadId: string | null; runId: string | null; phase?: "queued" | "processing" | "unknown"; admitted?: boolean };
 export type StopOutcome = { confirmed: boolean; reason?: "backend" | "context_changed" | "unknown" };
 // F05：可信终态 = 服务端 run.get 返回的运行状态进入这些值；
 // 404/不可见/状态缺失/查询失败都不是"已取消"的事实。
-const TERMINAL_RUN_STATUSES = new Set(["cancelled", "success", "error", "failed", "timeout"]);
+// interrupted 表示本次执行已停止，可以恢复；不等同于业务cancelled事实。
+const STOPPED_RUN_STATUSES = new Set(["cancelled", "success", "error", "failed", "timeout", "interrupted"]);
 const STOP_CONFIRM_TIMEOUT_MS = 15000;
 const STOP_LIST_RESOLVE_MS = 3000;
 
@@ -73,7 +88,7 @@ async function waitForTerminalStatus(
       const obs = await getRunStatus(threadId, runId);
       if (!obs.found) return { confirmed: false, reason: "unknown" }; // 不可见 ≠ 已取消
       if (obs.status === null) return { confirmed: false, reason: "unknown" };
-      if (TERMINAL_RUN_STATUSES.has(obs.status)) return { confirmed: true };
+      if (STOPPED_RUN_STATUSES.has(obs.status)) return { confirmed: true };
       if (Date.now() >= deadline) return { confirmed: false, reason: "backend" };
     } catch (err) {
       notifyIfContextConflict(err);
@@ -131,12 +146,14 @@ async function confirmRunStopped(threadId: string | null, run: ActiveRun | null)
 let activeRun: ActiveRun | null = null;
 let pendingStopRun: ActiveRun | null = null;
 let stopPromise: Promise<StopOutcome> | null = null;
-const emptyView = { messages: [] as ChatMessage[], isStreaming: false, streamingText: "", streamingReasoning: "",
+const emptyView = { activeTimingOutputComplete: false, activeTimingMessageId: null as string | null, activeTimingId: null as string | null, messages: [] as ChatMessage[], isStreaming: false, streamingText: "", streamingReasoning: "",
   totalContextTokens: 0, contextMetrics: null, contextStatus: null, dataStatus: null, error: null, failedInput: null, loadingThread: false };
 
 function cancelActive() {
   const cancelEpoch = generation;
   const run = activeRun;
+  const timing = useChatStore.getState().activeTimingId;
+  if (timing) finishTiming(timing, true);
   activeRun = null;
   run?.controller.abort();
   if (run?.threadId && run.runId) {
@@ -219,8 +236,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
     // 操作类型参与台账受理：initial/retry/regenerate。retry/regenerate 由服务端
     // 解析来源尝试并关联原 request（提问量不增加）。
     setSubmissionContext({ submissionKey, userMessageId: userMsg.id, operationKind });
+    // 浏览器单调计时：同页面同测量段（页面重开新 ID，不跨页相减）。
+    if (previous.activeTimingId) finishTiming(previous.activeTimingId);
+    const measurementId = startTiming(run.generation);
+    set({ activeTimingId: measurementId, activeTimingMessageId: null, activeTimingOutputComplete: false });
     set({ messages: [...previous.messages, userMsg], isStreaming: true, streamingText: "", streamingReasoning: "", error: null, failedInput: null,
       contextStatus: null, dataStatus: null, contextMetrics: null });
+
     try {
       if (!run.threadId) {
         run.threadId = await createThread(previous.graphId, getUserIdentity(), deriveTitle(trimmed));
@@ -235,14 +257,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
         handlers: {
           onRun: (runId) => {
             run.runId = runId;
+            run.phase = "queued";
             if (!sameRun(run)) { void cancelRun(threadId, runId).catch(() => {}); return; }
             // 台账受理关联确认：服务端回读平台 run metadata 校验标记后才确认；
             // 失败保持"受理中"，不改写本地终态。
-            void confirmRunAdmission(threadId, runId).then((ok) => {
+            void confirmRunAdmission(threadId, runId, (attemptId) => {
+              timingAttachAttempt(measurementId, attemptId);
+            }).then((ok) => {
               if (ok && sameRun(run)) run.admitted = true;
             }).catch(() => {});
           },
           onValues: (values) => {
+            run.phase = "processing";
             if (!sameRun(run) || get().activeThreadId !== threadId) return;
             const view = fromValues(values);
             const confirmed = streamedMessageId && values.messages.some((item) => {
@@ -259,18 +285,32 @@ export const useChatStore = create<ChatState>((set, get) => ({
             if (event.run_id && run.runId && event.run_id !== run.runId) return;
             if (event.type === "context_metrics") set({ contextMetrics: event as unknown as ContextMetrics, totalContextTokens: Number(event.input_tokens) || 0 });
             if (event.type === "tool_status" && typeof event.tool_call_id === "string") {
+              // 工具/进度先到不触发首正文计时（spec：进度不能提前结束计时）
+              run.phase = "processing";
+              timingProgressSeen(measurementId);
               set((state) => ({ messages: state.messages.map((message) => ({ ...message, tools: message.tools?.map((tool) => tool.id === event.tool_call_id ? { ...tool, status: event.status === "failed" ? "error" : event.status === "completed" ? "completed" : "running", errorMessage: event.status === "failed" && typeof event.message === "string" ? event.message : tool.errorMessage } : tool) })) }));
             }
             if (event.type === "context_status") {
               const status = processingStatus(event as unknown as ProcessingStatus);
               if (!status) return;
+              run.phase = "processing";
+              timingProgressSeen(measurementId);
               set((state) => status.stage === "history" ? { contextStatus: status } : { dataStatus: mergeDataStatus(state.dataStatus, status) });
             }
-            if (event.type === "final_output_delta" && typeof event.message === "string") set((state) => ({ streamingText: state.streamingText + event.message }));
+            if (event.type === "final_output_delta" && typeof event.message === "string") {
+
+              set((state) => ({ streamingText: state.streamingText + event.message }));
+            }
             if (event.type === "final_output_done" && typeof event.message === "string") {
               streamedMessageId = typeof event.message_id === "string" ? event.message_id : null;
+              set({activeTimingMessageId: streamedMessageId, activeTimingOutputComplete: Boolean(streamedMessageId)});
+
               set({ streamingText: event.message });
             }
+          },
+          onTransportDisconnect: () => {
+            if (!sameRun(run)) return;
+            void recordStopIntent({threadId, runId: run.runId, origin: "transport_disconnect", phase: hasVisibleTiming(measurementId) ? "output" : run.phase ?? "unknown"});
           },
           onDone: (error) => {
             if (!sameRun(run)) return;
@@ -295,6 +335,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (sameRun(run)) {
         activeRun = null;
         setSubmissionContext(null);
+
+        // 计时收尾在 finally：正常结束/失败都要投递局部事实（未完成原因如实在列）
+
         set({ isStreaming: false, streamingText: "", streamingReasoning: "" });
         void get().loadThreads();
       }
@@ -345,9 +388,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       threadId,
       runId: run?.runId ?? null,
       origin: "user_stop",
-      phase: run?.runId ? "processing" : "unknown",
+      phase: hasVisibleTiming(get().activeTimingId) ? "output" : run?.phase ?? "unknown",
     });
-    set({ isStreaming: false, stopPending: run !== null, streamingText: "", streamingReasoning: "" });
+    const timing = get().activeTimingId;
+    if (timing) finishTiming(timing);
+    set({ activeTimingOutputComplete: false, activeTimingId: null, activeTimingMessageId: null, isStreaming: false, stopPending: run !== null, streamingText: "", streamingReasoning: "" });
     // R10：等待服务端取消终态确认后才返回；未确认由调用方（企业切换）拒绝继续
     const confirmation = confirmRunStopped(threadId, run);
     stopPromise = confirmation;
@@ -431,6 +476,8 @@ export function parseMessages(raw: unknown[]): ChatMessage[] {
       try { const data = JSON.parse(content); if (data && typeof data === "object" && (data.success === false || Number(data.code) >= 400)) content = "查询未完成，请调整条件或稍后重试。"; } catch {}
       if (!content) continue;
       const target = ensureAssistant(id); target.content = content;
+      // 台账 answer.confirmed 记录的是真实 AI 消息 id：终答正文来源消息就是权威映射键
+      if (turnId && id) target.sourceMessageId = id;
       const usage = message.usage_metadata as Record<string, number> | undefined;
       if (usage) target.usage = { inputTokens: usage.input_tokens ?? 0, outputTokens: usage.output_tokens ?? 0, totalTokens: usage.total_tokens ?? 0 };
       const metadata = message.response_metadata as Record<string, unknown> | undefined;

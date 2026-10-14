@@ -14,7 +14,6 @@
 
 from __future__ import annotations
 
-import threading
 from pathlib import Path
 from typing import Any, Literal
 
@@ -94,13 +93,8 @@ def build_business_graph(
         编译后的 LangGraph 图实例。
     """
     router = SkillSemanticRouter(skills_dir)
-    # 后台线程预热 embedding 索引，避免首个请求承担冷构建延迟；
-    # 不阻塞 graph 导入（符合 agent-runtime-performance 轻量导入要求）
-    threading.Thread(
-        target=router.prewarm,
-        name=f"skill-router-prewarm-{name}",
-        daemon=True,
-    ).start()
+    # 索引由首次真实匹配按需构建；图导入不启动Embedding外呼线程。
+    # 运维若需预热，可在显式启动阶段调用router.prewarm，不能靠导入副作用。
 
     load_skill_tool = create_load_skill_tool(router)
     nodes = BusinessGraphNodes(

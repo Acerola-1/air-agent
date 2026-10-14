@@ -1,0 +1,187 @@
+[
+  {
+    "path": "admin/api/app/config.py",
+    "current_sha256": "655b169aa64b9c04dde4d6ef8fa6f64f5368c5d5264e7f31adf7e4cd63d9783b",
+    "previous_sha256": "03aaa19a81adc1fa3b56e76e96c682fd8d64be92a27159ba31a9de2fc741ed5e"
+  },
+  {
+    "path": "admin/api/app/deps.py",
+    "current_sha256": "091a9cccb124cb8f5c15b3d6747705dc9249937f131a96b84822d3708736c3f7",
+    "previous_sha256": "f3773b9236277c42b7994b4e65c52d88bfb8421a3e9cd483af81de23bd5a895c"
+  },
+  {
+    "path": "admin/api/app/main.py",
+    "current_sha256": "40eaddd0c8a179be339cef7f68b047e113000e63981d2b473d9ef7df8402b13f",
+    "previous_sha256": "7b66a753048f71f3bfaccb407931f471e8d094e81e1e138b6a533a22ea06a840"
+  },
+  {
+    "path": "admin/api/app/routers/auth.py",
+    "current_sha256": "a61f3898c45408326aa5a8ad7e9a6c7a94457f32e90ef96d4d8108e81be076ef",
+    "previous_sha256": "6b995d194ddd4a9d8b55187312b6d3438f45c2debeb52e3edc58e7254350fee4"
+  },
+  {
+    "path": "admin/api/app/routers/permissions.py",
+    "current_sha256": "29cbee9c2418a825ed36d7baff88be93aa6bcc812778db5200d1a0d3f3c3b444",
+    "previous_sha256": "ca066e898d9504ca58b459c2f129c68314bf13afe45c745af7078f5ce9201194"
+  },
+  {
+    "path": "admin/api/app/routers/roles.py",
+    "current_sha256": "f18e39761989e231b258ade20fe219b0a95bacb433855643958929ba8dc93125",
+    "previous_sha256": "6954c8d9efd1ab342a71c758c6d75f7596a2337d59be405c1b3ef62341935d78"
+  },
+  {
+    "path": "admin/api/app/security.py",
+    "current_sha256": "0a0bc3cf0f28f0a72ba9818ae6ef04849c0e19507e51e48bfd478b51907d7af2",
+    "previous_sha256": "39e43eda8004db7b170a5dc0fe3f75048b73802e868841fc99b14fbf648aeec9"
+  },
+  {
+    "path": "admin/web/lib/api.ts",
+    "current_sha256": "e0afaad2a808a8f4d89069aa5a076f7dc8612c22a0bb20e86cc46966b63caec9",
+    "previous_sha256": "525d435bd11778b3df0ac4cce7e18393aba70d624a619dc42871b140f978cb2b"
+  },
+  {
+    "path": "admin/web/lib/session.tsx",
+    "current_sha256": "f44dbf930e13d2fb912572d576ab20d6e3bf55b4414a3cbc0da967338fd77c70",
+    "previous_sha256": "1ea819b72b35d9b78e76d382bdc7747b03dadde230ad370818b18d9bae09c831"
+  },
+  {
+    "path": "frontend/app/api/[..._path]/route.ts",
+    "current_sha256": "47af809e22900a31da6687456a76e6a40caa8fda469e3ecb89191a4a59de9250",
+    "previous_sha256": "d9e2711e8dccc701d58cb1098cfcd0810403ede0eef2f48a5fa900cc2beb6fef"
+  },
+  {
+    "path": "frontend/lib/chat-store.ts",
+    "current_sha256": "5b2561776f9af78bdb2649069776647dbcf823da4179b67be6d6efd560fe5776",
+    "previous_sha256": "c3571890250c9e15ae9cb539286fd09ee84624cadf40900d56b60683891634c6"
+  },
+  {
+    "path": "frontend/lib/langgraph-api.ts",
+    "current_sha256": "684d0b658da6706a27182fa7fdf537851de8641274acecb67b93d9dfc0b07a38",
+    "previous_sha256": "80c30f6a76b7183f9e2abed064e96678acb22840e976a938b850863f7eeb0587"
+  },
+  {
+    "path": "frontend/lib/session-client.ts",
+    "current_sha256": "2ce8e15bab530395edd44d93e716a001eec060d40c0ef2fe7277f6aca7fcde7c",
+    "previous_sha256": "b5b85dc6e4696d5c7daa1655b424e58615b0342ace8840f152ef568464d47dd0"
+  },
+  {
+    "path": "frontend/tests/chat-contract.test.cjs",
+    "current_sha256": "c7678c680263a21fa513090e69728f8e610a1b112e2ab3a10534c6737a516975",
+    "previous_sha256": "938df110abf4ad04b0840f2da072319079d668283a7d7692b26991033e5bf013"
+  },
+  {
+    "path": "src/common/artifact_http.py",
+    "current_sha256": "397bcdb16e6b1a0a6c0c2f9438916d9e81fd838b03689c66ecf76997d526d88f",
+    "previous_sha256": "183dcf8acb703620e018fd72587caa2dbd989b8dda2e6cd94252ecac9b2d40b9"
+  },
+  {
+    "path": "src/common/business_graph/tool_wrappers.py",
+    "current_sha256": "f6777b2fd8deed4d12b67144969bf2b3855715c8c732c13f37cfa2423330c82c",
+    "previous_sha256": "0cca94b4d04517cf6cba1759ed69e0450314d608b1988fbf5227b89bcede653e"
+  },
+  {
+    "path": "src/common/computation/tool.py",
+    "current_sha256": "b9d064af260d1d1ef0c3d15cde920c8ee91c5d4624908ac85a545bc592062798",
+    "previous_sha256": "feac6ca4a2f796eacc5ea1f70073ac796c8492898aa4bb6896bd77c473093a9c"
+  },
+  {
+    "path": "src/common/data_governance.py",
+    "current_sha256": "05cd71f3af9a38fa9c6c823165b0ee2fde61fafc6975043c42ffea77afb49365",
+    "previous_sha256": "5d7b936d3abcad61d3aec457f55c06d0050e4a27bc2e79c7fdd7627f0bb760a2"
+  },
+  {
+    "path": "src/common/storage/artifact_db.py",
+    "current_sha256": "f35c7ef0e9169a303c1961906b9d797971454954b9933ebec480519d8e7d37e1",
+    "previous_sha256": "2c35397d69584ec45e98493e7a1e4b02745fd9dab72b3aabc812d1bfe7243ef6"
+  },
+  {
+    "path": "tests/unit_tests/conftest.py",
+    "current_sha256": "cfb0619790d59497a76ca39e447388b869f7c58164e8a893ea1784674baccbc8",
+    "previous_sha256": "c95c7fcae0462c2eec95c000ab36aecf1d1d5caa502dc04f2d209ddfcc513375"
+  },
+  {
+    "path": "admin/api/app/routers/bindings.py",
+    "current_sha256": "45fea3fb2a93e7e523a8e6030398c6922cac06641221cf0c62e3abe75fec43f6",
+    "previous_sha256": "bf1c07d916eeb7e40c76d2a9e91217edf110f7526f910407475a5da81d1b528d"
+  },
+  {
+    "path": "admin/api/app/routers/departments.py",
+    "current_sha256": "5da79bd0ce0dd47189e5e3339b88255c31cb3b7cf616a943ca53c9b9356428f9",
+    "previous_sha256": "53e7544bf31f210e7fd8d80c44394ed446cf309657713d579f74916ab4477ea3"
+  },
+  {
+    "path": "admin/api/app/routers/tenants.py",
+    "current_sha256": "e0dd81dd557f8763f9b0559543f79cab3395e8e8d9d690596521093cf0caa1e3",
+    "previous_sha256": "f618a6a4352a9bf1d48083e0b2ace9d1e6b53a382f89da62e150658749ba5a05"
+  },
+  {
+    "path": "admin/api/migrations/versions/0004_tenant_artifact.py",
+    "current_sha256": "22ca4ceb4e38420529ef441d1b4764c1a5353820d262dab88c5335677b880d73",
+    "previous_sha256": "b00576593f1c71e6625bf0b520afeb5b6b689fed50cc7732d39e65b326a1451d"
+  },
+  {
+    "path": "admin/api/scripts/agent_e2e_fixture.py",
+    "current_sha256": "082638a7d8114dab2b483a5f9cfc30dffb497185c2d9fa802bdb462be7a3d1f3",
+    "previous_sha256": "3aff7b0f3ff0bfb64aef32bd20f006eb0a17786e7df952fdb1b80b268acd20d1"
+  },
+  {
+    "path": "admin/api/scripts/migrate_identity.py",
+    "current_sha256": "587abaf77a470058437bea5b8176f3f5ea1da8b6180227b39ef5216fcc0d70dd",
+    "previous_sha256": "565b29b5477068c91504b638ad4bf9bbb47a0779ff00a8681ac5ecf1bbccfa76"
+  },
+  {
+    "path": "admin/web/app/(dashboard)/enterprise/roles/page.tsx",
+    "current_sha256": "2605e8646b142ef4628e7c97c6f100147e17276a9c1ced49ddc13ec1812e75c3",
+    "previous_sha256": "ebb7c6e1704659145b43c01d69371701933daf2dd8fbe43e81131bbca21b5324"
+  },
+  {
+    "path": "frontend/components/chat/TenantBadge.tsx",
+    "current_sha256": "2b65214c68f2027758e956d6edfd2fe7cea4d074b55a909762c283df1833b610",
+    "previous_sha256": "afae524530f16e5bdf9746e9f7f04505d005e1b8f4fe1ddd825759bf028308d4"
+  },
+  {
+    "path": "frontend/lib/admin-api.ts",
+    "current_sha256": "9fd374123bb2491bfc1ec39eaf6b99168ba2c7b5d2d4f8c57f8adf65af1aa7fe",
+    "previous_sha256": "1fec96746e333cf46ffe9a760d18eb1b62fe7403882f40db84b16fde26ec5fe4"
+  },
+  {
+    "path": "src/common/identity/db.py",
+    "current_sha256": "33091111b73bac79981b72fd93f29162690d41fdb9f1be430f7e96c7c7eceb3c",
+    "previous_sha256": "fac6a18626c2aa07b3a8f979253a6a165bf7aa39230d3f83993ce5689e6747d7"
+  },
+  {
+    "path": "src/common/identity/langgraph_auth.py",
+    "current_sha256": "6ec874e127b780a226744cb5fd92475ef910e931a947e5ec5742a9e2ed6b26ff",
+    "previous_sha256": "99937f2ebf01fa645c3fb8c0f44ecc899faa0a1976634eacb191e363940f057c"
+  },
+  {
+    "path": "src/common/identity/runtime.py",
+    "current_sha256": "e4619c5d9a0344330b7b4a98b41f37eb311c0418cf5f6d979eeafce1b4c0d072",
+    "previous_sha256": "d11791e21362a2b02f6e2ec77dc6ca74699be6c3f016420166ec03f0384345b9"
+  },
+  {
+    "path": "src/common/identity/ticket.py",
+    "current_sha256": "31f25eba27a5fc320200c35e82d8acda8e2b2209266eb9f321327d66f4d0f358",
+    "previous_sha256": "c26bebe994eddc83dcde768421d7ee8ba2d4c28b33d56ef1f7a3a50795009ed0"
+  },
+  {
+    "path": "src/common/mcp_authorization.py",
+    "current_sha256": "fbcb8c02aa5a1addad7b6ede1f728065c7b331f42418ef28b67128f7ba751a1e",
+    "previous_sha256": "174bb378eddfac212329f433e150745368384d23af4a3b600086a49a35ad19c5"
+  },
+  {
+    "path": "src/common/mcp_scoped.py",
+    "current_sha256": "a354f9b6095c2a76edab2a1ee45ad89bf63abed1096d6dec93c6ec7619299d04",
+    "previous_sha256": "b46e0c87ee7a867d84f8e0cb2f570d0348c3b603962b1bb8243deec28115d153"
+  },
+  {
+    "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+    "current_sha256": "7ccd23d06cf83e35d942aa3e300a3ca0396413682917c7fe4071cd8f291bece2",
+    "previous_sha256": "a2a66b8a8992b033b21c8b450b393bac46e87fd497f8c1c7575ac496ea8a8f32"
+  },
+  {
+    "path": "tests/mcp_fixture/server.py",
+    "current_sha256": "e25a7b6428a2ec13004b46b61fedb091d8d2326bff05847335a0dde07278ffc6",
+    "previous_sha256": "04e5696743ad85d94d9f9a9b549c43eea0a3b29cea988ee87b1edef063c44cf8"
+  }
+]

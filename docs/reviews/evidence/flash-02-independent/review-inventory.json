@@ -1,0 +1,1256 @@
+{
+  "total_files": 208,
+  "reviewed_files": 26,
+  "skipped_files": 182,
+  "coverage_rate": 0.125,
+  "files": [
+    {
+      "path": ".gitignore",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "Dockerfile",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/config.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/db.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/deps.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/main.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "admin/api/app/models.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "admin/api/app/routers/audit.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/routers/auth.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/routers/permissions.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/routers/regions.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/routers/roles.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/routers/users.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/schemas.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/security.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/services/audit.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/services/followed_regions.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/scripts/seed.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/layout.tsx",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/page.tsx",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/profile/page.tsx",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/login/page.tsx",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/lib/api.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/lib/session.tsx",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/lib/types.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/next-env.d.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docker-compose.yaml",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "frontend/app/api/auth/login/route.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/app/api/auth/logout/route.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/app/api/auth/me/route.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/app/api/auth/register/route.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/app/login/page.tsx",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "frontend/lib/artifact-scope.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/lib/auth.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "frontend/lib/session-client.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/middleware.ts",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/package.json",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "langgraph.json",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "run-local.sh",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/artifact_scope.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/artifacts/__init__.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/business_graph/builder.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/business_graph/subagent_summarizer.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/computation/tool.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/config/checkpointing.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/config/settings.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/conversation_summarizer.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/data_governance.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/mcp_client.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/middleware/__init__.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/models.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/question_normalizer.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/skill_discovery.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/storage/artifact_db.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/text_reduction.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/data_analysis/graph.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "tests/integration_tests/conftest.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "tests/unit_tests/conftest.py",
+      "status": "modified",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/models_ledger.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "admin/api/app/routers/bindings.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/routers/departments.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/routers/ledger.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "admin/api/app/routers/tenants.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/schemas_ledger.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "admin/api/app/services/event_contract.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "admin/api/app/services/identity.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "admin/api/app/services/tenant_context.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/app/services/tenant_seed.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "admin/api/migrations/versions/0003_tenant_identity.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/migrations/versions/0004_tenant_artifact.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/migrations/versions/0005_tenant_access_repair.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/migrations/versions/0006_claim_session.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/migrations/versions/0007_agent_event_ledger.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "admin/api/scripts/agent_e2e_fixture.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/scripts/bootstrap_tenant_db.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "admin/api/scripts/drill_recovery.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/scripts/drill_recovery.sh",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/scripts/import_historical_ledger.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "admin/api/scripts/migrate_identity.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/scripts/restore_ledger_permissions.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "admin/api/tests/conftest.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/api/tests/ctx_client.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/departments/page.tsx",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/mcp/page.tsx",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/members/page.tsx",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/roles/page.tsx",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/platform/tenants/page.tsx",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/select-tenant/page.tsx",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "admin/web/components/tenant-switcher.tsx",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-envelope.schema.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/metrics.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/states.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/admin-proofs.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/admin_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/changed-inputs.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/fresh-migrations.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/live-claim.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/live_claim_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/migration-live.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/migration-proofs.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/migration_live_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/migration_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/run_fresh_admin.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/run_integration.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/runtime-proofs.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/runtime_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/source-manifest.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/stop-proofs.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-01/stop_probe.cjs",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/anonymous-input.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/change2-source-baseline.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/fresh-migrations.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/model-smoke.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/premium-audit.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/recovery.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01-repair-02/review-inventory.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/admin-proofs.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/admin_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/empty.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/empty_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/live.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/live_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/run_admin_suite.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/runtime.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/runtime_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/seed_rls_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/setup_probe.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-01/source-manifest.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "旧匿名01证据附件，不属于匿名02实现范围"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/anonymous-input.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/association.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/deletion-api.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/fresh-migrations.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/live-admission.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/native-lifecycle.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/pg-boundaries.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_admission.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_association.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_deletion_api.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_native_lifecycle.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_pg_boundaries.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_rebuild.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/probe_receipts.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/rebuild.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02-independent/receipt.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮协调者自建证据/反例文件，非匿名交付代码；未计匿名审阅覆盖"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/e2e_ledger_chain.out.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/e2e_ledger_chain.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/e2e_proxy_chain.out.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/e2e_proxy_chain.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/probe_run_admission.out.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/probe_run_admission.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/probe_run_metadata_resume.out.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/probe_run_metadata_resume.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-02/restore_drill.sh",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "frontend/app/api/agent-runs/confirm/route.ts",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "frontend/app/api/agent-runs/stop-intent/route.ts",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "frontend/app/api/auth/switch-tenant/route.ts",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/components/chat/TenantBadge.tsx",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/lib/admin-api-contract.ts",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "frontend/lib/admin-api.ts",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "frontend/lib/agent-events/contract.ts",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "frontend/lib/agent-ledger.ts",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "frontend/scripts/gen-agent-events-contract.mjs",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/.openspec.yaml",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "premium-audit.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/common/event_ledger/__init__.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "src/common/event_ledger/__main__.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "src/common/event_ledger/contract.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/metrics.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/states.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "本轮重点边界验收未完成该文件整文件代码审阅；正向测试/作者声明不等于独立代码审阅"
+    },
+    {
+      "path": "src/common/event_ledger/lifecycle.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "src/common/event_ledger/reconcile.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "src/common/event_ledger/store.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "src/common/event_ledger/worker.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "src/common/identity/__init__.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮关键调用/持久化/删除/恢复/契约路径审阅及适用独立反例；范围不等于全项目审阅"
+    },
+    {
+      "path": "src/common/identity/outbound.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/identity/runtime.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/identity/ticket.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/mcp_authorization.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/mcp_scoped.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "tests/auth_probe/probe_auth.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "tests/auth_probe/probe_graph.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "tests/auth_probe/probe_http.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "tests/mcp_fixture/__init__.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "tests/mcp_fixture/server.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "tests/mcp_fixture/server_process.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    },
+    {
+      "path": "tests/mcp_probe/probe_mcp.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "与已冻结change1代码哈希相同，本轮不重复逐文件审阅；回归结果另列"
+    }
+  ]
+}

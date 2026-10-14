@@ -1,0 +1,35 @@
+{
+  "native": {
+    "runs": [
+      {
+        "status": 200,
+        "graph": "basic-qa"
+      },
+      {
+        "status": 200,
+        "graph": "basic-qa"
+      },
+      {
+        "status": 200,
+        "graph": "intelligent-analysis"
+      }
+    ],
+    "distinct_platform_runs": 3,
+    "ledger_attempts": 1,
+    "registered_graph": "basic-qa"
+  },
+  "proxy": {
+    "statuses": [
+      200,
+      200
+    ],
+    "distinct_platform_runs": 2
+  },
+  "replay_mapping": {
+    "initial_attempt": "06cce4ca-5457-476c-886f-aa777058a9cd",
+    "regenerated_attempt": "f55b0974-6d2a-4ade-93c8-16ce66fac7a0",
+    "initial_key_returns_initial": false,
+    "initial_key_returns_regenerated": true
+  },
+  "cleanup": 204
+}

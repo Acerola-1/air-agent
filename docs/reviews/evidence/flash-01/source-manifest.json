@@ -1,0 +1,1027 @@
+{
+  "base": "7b82c04",
+  "reviewable_total": 102,
+  "reviewed_files": 101,
+  "skipped_files": 1,
+  "coverage_rate": 0.9902,
+  "files": [
+    {
+      "path": ".gitignore",
+      "status": "modified",
+      "sha256": "8927d4bafd4c16d101045b56d7bf325c8df5be810ec085c4c1e2c4d7e77d0c02",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "Dockerfile",
+      "status": "modified",
+      "sha256": "671d67752743931c22e86cc7e4dd3e8d2e42950b6bd70f756871bb77a3fa2283",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/config.py",
+      "status": "modified",
+      "sha256": "03aaa19a81adc1fa3b56e76e96c682fd8d64be92a27159ba31a9de2fc741ed5e",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/db.py",
+      "status": "modified",
+      "sha256": "e249e510400ff6ec8e2863179de3b2ec4d378f439b2969e450d33a94d81db80d",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/deps.py",
+      "status": "modified",
+      "sha256": "f3773b9236277c42b7994b4e65c52d88bfb8421a3e9cd483af81de23bd5a895c",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/main.py",
+      "status": "modified",
+      "sha256": "7b66a753048f71f3bfaccb407931f471e8d094e81e1e138b6a533a22ea06a840",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/models.py",
+      "status": "modified",
+      "sha256": "b7ee34b081b9a7f8da8de4282c87c39926e1da5661d35497e64fd3adf73e8085",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/audit.py",
+      "status": "modified",
+      "sha256": "c6fa0e131d81de1fdac88995a569cbe9afd8130e0466f9b3a3c00f27efa0e1ce",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/auth.py",
+      "status": "modified",
+      "sha256": "6b995d194ddd4a9d8b55187312b6d3438f45c2debeb52e3edc58e7254350fee4",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/permissions.py",
+      "status": "modified",
+      "sha256": "ca066e898d9504ca58b459c2f129c68314bf13afe45c745af7078f5ce9201194",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/regions.py",
+      "status": "modified",
+      "sha256": "74ca864f4d212f2157f70323f2e673cf57224ab89181043fefa1e472894967a4",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/roles.py",
+      "status": "modified",
+      "sha256": "6954c8d9efd1ab342a71c758c6d75f7596a2337d59be405c1b3ef62341935d78",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/users.py",
+      "status": "modified",
+      "sha256": "b72808430732b7d4e0c4dad4223925331856a2766bfd9a64d59666d2c659d51d",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/schemas.py",
+      "status": "modified",
+      "sha256": "13e485e302a93c8b8219a51f18210610c8ae5fa58597a7b0586abc9bb348d47b",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/security.py",
+      "status": "modified",
+      "sha256": "39e43eda8004db7b170a5dc0fe3f75048b73802e868841fc99b14fbf648aeec9",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/services/audit.py",
+      "status": "modified",
+      "sha256": "441dac68902022bd2fa193c0476b1c3ae03d591a488b22ff18c1dc84e0a9f250",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/services/followed_regions.py",
+      "status": "modified",
+      "sha256": "8f63a6a3118fb5aa1778f12c1bffa7a3bdba665ae079ef85cacff559185ee727",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/scripts/seed.py",
+      "status": "modified",
+      "sha256": "6b350cd5c5fddf07a48d3be77adcb8e428bbd643c48c9df245c9170736e29bc3",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/layout.tsx",
+      "status": "modified",
+      "sha256": "52be93dba344741fe64e2ba949b50b8419399b81b8fc10f03c3f6d2639f3c637",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/page.tsx",
+      "status": "modified",
+      "sha256": "6dcddc9ffd5e39746281294668e222d2fa920b3d966489beb8bfac6d5918536b",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/profile/page.tsx",
+      "status": "modified",
+      "sha256": "bb60cfaad29c12c50e420608c1645de9bb132e738f5d25569a6ae8f8770bce0c",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/login/page.tsx",
+      "status": "modified",
+      "sha256": "567a2e825a583f709fa1465f1e119d78ccca8c753188ef7f74d4797e0461a7b3",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/lib/api.ts",
+      "status": "modified",
+      "sha256": "525d435bd11778b3df0ac4cce7e18393aba70d624a619dc42871b140f978cb2b",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/lib/session.tsx",
+      "status": "modified",
+      "sha256": "1ea819b72b35d9b78e76d382bdc7747b03dadde230ad370818b18d9bae09c831",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/lib/types.ts",
+      "status": "modified",
+      "sha256": "1b27be64a5279b2be74d031b438d7f0635331d4c018df59609710970e967b2ed",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/next-env.d.ts",
+      "status": "modified",
+      "sha256": "1862ac4bbbc5192d4bf562161df66ea547ed3e67173100656ab606ae9797db2b",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "docker-compose.yaml",
+      "status": "modified",
+      "sha256": "653f23e644f80adac55440559939840fe52fede135f71977665fa924c4a3fca7",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "status": "modified",
+      "sha256": "d9e2711e8dccc701d58cb1098cfcd0810403ede0eef2f48a5fa900cc2beb6fef",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/app/api/auth/login/route.ts",
+      "status": "modified",
+      "sha256": "cd7312b846928ec5fdb21b4bdd918ca74731000916760aef8315d54282c8c894",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/app/api/auth/logout/route.ts",
+      "status": "modified",
+      "sha256": "89200e1f5bb8b8078e3f276eab7b46834059d56d66fb8563382a5e04e188f9a8",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/app/api/auth/me/route.ts",
+      "status": "modified",
+      "sha256": "6db2a3df4a01c4aa32b99454a6ce7ddc83a68ff731947fe9fabd920a41c6ad60",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/app/api/auth/register/route.ts",
+      "status": "modified",
+      "sha256": "dda840032531c4adf237e47310d0f74b0f915f138ec747f4fa933226eb3f2882",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/app/login/page.tsx",
+      "status": "modified",
+      "sha256": "ca1b8343da117074fe01ad03dd62405e8aab3e09da9236c9eb8f70ad1dfad27b",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "sha256": "bd9f11e141b8a14be10ccaac9a32b8e79c4fddc27481b1adf5d5dfd3ccd0c11e",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/lib/artifact-scope.ts",
+      "status": "modified",
+      "sha256": "121ccbee829c247900a0fc55f22bf2402745fb0245f71cfbdae7d3c01cdc077d",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/lib/auth.ts",
+      "status": "modified",
+      "sha256": "c2ef090b7b6533ade0b0c7f315efa20403587ff30c87870c2808b2b05ffecb3a",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "sha256": "c3571890250c9e15ae9cb539286fd09ee84624cadf40900d56b60683891634c6",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "status": "modified",
+      "sha256": "80c30f6a76b7183f9e2abed064e96678acb22840e976a938b850863f7eeb0587",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/lib/session-client.ts",
+      "status": "modified",
+      "sha256": "b5b85dc6e4696d5c7daa1655b424e58615b0342ace8840f152ef568464d47dd0",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/middleware.ts",
+      "status": "modified",
+      "sha256": "2417177c7d18af3a245aaa58e587212ade7c8647026ae878d7aa3f544693ab79",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "sha256": "938df110abf4ad04b0840f2da072319079d668283a7d7692b26991033e5bf013",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "langgraph.json",
+      "status": "modified",
+      "sha256": "8db48bfcb383f9c102dc5d26f92a0d06882c53e234269db0c7fad0603754eddf",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "run-local.sh",
+      "status": "modified",
+      "sha256": "b6c77a55eaf30ef034063a24a455c390cb91d9e911a5f28cab8a0828e36f08f0",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "status": "modified",
+      "sha256": "183dcf8acb703620e018fd72587caa2dbd989b8dda2e6cd94252ecac9b2d40b9",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/artifact_scope.py",
+      "status": "modified",
+      "sha256": "1a5e125a5b3a1d98ebc1091d54c35c6e3d3b5c1fd2dba963e3f9da45e544b5b3",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/artifacts/__init__.py",
+      "status": "modified",
+      "sha256": "b4f572940867a8557e4afc094b5a5800ddf255151baef770088cb19c7a25a5d0",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "status": "modified",
+      "sha256": "4f88e3c7954efb82519a2853e1226a242604c1993d3cd0dae017dd9248c7448c",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "status": "modified",
+      "sha256": "0cca94b4d04517cf6cba1759ed69e0450314d608b1988fbf5227b89bcede653e",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/computation/tool.py",
+      "status": "modified",
+      "sha256": "feac6ca4a2f796eacc5ea1f70073ac796c8492898aa4bb6896bd77c473093a9c",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/config/checkpointing.py",
+      "status": "modified",
+      "sha256": "2e1177a9cf902bc2e109c3525264cac8fd5def66e0964daf357a638d1afa8da2",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/config/settings.py",
+      "status": "modified",
+      "sha256": "ff517a8dd8bb362453da4ae289f31cabb08915afbfa84ba5ad1c28a5958d38d5",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/data_governance.py",
+      "status": "modified",
+      "sha256": "5d7b936d3abcad61d3aec457f55c06d0050e4a27bc2e79c7fdd7627f0bb760a2",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/mcp_client.py",
+      "status": "modified",
+      "sha256": "354265295a6aab9b2cea1f7fd88ea9b25ae38291d79ef3c07887acc481bd3950",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/middleware/__init__.py",
+      "status": "modified",
+      "sha256": "902337444491da510408c7a4f77f8076f24de70ff6ca497853c4580cd1adf242",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/question_normalizer.py",
+      "status": "modified",
+      "sha256": "e730f17eb2dba3d6092d20a63d6eec6e5e233b737cee9188e3f3cccebce477d7",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/skill_discovery.py",
+      "status": "modified",
+      "sha256": "fa8931c9d61abf3cb2fffd453f4fadf3914e00722411ae67ec642b91d60c29dd",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "status": "modified",
+      "sha256": "c9eb440e50022ee6b16dc791dd61c1df3d7940846dc0b06198c4edd8d1e59a66",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/storage/artifact_db.py",
+      "status": "modified",
+      "sha256": "2c35397d69584ec45e98493e7a1e4b02745fd9dab72b3aabc812d1bfe7243ef6",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "status": "modified",
+      "sha256": "861a8f305bd010ebfd67f7b48573f43abf5ec74c3bb95c880931a9242990dc32",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "status": "modified",
+      "sha256": "15acd0a70432b741025e9085545b027877ccd438b4453142706d7bffa4f80c2a",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "status": "modified",
+      "sha256": "936c2d8f8f04eb413d75738aab614406451cff3d0f0c7a1c1d2c2bee7c335254",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/integration_tests/conftest.py",
+      "status": "modified",
+      "sha256": "3c2f372a909f815d3141e22cf0e8c923c22aedeebce29850e7948bc348a164f8",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/unit_tests/conftest.py",
+      "status": "modified",
+      "sha256": "c95c7fcae0462c2eec95c000ab36aecf1d1d5caa502dc04f2d209ddfcc513375",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/bindings.py",
+      "status": "added",
+      "sha256": "bf1c07d916eeb7e40c76d2a9e91217edf110f7526f910407475a5da81d1b528d",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/departments.py",
+      "status": "added",
+      "sha256": "53e7544bf31f210e7fd8d80c44394ed446cf309657713d579f74916ab4477ea3",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/routers/tenants.py",
+      "status": "added",
+      "sha256": "f618a6a4352a9bf1d48083e0b2ace9d1e6b53a382f89da62e150658749ba5a05",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/services/identity.py",
+      "status": "added",
+      "sha256": "c724e59e0c2e8fea57d4a9d64b63f12988735ee90518c6b478ae0adbcc339ffb",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/services/tenant_context.py",
+      "status": "added",
+      "sha256": "4077a3644f196abbafb1860b92e13ab1eda65993729781444fa0ca8ce50abe54",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/app/services/tenant_seed.py",
+      "status": "added",
+      "sha256": "ff88d01dac8092c65a2aa0a0955190e787e7fa9acfa613dd55e795306184f990",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/migrations/versions/0003_tenant_identity.py",
+      "status": "added",
+      "sha256": "737f69b679fb8aab1c579df15c9754f7f43094551f1216f62e01d3fb90671588",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/migrations/versions/0004_tenant_artifact.py",
+      "status": "added",
+      "sha256": "b00576593f1c71e6625bf0b520afeb5b6b689fed50cc7732d39e65b326a1451d",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/scripts/agent_e2e_fixture.py",
+      "status": "added",
+      "sha256": "3aff7b0f3ff0bfb64aef32bd20f006eb0a17786e7df952fdb1b80b268acd20d1",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/scripts/bootstrap_tenant_db.py",
+      "status": "added",
+      "sha256": "53611748e73f038d01bea6beb32abf6b75b576e481e8b523d71d086dfda81fb3",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/scripts/drill_recovery.sh",
+      "status": "added",
+      "sha256": "287fa54276a8113b53a0d11797823ca58da14b739ac396203d3850289bf1ebb7",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/api/scripts/migrate_identity.py",
+      "status": "added",
+      "sha256": "565b29b5477068c91504b638ad4bf9bbb47a0779ff00a8681ac5ecf1bbccfa76",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/departments/page.tsx",
+      "status": "added",
+      "sha256": "82568b6a1645bec2e3053f9722ad854499e24f32f0d4f086c2748439ab1911e9",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/mcp/page.tsx",
+      "status": "added",
+      "sha256": "d766cf292e575b0542f61236ea99340ba65fbe5356aff04be34dffea41e8c294",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/members/page.tsx",
+      "status": "added",
+      "sha256": "7a8ec3f5ad2299cdeabcc6c265b6d6897bc8ca6bf78a07e71815695733b03376",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/enterprise/roles/page.tsx",
+      "status": "added",
+      "sha256": "ebb7c6e1704659145b43c01d69371701933daf2dd8fbe43e81131bbca21b5324",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/platform/tenants/page.tsx",
+      "status": "added",
+      "sha256": "1284328865f5c48d13201267cb5d6f54ecc0d73429bd496f223f3ea531aed0d3",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/app/(dashboard)/select-tenant/page.tsx",
+      "status": "added",
+      "sha256": "9c05ed67ddb71da0121fcd73103727b80589eac17844fec5ef6f84ef45dec0e4",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "admin/web/components/tenant-switcher.tsx",
+      "status": "added",
+      "sha256": "7830e5fd936ff9caf3f02bd3612be385245107e04f50e2a293099dc1cc60635f",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/app/api/auth/switch-tenant/route.ts",
+      "status": "added",
+      "sha256": "83c6343b2fb4c8f3ffed001ab92606583db89220aa81cec9f6e9f014605b90ab",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/components/chat/TenantBadge.tsx",
+      "status": "added",
+      "sha256": "afae524530f16e5bdf9746e9f7f04505d005e1b8f4fe1ddd825759bf028308d4",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/lib/admin-api-contract.ts",
+      "status": "added",
+      "sha256": "a6a7358f264516b8a67281f685ff0592addb450a7ae60a177a05e5535ae37444",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "frontend/lib/admin-api.ts",
+      "status": "added",
+      "sha256": "1fec96746e333cf46ffe9a760d18eb1b62fe7403882f40db84b16fde26ec5fe4",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/.openspec.yaml",
+      "status": "added",
+      "sha256": "1dfdca412094f24473d8b842866201ec26f200b29b17064b03f1e4982c35a7b9",
+      "review_status": "skipped",
+      "reason": "Codex准备的第二项规划，不属于本轮模型实现"
+    },
+    {
+      "path": "src/common/identity/__init__.py",
+      "status": "added",
+      "sha256": "521845dce1cd0db779c7e82f3da4dbe6c93ffce67351515d351671be3d6e03e5",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "status": "added",
+      "sha256": "fac6a18626c2aa07b3a8f979253a6a165bf7aa39230d3f83993ce5689e6747d7",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "status": "added",
+      "sha256": "99937f2ebf01fa645c3fb8c0f44ecc899faa0a1976634eacb191e363940f057c",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/identity/runtime.py",
+      "status": "added",
+      "sha256": "d11791e21362a2b02f6e2ec77dc6ca74699be6c3f016420166ec03f0384345b9",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/identity/ticket.py",
+      "status": "added",
+      "sha256": "c26bebe994eddc83dcde768421d7ee8ba2d4c28b33d56ef1f7a3a50795009ed0",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/mcp_authorization.py",
+      "status": "added",
+      "sha256": "174bb378eddfac212329f433e150745368384d23af4a3b600086a49a35ad19c5",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/mcp_scoped.py",
+      "status": "added",
+      "sha256": "b46e0c87ee7a867d84f8e0cb2f570d0348c3b603962b1bb8243deec28115d153",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "status": "added",
+      "sha256": "a2a66b8a8992b033b21c8b450b393bac46e87fd497f8c1c7575ac496ea8a8f32",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/auth_probe/probe_auth.py",
+      "status": "added",
+      "sha256": "13ba4d5406ac348d2ecdc4a91a889957962a89ffc88c94c0b96e8a000b3a60ed",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/auth_probe/probe_graph.py",
+      "status": "added",
+      "sha256": "5495f01103bcfe89e47d054c3614612c06421d07ba2f2f1d0839773e31642d1b",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/auth_probe/probe_http.py",
+      "status": "added",
+      "sha256": "b1c9275ec296672cf23849cb0ca7ffb3fc2f96ac1b3f3d4ef64bbf1158c6486a",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/mcp_fixture/__init__.py",
+      "status": "added",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/mcp_fixture/server.py",
+      "status": "added",
+      "sha256": "04e5696743ad85d94d9f9a9b549c43eea0a3b29cea988ee87b1edef063c44cf8",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/mcp_fixture/server_process.py",
+      "status": "added",
+      "sha256": "e7ba81e29e87785d5fd8a1d4339568080e858a55fe7c3d1ddc1a13d8dd00fe3e",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    },
+    {
+      "path": "tests/mcp_probe/probe_mcp.py",
+      "status": "added",
+      "sha256": "ecd28156f2e4167ae330122cca8dad7c824929cca6a7f91114d506de99a5a399",
+      "review_status": "reviewed",
+      "reason": "按差异与相关调用路径审查；不表示全部规格场景已实测"
+    }
+  ],
+  "ocr_excluded": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "insertions": 21,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "admin/api/README.md",
+      "status": "modified",
+      "insertions": 52,
+      "deletions": 8,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "admin/api/app/services/rbac.py",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 41,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "admin/api/tests/check_session_compat.sh",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 59,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "admin/api/tests/session_compat.mjs",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 77,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "admin/api/tests/session_compat.py",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 52,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "admin/api/tests/test_admin_api.py",
+      "status": "modified",
+      "insertions": 19,
+      "deletions": 22,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_auth_api.py",
+      "status": "modified",
+      "insertions": 126,
+      "deletions": 47,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_followed_regions.py",
+      "status": "modified",
+      "insertions": 19,
+      "deletions": 21,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_security.py",
+      "status": "modified",
+      "insertions": 168,
+      "deletions": 85,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/enterprise-agent-roadmap.md",
+      "status": "modified",
+      "insertions": 8,
+      "deletions": 2,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "frontend/lib/session-token.ts",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 67,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "frontend/lib/user-store.ts",
+      "status": "deleted",
+      "insertions": 0,
+      "deletions": 80,
+      "exclude_reason": "deleted"
+    },
+    {
+      "path": "openspec/changes/add-tenant-identity-access/tasks.md",
+      "status": "modified",
+      "insertions": 45,
+      "deletions": 45,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/integration_tests/test_governance_toolnode.py",
+      "status": "modified",
+      "insertions": 42,
+      "deletions": 4,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/integration_tests/test_mcp_500k_guard.py",
+      "status": "modified",
+      "insertions": 59,
+      "deletions": 9,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_artifact_db.py",
+      "status": "modified",
+      "insertions": 70,
+      "deletions": 18,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_basic_qa_skill_routing.py",
+      "status": "modified",
+      "insertions": 27,
+      "deletions": 19,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_data_analysis_output_guard.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 1,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_mcp_client.py",
+      "status": "modified",
+      "insertions": 102,
+      "deletions": 108,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_skill_prompt_rules.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 1,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_skill_ranking_diagnostic.py",
+      "status": "modified",
+      "insertions": 18,
+      "deletions": 11,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_tool_wrapper_retry.py",
+      "status": "modified",
+      "insertions": 43,
+      "deletions": 8,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_tenant_api.py",
+      "status": "added",
+      "insertions": 649,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_tenant_migration.py",
+      "status": "added",
+      "insertions": 425,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_tenant_schema.py",
+      "status": "added",
+      "insertions": 447,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/enterprise-agent-parallel-work.md",
+      "status": "added",
+      "insertions": 45,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/handoffs/agent-event-ledger-goal.md",
+      "status": "added",
+      "insertions": 13,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/mcp-auth-contract.md",
+      "status": "added",
+      "insertions": 36,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/2026-10-12-langgraph-auth-probe.md",
+      "status": "added",
+      "insertions": 39,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/tenant-identity-access-acceptance.md",
+      "status": "added",
+      "insertions": 130,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/design.md",
+      "status": "added",
+      "insertions": 168,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/handoff.md",
+      "status": "added",
+      "insertions": 41,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/proposal.md",
+      "status": "added",
+      "insertions": 38,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/agent-event-delivery/spec.md",
+      "status": "added",
+      "insertions": 70,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/agent-metric-contract/spec.md",
+      "status": "added",
+      "insertions": 62,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/agent-request-identity/spec.md",
+      "status": "added",
+      "insertions": 77,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/agent-run-lifecycle/spec.md",
+      "status": "added",
+      "insertions": 74,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/specs/tenant-event-access/spec.md",
+      "status": "added",
+      "insertions": 63,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-agent-event-ledger/tasks.md",
+      "status": "added",
+      "insertions": 68,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/unit_tests/test_artifact_scope_v2.py",
+      "status": "added",
+      "insertions": 170,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_mcp_scoped_authorization.py",
+      "status": "added",
+      "insertions": 431,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_tenant_runtime_guard.py",
+      "status": "added",
+      "insertions": 194,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    }
+  ],
+  "source_digest": "f305a517e6971c077da0b8c8f4efe2b2e0cf83b5fd3f5a25e97a77a8817c33ff"
+}

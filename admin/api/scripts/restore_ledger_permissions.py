@@ -65,6 +65,44 @@ def main() -> int:
 
     if not args.verify_only:
         statements = migration.ledger_grant_statements(role_checker=role_exists)
+        with engine.connect() as conn:
+            tables = set(
+                conn.execute(
+                    text("SELECT tablename FROM pg_tables WHERE schemaname='public'")
+                ).scalars()
+            )
+
+        def module_for(filename):
+            spec = importlib.util.spec_from_file_location(filename, VERSIONS / filename)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
+
+        if "agent_feedback_current" in tables:
+            statements.extend(
+                module_for("0011_feedback.py").feedback_grant_statements(role_checker=role_exists)
+            )
+        if "agent_model_observations" in tables:
+            module = module_for("0012_observability.py")
+
+            class Capture:
+                @staticmethod
+                def execute(statement):
+                    statements.append(statement)
+
+            module.op = Capture
+            module._apply_rls_and_grants()
+        from app.services.enterprise_permissions import permission_statements
+
+        statements.extend(permission_statements(tables))
+        if "agent_model_prices" in tables:
+            from app.services.enterprise_permissions import pricing_permission_statements
+
+            statements.extend(pricing_permission_statements())
+        if "agent_observation_trace_links" in tables:
+            from app.services.enterprise_permissions import delivery_permission_statements
+
+            statements.extend(delivery_permission_statements())
         with engine.begin() as conn:
             for statement in statements:
                 conn.execute(text(statement))

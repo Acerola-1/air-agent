@@ -1,0 +1,12 @@
+{
+  "graphs": [
+    "basic_qa",
+    "intelligent_analysis",
+    "data_analysis",
+    "intelligent_report",
+    "deep_research",
+    "intelligent_tracing"
+  ],
+  "network_attempts": 0,
+  "langfuse_enabled": true
+}

@@ -1,0 +1,217 @@
+{
+  "base": "0f2cd02",
+  "worktree": "/Users/acerola/.codex/worktrees/observability-04/air_agent",
+  "files": [
+    {
+      "path": "admin/api/app/main.py",
+      "sha256": "60dfa602b67c31fe998fc63bbee155f6077196038787315277d0c96518163f52",
+      "bytes": 3090
+    },
+    {
+      "path": "admin/api/app/services/event_contract.py",
+      "sha256": "9908b3dae92e488fa64380855f26d85cfe753381293f06f1aa1095b355077301",
+      "bytes": 7321
+    },
+    {
+      "path": "admin/api/scripts/seed.py",
+      "sha256": "a8838e8050273c12805a3de7ae942a70f36670a03df1a6277d527c857d95ade4",
+      "bytes": 13638
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "sha256": "8dda77e8bf9d08dd7f53b458468e42ee6593bb14926049ad2dbaeb948022cafb",
+      "bytes": 11117
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "sha256": "ea4a0261dcb7468a9234c7f7d3b61d8aaa0bf033e2af18cf5f5dee8eeb0d339d",
+      "bytes": 30733
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "sha256": "989964bf6ff4018d3cdf254cf51309d74b918b8d14e2a6b6c978d1568b3626ca",
+      "bytes": 14936
+    },
+    {
+      "path": "frontend/lib/agent-events/contract.ts",
+      "sha256": "50afb4ed7c5cdf53841d644268019b2a096e78597857ff4c8c6bc7ff51071784",
+      "bytes": 8358
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "sha256": "d3226297da5fa27976fcad4d651236c7b9ee907065bf696522295d56ff632c81",
+      "bytes": 4963
+    },
+    {
+      "path": "openspec/changes/complete-agent-observability/contract-extension.md",
+      "sha256": "f334ecda2a48f2f475587d9a88fc01f33dd2216d254ed30a49452ab5557d53b7",
+      "bytes": 4508
+    },
+    {
+      "path": "openspec/changes/complete-agent-observability/tasks.md",
+      "sha256": "66a0c2762c5db7925dcd1c91978cda59bbc339e047a6edf45207f66fb157f1b3",
+      "bytes": 8994
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "sha256": "26c0d0e6707e77663e9d15cfaa4660023f6f1a63e25a91d6ed7915042993b28c",
+      "bytes": 23277
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "sha256": "565c63207bbc853daf2c67311df7289cd44725ce463df6ab8425ee5f9b25162a",
+      "bytes": 22278
+    },
+    {
+      "path": "src/common/data_governance.py",
+      "sha256": "d630e3ee3d5bb5618724525825f791afa0d290697c09311f7ea14fb175ae1482",
+      "bytes": 4699
+    },
+    {
+      "path": "src/common/event_ledger/contract.py",
+      "sha256": "89551729e93e51849e74aae566363441aba22207e65735428f545c47d07684ff",
+      "bytes": 11216
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "sha256": "8dda77e8bf9d08dd7f53b458468e42ee6593bb14926049ad2dbaeb948022cafb",
+      "bytes": 11117
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "sha256": "ea4a0261dcb7468a9234c7f7d3b61d8aaa0bf033e2af18cf5f5dee8eeb0d339d",
+      "bytes": 30733
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "sha256": "7fe825aeaf195a9c7c77098b6174716d48db1b7ab673b636b8aa966f3fd6aef7",
+      "bytes": 40635
+    },
+    {
+      "path": "src/common/langfuse_tracing.py",
+      "sha256": "5c8b6a7335a02bfb2d0c28f902b3b342ceb88014291149bb598131183077145f",
+      "bytes": 1823
+    },
+    {
+      "path": "src/data_analysis/nodes.py",
+      "sha256": "d2aefe1878af48059eefe6f6a2457c0ea5a985fa340295ff4bbf6111597aeebe",
+      "bytes": 19895
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "sha256": "0b8b2a39a72d050c33e87d75e359552b1e258d2e91c350073cf87fbf554c6612",
+      "bytes": 3599
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "sha256": "a5b5e188ef61ca4d88e22bd4664e9f2e8a5294ac8f8c908183892eafa32c401f",
+      "bytes": 3603
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "sha256": "37571af75d1bbc1b0eff30e03f3e4dc4d09c1e69176fd27f5f0deea0b31e5337",
+      "bytes": 3605
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "sha256": "7ef6031e8f21236396d2cc6e37afd01d36a2abd6adde8419582aa940424993a7",
+      "bytes": 6608
+    },
+    {
+      "path": "admin/api/app/routers/observability.py",
+      "sha256": "9bc8ddcd772d225f56ab5c682cc5f97e068987cac940f733cd7a788f1e09a466",
+      "bytes": 8765
+    },
+    {
+      "path": "admin/api/app/services/observability.py",
+      "sha256": "17eec23e43d6f4290c0a09dca10a6c3aa33a519e772307abe664653bf1545d38",
+      "bytes": 30104
+    },
+    {
+      "path": "admin/api/migrations/versions/0012_observability.py",
+      "sha256": "8843f72461508554f842ba7e67c592f97661363635d5df237f7644c9f75bc6ab",
+      "bytes": 17825
+    },
+    {
+      "path": "docs/reviews/agent-observability-acceptance.md",
+      "sha256": "6a22fc48339075bc1ae0579b1dc22c0889e1a3312c0c94d4f3fb804625b0672b",
+      "bytes": 10617
+    },
+    {
+      "path": "docs/reviews/evidence/flash-04/e2e-observation-evidence.json",
+      "sha256": "585d5813a26a173066410ad256b3249dadfd495ec4eb0131f8c6b145b9970a40",
+      "bytes": 566
+    },
+    {
+      "path": "docs/reviews/evidence/flash-04/env-isolation.json",
+      "sha256": "22e532eeb8d7e4e2c98479701ca12f5d4d6b09ae05090c8272be64e167f8091b",
+      "bytes": 98
+    },
+    {
+      "path": "docs/reviews/evidence/flash-04/langfuse-write-verify.json",
+      "sha256": "2e2ea10874c9c0e2370ebdc1002922ed3bfa099297d4de1156a5435475502a74",
+      "bytes": 1282
+    },
+    {
+      "path": "docs/reviews/evidence/flash-04/overhead-benchmark.json",
+      "sha256": "aa622994652d0e7b5fe0f75ab634558b9cc87cbfb706b3c61fd5fc745c7eaa88",
+      "bytes": 1633
+    },
+    {
+      "path": "src/common/observability/__init__.py",
+      "sha256": "1d73ff3bc7aecf9b354701176fa7c532158c50355efd5a3b9640bb070898391d",
+      "bytes": 918
+    },
+    {
+      "path": "src/common/observability/collector.py",
+      "sha256": "be0791ff9aafa4fa14ab8767752efec7d4da7a9803147baac6118671d1a6c760",
+      "bytes": 10483
+    },
+    {
+      "path": "src/common/observability/context.py",
+      "sha256": "239d732aa47fc037d898b4a2b43c384bdac87b9c7e311e19d7aeafd977ca928a",
+      "bytes": 3845
+    },
+    {
+      "path": "src/common/observability/middleware.py",
+      "sha256": "352a4e3b901a2464ce4478a3c258265afee09a33609c9e2ef9f9c0c30a1767b2",
+      "bytes": 1295
+    },
+    {
+      "path": "src/common/observability/model_adapter.py",
+      "sha256": "5042efc24083877afa6337229f2adb04491eda00a2255ebdee66e2b92a1a1075",
+      "bytes": 20779
+    },
+    {
+      "path": "src/common/observability/pricing.py",
+      "sha256": "5b3fb0c376de8d8ba5af24df4827fee6bb7e4f52fbfa2b83ddb8bd48113ddee7",
+      "bytes": 8403
+    },
+    {
+      "path": "src/common/observability/store.py",
+      "sha256": "e580c4bb518bac08dd34429b706d124648400ae11af7296aa60446badad4f674",
+      "bytes": 32352
+    },
+    {
+      "path": "src/common/observability/tool_adapter.py",
+      "sha256": "2e3d6827d1fd9b111342d0fd5f641d56c626ebec71a2a56c3297a7527c042715",
+      "bytes": 9129
+    },
+    {
+      "path": "tests/bench_observability_overhead.py",
+      "sha256": "5c8d0f166ac5f7d0165c0cd62df72917062a4e88822988d7a5c651e6c9d75f85",
+      "bytes": 3560
+    },
+    {
+      "path": "tests/unit_tests/test_observability_core.py",
+      "sha256": "38004ce1bcdf004c57604e6549054b82964ce6b8bf83a2d95888d70518e6885e",
+      "bytes": 8814
+    },
+    {
+      "path": "tests/unit_tests/test_observability_pricing.py",
+      "sha256": "e394cde157af0c43aa221ed06f74f55fe4b3bcf30bdc9e91f7053698802bec73",
+      "bytes": 7552
+    }
+  ],
+  "same_model_as_run03": true
+}

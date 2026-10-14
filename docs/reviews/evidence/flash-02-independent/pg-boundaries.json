@@ -1,0 +1,28 @@
+{
+  "injected_outbox_failure": true,
+  "retry": {
+    "written": false,
+    "reason": "duplicate",
+    "event_id": "e4fc109e-5751-4876-84b7-f40b0685f1ac"
+  },
+  "atomicity": {
+    "events": 1,
+    "outbox": 0
+  },
+  "deletion": {
+    "state": "requested",
+    "content_marked_deleted": false,
+    "outbox_state": "done"
+  },
+  "rebuild_v2": {
+    "dry_run": true,
+    "would_replay": 16,
+    "consumer": "run_projection",
+    "consumer_version": 2,
+    "window": {
+      "since": "2026-10-06T01:51:56.597566+00:00",
+      "until": "2026-10-13T01:51:56.597572+00:00"
+    },
+    "cursor": 19
+  }
+}

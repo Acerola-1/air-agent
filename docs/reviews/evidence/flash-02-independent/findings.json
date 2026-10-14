@@ -1,0 +1,51 @@
+[
+  {
+    "path": "src/common/identity/langgraph_auth.py",
+    "start_line": 410,
+    "severity": "high",
+    "category": "bug",
+    "content": "合法预留没有原子消费、输入/图校验和权威关联注入；同一预留实测创建3个run，metadata-only成功运行未落账。"
+  },
+  {
+    "path": "src/common/event_ledger/store.py",
+    "start_line": 231,
+    "severity": "high",
+    "category": "bug",
+    "content": "event与outbox分属独立_run事务；实际故障注入留下event=1/outbox=0，重试duplicate不补投递。"
+  },
+  {
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 314,
+    "severity": "high",
+    "category": "bug",
+    "content": "submission重放取request最新attempt，原initial键在regenerate后实测返回新attempt；恢复入口还新增逻辑提问。"
+  },
+  {
+    "path": "admin/api/migrations/versions/0007_agent_event_ledger.py",
+    "start_line": 305,
+    "severity": "high",
+    "category": "security",
+    "content": "事件缺关联对象复合约束，A作用域引用B租户attempt_id的真实运行角色写入返回成功。"
+  },
+  {
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 1015,
+    "severity": "high",
+    "category": "security",
+    "content": "删除没有线程归属验证、读路径不检查删除标记；同企业他人成员可申请删除且原文在删除中/到期后仍可读。"
+  },
+  {
+    "path": "src/common/event_ledger/worker.py",
+    "start_line": 174,
+    "severity": "high",
+    "category": "bug",
+    "content": "deletion_cleanup被RLS隐藏导致0行清理仍done；receipt在副作用之后写入，同事件handler实测进入2次；重建还排除done事实且版本未使用。"
+  },
+  {
+    "path": "frontend/app/api/[..._path]/route.ts",
+    "start_line": 305,
+    "severity": "high",
+    "category": "bug",
+    "content": "额外导出confirmRunWithMarker不属于Next Route合法出口；隔离干净生产构建复现TS2344，当前tsc通过不足以替代构建。"
+  }
+]

@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import quote, unquote
 
-from sqlalchemy import and_, func, select, text, update
+from sqlalchemy import and_, func, or_, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -221,6 +221,7 @@ async def emit_fact(
     answer_id: uuid.UUID | None = None,
     message_id: str | None = None,
     state_revision: int | None = None,
+    event_id: uuid.UUID | None = None,
 ) -> AgentEvent:
     """事实 + outbox 同事务写入（调用方事务提交后二者一起可见）。"""
     event = _event_row(
@@ -238,6 +239,7 @@ async def emit_fact(
         answer_id=answer_id,
         message_id=message_id,
         state_revision=state_revision,
+        event_id=event_id,
     )
     session.add(event)
     await session.flush()
@@ -248,6 +250,7 @@ async def emit_fact(
                 tenant_id=tenant_id,
                 event_id=event.event_id,
                 consumer=consumer,
+                thread_id=thread_id,
                 available_at=now,
                 status="pending",
                 attempt_count=0,
@@ -971,40 +974,59 @@ async def record_stop_intent(
     tenant_id = identity.tenant.id if identity.tenant else None
     if tenant_id is None:
         raise AdmissionRejected("缺少企业上下文", code="no_tenant_context")
-    attempt = await _load_attempt(session, attempt_id, tenant_id) if attempt_id else None
-    if attempt is None and thread_id:
-        attempt = (
-            (
-                await session.execute(
-                    select(AgentRunAttempt)
-                    .where(
-                        AgentRunAttempt.tenant_id == tenant_id,
-                        AgentRunAttempt.user_id == identity.user.id,
-                        AgentRunAttempt.state.in_(ACTIVE_ATTEMPT_STATES),
-                    )
-                    .join(
-                        AgentRequest,
-                        and_(
-                            AgentRequest.id == AgentRunAttempt.request_id,
-                            AgentRequest.tenant_id == AgentRunAttempt.tenant_id,
-                        ),
-                    )
-                    .where(AgentRequest.thread_id == thread_id)
-                    .order_by(AgentRunAttempt.admitted_at.desc())
-                )
-            )
-            .scalars()
-            .first()
+    query = (
+        select(AgentRunAttempt)
+        .join(
+            AgentRequest,
+            and_(
+                AgentRequest.id == AgentRunAttempt.request_id,
+                AgentRequest.tenant_id == AgentRunAttempt.tenant_id,
+            ),
         )
-    if attempt is None:
+        .where(AgentRunAttempt.tenant_id == tenant_id, AgentRunAttempt.user_id == identity.user.id)
+    )
+    if attempt_id:
+        query = query.where(AgentRunAttempt.id == attempt_id)
+    if thread_id:
+        query = query.where(AgentRequest.thread_id == thread_id)
+    if request_id:
+        query = query.where(AgentRequest.id == request_id)
+    if platform_run_id:
+        mapped = select(AgentSubmission.attempt_id).where(
+            AgentSubmission.tenant_id == tenant_id,
+            AgentSubmission.user_id == identity.user.id,
+            AgentSubmission.platform_run_id == platform_run_id,
+        )
+        query = query.where(
+            or_(AgentRunAttempt.platform_run_id == platform_run_id, AgentRunAttempt.id.in_(mapped))
+        )
+    elif not attempt_id:
+        if not thread_id:
+            raise NotFound("找不到可关联的运行尝试", code="attempt_not_found")
+        query = query.where(AgentRunAttempt.state.in_(ACTIVE_ATTEMPT_STATES))
+    # 有run标识时只能指向已有可信映射；迟到停止不能污染同线程最新attempt。
+    attempts = list(
+        (
+            await session.execute(
+                query.order_by(AgentRunAttempt.admitted_at.desc())
+                .limit(2)
+                .with_for_update(of=AgentRunAttempt)
+            )
+        ).scalars()
+    )
+    if not attempts or ((attempt_id or platform_run_id) and len(attempts) != 1):
+        raise NotFound("找不到可关联的运行尝试", code="attempt_not_found")
+    attempt = attempts[0]
+    request = await session.get(AgentRequest, attempt.request_id)
+    if request is None or await is_thread_deletion_pending(
+        session, tenant_id=tenant_id, thread_id=request.thread_id
+    ):
         raise NotFound("找不到可关联的运行尝试", code="attempt_not_found")
 
     now = dt.datetime.now(dt.UTC)
     attempt.cancel_requested = True
     attempt.cancel_origin = origin
     attempt.cancel_phase = phase
-    if platform_run_id:
-        attempt.platform_run_id = attempt.platform_run_id or platform_run_id
     attempt.state_revision += 1
     attempt.last_progress_at = now
     attempt.updated_at = now
@@ -1021,6 +1043,7 @@ async def record_stop_intent(
             **({"platform_run_id": platform_run_id} if platform_run_id else {}),
             "requested_at": now.isoformat(),
         },
+        thread_id=request.thread_id,
         request_id=attempt.request_id,
         attempt_id=attempt.id,
         run_id=attempt.platform_run_id,
@@ -1443,6 +1466,10 @@ async def request_thread_deletion(
     owns = str(owner["user_id"]) == str(identity.user.id)
     if not owns and "agent:thread:delete" not in identity.permissions:
         raise NotFound("对象不存在", code="not_found")
+    await session.execute(
+        text("SELECT pg_advisory_xact_lock(hashtextextended(:k, 0))"),
+        {"k": f"thread:{tenant_id}:{thread_id}"},
+    )
     existing = (
         await session.execute(
             select(AgentThreadDeletion).where(
@@ -2106,57 +2133,19 @@ async def ingest_browser_events(
 ) -> dict[str, Any]:
     """浏览器事件受理：来源固定为 browser（服务端覆盖），逐项结果。
 
-    v1 全部浏览器类型预留未启用 → 逐项 `type_not_enabled`；批量上限仍生效。
+    change-3 启用 browser.feedback/copy/timing：
+    - browser.feedback / browser.copy / browser.timing 走**逐项独立受理**：
+      反馈命令委托 feedback 服务（幂等/CAS/同事务），计时/复制直接写入事件
+      （同一事务逐项 flush；合法项不因非法邻项回滚——批次级 rollback 由
+      调用方在整批异常时回滚，逐项失败仅记录 reason）。
+    - 关联复核：answer/attempt 必须属于本人同租户且对象存在（feedback 要求
+      已确认回答；timing 的 attempt 由服务端按归属复核），信封重复标识不得
+      自相矛盾；事件 ID 重复（tenant 内同 event_id）→ 复用原结果不重复记账。
+    - 浏览器不能声明终态/usage/成本（runtime 五类型仍预留拒绝）。
     """
-    from app.services.event_contract import validate_batch  # noqa: PLC0415
+    from app.services.browser_interactions import accept
 
-    if identity.tenant is None or identity.membership is None:
-        raise AdmissionRejected("缺少企业上下文", code="no_tenant_context")
-    tenant_id = identity.tenant.id
-    user_id = identity.user.id
-    membership_id = identity.membership.id
-    trusted = {
-        "source": "browser",
-        "tenant_id": str(tenant_id),
-        "user_id": str(user_id),
-        "membership_id": str(membership_id),
-    }
-    overridden = [{**ev, **trusted} if isinstance(ev, dict) else ev for ev in events]
-    result = validate_batch(overridden, source="browser")
-    # 仅写入服务端确认合法的项（v1 通常为空集），并保持逐项结果
-    written = 0
-    now = dt.datetime.now(dt.UTC)
-    for event, item in zip(overridden, result["items"], strict=False):
-        if not item["valid"] or not isinstance(event, dict):
-            continue
-        occurred = dt.datetime.fromisoformat(str(event["occurred_at"]).replace("Z", "+00:00"))
-        event_id = uuid.UUID(str(event["event_id"]))
-        session.add(
-            AgentEvent(
-                event_id=event_id,
-                tenant_id=tenant_id,
-                user_id=user_id,
-                membership_id=membership_id,
-                schema_version=str(event.get("schema_version", "1.0")),
-                event_type=str(event["event_type"]),
-                source="browser",
-                occurred_at=occurred,
-                received_at=now,
-                thread_id=event.get("thread_id"),
-                request_id=_opt_uuid(event.get("request_id")),
-                attempt_id=_opt_uuid(event.get("attempt_id")),
-                run_id=event.get("run_id"),
-                answer_id=_opt_uuid(event.get("answer_id")),
-                message_id=event.get("message_id"),
-                payload=dict(event.get("payload") or {}),
-                payload_digest=canonical_digest(event.get("payload") or {}),
-                created_at=now,
-            )
-        )
-        written += 1
-    if written:
-        await session.flush()
-    return {**result, "written": written}
+    return await accept(session, identity, events)
 
 
 def _opt_uuid(value: Any) -> uuid.UUID | None:

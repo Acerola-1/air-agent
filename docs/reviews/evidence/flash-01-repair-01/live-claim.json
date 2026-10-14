@@ -1,0 +1,10 @@
+{
+  "bob_create": 200,
+  "alice_read_before": 404,
+  "alice_strict_proxy_create": 200,
+  "proxy_exposes_bob_marker": true,
+  "alice_proxy_read_after": 200,
+  "read_exposes_bob_marker": true,
+  "alice_native_read_after": 200,
+  "cleanup_native_delete": 204
+}

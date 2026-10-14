@@ -1,0 +1,26 @@
+...................ssssssssssssssssssssssss........................F.... [ 18%]
+................................................ssssssssssssssssssssssss [ 37%]
+ssssssssssssssssssssss...FFFF........................................... [ 56%]
+........................................................................ [ 75%]
+........................................................ss.............. [ 94%]
+....................                                                     [100%]
+=================================== FAILURES ===================================
+E   assert False is True
+     +  where False = <test_checkpointing.CloseableConnection object at 0x1163ab230>.closed
+     +    where <test_checkpointing.CloseableConnection object at 0x1163ab230> = <test_checkpointing.CloseableCheckpointer object at 0x116693a10>.conn
+/Users/acerola/Dev/Python/air_agent/tests/unit_tests/test_checkpointing.py:69: assert False is True
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+/Users/acerola/Dev/Python/air_agent/tests/unit_tests/test_knowledge_route.py:16: AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+/Users/acerola/Dev/Python/air_agent/tests/unit_tests/test_knowledge_route.py:23: AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+/Users/acerola/Dev/Python/air_agent/tests/unit_tests/test_knowledge_route.py:30: AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+/Users/acerola/Dev/Python/air_agent/tests/unit_tests/test_knowledge_route.py:50: AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection
+FAILED tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result
+FAILED tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback
+5 failed, 303 passed, 72 skipped in 27.35s

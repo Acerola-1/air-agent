@@ -27,6 +27,22 @@ _TS_Z_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$")
 _OPERATION_KINDS = ("initial", "retry", "regenerate", "resume")
 _ENUM_FIELDS = ("state", "origin", "phase", "evidence_source", "operation_kind")
 
+# change complete-agent-observability 窄例外（与 src/common/event_ledger/contract.py
+# 及 TS 副本保持一致）：仅 runtime.model_usage 的 runtime 来源、payload **顶层**、
+# 登记白名单内的非布尔非负整数计数。字符串/bool/负数/浮点/嵌套键仍拒绝；禁止键
+# 扫描先于本例外。
+_NUMERIC_USAGE_EVENT_TYPES = frozenset({"runtime.model_usage"})
+_NUMERIC_USAGE_TOP_LEVEL_KEYS = frozenset(
+    {
+        "input_tokens",
+        "output_tokens",
+        "total_tokens",
+        "cache_read_tokens",
+        "cache_write_tokens",
+        "reasoning_tokens",
+    }
+)
+
 
 @lru_cache
 def registry() -> dict[str, Any]:
@@ -98,10 +114,22 @@ def validate_event(event: Any, *, trusted_source: str | None = None) -> tuple[bo
     if not isinstance(payload, dict):
         return False, "missing_field", "payload"
     patterns = tuple(env["forbidden_payload_key_patterns"])
+    numeric_exception_active = event_type in _NUMERIC_USAGE_EVENT_TYPES and source == "runtime"
     for key in _iter_keys(payload):
         low = key.lower()
-        if any(pat in low for pat in patterns):
-            return False, "forbidden_payload_key", key
+        if not any(pat in low for pat in patterns):
+            continue
+        # 窄例外（与 src/common/event_ledger/contract.py 同序）：例外顶层登记键
+        # 跳过 forbidden，形状判定落到下方专用原因码；其余危险键硬拒绝。
+        if numeric_exception_active and key in _NUMERIC_USAGE_TOP_LEVEL_KEYS:
+            continue
+        return False, "forbidden_payload_key", key
+    if numeric_exception_active:
+        for key in _NUMERIC_USAGE_TOP_LEVEL_KEYS:
+            if key in payload:
+                value = payload[key]
+                if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                    return False, "usage_tokens_not_non_negative_int", key
     allowed = set(entry.get("payload_fields") or [])
     for key in payload:
         if key not in allowed:

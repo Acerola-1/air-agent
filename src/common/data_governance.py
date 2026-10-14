@@ -63,12 +63,30 @@ async def invoke_with_data_deadline(
     input_messages: list[AnyMessage],
     state_messages: Sequence[AnyMessage],
     run_config: dict[str, Any],
+    *,
+    invocation_metadata: dict[str, Any] | None = None,
 ) -> AIMessage:
     """待计算资料的生成、一次修正与执行共享 90 秒阶段预算."""
+    from common.observability.model_adapter import invocation_config
+
+    observed_config = invocation_config(
+        run_config,
+        role="main",
+        logical_call_id=(invocation_metadata or {}).get("obs_logical_call_id"),
+    )
     pending = pending_artifacts(state_messages)
     if not pending:
         invocation = model.ainvoke(
-            input_messages, config={"tags": ["nostream", "internal-draft"]}
+            input_messages,
+            config={
+                **observed_config,
+                "tags": ["nostream", "internal-draft"],
+                **(
+                    {"metadata": dict(invocation_metadata)}
+                    if invocation_metadata
+                    else {}
+                ),
+            },
         )
         has_archive = any(
             isinstance(message, ToolMessage)
@@ -104,7 +122,8 @@ async def invoke_with_data_deadline(
         await guard_runtime_call(dict(run_config or {}))
         response = await asyncio.wait_for(
             model.ainvoke(
-                input_messages, config={"tags": ["nostream", "internal-draft"]}
+                input_messages,
+                config={**observed_config, "tags": ["nostream", "internal-draft"]},
             ),
             timeout=min(remaining),
         )

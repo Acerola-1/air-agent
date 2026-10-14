@@ -20,6 +20,7 @@ from app.routers import (
     auth,
     bindings,
     departments,
+    feedback,
     ledger,
     permissions,
     regions,
@@ -75,6 +76,11 @@ app.include_router(regions.router, prefix="/regions")
 app.include_router(audit.router, prefix="/audit-logs")
 app.include_router(bindings.router, prefix="/mcp-bindings")
 app.include_router(ledger.router, prefix="/agent")
+app.include_router(feedback.router, prefix="/agent")
+# change complete-agent-observability：观测查询/价格管理（本域新增；不改既有 19 路径）
+from app.routers import observability as observability_router  # noqa: E402
+
+app.include_router(observability_router.router, prefix="/agent")
 
 
 @app.get("/health", tags=["meta"], summary="健康检查")

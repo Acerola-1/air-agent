@@ -147,11 +147,10 @@ class BusinessGraphNodes:
 
         intent, reason = classify_intent_rule(question)
         logger.info(
-            "业务图意图车道: graph={}，intent={}，reason={}，question={}",
+            "业务图意图车道: graph={}，intent={}，reason={}",
             self._graph_name,
             intent,
             reason,
-            question[:60],
         )
         return {"intent": intent}
 
@@ -179,9 +178,8 @@ class BusinessGraphNodes:
         # 避免 "你好" 之类被 embedding 相似度误命中业务 Skill（同时省一次 embedding 调用）。
         if is_conversational(question):
             logger.info(
-                "业务图 Skill 跳过：对话/问候轮次，graph={}，question={}",
+                "业务图 Skill 跳过：对话/问候轮次，graph={}",
                 self._graph_name,
-                question[:60],
             )
             return update
 
@@ -190,11 +188,11 @@ class BusinessGraphNodes:
 
         await guard_runtime_call(dict(config or {}))
         candidates = await self._router.amatch(question)
+        await self._observe_skill_routing(config, question, candidates)
         if not candidates:
             logger.info(
-                "业务图 Skill 未命中，降级通用能力: graph={}，question={}",
+                "业务图 Skill 未命中，降级通用能力: graph={}",
                 self._graph_name,
-                question[:120],
             )
             return update
 
@@ -224,7 +222,51 @@ class BusinessGraphNodes:
             top.similarity_score,
         )
         update["skill_rules_content"] = skill_rules
+        await self._observe_skill_loaded(config, top.name, skill_rules)
         return update
+
+    async def _observe_skill_routing(self, config, question, candidates):
+        from common.observability.store import observability_enabled
+
+        if not observability_enabled():
+            return
+        from common.observability.skill_adapter import emit_skill_stage
+
+        for candidate in candidates:
+            skill_file = self._router.resolve_skill_file(candidate.name)
+            try:
+                body = (
+                    skill_file.read_text()
+                    if skill_file and skill_file.exists()
+                    else None
+                )
+            except OSError:
+                body = None
+            emit_skill_stage(config, candidate.name, "matched", body=body)
+        if not candidates:
+            emit_skill_stage(config, "unmatched", "other", status="not_executed")
+
+    async def _observe_skill_loaded(self, config, skill_name, body):
+        from common.observability.store import observability_enabled
+
+        if not observability_enabled():
+            return
+        from common.observability.skill_adapter import emit_skill_stage
+
+        emit_skill_stage(config, skill_name, "selected", body=body)
+        emit_skill_stage(
+            config,
+            skill_name,
+            "loaded",
+            body=body,
+            status="succeeded" if body else "failed",
+        )
+
+    async def observe_skill_executed(self, config, skill_rules_content, duration_ms):
+        """最终模型正文生成后记录本次实际加载能力的执行证据."""
+        from common.observability.skill_adapter import record_loaded_execution
+
+        record_loaded_execution(config, succeeded=bool(skill_rules_content.strip()))
 
     # ──── 模型准备与调用节点 ────
 
@@ -345,6 +387,14 @@ class BusinessGraphNodes:
                 config,
             )
 
+        from common.observability.model_adapter import (
+            ensure_model_observability,
+            model_call_scope,
+        )
+
+        ensure_model_observability(config)
+        _obs_scope = model_call_scope(config, role="main")
+        _obs_metadata = _obs_scope.runtime_metadata()
         model = ModelRegistry.main_llm
         system_prompt = state.get("system_prompt", "")
         available = self._available_tools(state)
@@ -384,7 +434,11 @@ class BusinessGraphNodes:
                 return {**visible_result(blocked, config, metrics=metrics)}
             try:
                 response = await invoke_with_data_deadline(
-                    model_with_tools, full_messages, messages, config
+                    model_with_tools,
+                    full_messages,
+                    messages,
+                    config,
+                    invocation_metadata=_obs_metadata,
                 )
                 break
             except RuntimeIdentityError as exc:
@@ -408,8 +462,10 @@ class BusinessGraphNodes:
                     "data_status": status,
                 }
             except Exception as exc:
-                logger.exception(
-                    "业务图模型调用失败 (attempt {}): {}", attempt + 1, exc
+                logger.warning(
+                    "业务图模型调用失败 (attempt {}): {}",
+                    attempt + 1,
+                    type(exc).__name__,
                 )
                 if attempt < 2:
                     await asyncio.sleep(0.5 * (attempt + 1))
@@ -439,7 +495,11 @@ class BusinessGraphNodes:
                 metrics = enforce_request_budget(nudge_messages, schemas)
                 emit_event(config, "context_metrics", **metrics)
                 nudge_response = await invoke_with_data_deadline(
-                    model_with_tools, nudge_messages, messages, config
+                    model_with_tools,
+                    nudge_messages,
+                    messages,
+                    config,
+                    invocation_metadata=_obs_metadata,
                 )
                 if (
                     isinstance(nudge_response, AIMessage)
@@ -457,9 +517,25 @@ class BusinessGraphNodes:
                     metrics=metrics,
                 )
             except Exception as exc:
-                logger.warning("业务图模型空回复重试失败: {}，使用兜底消息", exc)
+                logger.warning(
+                    "业务图模型空回复重试失败: {}，使用兜底消息", type(exc).__name__
+                )
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
+        try:
+            if (
+                not response.tool_calls
+                and response.content
+                and response.content
+                not in (_FALLBACK_EMPTY_REPLY, _SERVICE_UNAVAILABLE_MESSAGE)
+            ):
+                await self.observe_skill_executed(
+                    config,
+                    state.get("skill_rules_content") or "",
+                    metrics.get("elapsed_ms", 0) if isinstance(metrics, dict) else 0,
+                )
+        except Exception:  # noqa: BLE001 - 观测失败开放
+            pass
         return {
             **visible_result(response, config, metrics=metrics),
             "data_model_started_at": data_model_started_at,

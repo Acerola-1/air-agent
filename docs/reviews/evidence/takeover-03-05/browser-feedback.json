@@ -1,0 +1,73 @@
+{
+  "request": {
+    "id": "2778724a-d5da-4179-b8a2-bf6ca8a1f245",
+    "thread_id": "0d997d1d-56de-43ae-8e83-38c8b48f94c0"
+  },
+  "answers": [
+    {
+      "answer_id": "f7b278ac-2cd9-4534-aaf1-7d99d5a79448",
+      "message_id": "lc_run--01a138dd-a0f1-7a01-bf15-9539c942ea43",
+      "content_version": 1,
+      "rating": "none",
+      "revision": 5
+    },
+    {
+      "answer_id": "abdfafa9-b652-4cee-9c77-0291c6226ec4",
+      "message_id": "lc_run--01a13975-e21e-78c1-9956-50698d77326f",
+      "content_version": 1,
+      "rating": "positive",
+      "revision": 1
+    }
+  ],
+  "copies": {
+    "events": 3,
+    "answers": 2
+  },
+  "timings": [
+    {
+      "clock": "monotonic",
+      "attempt_id": "cf68c6e8-f9e3-4a66-b68f-3eb9641e87b9",
+      "progress_seen": false,
+      "measurement_id": "m-410cfc87-eff9-42fc-a819-cc458a99a6b3",
+      "completion_state": "complete",
+      "display_complete_ms": 3656,
+      "first_visible_answer_ms": 3404
+    },
+    {
+      "clock": "monotonic",
+      "attempt_id": "93c19d5a-ee0c-4859-b261-cea4ccd126a2",
+      "progress_seen": false,
+      "measurement_id": "m-3e6abb2c-29f3-475d-a910-2a3cd29f070c",
+      "completion_state": "complete",
+      "display_complete_ms": 3683,
+      "first_visible_answer_ms": 3384
+    },
+    {
+      "clock": "monotonic",
+      "attempt_id": "3082abc3-3872-4abd-960b-8281b6daa963",
+      "progress_seen": false,
+      "measurement_id": "m-bc38a297-683a-4cec-94b3-1613534d1de0",
+      "completion_state": "incomplete",
+      "display_complete_ms": null,
+      "first_visible_answer_ms": null
+    },
+    {
+      "clock": "monotonic",
+      "attempt_id": "3678c801-3704-44bd-9329-15bf7db48a6d",
+      "progress_seen": false,
+      "measurement_id": "m-78aad8cc-0718-499b-8264-44a760a1515f",
+      "completion_state": "incomplete",
+      "display_complete_ms": null,
+      "first_visible_answer_ms": null
+    }
+  ],
+  "browser": "Codex IAB 127.0.0.1:3107",
+  "observed_ui": [
+    "真实提问与两版回答",
+    "点赞、点踩意见、撤销、独立新回答点赞",
+    "刷新后首答未评价/次答点赞恢复",
+    "A到B会话为空，回A重读原评价",
+    "390x844窄屏会话弹窗与反馈可见"
+  ],
+  "clipboard": "writeText resolved/成功提示/事件真实落库；IAB剪贴板读回为空，物理文本一致未证实"
+}

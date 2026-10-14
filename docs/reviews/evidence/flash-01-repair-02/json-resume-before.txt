@@ -1,0 +1,47 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______________ test_json_migration_resumes_after_platform_failure ______________
+
+owner_session = <sqlalchemy.ext.asyncio.session.AsyncSession object at 0x109ecf9d0>
+schema = None
+tmp_path = PosixPath('/private/var/folders/sl/97x01_kj0xvcq_k7zhb7w4dm0000gn/T/pytest-of-acerola/pytest-1132/test_json_migration_resumes_af0')
+platform_stub = ('http://127.0.0.1:59057', [('ff58712e-bfa9-4465-8938-2a92580fea32', {})])
+
+    async def test_json_migration_resumes_after_platform_failure(
+        owner_session, schema, tmp_path, platform_stub
+    ) -> None:
+        """JSON 账号已落库后续跑，必须凭本清单台账认出本人映射。"""
+        base_url, calls = platform_stub
+        users_file, json_id = _write_fixtures(tmp_path)
+        thread_id = str(uuid.uuid4())
+        await owner_session.execute(
+            text("INSERT INTO thread(thread_id, metadata) VALUES (:t, '{\"mig\":\"1\"}')"),
+            {"t": thread_id},
+        )
+        await owner_session.commit()
+        manifest = {
+            "version": 1,
+            "tenants": [{"code": "mig-json-r", "name": "JSON续跑", "create_if_missing": True}],
+            "users": [{"account": "mig_carol", "source": "json", "json_id": json_id}],
+            "memberships": [{"account": "mig_carol", "tenant_code": "mig-json-r", "role_codes": []}],
+            "threads": [{"thread_id": thread_id, "account": "mig_carol", "tenant_code": "mig-json-r"}],
+        }
+        path = tmp_path / "json-resume.json"
+        path.write_text(json.dumps(manifest), encoding="utf-8")
+        STUB_PLAN[thread_id] = [503]
+        try:
+            first = _run_tool("apply", path, users_file, base_url=base_url)
+            assert first.returncode == 0, first.stderr
+            assert json.loads(first.stdout)["completed"] is False
+            uid = str(await owner_session.scalar(text("SELECT id FROM users WHERE account='mig_carol'")))
+            second = _run_tool("apply", path, users_file, base_url=base_url)
+>           assert second.returncode == 0, second.stderr
+E           AssertionError: 预检存在 1 项硬冲突，apply 停止（不写入）
+E             
+E           assert 1 == 0
+E            +  where 1 = CompletedProcess(args=['/Users/acerola/Dev/Python/air_agent/admin/api/.venv/bin/python', 'scripts/migrate_identity.py'...同，必须显式提供 canonical=pg + resolve_pg_user_id"\n    }\n  ],\n  "clean": false\n}\n', stderr='预检存在 1 项硬冲突，apply 停止（不写入）\n').returncode
+
+tests/test_tenant_migration.py:931: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_tenant_migration.py::test_json_migration_resumes_after_platform_failure
+1 failed, 10 deselected in 2.10s

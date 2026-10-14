@@ -1,0 +1,128 @@
+{
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "096e42d076996eb2f430bc06341dd178452e6da293a1d0e7a35f509166f23513"
+    },
+    {
+      "path": "admin-complete.txt",
+      "sha256": "bb55bc510a67b09bc455762c2562880a6f02aea2fc97020bdd467d68aa574c0b"
+    },
+    {
+      "path": "anonymous-input.json",
+      "sha256": "f0d5d40da021366b20211939cdcdba73af6c7dafe031733fbccf83ec3e9e50c9"
+    },
+    {
+      "path": "browser-counts.json",
+      "sha256": "1c2247ff612e607fb2c1a50ab02b03f05ebddf5f2228b180e0198832299a8695"
+    },
+    {
+      "path": "browser-regenerate.jpg",
+      "sha256": "77247f510bae3360663e91aba81e0576ebeb5a2a63e70d3d69dc42ce8408de42"
+    },
+    {
+      "path": "build-accepted.txt",
+      "sha256": "e2b76b375a1105d7cd9c1253b8b101306a498d05ceee429ce81bb4c3e7fb2b58"
+    },
+    {
+      "path": "cleanup.json",
+      "sha256": "e3800ab6772ec0cebd74e5381dda750d8a96fc711763604156f9f3b985e14ae1"
+    },
+    {
+      "path": "contract-final.txt",
+      "sha256": "046f2a66e1df07626161f01de98d7f4ab39794bf8ef53b282338adff4db8d75c"
+    },
+    {
+      "path": "evaluation.json",
+      "sha256": "01635754b31d68d2330061cc229a5845d5f87065b3ecf6d48273d4dfca0634f2"
+    },
+    {
+      "path": "fresh-migrations-final.json",
+      "sha256": "4116ed2ea5468027f122e2fd12ea3791c7a984ca4c7db807a3c25295b9479c51"
+    },
+    {
+      "path": "fresh-migrations.json",
+      "sha256": "e51b020e3c779567265c1afd9b7bd11e6949ae97c567ae8d578f3c5791ac5379"
+    },
+    {
+      "path": "integration-complete.txt",
+      "sha256": "8eaf508ff65af98d16cfb99b7534c590f3591c6fa7096bd3e3ba1b6000041370"
+    },
+    {
+      "path": "ledger-final-clean.txt",
+      "sha256": "a7f077853d4d0f98131e933df374e223fb68e85dda98cdbfaa78452185683da4"
+    },
+    {
+      "path": "probe-after.py",
+      "sha256": "fa4738023623d46a9ed03c707d873dd6b1e535da5ce75ebc19694280f6d603c8"
+    },
+    {
+      "path": "probe-before.py",
+      "sha256": "40b5a703dd1d188972e4f9d8c8b9c6a2a5d5c2914b294b99f774f5a9cda4005a"
+    },
+    {
+      "path": "probe-browser-counts.py",
+      "sha256": "62d6f1717adf0b9fe4144da829c674a97500f5e6a7554e1329e975f57ae8a144"
+    },
+    {
+      "path": "probe-restore.py",
+      "sha256": "336700674b8eb7268b5d93d2e0630687c61da628c12a9bb64a9c2807e124181b"
+    },
+    {
+      "path": "review-inventory.json",
+      "sha256": "88dda702cf6b33c423e76b5f3f7cbec18ddc7c86ed73ae5526b8e519b6d66a13"
+    },
+    {
+      "path": "root-final.txt",
+      "sha256": "be6dee92b19aebce59c7dfe268dc9dddb98d1c85d7d8916a4b50c024ef0cb3c3"
+    },
+    {
+      "path": "run-isolated-tests.py",
+      "sha256": "2cc626afe801172d641ab822a2580a5cab8cb024f93e28c6aedea80dd2388c2f"
+    },
+    {
+      "path": "service-boundary-accepted.json",
+      "sha256": "1dcc671e8371c97180f780a1158c987be2efe26259f955f4b4fd386552033c87"
+    },
+    {
+      "path": "service-boundary-after.json",
+      "sha256": "b48d5b8a911c19f310883373cc977f07ccb53d61ec44b75e18949ffcb0d9bbe2"
+    },
+    {
+      "path": "service-boundary-before-final.json",
+      "sha256": "fb98794ef3e425d5e6fa6ed6ae8f408ab9883df7e2705519a6ca39a982507eb0"
+    },
+    {
+      "path": "service-boundary-before.json",
+      "sha256": "07f83a77e737c673e7b6735fcc04f29bc1b016d90d737fdd4f4bfee726fe61c4"
+    },
+    {
+      "path": "service-boundary-final-retry.json",
+      "sha256": "5858e309baeeee3ac32b80c540172741df3dadbd81e83aff4cad55c1329f68c8"
+    },
+    {
+      "path": "service-boundary-final.json",
+      "sha256": "f37b6f97d5c3a18bfa51a3a703c665351b24ad1e7c1c21c654716bae4c14e2e5"
+    },
+    {
+      "path": "setup-final.py",
+      "sha256": "dd61921a0973292020d8adda80b8e547557ab6d25011e8969e004d3ab092d0fc"
+    },
+    {
+      "path": "snapshot-accepted.txt",
+      "sha256": "0e8a1ddd04166ada16b9901a5a380631ac5eb2085a4d361388815900eda10562"
+    },
+    {
+      "path": "snapshot-before.txt",
+      "sha256": "da52cfbf92deed74153f9bebd1360134cc7a1fec27702c2ff011a36465ccab3e"
+    },
+    {
+      "path": "takeover-source.json",
+      "sha256": "7eedded36482da8459cdea17639c53071d5ecfb4fc8dfd58b042a1ef725a0ebb"
+    },
+    {
+      "path": "verification.txt",
+      "sha256": "318db5fce447a67bfac613944c64130beb1ce8484d4a8dabbe7fa18faaccce42"
+    }
+  ]
+}

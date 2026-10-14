@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { MenuIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ThreadSidebar } from "@/components/chat/ThreadSidebar";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { ArtifactProvider } from "@/components/artifact/ArtifactProvider";
@@ -16,6 +19,7 @@ import { useSessionStore } from "@/lib/session-client";
  *   - 画布为 fixed 悬浮抽屉，覆盖在页面右侧，不推挤对话区
  */
 export default function Home() {
+  const [threadListOpen, setThreadListOpen] = useState(false);
   const switchGraph = useChatStore((s) => s.switchGraph);
   const refreshSession = useSessionStore((s) => s.refreshSession);
   // 画布按会话隔离：每个活动线程一个 Artifact store（persist key 带 threadId）
@@ -32,6 +36,22 @@ export default function Home() {
         {/* 顶栏 */}
         <header className="z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background/95 px-3 backdrop-blur sm:px-4">
           <div className="flex min-w-0 items-center gap-2">
+            <Dialog open={threadListOpen} onOpenChange={setThreadListOpen}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="shrink-0 md:hidden" aria-label="打开会话列表">
+                  <MenuIcon className="size-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="flex h-[min(80dvh,40rem)] min-h-0 flex-col gap-2 p-3">
+                <DialogHeader className="pr-8 text-left">
+                  <DialogTitle>会话列表</DialogTitle>
+                  <DialogDescription>选择历史会话，或开始新的对话。</DialogDescription>
+                </DialogHeader>
+                <div className="min-h-0 flex-1">
+                  <ThreadSidebar onNavigate={() => setThreadListOpen(false)} />
+                </div>
+              </DialogContent>
+            </Dialog>
             <div className="h-6 w-6 shrink-0 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500" aria-hidden />
             <div className="flex min-w-0 flex-col leading-tight">
               <span className="truncate text-sm font-semibold">Air Agent</span>
@@ -43,7 +63,7 @@ export default function Home() {
         </header>
 
         <div className="flex min-h-0 flex-1">
-          <aside className="flex w-80 max-w-md min-w-0 min-h-0 flex-col border-r bg-muted/20">
+          <aside className="hidden w-80 max-w-md min-w-0 min-h-0 shrink-0 flex-col border-r bg-muted/20 md:flex">
             <ThreadSidebar />
           </aside>
           <main className="flex min-w-0 flex-1 flex-col">

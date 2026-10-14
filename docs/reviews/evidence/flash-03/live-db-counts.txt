@@ -1,0 +1,10 @@
+ requests                | 8
+ attempts                | 9
+ answers_confirmed       | 9
+ feedback_current        | 3
+ feedback_operations     | 5
+ feedback_comments       | 1
+ browser_feedback_events | 5
+ browser_copy_events     | 3
+ browser_timing_events   | 2
+

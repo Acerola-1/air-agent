@@ -1,0 +1,97 @@
+{
+  "conditions": "\u771f\u5b9e\u9694\u79bbPG\u3001\u5b9e\u9645LangChain\u56de\u8c03\u4e0e\u6709\u754c\u961f\u5217\uff1b\u53d7\u63a7\u6a21\u578b\uff1b35\u6b21\u00d72\u8f6e\uff0c\u9884\u70ed5\u6b21",
+  "groups": [
+    {
+      "enabled": false,
+      "samples": 35,
+      "p50_ms": 0.24099997244775295,
+      "p95_ms": 0.6266296375542877,
+      "collector": {
+        "enqueued": 0,
+        "written": 0,
+        "dropped": 0,
+        "failed": 0,
+        "retries": 0,
+        "queue_size": 0,
+        "in_flight": 0,
+        "pending": 0,
+        "queue_high_watermark": 0,
+        "last_drop_reason": ""
+      },
+      "background_drain_seconds": 6.604217924177647e-05,
+      "local_cpu_seconds": 0.00794700000000148,
+      "process_max_rss_bytes": 267665408
+    },
+    {
+      "enabled": true,
+      "samples": 35,
+      "p50_ms": 0.6977501325309277,
+      "p95_ms": 2.227220591157674,
+      "collector": {
+        "enqueued": 80,
+        "written": 80,
+        "dropped": 0,
+        "failed": 0,
+        "retries": 0,
+        "queue_size": 0,
+        "in_flight": 0,
+        "pending": 0,
+        "queue_high_watermark": 50,
+        "last_drop_reason": ""
+      },
+      "background_drain_seconds": 0.4254097498487681,
+      "local_cpu_seconds": 0.03442400000000134,
+      "process_max_rss_bytes": 267698176
+    },
+    {
+      "enabled": false,
+      "samples": 35,
+      "p50_ms": 0.42795902118086815,
+      "p95_ms": 0.6186330225318668,
+      "collector": {
+        "enqueued": 0,
+        "written": 0,
+        "dropped": 0,
+        "failed": 0,
+        "retries": 0,
+        "queue_size": 0,
+        "in_flight": 0,
+        "pending": 0,
+        "queue_high_watermark": 0,
+        "last_drop_reason": ""
+      },
+      "background_drain_seconds": 6.008381024003029e-05,
+      "local_cpu_seconds": 0.014082999999999402,
+      "process_max_rss_bytes": 267698176
+    },
+    {
+      "enabled": true,
+      "samples": 35,
+      "p50_ms": 0.7291249930858612,
+      "p95_ms": 1.9029750721529124,
+      "collector": {
+        "enqueued": 80,
+        "written": 80,
+        "dropped": 0,
+        "failed": 0,
+        "retries": 0,
+        "queue_size": 0,
+        "in_flight": 0,
+        "pending": 0,
+        "queue_high_watermark": 56,
+        "last_drop_reason": ""
+      },
+      "background_drain_seconds": 0.5295059159398079,
+      "local_cpu_seconds": 0.03453900000000232,
+      "process_max_rss_bytes": 267698176
+    }
+  ],
+  "delta_ms": {
+    "p50_ms": 0.3789580659940839,
+    "p95_ms": 1.442466501612216
+  },
+  "external_model_wait": "excluded_controlled_model",
+  "langfuse_wait": "not_part_of_this_local_benchmark",
+  "threshold_p95_ms": 50,
+  "passed": true
+}

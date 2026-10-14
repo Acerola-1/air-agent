@@ -1,0 +1,92 @@
+{
+  "baseline": "7b82c04 (HEAD)；本 change 的 diff 尚未提交，故基线是交到本轮手上的工作树，而非 HEAD",
+  "method": "按文件 mtime 划定本轮编辑集（本轮开始时间 2026-10-13 10:0x），并单独核对身份内核文件 mtime 全部早于本轮",
+  "round_edit_set": [
+    "docs/reviews/evidence/flash-02-independent/deletion-api.json",
+    "docs/reviews/evidence/flash-02-independent/receipt.json",
+    "docs/reviews/anonymous-model-scorecard.md",
+    "docs/reviews/evidence/flash-02-independent/admin.txt",
+    "docs/reviews/evidence/flash-02-independent/build.txt",
+    "docs/reviews/evidence/flash-02-independent/contracts.txt",
+    "docs/reviews/evidence/flash-02-independent/integration.txt",
+    "docs/reviews/evidence/flash-02-independent/ledger.txt",
+    "docs/reviews/evidence/flash-02-independent/probe_admission.py",
+    "docs/reviews/evidence/flash-02-independent/probe_association.py",
+    "docs/reviews/evidence/flash-02-independent/probe_deletion_api.py",
+    "docs/reviews/evidence/flash-02-independent/probe_native_lifecycle.py",
+    "docs/reviews/evidence/flash-02-independent/probe_pg_boundaries.py",
+    "docs/reviews/evidence/flash-02-independent/probe_rebuild.py",
+    "docs/reviews/evidence/flash-02-independent/probe_receipts.py",
+    "docs/reviews/evidence/flash-02-independent/types.txt",
+    "docs/reviews/evidence/flash-02-independent/unit.txt",
+    "docs/handoffs/agent-event-ledger-review-01-goal.md",
+    "docs/reviews/evidence/flash-02-independent/README.md",
+    "docs/reviews/evidence/flash-02-independent/cleanup.json",
+    "docs/reviews/evidence/flash-02-independent/review-inventory.json",
+    "docs/reviews/evidence/flash-02-independent/findings.json",
+    "docs/reviews/flash-blind-02-add-agent-event-ledger.md",
+    "frontend/lib/run-admission.ts",
+    "docs/reviews/evidence/flash-02-repair-01/clean-build-after.txt",
+    "docs/reviews/evidence/flash-02-repair-01/upgrade_0007_to_0008.sh",
+    "admin/api/app/schemas_ledger.py",
+    "frontend/lib/agent-ledger.ts",
+    "admin/api/app/models_ledger.py",
+    "admin/api/scripts/seed.py",
+    "frontend/tests/chat-contract.test.cjs",
+    "admin/api/app/services/ledger.py",
+    "admin/api/app/routers/ledger.py",
+    "admin/api/tests/test_event_ledger_api.py",
+    "docs/contracts/agent-events-v1/ownership.md",
+    "src/common/event_ledger/__main__.py",
+    "src/common/event_ledger/reconcile.py",
+    "src/common/event_ledger/store.py",
+    "src/common/business_graph/nodes.py",
+    "src/common/business_graph/prompting.py",
+    "src/common/langfuse_prompts.py",
+    ".env",
+    "tests/integration_tests/test_live_tenant_claims.py",
+    "src/common/event_ledger/lifecycle.py",
+    "src/common/identity/langgraph_auth.py",
+    "docs/reviews/evidence/flash-02-repair-01/restore-drill-r05.json",
+    "docs/reviews/evidence/flash-02-repair-01/restore_drill_r05.py",
+    "frontend/app/api/[..._path]/route.ts",
+    "frontend/tsconfig.tsbuildinfo",
+    "openspec/changes/add-agent-event-ledger/tasks.md",
+    ".env.example",
+    "docs/reviews/agent-event-ledger-repair-01.md",
+    "admin/api/migrations/versions/0008_ledger_start_claim_and_associations.py",
+    "docs/reviews/evidence/flash-02-independent/fresh-migrations.json",
+    "docs/reviews/evidence/flash-02-independent/setup_isolated.py",
+    "src/common/event_ledger/worker.py",
+    "tests/unit_tests/test_event_ledger_review02_regressions.py",
+    "logs/graph_2026-10-13.log",
+    "docs/reviews/evidence/flash-02-repair-01/baseline-fingerprint-check.json"
+  ],
+  "round_edit_count": 59,
+  "identity_core_last_modified": [
+    {
+      "path": "src/common/identity/__init__.py",
+      "mtime": "10-12 14:41"
+    },
+    {
+      "path": "src/common/identity/ticket.py",
+      "mtime": "10-12 20:03"
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "mtime": "10-12 21:16"
+    },
+    {
+      "path": "src/common/identity/runtime.py",
+      "mtime": "10-12 22:41"
+    },
+    {
+      "path": "src/common/identity/outbound.py",
+      "mtime": "10-13 00:05"
+    }
+  ],
+  "identity_core_touched_this_round": false,
+  "identity_package_exception": [
+    "src/common/identity/langgraph_auth.py（本轮为 R01 原生入口准入有意修改）"
+  ]
+}

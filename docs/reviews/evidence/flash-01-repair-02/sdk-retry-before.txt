@@ -1,0 +1,54 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_sdk_retry_cannot_send_after_revision_revocation[asyncio] _________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1087576f0>
+
+    async def test_sdk_retry_cannot_send_after_revision_revocation(monkeypatch) -> None:
+        """真实模型 SDK 遇 500 后不得绕开外层守卫自动重发。"""
+        import httpx
+        from langchain_openai import ChatOpenAI
+    
+        import common.business_graph.nodes as nodes_mod
+        import common.identity.runtime as rt
+        from common.models import ModelRegistry
+    
+        state = {"revoked": False, "requests": 0}
+    
+        async def fetch(*args, **kwargs):
+            return _state(membership_revision=99) if state["revoked"] else _state()
+    
+        async def respond(request):
+            state["requests"] += 1
+            if state["requests"] == 1:
+                state["revoked"] = True
+                return httpx.Response(500, json={"error": {"message": "synthetic failure"}})
+            return httpx.Response(200, json={
+                "id": "synthetic", "object": "chat.completion", "created": 1,
+                "model": "synthetic", "choices": [{"index": 0,
+                    "message": {"role": "assistant", "content": "unexpected"},
+                    "finish_reason": "stop"}],
+            })
+    
+        monkeypatch.setenv("TENANT_ENFORCE_RUNTIME_IDENTITY", "true")
+        monkeypatch.setattr(rt, "fetch_identity_state", fetch)
+        monkeypatch.setattr(nodes_mod, "emit_event", lambda *args, **kwargs: None)
+        async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
+            model = ChatOpenAI(
+                api_key="synthetic", base_url="http://synthetic.invalid/v1",
+                model="synthetic", max_retries=ModelRegistry.main_llm.max_retries,
+                http_async_client=client,
+            )
+            monkeypatch.setattr(nodes_mod, "ModelRegistry", SimpleNamespace(main_llm=model))
+            result = await _nodes().call_model(
+                {"messages": [HumanMessage(content="synthetic")]},
+                _config(), writer=lambda *args: None,
+            )
+>       assert state["requests"] == 1, "SDK 自动重试绕过撤权守卫"
+E       AssertionError: SDK 自动重试绕过撤权守卫
+E       assert 2 == 1
+
+tests/unit_tests/test_per_call_outbound_guards.py:73: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_per_call_outbound_guards.py::test_sdk_retry_cannot_send_after_revision_revocation[asyncio]
+1 failed, 5 deselected in 2.73s

@@ -1,0 +1,16 @@
+{
+  "proxy_thread_create": 200,
+  "minted_thread_id": true,
+  "proxy_run_status": 200,
+  "proxy_run_id": "01a1313a-e5b9-77e2-8773-33ffa9afa46a",
+  "ledger_marker_header": true,
+  "ledger_attempt_for_thread": 1,
+  "ledger_linked_run": true,
+  "ledger_state": "running",
+  "proxy_replay_status": 200,
+  "attempts_after_replay": 1,
+  "replay_no_new_attempt": true,
+  "proxy_stop_intent_status": 200,
+  "proxy_stop_recorded": true,
+  "proxy_thread_delete": 204
+}

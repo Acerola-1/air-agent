@@ -1,0 +1,41 @@
+npm notice run frontend@0.0.0 test:contracts
+npm notice run node --test tests/chat-contract.test.cjs tests/agent-events-contract.test.cjs
+✔ embedded frontend copy matches canonical contract files (5.242083ms)
+✔ every sample case matches the expected verdict (same set as Python) (1.312833ms)
+✔ browser cannot claim server terminal facts (0.169083ms)
+✔ reserved types are registered but rejected as not enabled (0.190333ms)
+✔ enabled types equal the v1 core family (0.221ms)
+✔ batch validation returns per-item results and enforces browser limits (2.719916ms)
+✔ forbidden payload key wins over whitelist (0.268125ms)
+✔ context meter uses provider input after completion and labels preparation estimates (105.342125ms)
+✔ every intermediate frame excludes tool JSON and internal summaries from body (16.865959ms)
+✔ old run callbacks and completion cannot clear a newer run (7.440792ms)
+✔ stop sends server cancellation and ignores late metadata safely (6.178667ms)
+✔ legacy double answer merges, marked draft hidden, archives require actual stored status (3.815958ms)
+✔ SDK error event becomes failed completion, metadata and custom consumed (4.311125ms)
+✔ proxy: unified identity gates, ticket upstream, v2 scope, tenant checks (1847.443458ms)
+✔ archive scope v2 signing requires configured keys (7.195167ms)
+✔ stopStreaming only confirms after server reaches terminal run status (610.473334ms)
+✔ stopStreaming reports unconfirmed when cancellation and status both fail (8.000916ms)
+✔ stop cancel 409 is context_changed, never a false confirmation (8.976708ms)
+✔ stop after 404 cancel confirms only on observed terminal status (6.701291ms)
+✔ stop treats missing/unknown run status as unconfirmed (33.631084ms)
+✔ stop with empty run list within grace window is unconfirmed unknown (3259.676375ms)
+✔ stop recovers late run id from recent runs and waits terminal (5.28825ms)
+✔ stop before run id arrives recovers the active run from the run list (4.576125ms)
+✔ proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surfaces 409 (13.501167ms)
+✔ stop cannot confirm the previous answer while current run metadata is delayed (3214.071833ms)
+✔ unconfirmed stop keeps the run for late metadata and blocks new submissions (3214.700666ms)
+✔ 页面导航离开记录 origin=navigation 的独立停止意图 (6.1665ms)
+✔ 无活动运行时的导航不产生停止事实 (4.591041ms)
+✔ 重新生成声明 regenerate 并复用上一条用户问题（不新增提问） (4.790416ms)
+✔ 重新发送声明 retry (5.936792ms)
+✔ R01 代理：原生入口单点裁决——首笔成功、重放复用/待确认、绝不重复创建平台运行 (18.235042ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12692.434083

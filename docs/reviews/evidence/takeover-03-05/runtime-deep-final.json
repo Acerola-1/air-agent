@@ -1,0 +1,500 @@
+[
+  {
+    "channel": "native",
+    "graph": "intelligent-report",
+    "stream": false,
+    "thread_id": "01a13a10-3be5-7b01-a447-473a6112a356",
+    "attempt_id": "b690fef9-a207-455b-a539-6101f17498c9",
+    "http_status": 200,
+    "run_error": false,
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "7524b310-71a1-4f71-a9ed-62d20fbd61c7",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 27,
+          "total_tokens": 18126,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 23
+        },
+        "ttft_ms": null,
+        "first_piece_kind": null,
+        "submission_id": "0da23828-96b4-42d8-9aa9-d9977a3a7ed7"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "b1f7e5f86f658ca82ecb633c1d53336e",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 8.986
+  },
+  {
+    "channel": "native",
+    "graph": "intelligent-report",
+    "stream": true,
+    "thread_id": "01a13a10-5f19-73c1-bcea-795ecab6a1b5",
+    "attempt_id": "79147411-8331-4bec-9a7e-f92b9d73effa",
+    "http_status": 200,
+    "sse_error": false,
+    "sse_frames": 22,
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "a22974d3-bac2-446d-a68f-a02cc1bb96ac",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 31,
+          "total_tokens": 18130,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 27
+        },
+        "ttft_ms": 3618,
+        "first_piece_kind": "text",
+        "submission_id": "9bea1fe8-057c-445d-9f71-551b689d8dcc"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "f08fae6c09cd2ba207d02a7b05773071",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 10.618
+  },
+  {
+    "channel": "native",
+    "graph": "deep-research",
+    "stream": false,
+    "thread_id": "01a13a10-8854-74a1-8688-fa6e23bac4b5",
+    "attempt_id": "68302f87-1581-4c99-8fb5-8c8b7394814a",
+    "http_status": 200,
+    "run_error": false,
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "6097f61e-3e55-4c46-937f-507c8d26b894",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 27,
+          "total_tokens": 18126,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 23
+        },
+        "ttft_ms": null,
+        "first_piece_kind": null,
+        "submission_id": "dced944e-1587-466d-b563-f4b83de7400b"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "8026d1af1aad3c1e72d594cf02881493",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 4.344
+  },
+  {
+    "channel": "native",
+    "graph": "deep-research",
+    "stream": true,
+    "thread_id": "01a13a10-9b17-7193-b9f6-40fdc98dbd24",
+    "attempt_id": "20dbc639-6c0b-45ab-ad75-4b9f71610523",
+    "http_status": 200,
+    "sse_error": false,
+    "sse_frames": 22,
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "14433239-2674-4498-8c3f-d964ec9995b0",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 33,
+          "total_tokens": 18132,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 29
+        },
+        "ttft_ms": 2155,
+        "first_piece_kind": "text",
+        "submission_id": "e22aaa46-29c1-4106-8ea0-bf5cfd75cbad"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "ee7bcd4c5dd0f0a947a56d018fc21d09",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 3.736
+  },
+  {
+    "channel": "native",
+    "graph": "intelligent-tracing",
+    "stream": false,
+    "thread_id": "01a13a10-a981-76b0-98df-ef73e81c619b",
+    "attempt_id": "bc1d8ac3-8a18-4240-a777-20a9e0345f9f",
+    "http_status": 200,
+    "run_error": false,
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "ffe36a39-301f-4dd2-b6d2-e01deb7e1d3b",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 30,
+          "total_tokens": 18129,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 26
+        },
+        "ttft_ms": null,
+        "first_piece_kind": null,
+        "submission_id": "b20a34a0-8681-430b-a01e-2955aaead911"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "208cae762b7cf97e6e4a526a1243b98d",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 3.408
+  },
+  {
+    "channel": "native",
+    "graph": "intelligent-tracing",
+    "stream": true,
+    "thread_id": "01a13a10-b6e0-77a3-832d-01e3a2ff7e2c",
+    "attempt_id": "7fa42135-b4f3-4f31-a459-1c522167adf1",
+    "http_status": 200,
+    "sse_error": false,
+    "sse_frames": 19,
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "a6ced1be-b9d8-4122-9d71-2b37c4d96675",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 27,
+          "total_tokens": 18126,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 23
+        },
+        "ttft_ms": 3453,
+        "first_piece_kind": "text",
+        "submission_id": "b920ee9d-79b1-4d42-8a68-ca81273ff3cf"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "530cbd2a777aa709e5328b3d788b825e",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 5.035
+  },
+  {
+    "channel": "bff",
+    "graph": "intelligent-report",
+    "stream": false,
+    "thread_id": "a276b706-225f-41df-8119-163c720c4d73",
+    "http_status": 200,
+    "run_error": false,
+    "attempt_id": "54fa37f5-65da-4bea-a40d-9e3d86af9351",
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "92798a57-7fdb-4aa5-aa13-1322fb894f30",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 30,
+          "total_tokens": 18129,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 26
+        },
+        "ttft_ms": null,
+        "first_piece_kind": null,
+        "submission_id": "1ca6e44c-fbce-4eb1-9561-e6f73c43a116"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "ac1e6a4cfe8a6702d8fbbaed87733914",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 5.613
+  },
+  {
+    "channel": "bff",
+    "graph": "intelligent-report",
+    "stream": true,
+    "thread_id": "800382f2-ece2-4375-8c8f-1816e7c6c33e",
+    "http_status": 200,
+    "sse_error": false,
+    "sse_frames": 20,
+    "attempt_id": "b2d23656-88cc-42ed-b7d8-a3956dfbb164",
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "2bc903e1-2ec3-42b7-a232-f9c191b118ef",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 28,
+          "total_tokens": 18127,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 24
+        },
+        "ttft_ms": 2754,
+        "first_piece_kind": "text",
+        "submission_id": "106ef5bb-8a04-4a67-b016-c32fec5134cf"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "bf47b1b58ec7ab0a640bcff6005aa688",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 4.691
+  },
+  {
+    "channel": "bff",
+    "graph": "deep-research",
+    "stream": false,
+    "thread_id": "74a06c8a-f619-40e4-bbd0-b6070d358fbd",
+    "http_status": 200,
+    "run_error": false,
+    "attempt_id": "356eb7cb-cc02-49d5-9301-ae54be72c9b4",
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "a2450738-d941-44cf-8ea1-e2424d6d1084",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 27,
+          "total_tokens": 18126,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 23
+        },
+        "ttft_ms": null,
+        "first_piece_kind": null,
+        "submission_id": "804c118f-f3d0-4a21-84d8-fb953e7421d7"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "dc19711601cb64b8ca6295bcbbb06d0a",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 5.525
+  },
+  {
+    "channel": "bff",
+    "graph": "deep-research",
+    "stream": true,
+    "thread_id": "917bbfcd-41e8-401e-a358-d690f7276cc6",
+    "http_status": 200,
+    "sse_error": false,
+    "sse_frames": 19,
+    "attempt_id": "4a6f6360-a81c-4754-b537-3e86a3d748df",
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "ba41dcb6-4520-444b-8a78-21ecb5a5e9c2",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 27,
+          "total_tokens": 18126,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 23
+        },
+        "ttft_ms": 2257,
+        "first_piece_kind": "text",
+        "submission_id": "5a7cef1f-eccf-4614-a7b9-2ee98fabcb8b"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "dd56419380951982b3cda9b5941d7db3",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 3.997
+  },
+  {
+    "channel": "bff",
+    "graph": "intelligent-tracing",
+    "stream": false,
+    "thread_id": "a7be26fa-a481-4510-a01e-a2795044ccbb",
+    "http_status": 200,
+    "run_error": false,
+    "attempt_id": "069f40f2-56af-4507-973e-f3f783358391",
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "9863b3b0-8bb3-4712-920a-eeab62ba2e22",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 28,
+          "total_tokens": 18127,
+          "cache_read_tokens": 0,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 24
+        },
+        "ttft_ms": null,
+        "first_piece_kind": null,
+        "submission_id": "ca8daeb3-1bf1-4f68-aa54-7aabd593927a"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "77c170a2ebe552f36f8675dd1c727c31",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 3.565
+  },
+  {
+    "channel": "bff",
+    "graph": "intelligent-tracing",
+    "stream": true,
+    "thread_id": "d3bacc52-fdbd-4657-917a-b637c05008b9",
+    "http_status": 200,
+    "sse_error": false,
+    "sse_frames": 19,
+    "attempt_id": "3cfad297-e238-4fd7-ac81-2992ac0808cb",
+    "observability_status": 200,
+    "models": [
+      {
+        "observation_id": "c8d6de9f-57a2-4dc2-a44b-01f61c6aee4b",
+        "model": "hy3",
+        "role": "main",
+        "status": "succeeded",
+        "measurement_status": "measured",
+        "usage": {
+          "input_tokens": 18099,
+          "output_tokens": 27,
+          "total_tokens": 18126,
+          "cache_read_tokens": 512,
+          "cache_write_tokens": null,
+          "reasoning_tokens": 23
+        },
+        "ttft_ms": 2865,
+        "first_piece_kind": "text",
+        "submission_id": "36343b34-690d-4344-a249-cfb684321487"
+      }
+    ],
+    "trace_links": [
+      {
+        "provider": "langfuse",
+        "project_scope": "coordinator-acceptance",
+        "trace_id": "543cba9714629ba9e56ed286aff33318",
+        "is_primary": true,
+        "link_source": "runtime_callback"
+      }
+    ],
+    "calls": 1,
+    "elapsed_seconds": 4.74
+  }
+]

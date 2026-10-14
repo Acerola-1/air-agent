@@ -1,0 +1,35 @@
+{
+  "database": "air_agent_rp02_restore_faa82ee3",
+  "random_suffix": "faa82ee3",
+  "before_backup": {
+    "content_live": 2,
+    "deletions": 0
+  },
+  "dump_lines": "3595",
+  "deleted_after_backup": {
+    "deleted_refs": 1,
+    "deletion_state": "completed"
+  },
+  "restored": {
+    "head": "0009",
+    "deletions_any_state": 0,
+    "content_not_yet_deleted": 1
+  },
+  "permission_regrant": "policies=20 grants=53 deleted_content_refs=1 open_deletions=0",
+  "after_reapply": {
+    "deletion_present_any_state": 1,
+    "deleted_thread_content_blocked": 1,
+    "other_content_preserved": 1,
+    "newer_write_preserved": 1
+  },
+  "rls_after_restore": {
+    "no_guc": 0,
+    "own_scope": 3,
+    "cross_tenant": 0,
+    "deleted_thread_visible_rows": 0
+  },
+  "cleanup": {
+    "dropped": "air_agent_rp02_restore_faa82ee3",
+    "result": "DROP DATABASE"
+  }
+}

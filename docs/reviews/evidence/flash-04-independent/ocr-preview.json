@@ -1,0 +1,272 @@
+{
+  "schema_version": "1",
+  "mode": "workspace",
+  "repository": "/Users/acerola/.codex/worktrees/observability-04/air_agent",
+  "total_files": 42,
+  "reviewable_count": 36,
+  "excluded_count": 6,
+  "total_insertions": 6533,
+  "total_deletions": 279,
+  "reviewable_files": [
+    {
+      "path": "admin/api/app/main.py",
+      "status": "modified",
+      "insertions": 4,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/services/event_contract.py",
+      "status": "modified",
+      "insertions": 32,
+      "deletions": 2
+    },
+    {
+      "path": "admin/api/scripts/seed.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "modified",
+      "insertions": 264,
+      "deletions": 58
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "modified",
+      "insertions": 537,
+      "deletions": 51
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "modified",
+      "insertions": 55,
+      "deletions": 19
+    },
+    {
+      "path": "frontend/lib/agent-events/contract.ts",
+      "status": "modified",
+      "insertions": 37,
+      "deletions": 2
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "modified",
+      "insertions": 9,
+      "deletions": 4
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "status": "modified",
+      "insertions": 124,
+      "deletions": 2
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "status": "modified",
+      "insertions": 108,
+      "deletions": 2
+    },
+    {
+      "path": "src/common/data_governance.py",
+      "status": "modified",
+      "insertions": 7,
+      "deletions": 1
+    },
+    {
+      "path": "src/common/event_ledger/contract.py",
+      "status": "modified",
+      "insertions": 39,
+      "deletions": 3
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "modified",
+      "insertions": 264,
+      "deletions": 58
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "modified",
+      "insertions": 537,
+      "deletions": 51
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "status": "modified",
+      "insertions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/langfuse_tracing.py",
+      "status": "modified",
+      "insertions": 12,
+      "deletions": 2
+    },
+    {
+      "path": "src/data_analysis/nodes.py",
+      "status": "modified",
+      "insertions": 6,
+      "deletions": 0
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/routers/observability.py",
+      "status": "added",
+      "insertions": 253,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/services/observability.py",
+      "status": "added",
+      "insertions": 786,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/migrations/versions/0012_observability.py",
+      "status": "added",
+      "insertions": 393,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-04/e2e-observation-evidence.json",
+      "status": "added",
+      "insertions": 24,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-04/env-isolation.json",
+      "status": "added",
+      "insertions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-04/langfuse-write-verify.json",
+      "status": "added",
+      "insertions": 21,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-04/overhead-benchmark.json",
+      "status": "added",
+      "insertions": 80,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/__init__.py",
+      "status": "added",
+      "insertions": 15,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/collector.py",
+      "status": "added",
+      "insertions": 281,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/context.py",
+      "status": "added",
+      "insertions": 109,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/middleware.py",
+      "status": "added",
+      "insertions": 31,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/model_adapter.py",
+      "status": "added",
+      "insertions": 544,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/pricing.py",
+      "status": "added",
+      "insertions": 233,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/store.py",
+      "status": "added",
+      "insertions": 748,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/tool_adapter.py",
+      "status": "added",
+      "insertions": 258,
+      "deletions": 0
+    },
+    {
+      "path": "tests/bench_observability_overhead.py",
+      "status": "added",
+      "insertions": 101,
+      "deletions": 0
+    }
+  ],
+  "excluded_files": [
+    {
+      "path": "openspec/changes/complete-agent-observability/contract-extension.md",
+      "status": "modified",
+      "insertions": 11,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/complete-agent-observability/tasks.md",
+      "status": "modified",
+      "insertions": 36,
+      "deletions": 23,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "status": "modified",
+      "insertions": 13,
+      "deletions": 1,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/reviews/agent-observability-acceptance.md",
+      "status": "added",
+      "insertions": 101,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/unit_tests/test_observability_core.py",
+      "status": "added",
+      "insertions": 237,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/unit_tests/test_observability_pricing.py",
+      "status": "added",
+      "insertions": 197,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    }
+  ]
+}

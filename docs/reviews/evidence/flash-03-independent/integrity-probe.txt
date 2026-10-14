@@ -1,0 +1,10 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____________________ test_rls_positive_and_parent_cleanup _____________________
+/tmp/test_feedback_integrity_review03.py:30: in test_rls_positive_and_parent_cleanup
+    assert fk>=1 and orphan==0,values
+E   AssertionError: {'without_context': 0, 'own_positive_control': 1, 'other_tenant': 0, 'after_transaction_no_context': 0, ...}
+E   assert (0 >= 1)
+=========================== short test summary info ============================
+FAILED ::test_rls_positive_and_parent_cleanup - AssertionError: {'without_con...
+1 failed in 1.59s

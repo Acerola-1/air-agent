@@ -1,0 +1,57 @@
+{
+  "trace_id": "79c3dd930ddd40e6988f453c2d4eb30d",
+  "remote_observation_id": "10c195f62da2e41b",
+  "real_remote_rows_before": 1,
+  "local_cleanup": {
+    "claimed": 1,
+    "done": 1,
+    "retried": 0,
+    "dead_lettered": 0
+  },
+  "external_deliveries": [
+    {
+      "claimed": 1,
+      "done": 0,
+      "retried": 1,
+      "dead_lettered": 0
+    },
+    {
+      "claimed": 1,
+      "done": 0,
+      "retried": 1,
+      "dead_lettered": 0
+    },
+    {
+      "claimed": 0,
+      "done": 0,
+      "retried": 0,
+      "dead_lettered": 0
+    },
+    {
+      "claimed": 1,
+      "done": 0,
+      "retried": 1,
+      "dead_lettered": 0
+    },
+    {
+      "claimed": 0,
+      "done": 0,
+      "retried": 0,
+      "dead_lettered": 0
+    },
+    {
+      "claimed": 0,
+      "done": 0,
+      "retried": 0,
+      "dead_lettered": 0
+    },
+    {
+      "claimed": 1,
+      "done": 1,
+      "retried": 0,
+      "dead_lettered": 0
+    }
+  ],
+  "remote_rows_after": 0,
+  "model_network_called": false
+}

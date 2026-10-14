@@ -1,0 +1,30 @@
+{
+  "thread_create": 200,
+  "admit_status": 200,
+  "admit": {
+    "request_id": "a6163145-dcf7-4bb4-95ec-16367a00506a",
+    "attempt_id": "4e748b13-7f84-4cd1-80ec-7e28e504dfbd",
+    "reused": false,
+    "admission_status": "admitting"
+  },
+  "replay_reused": true,
+  "replay_same_attempt": true,
+  "run_create_status": 200,
+  "platform_run_id": "01a1313a-e04c-7611-a0b3-07272b6ca34f",
+  "platform_metadata_persisted": true,
+  "platform_metadata": {
+    "ledger_request_id": "a6163145-dcf7-4bb4-95ec-16367a00506a",
+    "ledger_attempt_id": "4e748b13-7f84-4cd1-80ec-7e28e504dfbd"
+  },
+  "platform_status": "running",
+  "confirm_status": 200,
+  "confirm_state": "running",
+  "readback_status": 200,
+  "readback_attempt": "01a1313a-e04c-7611-a0b3-07272b6ca34f",
+  "readback_state": "running",
+  "readback_content_included": false,
+  "run_matches_ledger": true,
+  "unknown_state": "admission_unknown",
+  "unknown_not_retried": true,
+  "thread_delete": 204
+}

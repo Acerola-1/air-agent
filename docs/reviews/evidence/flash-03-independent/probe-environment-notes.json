@@ -1,0 +1,10 @@
+{
+  "not_model_failures": [
+    "初次PG连接被沙箱拒绝，授权网络后成功",
+    "初次构建使用外部node_modules符号链接被Turbopack拒绝，改独立clone后修正",
+    "随后沙箱构建等待，结束仅本轮自建构建进程，在允许公开字体下载且60秒超时环境中两版均通过",
+    "Ruff最初因工作区缓存写权限失败，用no-cache通过",
+    "纯契约pytest初次受全局logging fixture写权限阻断，以noconftest只执行无fixture依赖的纯契约12项通过",
+    "UI静态检查初次写工作区报告被拒，no-write后0错误"
+  ]
+}

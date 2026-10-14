@@ -399,7 +399,7 @@ async def metrics_summary(
 async def browser_events(
     payload: BrowserEventIn, request: Request, session: SessionDep, identity: ActiveTenantIdentity
 ) -> BrowserEventOut:
-    """浏览器来源：类型白名单 + 服务端身份覆盖；v1 预留类型一律 `type_not_enabled`。"""
+    """浏览器来源：类型白名单 + 服务端身份覆盖；浏览器不能上报运行终态或模型用量。"""
     verify_write_origin(request)
     result = await ledger_service.ingest_browser_events(session, identity, events=payload.events)
     await session.commit()

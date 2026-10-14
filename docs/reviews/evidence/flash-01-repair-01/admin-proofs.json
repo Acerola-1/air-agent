@@ -1,0 +1,12 @@
+{
+  "enterprise_permission_tree": 200,
+  "missing_context_department": 403,
+  "suspended_department": 403,
+  "suspended_role_create": 201,
+  "roles_read": 200,
+  "remove_role_permissions": 200,
+  "member_revision_before": 1,
+  "member_revision_after": 1,
+  "next_admin_read_after_revoke": 403,
+  "runtime_allows_after_role_permission_revoke": true
+}

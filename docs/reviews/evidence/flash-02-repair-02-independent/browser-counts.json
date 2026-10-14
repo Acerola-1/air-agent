@@ -1,0 +1,15 @@
+{
+  "request_id": "8f1f23a7-199a-42f8-8ad3-d1de27dd7282",
+  "thread_id": "35f142e4-2274-43e1-93a8-5922e650293b",
+  "tenant_id": "83b8fb03-f07e-407b-b6ea-8b5f3007db91",
+  "browser": "CUA IAB localhost:3000",
+  "ui_checks": [
+    "normal submission answered 2",
+    "regenerate answered 2",
+    "reload and reopen both answers visible"
+  ],
+  "requests": 1,
+  "attempts": 2,
+  "answers": 2,
+  "content_refs": 1
+}

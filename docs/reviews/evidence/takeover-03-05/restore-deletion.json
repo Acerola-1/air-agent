@@ -1,0 +1,19 @@
+{
+  "backup": "\u771f\u5b9epg_dump/pg_restore\uff0c\u6062\u590d\u65f6\u65e0ACL",
+  "restored_old_comments_before_reapply": 1,
+  "permissions_reapplied": true,
+  "runtime_visible_after_reapply": {
+    "agent_feedback_current": 0,
+    "agent_feedback_operations": 0,
+    "agent_feedback_comments": 0,
+    "agent_model_observations": 0
+  },
+  "late_write_rejected": true,
+  "manifest_result": {
+    "deletions_reapplied": 1,
+    "cleanup_jobs": 2,
+    "unresolved_owner_or_event": 0,
+    "external_cleanup_confirmed": false
+  },
+  "external_cleanup": "\u72ec\u7acb\u4efb\u52a1\u5f85\u9a8c\u8bc1\uff1b\u4e0d\u5192\u5145\u5df2\u5220\u9664"
+}

@@ -94,6 +94,19 @@ def create_load_skill_tool(router: SkillSemanticRouter):
         """
         mode = get_routing_context(config.get("configurable")).mode
         rules = load_skill_rules(router, skill_name, mode)
+        from common.observability.skill_adapter import emit_skill_stage
+
+        emit_skill_stage(
+            config, skill_name, "selected", body=rules, source="agent-tool"
+        )
+        emit_skill_stage(
+            config,
+            skill_name,
+            "loaded",
+            body=rules,
+            source="agent-tool",
+            status="succeeded" if rules else "failed",
+        )
         if rules:
             return rules
         return (

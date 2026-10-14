@@ -1,0 +1,11 @@
+{
+  "databases": [
+    "air_agent_review02_ledger_43630af2",
+    "air_agent_review02_api_43630af2",
+    "air_agent_review02_rls_43630af2"
+  ],
+  "head": "0008",
+  "worker": "random_nonowner_test_role",
+  "migration": "0001_to_0008",
+  "note": "本文件由同目录 setup_isolated.py 每次运行时覆盖。修复轮为核对 0008 空库迁移复跑了该脚本，因此文件被重写：首次验收记录为 0001_to_0007，修复轮在同一脚本下为 0001_to_0008（迁移 0008 已存在）。修复轮自身的环境记录在 docs/reviews/evidence/flash-02-repair-01/fresh-migrations-repair01.json。"
+}

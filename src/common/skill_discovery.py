@@ -188,7 +188,25 @@ def create_find_skill_tool(
     ) -> Command[Any]:
         """根据用户问题查找最匹配的业务 Skill，命中后直接内联其规则与允许的工具."""
         candidates: Sequence[SkillRouteCandidate] = await router.amatch(question)
+        from common.observability.skill_adapter import emit_skill_stage
+
+        for candidate in candidates:
+            path = router.resolve_skill_file(candidate.name)
+            try:
+                body = path.read_text() if path and path.exists() else None
+            except OSError:
+                body = None
+            emit_skill_stage(
+                config, candidate.name, "matched", body=body, source="agent-discovery"
+            )
         if not candidates:
+            emit_skill_stage(
+                config,
+                "unmatched",
+                "other",
+                status="not_executed",
+                source="agent-discovery",
+            )
             return Command(update=_no_match_update(tool_call_id, question))
 
         mode = get_routing_context(config.get("configurable")).mode
@@ -196,7 +214,28 @@ def create_find_skill_tool(
         top = candidates[0]
 
         if len(candidates) == 1:
-            payload = _single_candidate_payload(top, mode, router, union_tools)
+            emit_skill_stage(config, top.name, "selected", source="agent-discovery")
+            try:
+                payload = _single_candidate_payload(top, mode, router, union_tools)
+            except (OSError, UnicodeError):
+                emit_skill_stage(
+                    config,
+                    top.name,
+                    "loaded",
+                    status="failed",
+                    source="agent-discovery",
+                )
+                raise
+            emit_skill_stage(
+                config,
+                top.name,
+                "loaded",
+                body=str(payload.get("skill_instructions") or ""),
+                status="succeeded"
+                if str(payload.get("skill_instructions") or "").strip()
+                else "failed",
+                source="agent-discovery",
+            )
         else:
             payload = _multi_candidate_payload(candidates, mode, union_tools)
 

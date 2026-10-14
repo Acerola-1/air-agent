@@ -1,0 +1,20 @@
+{
+  "scope": "ledger:reconcile",
+  "issue_status": 200,
+  "issued_ticket": "REDACTED（rs-v1 票据属凭据，不落证据文件）",
+  "tenant_used": "9fb2097c-46bf-4755-b025-1c3222f8aa91",
+  "service_runs_list": 200,
+  "user_after_logout": 401,
+  "service_after_logout": 200,
+  "service_create_run": 403,
+  "service_thread_read": 200,
+  "cli_rc": 0,
+  "cli_counts": {
+    "kept_unknown": 10,
+    "calibrated": 0,
+    "released": 0
+  },
+  "cli_note": "CLI 以有界（--max-batches 2）方式对真实平台只读校准；候选均类别化为 kept_unknown/no_platform_run_id",
+  "redaction": "本文件已移除签发响应体（票据前缀）与任何口令/cookie；票据一律不落证据",
+  "cli_counts_note": "真实平台只读校准：10 条候选均无平台运行号（no_platform_run_id），按设计不猜测终态"
+}

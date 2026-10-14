@@ -1,0 +1,93 @@
+{
+  "boundary": "真实DeepAgents执行器/受限身份查询/PG；模型为受控fixture，不冒充真实LLM",
+  "observations": [
+    {
+      "observation_id": "7cf92757-11a8-4470-93ab-61af280cb136",
+      "logical_call_id": "fc1ba5ef-53d3-42ec-883b-3fafacafc312",
+      "role": "main",
+      "parent_observation_id": null,
+      "submission_id": "12972ea9-23d2-471a-b53f-9a70fd3bae5f",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cache_read_tokens": null,
+        "cache_write_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "observation_id": "8c759fc7-bd75-4efc-8223-6da523e3578b",
+      "logical_call_id": "dc5e066f-cde1-4e82-a343-6a3b0da4b65e",
+      "role": "subagent",
+      "parent_observation_id": "7cf92757-11a8-4470-93ab-61af280cb136",
+      "submission_id": "12972ea9-23d2-471a-b53f-9a70fd3bae5f",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cache_read_tokens": null,
+        "cache_write_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "observation_id": "8f536a1c-85b5-4ac5-b474-a9550f01034c",
+      "logical_call_id": "e7ccfd9a-bc6c-4647-a498-bee956933742",
+      "role": "main",
+      "parent_observation_id": null,
+      "submission_id": "12972ea9-23d2-471a-b53f-9a70fd3bae5f",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cache_read_tokens": null,
+        "cache_write_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "observation_id": "afc96954-6893-4324-9531-90490b6a7ed7",
+      "logical_call_id": "735384f7-e5e8-44e0-a0e2-ecef4e1e297b",
+      "role": "summarizer",
+      "parent_observation_id": null,
+      "submission_id": "12972ea9-23d2-471a-b53f-9a70fd3bae5f",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cache_read_tokens": null,
+        "cache_write_tokens": null,
+        "reasoning_tokens": null
+      }
+    }
+  ],
+  "collector": {
+    "enqueued": 12,
+    "written": 12,
+    "dropped": 0,
+    "failed": 0,
+    "retries": 0,
+    "queue_size": 0,
+    "in_flight": 0,
+    "pending": 0,
+    "queue_high_watermark": 6,
+    "last_drop_reason": ""
+  },
+  "real_langfuse_readback": [
+    {
+      "trace_id": "6ff4e4ae8275d07a545edd0661446bf8",
+      "remote_ids": [
+        "bfad7a005e0271eb"
+      ]
+    },
+    {
+      "trace_id": "b7766f921f6ac1656015e582078f65e2",
+      "remote_ids": [
+        "ae778073ebc722fc",
+        "1dbbc2d33a3481ac",
+        "80f274de572bb8d2"
+      ]
+    }
+  ]
+}

@@ -3,12 +3,12 @@
 共享传输不缓存身份，覆盖框架内置摘要与子代理等辅助调用。
 """
 
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
 
 import httpx
 from langgraph.config import get_config
 
-from common.identity.runtime import guard_runtime_call
+from common.identity.runtime import guard_runtime_call, guard_runtime_call_sync
 
 
 class TenantOutboundAuth(httpx.Auth):
@@ -23,4 +23,15 @@ class TenantOutboundAuth(httpx.Auth):
         except RuntimeError:
             config = {}
         await guard_runtime_call(config)
+        yield request
+
+    def sync_auth_flow(
+        self, request: httpx.Request
+    ) -> Generator[httpx.Request, httpx.Response]:
+        """同步区域抽取等辅助模型也在真正发送前校验当前身份."""
+        try:
+            config = dict(get_config())
+        except RuntimeError:
+            config = {}
+        guard_runtime_call_sync(config)
         yield request

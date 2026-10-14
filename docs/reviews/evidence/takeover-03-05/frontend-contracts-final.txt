@@ -1,0 +1,51 @@
+npm notice run frontend@0.0.0 test:contracts
+npm notice run node --test tests/chat-contract.test.cjs tests/agent-events-contract.test.cjs tests/feedback-client.test.cjs
+✔ embedded frontend copy matches canonical contract files (1.989333ms)
+✔ every sample case matches the expected verdict (same set as Python) (0.847291ms)
+✔ browser cannot claim server terminal facts (0.070375ms)
+✔ reserved types are registered but rejected as not enabled (0.070459ms)
+✔ enabled types equal core plus browser and runtime (0.082583ms)
+✔ batch validation returns per-item results and enforces browser limits (0.346416ms)
+✔ forbidden payload key wins over whitelist (0.107458ms)
+✔ context meter uses provider input after completion and labels preparation estimates (97.432667ms)
+✔ every intermediate frame excludes tool JSON and internal summaries from body (5.668458ms)
+✔ old run callbacks and completion cannot clear a newer run (3.125291ms)
+✔ stop sends server cancellation and ignores late metadata safely (1.931959ms)
+✔ legacy double answer merges, marked draft hidden, archives require actual stored status (1.623417ms)
+✔ SDK error event becomes failed completion, metadata and custom consumed (1.703583ms)
+✔ proxy: unified identity gates, ticket upstream, v2 scope, tenant checks (1824.413333ms)
+✔ archive scope v2 signing requires configured keys (6.081959ms)
+✔ stopStreaming only confirms after server reaches terminal run status (608.256875ms)
+✔ stopStreaming reports unconfirmed when cancellation and status both fail (6.000333ms)
+✔ stop cancel 409 is context_changed, never a false confirmation (5.27575ms)
+✔ stop after 404 cancel confirms only on observed terminal status (5.346125ms)
+✔ stop treats missing/unknown run status as unconfirmed (5.541667ms)
+✔ stop with empty run list within grace window is unconfirmed unknown (3214.303875ms)
+✔ stop recovers late run id from recent runs and waits terminal (2.578458ms)
+✔ stop before run id arrives recovers the active run from the run list (2.497125ms)
+✔ proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surfaces 409 (5.987333ms)
+✔ stop cannot confirm the previous answer while current run metadata is delayed (3220.77025ms)
+✔ unconfirmed stop keeps the run for late metadata and blocks new submissions (3219.445417ms)
+✔ 页面导航离开记录 origin=navigation 的独立停止意图 (3.819625ms)
+✔ 无活动运行时的导航不产生停止事实 (5.695833ms)
+✔ 重新生成声明 regenerate 并复用上一条用户问题（不新增提问） (6.531917ms)
+✔ 重新发送声明 retry (8.105625ms)
+✔ R01 代理：原生入口单点裁决——首笔成功、重放复用/待确认、绝不重复创建平台运行 (11.010625ms)
+✔ 官方 interrupt 的权威状态确认本次已停止执行，不冒充业务已取消 (2.478375ms)
+✔ 采集开关默认关闭，服务端拒绝启用时不产生计时或事件 (73.131833ms)
+✔ 未确认映射不永久负缓存，确认后可再次回读 (2.856708ms)
+✔ A到B到A后旧代次回读不能覆盖当前映射 (2.302167ms)
+✔ 旧企业保存响应不会作为新企业的成功结果 (1.709709ms)
+✔ 旧批次完成不删除新企业队列且新请求绑定新企业 (7.733334ms)
+✔ 队列100条、批次50条和256KiB均有界 (4.268834ms)
+✔ 进度不充当首正文；不完整、完成和离开分别计时 (2.330667ms)
+✔ 旧企业迟到的启用策略不能开启当前企业采集 (1.337333ms)
+✔ DOM完成早于可信attempt确认时仍保留计时，不误用平台run UUID (1.401583ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12402.637875
