@@ -1,8 +1,10 @@
+> 历史实施提示词：对应change已于2026-10-15归档，勿重新执行。下一轮使用skill-tool-selection-goal.md。
+
 /goal 持续完成 Air Agent OpenSpec change complete-agent-observability 的实现、测试和真实本地联调，交付六图逐调用观测、实际Token、Skill/MCP归因、Langfuse映射及版本化成本。本轮匿名运行编号04。
 
 先进入协调者为Change 5准备的独立工作区，核对分支codex/change-05-observability与启动记录；主目录/反馈worktree只读。实际路径和起始提交见主工作区docs/handoffs/parallel-launch.json。工具不支持/goal则按本持续目标推进，直到已授权任务完成或确实外部阻塞，不能只给计划。
 
-完整读取本工作区AGENTS.md、docs/handoffs/parallel-03-05.md、docs/contracts/agent-events-v1/freeze.json、docs/flash-blind-evaluation.md、docs/reviews/agent-event-ledger-takeover-acceptance.md，以及openspec/changes/complete-agent-observability/中的proposal、design、全部specs、tasks、handoff和contract-extension；按当前工具的OpenSpec apply实施本项。验证源码冻结9a1781e3f6d74ad99e5f325e14a69642f6474927是起点祖先、机器哈希和初始diff，不覆盖现有代码或误将已存在提示词适配算新成果。
+完整读取本工作区AGENTS.md、docs/handoffs/parallel-03-05.md、docs/contracts/agent-events-v1/freeze.json、docs/flash-blind-evaluation.md、docs/reviews/agent-event-ledger-takeover-acceptance.md，以及openspec/changes/archive/2026-10-15-complete-agent-observability/中的proposal、design、全部specs、tasks、handoff和contract-extension；按当前工具的OpenSpec apply实施本项。验证源码冻结9a1781e3f6d74ad99e5f325e14a69642f6474927是起点祖先、机器哈希和初始diff，不覆盖现有代码或误将已存在提示词适配算新成果。
 
 先完成一个真实主模型的可信预留→原生run→实际usage observation→PG事件/outbox→Langfuse真实写/flush/回读→授权明细/聚合，再扩辅助模型、六图、Skill/MCP、重试恢复与价格。CallbackHandler绑定、HTTP200或Langfuse有历史trace均不证明本次采集成功。主/normalizer/summarizer/subagent等每次实际尝试都独立关联，逻辑调用/尝试分开，重复流块和结束回调不重复计费。缓存/推理是usage子集，缺usage/价格保留null和覆盖率；Decimal计费、价格生效时间/币种/修订清楚，多Skill关联不复制整笔费用。模型TTFT不等于浏览器首正文或工具进度。
 

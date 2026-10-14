@@ -1,0 +1,30 @@
+{
+  "anonymous_run": "05",
+  "change": "add-skill-tool-selection",
+  "status": "planning_ready_not_implemented",
+  "product_baseline": "2d6f7c84d7fab42f38cc91cbb81f75fdeaa0e0c9",
+  "coordination_commit": "06b411f96e9598c2938c87908ae67114fde63d46",
+  "start_from": "包含此文件的dev提交；启动时记录完整HEAD",
+  "score": null,
+  "user_elapsed_minutes": null,
+  "migration_head_at_planning": "0012o_delivery",
+  "contract_sha256": {
+    "docs/contracts/agent-events-v1/event-registry.json": "debc357a89e057af5c2ea617f61e202ec0813ac2faa38d12ef20d7888a292c68",
+    "src/common/identity/langgraph_auth.py": "2d796377cfdbb276adf7d44e4601c311cead9ad369c207fc4b6c747343bb4e9e",
+    "src/common/mcp_scoped.py": "419b44a32742bba5bf96ea5286dc5b40968ae0efa71d56d0af42fde04bed18a5",
+    "admin/api/app/schemas_ledger.py": "2e57d9fe8e8eb3798cc230c74d80831ce53247388139eea9b077391f5d187d6a",
+    "admin/api/migrations/versions/0012o_delivery.py": "828f868ebd1cf4b86c66286b79b78068e9ea723a9a9a144870ca56aa0c07da95"
+  },
+  "suggested_ports": {
+    "admin": 8104,
+    "frontend": 3104,
+    "native": 2032
+  },
+  "delivery": "独立工作区未提交diff，待协调者盲评",
+  "scope_excluded": [
+    "Java IAM实施",
+    "知识库修改",
+    "身份切换",
+    "Change6后台"
+  ]
+}

@@ -76,9 +76,9 @@ chat-store 的 stopPending 独立于本地流结束：未知状态保留运行�
 
 ## 回答反馈、采集与窄屏（2026-10-14）
 
-业务来源：`openspec/changes/add-chat-feedback-interactions/`、`complete-agent-observability/`。评价所有者为`components/chat/feedback/FeedbackBar`，异步/队列所有者为`lib/feedback/client.ts`，实际DOM计时所有者为`ChatPanel`。点赞/点踩针对服务端确认的回答版本；草稿不改变已保存值，保存等待禁用，失败保留意见，冲突先回读修订。旧企业/用户/context_version/epoch的结果不得更新当前视图。
+业务来源：`openspec/changes/archive/2026-10-15-add-chat-feedback-interactions/`、`openspec/changes/archive/2026-10-15-complete-agent-observability/`。评价所有者为`components/chat/feedback/FeedbackBar`，异步/队列所有者为`lib/feedback/client.ts`，实际DOM计时所有者为`ChatPanel`。点赞/点踩针对服务端确认的回答版本；草稿不改变已保存值，保存等待禁用，失败保留意见，冲突先回读修订。旧企业/用户/context_version/epoch的结果不得更新当前视图。
 
-成功复制先等待浏览器剪贴板Promise，再显示提示并采集无正文事件；拒绝时显示可恢复失败，不记复制成功。系统剪贴板物理文本一致性在当前IAB中未证实，继续单独抽查。正文可见使用DOM布局与绘制；history、工具和推理不算首正文。平台run通过本人可信提交映射回读为attempt，未确认不猜关联。
+成功复制先等待浏览器剪贴板Promise，再显示提示并采集无正文事件；拒绝时显示可恢复失败，不记复制成功。系统剪贴板物理文本一致性未实测；2026-10-15用户明确豁免此最后抽查，归档关闭，不将其伪报实机通过。正文可见使用DOM布局与绘制；history、工具和推理不算首正文。平台run通过本人可信提交映射回读为attempt，未确认不猜关联。
 
 停止使用本次run的权威状态；`interrupted`代表本次执行已停止，可解除stopPending，但用户停止意图、人工暂停/可恢复和业务cancelled仍独立。网络断开不等于取消。
 

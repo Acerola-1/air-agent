@@ -1,8 +1,10 @@
+> 历史实施提示词：对应change已于2026-10-15归档，勿重新执行。下一轮使用skill-tool-selection-goal.md。
+
 /goal 持续完成 Air Agent OpenSpec change add-chat-feedback-interactions 的实现、测试和真实本地联调，交付可独立验收的回答反馈、复制和浏览器体验指标。本轮匿名运行编号03。
 
 先进入协调者为Change 3准备的独立工作区，核对当前分支codex/change-03-feedback与启动记录；主目录/另一个worktree只读。工作区路径和起始提交见主工作区docs/handoffs/parallel-launch.json。若当前工具不支持/goal命令，将本提示作为持续目标执行，直到已授权任务完成或确实外部阻塞；不要只给计划。
 
-完整读取本工作区AGENTS.md、docs/handoffs/parallel-03-05.md、docs/contracts/agent-events-v1/freeze.json、docs/flash-blind-evaluation.md、docs/reviews/agent-event-ledger-takeover-acceptance.md，以及openspec/changes/add-chat-feedback-interactions/中的proposal、design、全部specs、tasks、handoff和contract-extension。用当前工具的OpenSpec apply实施本项。源码冻结9a1781e3f6d74ad99e5f325e14a69642f6474927，先验证其是本工作区起点的祖先、机器契约哈希和初始diff；若有漂移记录差异，不reset/clean或覆盖他人工作。
+完整读取本工作区AGENTS.md、docs/handoffs/parallel-03-05.md、docs/contracts/agent-events-v1/freeze.json、docs/flash-blind-evaluation.md、docs/reviews/agent-event-ledger-takeover-acceptance.md，以及openspec/changes/archive/2026-10-15-add-chat-feedback-interactions/中的proposal、design、全部specs、tasks、handoff和contract-extension。用当前工具的OpenSpec apply实施本项。源码冻结9a1781e3f6d74ad99e5f325e14a69642f6474927，先验证其是本工作区起点的祖先、机器契约哈希和初始diff；若有漂移记录差异，不reset/clean或覆盖他人工作。
 
 仅做本项：已确认回答版本的点赞/点踩/原因/意见/撤销、成功复制采集、单页单调计时、停止阶段、本人回读与授权统计。先完成真实提问→answer映射→评价保存→PG事件/outbox→刷新回读的最小完整链，再扩其余任务。现有复制按钮在clipboard成功前显示成功，需要实际修正。UI消息缺answer ID，必须从服务端权威映射，不按数组位置或最近attempt猜；重生成两版独立评价且只算1个问题。评价操作ID幂等优先、CAS防迟到覆盖，事实/历史/事件/outbox同事务，原文意见独立授权且不进事件/Trace。
 

@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-15",
+  "change": "add-skill-tool-selection",
+  "planning_strict": "passed",
+  "implementation_status": "not_started",
+  "tasks_total": 29,
+  "tasks_done": 0,
+  "acceptance_cases": 24,
+  "product_baseline": "2d6f7c84d7fab42f38cc91cbb81f75fdeaa0e0c9",
+  "product_changes_after_baseline": [],
+  "synced_archive_specs_strict_passed": 7,
+  "known_secret_hits": 0,
+  "private_database_backups_git_ignored": true,
+  "goal_prompt": "docs/handoffs/skill-tool-selection-goal.md",
+  "model_name": null,
+  "score": null,
+  "user_elapsed_minutes": null
+}

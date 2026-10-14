@@ -216,3 +216,7 @@
 Change4允许沿**现有可信身份/绑定接口**实施，能力选择只依赖可替换的授权适配边界，不需要等待Java IAM实际完成或切换；它不能顺带重写鉴权。此前“4整体等待I2”的顺序限制撤回。当前产品顺序1→2→3/5→4→6→7/8→9/10；IAM独立轨道I1→I1a→消费者切换→物理拆库，协调两边接口与文件责任。
 
 完整包：`openspec/changes/add-skill-tool-selection/`；通用提示词`docs/handoffs/skill-tool-selection-goal.md`，匿名运行05，模型身份未知，成绩/用户实测耗时待交付后采集。实施者从已提交的完整交接包创建独立工作区，不复用已删除的测试环境，也不改变其他仓库。
+
+## 2026-10-15 Change4实施包已冻结
+
+下一步实施add-skill-tool-selection，详见该change的proposal/design/tasks、contract-extension、acceptance和handoff；通用启动提示词为docs/handoffs/skill-tool-selection-goal.md。匿名运行05从包含此包的dev提交独立启动。当前身份接口保持，允许与独立IAM实现并行；不等待Java消费者切换、不实施entitlement。3/5归档记录与真实生产门禁保持，上方较早阶段排序由本段最新授权更新。
