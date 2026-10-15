@@ -1,166 +1,95 @@
-# Repository Guidelines
+# Agent 开发指南
 
-## Project Structure & Module Organization
+本文件约束整个仓库的 AI/自动化开发。面向使用者的介绍与启动步骤放在 [README.md](README.md)，交互规范放在 [UX-CONTRACT.md](UX-CONTRACT.md) 和 [DESIGN.md](DESIGN.md)；子目录有更具体指南时同时读取。
 
-This is a Python 3.13 **LangGraph API** (standardized REST) project with 6 public graphs declared in `langgraph.json`:
+## 开始工作
 
-| Graph ID            | Entry file                        | Purpose               |
-|---------------------|-----------------------------------|-----------------------|
-| `basic-qa`          | `src/basic_qa/graph.py:graph`           | Q&A + semantic skill routing |
-| `intelligent-analysis` | `src/intelligent_analysis/graph.py:graph` | Smart analysis skill routing |
-| `data-analysis`     | `src/data_analysis/graph.py:graph`      | Menu/page-driven deterministic analysis (uses `menu_skill_mapping.py`) |
-| `intelligent-report` | `src/intelligent_report/graph.py:graph`  | Report generation |
-| `deep-research`     | `src/deep_research/graph.py:graph`      | Deep research workflow |
-| `intelligent-tracing` | `src/intelligent_tracing/graph.py:graph`| Tracing / root cause |
+- 先检查分支、HEAD、工作区 diff、相关 OpenSpec 和实际服务配置，区分已实现、规划和未验证事实。不要覆盖、重置或顺手删除其他任务的未提交改动。
+- 存在 `.codegraph/` 时，理解/定位代码先用 CodeGraph（MCP `codegraph_explore` 或 `codegraph explore`）；不存在时跳过，不自行建索引。文本与路径搜索优先 `rg` / `rg --files`。
+- 涉及 Next.js 时读取 `frontend/AGENTS.md` 和当前安装版本 `node_modules/next/dist/docs/` 的相关指南。
+- IAM 与知识库是独立项目。未经该次任务授权，不改外部仓库，不把规划中的服务切换视为已经上线。
 
-Shared runtime is under `src/common/`:
+## 仓库边界与入口
 
-- `src/common/config/` — settings + SQLite/PostgreSQL checkpointing
-- `src/common/middleware/` — 10 middlewares (MCP/resilience/time-context/rich-output/final-cleanup/mode-routing/skill-tool-disclosure/permission/*)
-- `src/common/{models,skill_discovery,skill_router,mcp_client,runtime_tools,permission,tools}.py`
-- Business skills live per-graph under `src/<graph-id>/skills/<skill-name>/` with `SKILL.md` + `references/{fast,expert}.md`.
+| 区域 | 当前职责 |
+|---|---|
+| `langgraph.json` | 六个公开 Graph ID 与 custom auth/custom HTTP 声明 |
+| `src/basic_qa/`、`src/intelligent_analysis/` | 显式业务节点流和语义 Skill 路由 |
+| `src/data_analysis/` | 菜单驱动的确定性分析；不能被显式技能绕过菜单约束 |
+| `src/intelligent_report/`、`src/deep_research/`、`src/intelligent_tracing/` | DeepAgents；涉及执行边界需覆盖主任务和真实子任务 |
+| `src/common/identity/`、`capabilities.py`、`mcp_scoped.py` | 可信身份、能力选择及作用域工具发现/执行 |
+| `src/common/event_ledger/`、`observability/` | 运行事实台账和模型/工具/Skill观测 |
+| `frontend/` | Next.js聊天、反馈、能力选择、画布和同源BFF |
+| `admin/api/` | FastAPI身份/企业/业务API、迁移、种子、恢复与管理测试 |
+| `admin/web/` | 当前Next.js管理页面；独立IAM的Vue计划不改变此事实 |
+| `docs/contracts/agent-events-v1/` | 事件契约源文件与接口快照 |
+| `openspec/specs/` | 主规格；`changes/`存活动计划，`changes/archive/`存已关闭阶段 |
 
-Frontend is a Next.js 16 assistant-ui app under `frontend/`, proxying `/api/*` → langgraph API `:2024`. Design/reference notes → `docs/`. Tests → `tests/unit_tests/`, `tests/integration_tests/`.
+所有公开图的实际路径以 `langgraph.json` 为准。Skill目录采用 `SKILL.md` 及可选 `references/fast.md` / `expert.md`；空目录不能算已有业务技能。空气质量日期与等级的历史约定已移至 [领域参考](docs/domain/air-quality-level-reference.md)，涉及计算/规则时必须核对该文档、具体Skill、实现与测试，不能猜补法规边界。
 
-## Build, Test, and Development Commands
+## 不可回退的边界
 
-依赖管理采用 uv 原生工作流：`pyproject.toml`（直接依赖 + `dev`/`ui` extras + `[tool.uv]` 约束）是唯一声明源，`uv.lock`（已入库）是唯一锁文件。
+- **身份与租户**：浏览器声明不是授权。每请求及模型/工具外呼前实时复查身份、企业成员、修订与绑定；撤销即时生效。身份/授权后端不可用时失败关闭，不回退匿名、旧HMAC或本地JSON账号。
+- **数据库**：请求走非owner、非BYPASSRLS运行角色；事务本地 `air_agent.*` GUC、FORCE RLS和复合关联共同隔离。owner连接仅用于明确授权的迁移/引导/恢复，不进入请求热路径。
+- **受理与执行**：台账受理和幂等先于平台启动；不确定结果不盲目重发。request/submission/attempt/platform run是不同对象，不能互换ID。选择快照由服务端冻结并回读，不能从前端草稿拼造。
+- **MCP/Skill**：选择只能缩小当前许可。目录、实际dispatch、重试、恢复、DeepAgents子任务与规则文件读取都要执行同一约束；只隐藏schema或提示模型拒绝不算保护。导入图不能做模型/Embedding/MCP网络预热。
+- **事实与统计**：停止意图不等于已取消，选中不等于loaded/executed，工具HTTP200不等于业务成功。usage/价格未知不记零，逻辑调用与重试尝试分开计数。
+- **隐私与删除**：凭据、会话、原文和内部推理不进入普通事件或日志；受控正文按独立权限/保留期访问。删除优先于晚到写入、回读、恢复和重放，恢复备份后重施墓碑及最小权限。
+- **异步UI**：按用户、企业、context_version、图和epoch丢弃旧结果；A→B→A同样隔离。运行及stopPending时锁住相关操作，未知停止状态不能假装成功。
 
-- `uv sync --all-extras`: 按 `uv.lock` 创建/同步 `.venv`（含 dev + ui extras），日常开发安装用这个。
-- `uv sync --frozen --no-dev`: 只装运行时依赖（CI/容器语义），不触碰 `uv.lock`。
-- `uv add <pkg>` / `uv remove <pkg>`: 增删直接依赖并自动更新 `uv.lock`。
-- `pip install -e ".[dev]"`: 兼容回退（等效于不带锁的安装），不作为主路径。
-- `make format`: run Ruff formatting and import fixes over the repository.
-- `make lint`: run Ruff checks, Ruff format diff, import checks, and strict mypy.
-- `make test`: run unit tests from `tests/unit_tests/` by default.
-- `make test TEST_FILE=tests/unit_tests/test_example.py`: run a specific test file or directory.
-- `make integration_tests`: run integration tests from `tests/integration_tests/`.
+## 依赖与开发命令
 
-注意：`requirements.lock.txt` 已废弃删除；容器构建所需清单在 Dockerfile 内用 `uv export --frozen --no-dev` 即时生成。`opentelemetry-*` 全家桶在 `[tool.uv] constraint-dependencies` 中被钉在 1.37.0，与官方 `langchain/langgraph-api` 镜像保持兼容，不要随意改动。
+- Python 3.13，优先 `python3`、`.venv/bin/python` 或 `uv run`，不假设系统有 `python`。
+- 根 `pyproject.toml` / `uv.lock` 是Agent依赖声明与锁；管理API另有自己的项目/锁。日常 `uv sync --all-extras`，运行环境 `uv sync --frozen --no-dev`；依赖变更用 `uv add/remove`，不绕开声明私装后声称锁已覆盖。
+- 管理API与运行时联合开发的环境安装方式见README；不要假设只装其中一个项目即可联调。
+- 不恢复废弃的 `requirements.lock.txt`。Dockerfile从锁导出依赖；OpenTelemetry约束以当前pyproject及官方镜像兼容性为准，不凭旧文档改版本。
+- Python遵循Ruff、snake_case模块/函数、PascalCase类；Skill目录用kebab-case。只为需要解释的接口/逻辑添加清楚注释或Google风格docstring。
 
-For LangGraph Studio/local graph execution, keep `.env` populated and use the graph ids defined in `langgraph.json` (e.g. `basic-qa`, `data-analysis`).
+常用定向检查：
 
-## Local Verification Preferences
+```bash
+.venv/bin/ruff check <受影响文件>
+.venv/bin/ruff format --check <受影响文件>
+.venv/bin/python -m pytest <相关测试路径> -q
+npm --prefix frontend run test:contracts
+npm --prefix frontend run build
+npm --prefix admin/web run lint
+```
 
-Use `python3` or `.venv/bin/python` for Python commands; do not assume a `python` binary exists. Prefer fast, targeted verification while iterating:
+需要类型检查时优先basedpyright，pyright可回退。已有Makefile依赖当前环境中的python；使用它前确认解释器。不要为文档或低影响改动机械重复长测试；共享契约、持久化、鉴权或图接线变动应执行相应回归和实际联调。
 
-- `ruff check <files>` and `ruff format <files>` for linting/formatting.
-- `basedpyright <files>` when type checking is needed; `pyright <files>` is an acceptable fallback if `basedpyright` is unavailable.
-- Targeted `pytest` only for tests directly affected by the change.
+## OpenSpec与验收
 
-Avoid routine full-repository or long-running checks during investigation unless the change touches shared contracts or the user explicitly asks for exhaustive validation.
+- 先核实相关change状态、主规格和依赖，按proposal/design/specs/tasks推进；strict通过只证明文档结构，不证明产品实现。
+- 正文、要求、场景、设计和任务用中文；保留CLI需要的英文结构标记，如 `## ADDED Requirements`、`### Requirement:`、`#### Scenario:`、WHEN/THEN及checkbox格式。
+- 新迁移接当前head；验证空库与存量升级，不能改已执行revision来消除漂移。契约扩展同步源登记、src/admin/TS validator、生成副本、样本与OpenAPI快照。
+- 测试放在相关域：根 `tests/unit_tests/`、`tests/integration_tests/`、`admin/api/tests/`、`frontend/tests/`。安全反例必须有有效正向控制；MCP越权看真实请求数0，不能只看mock或页面。
+- 区分单测、受控模型/服务、真实配置模型、实际SDK与真实浏览器；图加载成功或HTTP200不能代替运行完成。UI需要实际页面/键盘/窄屏证据，事件模拟不代替系统输入法/剪贴板物理验证。
+- 对照具体基线失败身份，不删断言、弱化条件或全局跳过来过关。原报告/证据不可覆盖：复跑用新目录，保留时间、来源和局限。
+- 耗时用实测，模型实施、验证及外部等待分开；Token不可得记未采集。模型评分保留原始成绩，协调者补修不归实施模型。
+- 归档同步主规格并保留验收报告。未完成项或用户接受的豁免要显式记录，不能改写成实测通过。
 
-## OpenSpec 文档规范
+## 容器与测试资源
 
-编写或更新 `openspec/changes/**` 与 `openspec/specs/**` 下的 OpenSpec 文档时，正文、需求说明、场景描述、设计说明和任务描述应使用中文。为保证 OpenSpec CLI 能正确解析，可以保留 schema 要求的固定英文结构标记，例如 `## ADDED Requirements`、`### Requirement:`、`#### Scenario:`、`**WHEN**`、`**THEN**`、`**AND**` 以及任务清单的 `- [ ]` 格式。
+本机使用Apple `container`及 `container-compose`，没有Docker Engine socket。编排支持up/down/build/version；日志、查看和执行用原生CLI：
 
-## Coding Style & Naming Conventions
+```bash
+container ls
+container image ls
+container logs -n 100 <自有容器>
+container exec <自有容器> <命令> <参数>
+container-compose up -d --profile prod --profile observability
+```
 
-Use Ruff as the source of formatting truth. Follow Google-style docstrings when docstrings are needed. Keep Python modules and files in `snake_case`; use `PascalCase` for classes and `snake_case` for functions, variables, and tools. Middleware modules should use descriptive names ending in `_middleware.py`. Skill directories should use lowercase kebab-case, matching existing examples such as `air-quality-basic-query`.
+- `container exec`在容器名后**不加 `--`**；非交互不用`-it`。`container-compose`不支持logs/ps/exec/restart；避免用手动stop/start打断受管栈网络。
+- 先核实当前CLI版本及配置。PostgreSQL挂载卷内的PGDATA应使用子目录；官方API内部监听8000，需要Redis，即使关闭某些队列开关也不能假设不需要Redis。
+- 图运行使用官方容器和PostgreSQL；`langgraph dev`内存模式不代表当前持久化/认证行为。src已挂载时重新加载即可，改依赖/镜像配置才重建镜像。
+- 长测试/迁移/RLS/恢复演练先建立自有库、端口、容器和凭据作用域；记录所有权。共享15432、Langfuse、知识库及其他Agent测试库不可TRUNCATE、downgrade或全局prune。
+- 只清理本任务自建资源；不删除共享卷或镜像。端口问题先查实际地址、映射、TCC与服务健康，不把LISTEN直接当数据连通。
+- 私有 `.env`、`.env.langgraph`、`.env.langfuse`、`.env.local`、dump和会话不得提交；模板只记录配置形状。非必要不暴露服务，测试服务优先绑定回环。
 
-## Testing Guidelines
+## 提交与交付
 
-Use pytest. Place focused unit tests in `tests/unit_tests/` and broader service or graph-flow tests in `tests/integration_tests/`. Name files `test_*.py` and test functions `test_*`. Prefer small fixtures and explicit assertions around graph state, middleware behavior, and tool outputs. Run `make test` before submitting routine changes and `make integration_tests` when touching persistence, external services, or graph wiring.
-
-## Commit & Pull Request Guidelines
-
-Recent commits use Chinese bracketed prefixes, for example `[新增] 添加旧版图表数据兼容中间件` and `[优化] 重构项目结构并改进代码质量`. Keep that convention: start with a concise category such as `[新增]`, `[优化]`, `[修复]`, or `[文档]`, followed by an imperative summary.
-
-Pull requests should include a short purpose statement, key implementation notes, tests run, and any configuration or `.env` changes. Include screenshots or sample outputs when changing user-visible graph responses, rich output formatting, or generated artifacts.
-
-## Security & Configuration Tips
-
-Do not commit secrets from `.env`, logs, or local cache directories. Keep real local values in `.env`; track configuration shape and non-secret defaults in `.env.example` so environment changes are visible in git. Treat `uv.lock`, `pyproject.toml`, `langgraph.json`, and Docker files as shared environment contracts; update them deliberately and mention related runtime impacts in the PR.
-
-## 各因子污染等级说明
-
-等级对应关系：
-
-- 1=优
-- 2=良
-- 3=轻度污染
-- 4=中度污染
-- 5=重度污染
-- 6=严重污染
-
-时间区分说明：
-
-- 2026-01-01 之前的数据，按旧边界判断
-- 2026-01-01 及之后的日均数据，按新边界判断
-- 2026-01-01 01:00:00 及之后的小时数据，按新边界判断
-
-已知边界：
-
-CO 日均：
-1级 0–2，2级 2–4，3级 4–14，4级 14–24，5级 24–36，6级 >36
-
-CO 小时：
-1级 0–5，2级 5–10，3级 10–35，4级 35–60，5级 60–90，6级 >90
-
-NO2 日均：
-1级 0–40，2级 40–80，3级 80–180，4级 180–280，5级 280–565，6级 >565
-
-NO2 小时：
-1级 0–100，2级 100–200，3级 200–700，4级 700–1200，5级 1200–2340，6级 >2340
-
-O3 日均：
-1级 0–100，2级 100–160，3级 160–215，4级 215–265，5级 265–800，6级 >800
-
-O3 小时：
-1级 0–160，2级 160–200，3级 200–300，4级 300–400，5级 400–800，6级 >800
-
-O3 8小时：
-1级 0–100，2级 100–160，3级 160–215，4级 215–265，5级 265–800，6级 >800
-
-SO2 日均：
-1级 0–50，2级 50–150，3级 150–475，4级 475–800，5级 800–1600，6级 >1600
-
-SO2 小时：
-1级 0–150，2级 150–500，3级 500–650，4级 650–800，5级 800，6级 >800
-
-PM10 旧边界（日均/小时）：
-1级 0–50，2级 50–150，3级 150–250，4级 250–350，5级 350–420，6级 >420
-
-PM2.5 旧边界（日均/小时）：
-小时：1级 0–35，2级 35–75，3级 75–115，4级 115–150，5级 150–250，6级 >250
-
-## Container & Deployment (Apple Container + Container-Compose)
-
-**Runtime choice**: This project does NOT use Docker Desktop. macOS-local container runtime is Apple's `container` CLI (OCI-compatible, installed via signed pkg); multi-service orchestration uses `container-compose` (Mcrich23/Container-Compose, Swift, parse docker-compose.yaml).
-
-### Apple Container (container CLI) — Quick reference
-
-- Start/stop runtime: `container system start` / `container system stop` / `container system status`
-- List containers/images/volumes: `container ls` / `container images` / `container volumes ls`
-- Inspect / logs / exec: `container logs -f <name>` / `container exec -it <name> -- <cmd>` / `container inspect <name>`
-- Lifecycle: `container run -d --name X -p HOST:CTR -e K=V -v VOL:/path image:tag` / `container stop|start|rm <name>` / `container image rm <tag>`
-- Build from Dockerfile: `container build -t <tag> -f Dockerfile [--build-arg K=V] [--no-cache] .`
-- **Known constraints (agent must remember)**:
-  - No Docker Engine API / no `docker.sock` → Portainer, Testcontainers, docker SDK, Podman Desktop GUI do NOT work against it
-  - No `docker compose` binary built in; use `container-compose` instead
-  - `container-compose` only implements `up / down / build / version` subcommands. For `logs / ps / exec / restart` use native `container` commands.
-  - PostgreSQL volume: set `PGDATA` to a **child** of the mount (e.g. `/var/lib/postgresql/data/pgdata`) — otherwise initdb fails on `lost+found` at the volume root. This is identical to Docker Desktop behavior.
-
-### container-compose (Mcrich23/Container-Compose) — Quick reference
-
-- **Install (user step)**: Release binary from GitHub → `chmod +x container-compose && sudo cp container-compose /usr/local/bin/`
-- **Supported subcommands only**: `container-compose up [-d] [--build] [--no-cache] [--profile NAME] [<svc>]` / `container-compose down [<svc>]` / `container-compose build [--no-cache] [<svc>]` / `container-compose version`
-- **Global options**: `-f,--file PATH`, `--profile NAME` (repeatable; also accepts env `COMPOSE_PROFILES=a,b,c`), `--env-file PATH`
-- **Service fields supported** (verified from Swift structs): `image, build{context,dockerfile,args}, restart, healthcheck{test,interval,timeout,retries,start_period}, volumes[], environment{dict}, env_file[], ports[], command[], entrypoint[], depends_on[] | depends_on.<svc>.condition=service_started|service_healthy|service_completed_successfully +restart, user, container_name, hostname, working_dir, privileged, read_only, platform, mem_limit, stdin_open, tty, extra_hosts[], labels{}, networks[], profiles[], secrets, configs`
-- **Top-level fields**: `name, version(optional), services{}, volumes{}, networks{}, configs{}, secrets{}`
-- **Service discovery**: container-compose automatically uses the `<service>` name as the hostname inside containers (macOS 26 Tahoe optimal; README warns macOS 15 Sequoia DNS may need manual setup). Container names on the host are `<projectName>-<serviceName>`.
-- **Key behavioral differences vs docker compose (agent must not get wrong)**:
-  1. Foreground `up` (no `-d`): killing the process **does NOT stop the containers**. Always use `-d` + explicit `down`.
-  2. No `ps / logs / restart / exec / pull` subcommands. Use `container ls | grep <project>-`, `container logs -f <project>-<svc>`, `container stop/start <project>-<svc>`, `container exec <project>-<svc> <cmd> [<args>...]` instead.
-  3. **Apple Container `container exec` syntax is NOT docker-compatible**. Do NOT use `--` between the container ID and the command, and avoid `-it` unless you are attached interactively:
-     - ✅ Correct: `container exec air-agent-postgres psql -U air_agent -d air_agent -c 'SELECT 1;'`
-     - ❌ Wrong:   `container exec -it air-agent-postgres -- psql ...`  (Apple Container treats `--` as the executable name and fails with `vmexec error: failed to find target executable --`)
-  4. **Apple Container `-p HOST:CTR` port proxy — 已在 1.2.2 验证可用（2026-08-12）**。1.2.0 时被误判为 "LISTEN-only stub"（数据不转发），实为 macOS 本地网络隐私（TCC）权限未授权 `container-runtime-linux`（官方 issue #919 定论：系统设置 → 隐私与安全 → 本地网络 允许即可，无需升级）。升级到 1.2.2 后实测：宿主机 `psql localhost:15432` → 容器 postgres 5432 数据连通正常。若遇到 `localhost:PORT` 连不上，先检查 TCC 授权（macOS 27 beta 上弹窗可能不触发，可用 `defaults write com.apple.network.local-network AllowedEthernetLocalNetworkAddresses -array "192.168.64.0/24"` + 重启），仍失败再退而直连容器 VM IP（`container ls` 查，如 `192.168.64.2:5432`）。
-- **Project-specific convention (see docker-compose.yaml at repo root)**:
-  - Project name: `air-agent`
-  - `postgres` service (17-alpine, port 15432→5432, healthcheck via `pg_isready`, named volume `pgdata` with child-PGDATA pattern). **Always started by default** (no profile gate) — 所有持久化（线程/消息/画布）落此 PG。
-  - `redis` service (7-alpine, healthcheck via `redis-cli ping`). **Always started by default** — 官方 langgraph-api 镜像的 migration lock 硬依赖 Redis。
-  - `langgraph-api` service (基于官方 `langchain/langgraph-api:3.13` 镜像 + 项目代码, depends_on postgres+redis `condition: service_healthy`, env_file `.env`, port 2024→8000, **volumes: `./src:/deps/air_agent/src` 本地代码挂载**) — **gated behind `profiles: [prod]`**。镜像需手动构建：`container build -t air-agent/langgraph-api:latest .`（compose 的 `build:` 段有 builder 目录权限 bug，手动 build 更稳定）。
-  - So: **Local dev flow = `./run-local.sh`（container-compose up -d --profile prod 起 PG+Redis+langgraph-api 容器 + Next.js 前端）**。改 `src/` 后只需 `container-compose up -d --profile prod` 或重跑 `run-local.sh` 即生效（挂载代码，无需重建镜像）。旧 venv `langgraph dev` 模式已废弃（inmem 内存持久化，不读 DATABASE_URI）。
-  - **容器管理注意**：`container restart` 插件不可用，统一用 `container-compose up -d --profile prod` 重启；手动 `container stop/start` 会让容器脱离 compose 网络导致 `postgres` 服务名 DNS 解析失败，避免。
-  - **官方镜像注意事项**：`langchain/langgraph-api:3.13` 内置 Go core-server + Python data-plane，监听 **8000** 端口（非 2024，由 compose `2024:8000` 映射）；migration lock 无条件依赖 Redis（`FF_USE_REDIS_QUEUE=false` 也不能绕过）；PG URI 必须用 `postgresql://` scheme（不支持 `postgresql+psycopg://`）；容器版创建线程只认 `metadata.graph_id`（顶层 `graphId` 参数被忽略，前端已按 metadata 传）。Dockerfile 由 `langgraph dockerfile` 生成，用 uv 按 `pyproject.toml + uv.lock` 安装：构建期先 `uv export --frozen --no-dev` 生成清单再 `uv pip install -r`（不再维护 `requirements.lock.txt`）。`pyproject.toml` 用 `[tool.setuptools.packages.find]` 自动发现包（`where = ["src"]`），子包需有 `__init__.py`。
+- 提交使用中文前缀：`[新增]`、`[修复]`、`[优化]`、`[文档]`等；提交前检查diff、秘密、误收集缓存/构建物和证据大小。
+- commit/push/合并/归档按用户当前授权执行；没有授权时保留可审查diff。已有明确授权不重复询问。
+- 交付说明写清改了什么、为何、验证结果、原有失败及真实限制；附相关文档/证据链接。不要把计划、替身或豁免描述成已实测上线。
