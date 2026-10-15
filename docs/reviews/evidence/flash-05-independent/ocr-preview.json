@@ -1,0 +1,366 @@
+{
+  "schema_version": "1",
+  "mode": "workspace",
+  "repository": "/Users/acerola/Dev/Python/air_agent",
+  "total_files": 57,
+  "reviewable_count": 47,
+  "excluded_count": 10,
+  "total_insertions": 6706,
+  "total_deletions": 145,
+  "reviewable_files": [
+    {
+      "path": "admin/api/app/config.py",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/models_ledger.py",
+      "status": "modified",
+      "insertions": 73,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/routers/ledger.py",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/schemas_ledger.py",
+      "status": "modified",
+      "insertions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/services/enterprise_permissions.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "status": "modified",
+      "insertions": 638,
+      "deletions": 56
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 1
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "modified",
+      "insertions": 169,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 2
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 1
+    },
+    {
+      "path": "frontend/lib/agent-ledger.ts",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "insertions": 5,
+      "deletions": 1
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "status": "modified",
+      "insertions": 4,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/next-env.d.ts",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 2
+    },
+    {
+      "path": "frontend/package.json",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "insertions": 15,
+      "deletions": 1
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "status": "modified",
+      "insertions": 47,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "status": "modified",
+      "insertions": 55,
+      "deletions": 12
+    },
+    {
+      "path": "src/common/business_graph/skill_content.py",
+      "status": "modified",
+      "insertions": 14,
+      "deletions": 4
+    },
+    {
+      "path": "src/common/config/settings.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 1
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "modified",
+      "insertions": 169,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/event_ledger/store.py",
+      "status": "modified",
+      "insertions": 25,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "status": "modified",
+      "insertions": 44,
+      "deletions": 4
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "status": "modified",
+      "insertions": 116,
+      "deletions": 1
+    },
+    {
+      "path": "src/common/mcp_scoped.py",
+      "status": "modified",
+      "insertions": 113,
+      "deletions": 16
+    },
+    {
+      "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "status": "modified",
+      "insertions": 8,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/store.py",
+      "status": "modified",
+      "insertions": 9,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/skill_discovery.py",
+      "status": "modified",
+      "insertions": 54,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "status": "modified",
+      "insertions": 6,
+      "deletions": 1
+    },
+    {
+      "path": "src/data_analysis/nodes.py",
+      "status": "modified",
+      "insertions": 20,
+      "deletions": 1
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 2
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 2
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 2
+    },
+    {
+      "path": "tests/mcp_fixture/server.py",
+      "status": "modified",
+      "insertions": 38,
+      "deletions": 3
+    },
+    {
+      "path": "admin/api/migrations/versions/0013s_capability_selection.py",
+      "status": "added",
+      "insertions": 159,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/gate0-probes.json",
+      "status": "added",
+      "insertions": 79,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/overhead-benchmark.json",
+      "status": "added",
+      "insertions": 65,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/specs-baseline-comparison.json",
+      "status": "added",
+      "insertions": 25,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/app/api/capabilities/route.ts",
+      "status": "added",
+      "insertions": 85,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/components/chat/CapabilitySelector.tsx",
+      "status": "added",
+      "insertions": 438,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/lib/capability-store.ts",
+      "status": "added",
+      "insertions": 240,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/tests/capability-store-contract.test.cjs",
+      "status": "added",
+      "insertions": 170,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/capabilities.py",
+      "status": "added",
+      "insertions": 835,
+      "deletions": 0
+    },
+    {
+      "path": "tests/benchmark_capability_overhead.py",
+      "status": "added",
+      "insertions": 167,
+      "deletions": 0
+    }
+  ],
+  "excluded_files": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "DESIGN.md",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 2,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "UX-CONTRACT.md",
+      "status": "modified",
+      "insertions": 13,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-skill-tool-selection/tasks.md",
+      "status": "modified",
+      "insertions": 29,
+      "deletions": 29,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_ledger_selection_persistence.py",
+      "status": "added",
+      "insertions": 799,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/reviews/skill-tool-selection-acceptance.md",
+      "status": "added",
+      "insertions": 195,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/test_capabilities_catalog.py",
+      "status": "added",
+      "insertions": 527,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/test_gate0_verification.py",
+      "status": "added",
+      "insertions": 372,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/test_six_graphs_execution_constraints.py",
+      "status": "added",
+      "insertions": 696,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    }
+  ]
+}

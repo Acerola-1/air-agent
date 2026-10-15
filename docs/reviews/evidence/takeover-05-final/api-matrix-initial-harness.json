@@ -1,0 +1,1472 @@
+{
+  "kind": "official_0.15.1_API_real_original_hy3_same_gateway_bridge_corrected",
+  "cells": [
+    {
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "892d4eff-c2d6-4983-8115-bca2f4f2f64a",
+      "http_status": 403,
+      "sse_error_events": [],
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 3.659
+    },
+    {
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "44d36a4d-0369-4347-95f3-55405e787f7b",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 17.089
+    },
+    {
+      "graph": "basic-qa",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "5b402305-6481-4e2f-bfa6-e6c564fc5546",
+      "admission": {
+        "request_id": "72aa36a5-79be-4652-9533-40bbbf993cca",
+        "attempt_id": "370386b5-2fd7-48ef-b960-db1430cbc2b2",
+        "submission_id": "75bfdf68-3080-4d72-80d5-23526c60113a",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "5b402305-6481-4e2f-bfa6-e6c564fc5546",
+        "graph_id": "basic-qa",
+        "ledger_marker": "lr:72aa36a5-79be-4652-9533-40bbbf993cca:370386b5-2fd7-48ef-b960-db1430cbc2b2",
+        "capability_selection": {
+          "id": "5f43ccd6-b3cb-4b35-b8c0-9e55d2d71416",
+          "selection_id": "5f43ccd6-b3cb-4b35-b8c0-9e55d2d71416",
+          "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:40:42.818648+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4a-a946-7451-84cd-29b083c86c74",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "您好，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 6668,
+            "output_tokens": 58,
+            "total_tokens": 6726,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 50
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 38.433
+    },
+    {
+      "graph": "basic-qa",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "f7e6ac37-8cc4-435c-a7bd-1a35791c3dd6",
+      "admission": {
+        "request_id": "35905178-038b-4bfc-b5d7-fb269d0a24ec",
+        "attempt_id": "fdf271ce-4e69-4a02-b225-b3b8685483f9",
+        "submission_id": "eadbd8fb-58ae-4da8-b246-6c33fd2c5019",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "f7e6ac37-8cc4-435c-a7bd-1a35791c3dd6",
+        "graph_id": "basic-qa",
+        "ledger_marker": "lr:35905178-038b-4bfc-b5d7-fb269d0a24ec:fdf271ce-4e69-4a02-b225-b3b8685483f9",
+        "capability_selection": {
+          "id": "e4bfd98f-5a5d-4c7f-81e2-b46fe697d9ae",
+          "selection_id": "e4bfd98f-5a5d-4c7f-81e2-b46fe697d9ae",
+          "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:40:42.819738+00:00"
+        }
+      },
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4a-a947-75d3-97bf-f1977b72000f",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "您好，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 6668,
+            "output_tokens": 57,
+            "total_tokens": 6725,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 49
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 38.437
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "b90c1972-2fd0-46cc-abc4-7b27963fd632",
+      "http_status": 403,
+      "sse_error_events": [],
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.241
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "5308580c-6540-428c-bcf0-ea125af26c33",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.168
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "fe2075a7-9f1d-402d-bef7-4e4bdfae3edd",
+      "admission": {
+        "request_id": "41a0377d-e3c3-4338-94af-9b4797eaed30",
+        "attempt_id": "3443805b-f4f9-45f3-a435-e987d0362896",
+        "submission_id": "4b11f233-540c-42dd-b55c-b9708270df02",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "fe2075a7-9f1d-402d-bef7-4e4bdfae3edd",
+        "graph_id": "intelligent-analysis",
+        "ledger_marker": "lr:41a0377d-e3c3-4338-94af-9b4797eaed30:3443805b-f4f9-45f3-a435-e987d0362896",
+        "capability_selection": {
+          "id": "981c7477-7d18-4fe7-a8c5-19a8d95672c3",
+          "selection_id": "981c7477-7d18-4fe7-a8c5-19a8d95672c3",
+          "selection_digest": "f3c7bd584e730543e08d8d8300be6b67425ce442c0124c302cd491b18453ee97",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:03.642063+00:00"
+        }
+      },
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4a-fab6-7f90-ac9c-3a29a5a29aef",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "您好，我是您的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 5836,
+            "output_tokens": 59,
+            "total_tokens": 5895,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 44
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 20.627
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "1a5cd03a-c33c-4ee2-87df-440b33c0af49",
+      "admission": {
+        "request_id": "c1e086ba-51b1-4461-94d9-bf353b5a6a33",
+        "attempt_id": "1742166e-aca7-4921-8073-f9e7004a8b9e",
+        "submission_id": "9db7138a-a86e-49fa-8b26-38a7cd7f82f3",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "1a5cd03a-c33c-4ee2-87df-440b33c0af49",
+        "graph_id": "intelligent-analysis",
+        "ledger_marker": "lr:c1e086ba-51b1-4461-94d9-bf353b5a6a33:1742166e-aca7-4921-8073-f9e7004a8b9e",
+        "capability_selection": {
+          "id": "0d450cc4-60c9-42e2-97de-ee789997e3a9",
+          "selection_id": "0d450cc4-60c9-42e2-97de-ee789997e3a9",
+          "selection_digest": "f3c7bd584e730543e08d8d8300be6b67425ce442c0124c302cd491b18453ee97",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:21.213211+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-3f4a-7510-9fe1-b41cb4622f8f",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "您好，我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 5836,
+            "output_tokens": 66,
+            "total_tokens": 5902,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 48
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 2.982
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "d09276fd-b12f-48df-a9c6-b8dda315ca47",
+      "http_status": 403,
+      "sse_error_events": [],
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.313
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "c21c694f-95ec-41c9-bc64-d4413243d584",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.345
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "73f2ff15-49db-4e81-9b5a-3ed5c9401318",
+      "admission": {
+        "request_id": "942d9c4d-a4f4-46d8-ade5-b08e30d8b983",
+        "attempt_id": "8afd1643-de92-49a2-8f35-71b46224f469",
+        "submission_id": "d1ad44d1-7dfe-4434-a339-ff4818cd0335",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "73f2ff15-49db-4e81-9b5a-3ed5c9401318",
+        "graph_id": "intelligent-report",
+        "ledger_marker": "lr:942d9c4d-a4f4-46d8-ade5-b08e30d8b983:8afd1643-de92-49a2-8f35-71b46224f469",
+        "capability_selection": {
+          "id": "d1b917ae-8bde-472c-86fc-abbfec4957d9",
+          "selection_id": "d1b917ae-8bde-472c-86fc-abbfec4957d9",
+          "selection_digest": "4b1d00bbb0c587cb27849d8a5edc43a85d4b77be7526d6dc0754d390cf0d021c",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:24.876533+00:00"
+        }
+      },
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4b-4d9a-7c82-ab2e-2a3a095e9157",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好！有什么我可以帮您的吗？",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 3.803
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "1e1f5b92-c4c5-495a-8699-d68ae7deca42",
+      "admission": {
+        "request_id": "43d28bed-3291-4b4c-bd51-17c4cfbece24",
+        "attempt_id": "39ef9c86-47cb-4476-acb7-c70c504e3d26",
+        "submission_id": "0a688258-c757-4a6c-a5af-9a7af0ce08c5",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "1e1f5b92-c4c5-495a-8699-d68ae7deca42",
+        "graph_id": "data-analysis",
+        "ledger_marker": "lr:43d28bed-3291-4b4c-bd51-17c4cfbece24:39ef9c86-47cb-4476-acb7-c70c504e3d26",
+        "capability_selection": {
+          "id": "1144c1e8-28e6-45f0-a484-5bdb0affe5e5",
+          "selection_id": "1144c1e8-28e6-45f0-a484-5bdb0affe5e5",
+          "selection_digest": "c7d9dffd6892fd7c8ae47187fbaa8d6a4b800404ea55a815a5b221cee86ad116",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:21.620232+00:00"
+        }
+      },
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4b-40da-7dd0-9edd-30f4ef895958",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好！我是中科宇图空气质量数据智能分析助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 4661,
+            "output_tokens": 41,
+            "total_tokens": 4702,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 22
+            }
+          }
+        }
+      ],
+      "loaded_skill": "broadcast-hour",
+      "state_keys": [
+        "messages",
+        "selected_skill",
+        "selected_skill_path",
+        "selected_skill_description",
+        "selected_skill_allowed_tools",
+        "skill_rules_content",
+        "skill_search_attempted",
+        "skill_search_question",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 8.661
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "6e828941-5763-4cff-9de3-86aff5dc0900",
+      "http_status": 403,
+      "sse_error_events": [],
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.359
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "5bfa1c37-5716-4131-a71a-bb61d87cfc20",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.398
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "44970fc1-b6ec-42b6-8bf2-4b7ff6dd5dd8",
+      "admission": {
+        "request_id": "4599ee9f-7770-49b5-acda-373468bf14d8",
+        "attempt_id": "2c8b07a4-fc87-4ee6-a03f-a782bf0d2290",
+        "submission_id": "6ab29756-8c09-469a-8463-36e3c5fa67cc",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "44970fc1-b6ec-42b6-8bf2-4b7ff6dd5dd8",
+        "graph_id": "intelligent-report",
+        "ledger_marker": "lr:4599ee9f-7770-49b5-acda-373468bf14d8:2c8b07a4-fc87-4ee6-a03f-a782bf0d2290",
+        "capability_selection": {
+          "id": "e3e0b4d7-0255-4654-877a-0d1c05f55cea",
+          "selection_id": "e3e0b4d7-0255-4654-877a-0d1c05f55cea",
+          "selection_digest": "4b1d00bbb0c587cb27849d8a5edc43a85d4b77be7526d6dc0754d390cf0d021c",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:28.759948+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-5cce-77f2-935f-c54e8d506e68",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好！很高兴为你服务。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.934
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "ae58de2c-2f61-4dd4-9151-a5ec91f1dea7",
+      "admission": {
+        "request_id": "0cd68a28-0595-4126-a35f-9e5e2a8884a6",
+        "attempt_id": "f4290dc5-1d16-44f6-9ffa-3045f239cbd6",
+        "submission_id": "d0705af5-8351-4681-9914-4c6c4ef1b104",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "ae58de2c-2f61-4dd4-9151-a5ec91f1dea7",
+        "graph_id": "data-analysis",
+        "ledger_marker": "lr:0cd68a28-0595-4126-a35f-9e5e2a8884a6:f4290dc5-1d16-44f6-9ffa-3045f239cbd6",
+        "capability_selection": {
+          "id": "c7e90c47-8f7a-481b-8d3c-2d7edf77c116",
+          "selection_id": "c7e90c47-8f7a-481b-8d3c-2d7edf77c116",
+          "selection_digest": "c7d9dffd6892fd7c8ae47187fbaa8d6a4b800404ea55a815a5b221cee86ad116",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:24.201176+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-4af9-7c02-9f3e-5d63a5d8c2cd",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "您好，我是中科宇图空气质量数据智能分析助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 4661,
+            "output_tokens": 50,
+            "total_tokens": 4711,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 31
+            }
+          }
+        }
+      ],
+      "loaded_skill": "broadcast-hour",
+      "state_keys": [
+        "messages",
+        "selected_skill",
+        "selected_skill_path",
+        "selected_skill_description",
+        "selected_skill_allowed_tools",
+        "skill_rules_content",
+        "skill_search_attempted",
+        "skill_search_question",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 8.107
+    },
+    {
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "45249dea-73db-4e06-9645-7465cb3e263c",
+      "http_status": 403,
+      "sse_error_events": [],
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.464
+    },
+    {
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "32f57bc7-193b-472d-b5fb-587a8491f53f",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.414
+    },
+    {
+      "graph": "deep-research",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "315483a0-ce8a-4446-a0ac-1520a4a61f2f",
+      "admission": {
+        "request_id": "8fa7155f-6466-4d5a-8c97-1dcf9dac3d0d",
+        "attempt_id": "845712b8-350e-420d-b66f-4322cde080f4",
+        "submission_id": "c223bd54-53b1-4966-87cd-ae25f0c5a071",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "315483a0-ce8a-4446-a0ac-1520a4a61f2f",
+        "graph_id": "deep-research",
+        "ledger_marker": "lr:8fa7155f-6466-4d5a-8c97-1dcf9dac3d0d:845712b8-350e-420d-b66f-4322cde080f4",
+        "capability_selection": {
+          "id": "d52f7b8a-e5de-4da3-88cb-07d919db488f",
+          "selection_id": "d52f7b8a-e5de-4da3-88cb-07d919db488f",
+          "selection_digest": "c1ab876a93d16880a24add72d9feca62b2fab5f36351ad5220cd50981cda02a7",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:31.436093+00:00"
+        }
+      },
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4b-6738-7bd2-9d18-8e81716aa2c9",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好，很高兴为您服务！",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 3.29
+    },
+    {
+      "graph": "deep-research",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "65dd682b-0c7c-422c-b198-c404f7c4d6d9",
+      "admission": {
+        "request_id": "8cfe0f29-cbe2-4836-884b-e204c3826782",
+        "attempt_id": "dde80e47-a9a6-4b88-95e4-ba5b9d3a2d5f",
+        "submission_id": "4c345e60-415b-473e-a403-332580c9b386",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "65dd682b-0c7c-422c-b198-c404f7c4d6d9",
+        "graph_id": "deep-research",
+        "ledger_marker": "lr:8cfe0f29-cbe2-4836-884b-e204c3826782:dde80e47-a9a6-4b88-95e4-ba5b9d3a2d5f",
+        "capability_selection": {
+          "id": "6588379c-71f4-4ad6-b5fd-5d945497f071",
+          "selection_id": "6588379c-71f4-4ad6-b5fd-5d945497f071",
+          "selection_digest": "c1ab876a93d16880a24add72d9feca62b2fab5f36351ad5220cd50981cda02a7",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:31.606724+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-67e2-7023-b510-a70b4f3301d7",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好！很高兴为你服务。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.752
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "24dc0797-c56e-4b28-8c90-1268214cacd6",
+      "http_status": 403,
+      "sse_error_events": [],
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.17
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "b6707d51-dd42-4d01-bcc8-a61c09302b17",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.164
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "0b29769c-cd17-45dd-976a-45855895ebfd",
+      "admission": {
+        "request_id": "02da31f9-225f-405f-b617-2adf72939ad0",
+        "attempt_id": "0be347b3-59a9-48cb-a693-3fe67a385ed1",
+        "submission_id": "b92fbc35-bf25-452e-9a42-1eaf548cad84",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "0b29769c-cd17-45dd-976a-45855895ebfd",
+        "graph_id": "intelligent-tracing",
+        "ledger_marker": "lr:02da31f9-225f-405f-b617-2adf72939ad0:0be347b3-59a9-48cb-a693-3fe67a385ed1",
+        "capability_selection": {
+          "id": "e814561a-62e0-4e20-a996-68ddc831164c",
+          "selection_id": "e814561a-62e0-4e20-a996-68ddc831164c",
+          "selection_digest": "f35f838bf4c17042c2cdf82d595449dabfaaa22c784524f0c90dad65dac6e128",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:33.333407+00:00"
+        }
+      },
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4b-6ebe-7711-abf0-e62726afb47b",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好，很高兴为您服务！",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 3.839
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "e737fae9-24f7-45f4-9a8e-08d4e1fb7b37",
+      "admission": {
+        "request_id": "2358590a-25bd-4675-8f4b-863239eae1c1",
+        "attempt_id": "99c34247-c56f-4999-a929-54117dcf3ecf",
+        "submission_id": "2c33d7f3-1be7-49a7-b626-ae2a39566311",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "e737fae9-24f7-45f4-9a8e-08d4e1fb7b37",
+        "graph_id": "intelligent-tracing",
+        "ledger_marker": "lr:2358590a-25bd-4675-8f4b-863239eae1c1:99c34247-c56f-4999-a929-54117dcf3ecf",
+        "capability_selection": {
+          "id": "0d9fcfd7-1036-4288-ad3b-d5592dbcfe03",
+          "selection_id": "0d9fcfd7-1036-4288-ad3b-d5592dbcfe03",
+          "selection_digest": "f35f838bf4c17042c2cdf82d595449dabfaaa22c784524f0c90dad65dac6e128",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "auto",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "catalog_version": "cat_000000000000000000000000",
+          "material_version": "auto",
+          "selection_source": "automatic",
+          "validation_time": "2026-10-15T06:41:34.333404+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-7283-7181-956a-e9d04d74da07",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好！很高兴为你服务，有什么可以帮你的吗？",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.65
+    },
+    {
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "0716cb60-65d8-4ee1-b677-194cc98904b1",
+      "selected_skill": "skill:basic-qa:air-quality-basic-query",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 17.622
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "450837ae-1914-4659-9816-b6c8e8d85bdd",
+      "selected_skill": "skill:intelligent-analysis:broadcast-hour",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.32
+    },
+    {
+      "graph": "basic-qa",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "a763fad2-d42d-4937-9e53-96c11cbafc24",
+      "selected_skill": "skill:basic-qa:air-quality-basic-query",
+      "admission": {
+        "request_id": "b9148cab-6615-4987-96e0-3fc7a5dbfdb6",
+        "attempt_id": "3519dbce-3ab6-4d8b-b7ef-d071b38c95fa",
+        "submission_id": "8c820d00-115f-4e32-acae-f5febf69a781",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "a763fad2-d42d-4937-9e53-96c11cbafc24",
+        "graph_id": "basic-qa",
+        "ledger_marker": "lr:b9148cab-6615-4987-96e0-3fc7a5dbfdb6:3519dbce-3ab6-4d8b-b7ef-d071b38c95fa",
+        "capability_selection": {
+          "id": "2b288008-5a9a-4b26-8661-29f9bef2735f",
+          "selection_id": "2b288008-5a9a-4b26-8661-29f9bef2735f",
+          "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "explicit",
+            "skill_id": "skill:basic-qa:air-quality-basic-query"
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "explicit",
+          "skill_id": "skill:basic-qa:air-quality-basic-query",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_a3971c257c11d717fac9ee92",
+          "material_version": "sha256:2a899b59771c700acb1cb8d143bd225cceb34694c4a7c5c8abff0581b9d06938",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T06:41:38.947456+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-84a4-7e82-8200-ff03bf12947b",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "您好，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 6207,
+            "output_tokens": 39,
+            "total_tokens": 6246,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 31
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 20.07
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "fba34535-2f04-41dc-a4cb-2bbdc9faf31c",
+      "selected_skill": "skill:data-analysis:broadcast-hour",
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.393
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "1c9d2ac4-14d7-4fb8-8169-d01b4fc7e3e0",
+      "selected_skill": "skill:intelligent-analysis:broadcast-hour",
+      "admission": {
+        "request_id": "4154bbd7-bf25-46e7-a577-b69676c0cab3",
+        "attempt_id": "c2d4dedd-00d5-4166-9ab6-64e14b1c4df0",
+        "submission_id": "56a1f99e-f35d-4969-b1d4-f1a205a66d77",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "1c9d2ac4-14d7-4fb8-8169-d01b4fc7e3e0",
+        "graph_id": "intelligent-analysis",
+        "ledger_marker": "lr:4154bbd7-bf25-46e7-a577-b69676c0cab3:c2d4dedd-00d5-4166-9ab6-64e14b1c4df0",
+        "capability_selection": {
+          "id": "b4d64932-2aa3-4f5a-84fb-63efa9b17957",
+          "selection_id": "b4d64932-2aa3-4f5a-84fb-63efa9b17957",
+          "selection_digest": "003294897a54c12f43307618dc494e013502e16c18f8bd6c32422d5342e51152",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "explicit",
+            "skill_id": "skill:intelligent-analysis:broadcast-hour"
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "explicit",
+          "skill_id": "skill:intelligent-analysis:broadcast-hour",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_bf44ba3ee60eee15e7d467a2",
+          "material_version": "sha256:46751b0c59eb8f0e9f857f7d526438d804aa976fa81838fbd5c21d49f532d67b",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T06:41:37.006243+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-84a4-7e82-8200-feff00f5057f",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "您好，我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 5783,
+            "output_tokens": 82,
+            "total_tokens": 5865,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 64
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 20.511
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "4f21e9a8-e340-45fd-b9a6-436c3c3f4db4",
+      "selected_skill": null,
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.235
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "d30053ee-6a6b-4821-8683-1adb640ff766",
+      "selected_skill": null,
+      "admission": {
+        "request_id": "0797e6f8-80aa-446d-ba40-278209f2fcc4",
+        "attempt_id": "1610fd9a-90cc-49a7-9652-6d93b67f5bf9",
+        "submission_id": "bd44c19c-e779-4489-bd15-ad01ba688d3b",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "d30053ee-6a6b-4821-8683-1adb640ff766",
+        "graph_id": "intelligent-report",
+        "ledger_marker": "lr:0797e6f8-80aa-446d-ba40-278209f2fcc4:1610fd9a-90cc-49a7-9652-6d93b67f5bf9",
+        "capability_selection": {
+          "id": "5cd5a6cb-80a1-404c-a304-f1d463af637a",
+          "selection_id": "5cd5a6cb-80a1-404c-a304-f1d463af637a",
+          "selection_digest": "8daec5c5c7bfa789ceb2532249db651fa7f5dd15a9eb9611ffe737b0430af360",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_0089c99bc55108dcc137d09e",
+          "material_version": "auto",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T06:41:57.482499+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-ccf0-76a2-8563-f462340d6982",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好！很高兴为你服务。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.76
+    },
+    {
+      "graph": "deep-research",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "78dc4091-d717-41e6-8e0b-7d0f515db364",
+      "selected_skill": null,
+      "admission": {
+        "request_id": "06827546-a548-4912-97fc-7a65fea2a0c9",
+        "attempt_id": "678765e5-7293-4ab8-a647-7f6b40a3138d",
+        "submission_id": "c09e4a70-3449-4700-9338-40318ad07322",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "78dc4091-d717-41e6-8e0b-7d0f515db364",
+        "graph_id": "deep-research",
+        "ledger_marker": "lr:06827546-a548-4912-97fc-7a65fea2a0c9:678765e5-7293-4ab8-a647-7f6b40a3138d",
+        "capability_selection": {
+          "id": "49d33410-1409-460e-b750-bf8e6eaa74c5",
+          "selection_id": "49d33410-1409-460e-b750-bf8e6eaa74c5",
+          "selection_digest": "a649f88d0e29a20a7e6c054e722f718de4d32f7f0c9fb94aba4b6f3fd1ebb0d6",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_7444cd75ce98889232b3b859",
+          "material_version": "auto",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T06:41:57.730409+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-cde7-7b80-bc77-b97f8a606f6e",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好！我是空气质量数据查询助手，很高兴为您服务。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.492
+    },
+    {
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "f8f63b5b-8144-4fe6-ae7d-367a87ecc128",
+      "selected_skill": null,
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.163
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "af9d9e68-57b5-4f9e-b99a-09045f1f61cd",
+      "selected_skill": null,
+      "http_status": 403,
+      "error": null,
+      "passed": false,
+      "exception": "AssertionError",
+      "detail": "{\"detail\":\"会话不可访问\"}",
+      "elapsed_s": 0.153
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "04a1f9b8-3023-4b58-86d8-d7bc629d5239",
+      "selected_skill": "skill:data-analysis:broadcast-hour",
+      "admission": {
+        "request_id": "b9d9b841-fa36-4a56-93a7-78d16b326938",
+        "attempt_id": "43008361-ba4a-4b30-ab2f-905f8ecbea5f",
+        "submission_id": "3e6c4a76-2cfe-4b76-9207-1920454f6197",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "04a1f9b8-3023-4b58-86d8-d7bc629d5239",
+        "graph_id": "data-analysis",
+        "ledger_marker": "lr:b9d9b841-fa36-4a56-93a7-78d16b326938:43008361-ba4a-4b30-ab2f-905f8ecbea5f",
+        "capability_selection": {
+          "id": "7f5b9377-fb6d-4d0c-8716-3d9e0786cf6e",
+          "selection_id": "7f5b9377-fb6d-4d0c-8716-3d9e0786cf6e",
+          "selection_digest": "57e9882c4ea0af3d601de9b37ddc1f62a170edcc0e74dc2be2a5cc3f9f8ee6ce",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "explicit",
+            "skill_id": "skill:data-analysis:broadcast-hour"
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "explicit",
+          "skill_id": "skill:data-analysis:broadcast-hour",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_7e56d966d60793bddd8beb40",
+          "material_version": "sha256:dd795da36980432a4efcb8e6c64b6cc0b09099cb1295d6f725ec751afe7c9e54",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T06:41:54.972123+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-c328-7642-868a-e1e2a4559ff4",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好，我是中科宇图的空气质量数据智能分析助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 4661,
+            "output_tokens": 43,
+            "total_tokens": 4704,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 24
+            }
+          }
+        }
+      ],
+      "loaded_skill": "broadcast-hour",
+      "state_keys": [
+        "messages",
+        "selected_skill",
+        "selected_skill_path",
+        "selected_skill_description",
+        "selected_skill_allowed_tools",
+        "skill_rules_content",
+        "skill_search_attempted",
+        "skill_search_question",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 8.452
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "802e6e5d-7fd2-47ed-9dbe-34371f2c1736",
+      "selected_skill": null,
+      "admission": {
+        "request_id": "84c3aeb5-1651-4bee-91f5-8f4e74f57056",
+        "attempt_id": "cfafc4a6-c5fb-4e9f-9a17-7d0b7027c36c",
+        "submission_id": "2f0c52d0-f4f4-4404-8659-19eec8d78c8f",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "802e6e5d-7fd2-47ed-9dbe-34371f2c1736",
+        "graph_id": "intelligent-tracing",
+        "ledger_marker": "lr:84c3aeb5-1651-4bee-91f5-8f4e74f57056:cfafc4a6-c5fb-4e9f-9a17-7d0b7027c36c",
+        "capability_selection": {
+          "id": "d7c39b9b-81ba-4952-97f2-805becd6c0fc",
+          "selection_id": "d7c39b9b-81ba-4952-97f2-805becd6c0fc",
+          "selection_digest": "2aabe8c8a569e7200f19df9a048c534359b56cb6db26a6c34cb28cb8ba7691c9",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "auto",
+            "skill_id": null
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_4e476d1827b25083102ecd59",
+          "material_version": "auto",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T06:42:00.226154+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4b-d7a3-7f10-9959-ffa3402feb8f",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "你好！很高兴为你服务，有什么可以帮你的吗？",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 5.191
+    }
+  ]
+}

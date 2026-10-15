@@ -1,0 +1,25 @@
+{
+  "id": "41a841af-e548-4ccf-bfa6-2c20f486cd3f",
+  "state": "running",
+  "platform_run_id": "01a13f67-2699-7871-a291-8dbb9e90477f",
+  "cancel_requested": true,
+  "cancel_origin": "user_stop",
+  "thread_id": "c0534af5-b5e0-4ee0-9463-1873fee780d4",
+  "submission_id": "214f7f86-d218-4b90-a8db-f681944fc862",
+  "submission_key": "2737e71002ad4d6c90345308763d27cf",
+  "admission_status": "confirmed",
+  "stop_events": [
+    {
+      "event_type": "run.cancel_requested",
+      "payload": {
+        "phase": "processing",
+        "origin": "user_stop",
+        "requested_at": "2026-10-15T11:51:27.494888+00:00",
+        "platform_run_id": "01a13f67-2699-7871-a291-8dbb9e90477f"
+      }
+    }
+  ],
+  "platform_status": "interrupted",
+  "platform_key_matches": true,
+  "confirmed_browser_unlocked": true
+}

@@ -1,0 +1,26 @@
+{
+  "r02_payload_strictness": {
+    "payload_selection_source_property": "user_explicit",
+    "serialized_has_selection_source": false,
+    "serialized_keys": [
+      "schema_version",
+      "skill",
+      "mcp",
+      "catalog_version"
+    ],
+    "skill_mode": "explicit",
+    "skill_id": "skill:basic-qa:air-quality-basic-query",
+    "mcp_mode": "allowlist",
+    "tool_ids": [
+      "mcp:business:query"
+    ]
+  },
+  "r08_scope_switch_isolation": {
+    "draft_skill_mode": "auto",
+    "draft_skill_id": null,
+    "draft_mcp_mode": "auto",
+    "draft_tool_ids": [],
+    "accepted_selection": null
+  },
+  "all_passed": true
+}

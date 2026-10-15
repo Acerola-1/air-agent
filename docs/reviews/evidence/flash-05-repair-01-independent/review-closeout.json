@@ -1,0 +1,22 @@
+{
+  "author_input_changed_by_audit": [],
+  "protected_changed": [
+    "docs/reviews/anonymous-model-scorecard.md"
+  ],
+  "expected_protected_change": "docs/reviews/anonymous-model-scorecard.md append only",
+  "head": "8620cf78b22cb7234fe650fa5c9f032359e0d70d",
+  "product_code_fixed_by_reviewer": false,
+  "committed": false,
+  "pushed": false,
+  "archived": false,
+  "owned_service_ports_listening": {
+    "8104": false,
+    "3104": false,
+    "29999": false
+  },
+  "first_delivery_minutes": 131,
+  "repair_01_minutes": 83,
+  "total_minutes": 214,
+  "score": 63,
+  "current_workspace_diff_sha256_including_scorecard": "4023638ecd3f3a395e6441e98d5714443d4ede3ef232c37d6eea2ac4df6979fd"
+}

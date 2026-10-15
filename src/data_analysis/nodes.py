@@ -14,12 +14,12 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.types import StreamWriter
 from loguru import logger
 
+from common.capabilities import refresh_authorized_mcp_tools
 from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
 from common.context_guard import prepare_model_context
 from common.conversation_summarizer import update_conversation_summary
 from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
-from common.mcp_client import ensure_mcp_tools
 from common.model_budget import (
     ContextBudgetExceeded,
     enforce_request_budget,
@@ -167,6 +167,21 @@ async def resolve_skill(
 
     matched = match_menu_skill(raw_menu_name)
 
+    # 任务 4.2：菜单确定性校验——若显式选择与当前菜单映射冲突，拒绝执行
+    skill_mode = configurable.get("capability_skill_mode") or "auto"
+    if skill_mode == "explicit":
+        skill_id = configurable.get("capability_skill_id") or ""
+        expected_slug = skill_id.split(":")[-1] if skill_id else ""
+        if matched and matched.skill_name != expected_slug:
+            logger.error(
+                "数据分析显式技能与菜单冲突: explicit={}, menu_skill={}",
+                expected_slug,
+                matched.skill_name,
+            )
+            raise ValueError(
+                f"数据分析显式技能（{expected_slug}）与菜单映射技能（{matched.skill_name}）冲突"
+            )
+
     if matched is None:
         logger.info(
             "数据分析 Skill 匹配失配：has_menu={}，降级为通用分析",
@@ -205,6 +220,7 @@ async def resolve_skill(
     skill_rules = _merge_skill_content(skill_body, references_content)
     from common.observability.skill_adapter import emit_skill_stage
 
+    obs_source = "manual" if skill_mode == "explicit" else "menu-mapping"
     for stage in ("matched", "selected", "loaded"):
         emit_skill_stage(
             config,
@@ -214,7 +230,7 @@ async def resolve_skill(
             status=("succeeded" if skill_rules.strip() else "failed")
             if stage == "loaded"
             else None,
-            source="menu-mapping",
+            source=obs_source,
         )
 
     skill_path = f"/skills/{matched.skill_name}/SKILL.md"
@@ -263,7 +279,7 @@ async def prepare_model(
     )
 
     # 1. 刷新 MCP 工具
-    await ensure_mcp_tools()
+    await refresh_authorized_mcp_tools(config)
 
     # 2. 组装 system_prompt
     configurable = config.get("configurable", {})
@@ -347,6 +363,9 @@ async def call_model(
     allowed = state.get("selected_skill_allowed_tools") or []
     all_tools = get_business_tools(include_computation=True)
     available = filter_business_tools(all_tools, allowed)
+    from common.capabilities import filter_capability_mcp_tools
+
+    available = filter_capability_mcp_tools(available, config)
 
     messages = state["messages"]
     # 1. 检查最新用户提问长度

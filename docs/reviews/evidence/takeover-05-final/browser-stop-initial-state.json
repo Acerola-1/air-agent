@@ -1,0 +1,32 @@
+[
+  {
+    "id": "d6f4ed45-6569-4943-aad8-fd448c588426",
+    "state": "admitting",
+    "platform_run_id": null,
+    "cancel_requested": false,
+    "submission_id": "80968969-04f6-45f0-b9b9-52b3d249a23c",
+    "admission_status": "admitting",
+    "submission_key": "de6587a8907e49cb94cdc71d8e5f32dd",
+    "start_claimed_at": "2026-10-15 11:43:41.656470+00:00"
+  },
+  {
+    "id": "4280a1c3-0608-46c7-99ea-56390b156fdf",
+    "state": "succeeded",
+    "platform_run_id": "01a13f5f-928b-7620-90e5-e8f31a6a164e",
+    "cancel_requested": false,
+    "submission_id": "ec791c1d-303a-4d0c-a4ea-b861b31eae27",
+    "admission_status": "confirmed",
+    "submission_key": "b032b2912f5947b4a5a4ae6b442afda1",
+    "start_claimed_at": "2026-10-15 11:43:10.549185+00:00"
+  },
+  {
+    "id": "3bcb51fd-0d0a-484b-9a69-b423c419aabc",
+    "state": "succeeded",
+    "platform_run_id": "01a13e73-ab1f-7552-9bf7-e934aee78e14",
+    "cancel_requested": false,
+    "submission_id": "dcdbe1b7-8e2b-4bd2-9013-2a3d37814221",
+    "admission_status": "confirmed",
+    "submission_key": "140065569ae44dfca323dba07952dc8f",
+    "start_claimed_at": "2026-10-15 07:25:30.303283+00:00"
+  }
+]

@@ -1,0 +1,62 @@
+{
+  "kind": "real_HTTP_separate_admin_and_runtime_custom_app_processes_with_real_MCP_fixture",
+  "ids": {
+    "tenant": "63377295-f3f4-4e4d-8ea1-156a3abc6d74",
+    "user": "b5ff5b23-21ef-4c97-a6de-9fe9ef6504ce",
+    "member": "9bc76159-c3c6-407f-8102-1622a3dc5744",
+    "thread": "9107d0d9-197f-4fad-a459-1f1150ed2ad7"
+  },
+  "native_catalog_status": 200,
+  "native_tools": [
+    "mcp:controlled-one:delayed_query",
+    "mcp:controlled-one:flaky_query",
+    "mcp:controlled-one:query",
+    "mcp:controlled-one:query_air",
+    "mcp:controlled-one:slow_query"
+  ],
+  "admit_legitimate_catalog_selection_status": 200,
+  "admit_legitimate_catalog_selection_body": {
+    "request_id": "6ba20a46-9ca4-4978-83d1-1c62d7648a88",
+    "attempt_id": "c5abf6db-52ae-472e-9deb-d33703026ef5",
+    "submission_id": "21d911ba-3a75-4229-8042-a1eb0f30abfb",
+    "admission_status": "admitting",
+    "operation_kind": "initial",
+    "reused": false,
+    "thread_id": "9107d0d9-197f-4fad-a459-1f1150ed2ad7",
+    "graph_id": "basic-qa",
+    "ledger_marker": "lr:6ba20a46-9ca4-4978-83d1-1c62d7648a88:c5abf6db-52ae-472e-9deb-d33703026ef5",
+    "capability_selection": {
+      "id": "952600ec-6414-49c1-8612-13c4efa776d1",
+      "selection_id": "952600ec-6414-49c1-8612-13c4efa776d1",
+      "selection_digest": "d6f42aa1da7288425c80ffb776a3af6f0c4b8a06dd0f09675e9e34cfb95db345",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:query_air"
+        ]
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [
+        "mcp:controlled-one:query_air"
+      ],
+      "catalog_version": "cat_fdf3e71146d3c67ed54b280e",
+      "material_version": "auto",
+      "selection_source": "user_explicit",
+      "validation_time": "2026-10-15T00:01:07.709601+00:00"
+    }
+  },
+  "mcp_call_count": 0,
+  "process_ids": [
+    15563,
+    15564
+  ],
+  "owned_processes_stopped": true
+}

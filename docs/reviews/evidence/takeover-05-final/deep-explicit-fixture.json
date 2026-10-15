@@ -1,0 +1,314 @@
+{
+  "kind": "official_0.15.1_API_real_original_hy3_same_gateway_bridge_corrected",
+  "cells": [
+    {
+      "graph": "intelligent-report",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "950da498-e857-480c-946c-0e7ad4a44ab1",
+      "selected_skill": "skill:intelligent-report:acceptance-s1",
+      "admission": {
+        "request_id": "e3777a47-5c7e-4a7a-b4dd-4bf2cc1cd554",
+        "attempt_id": "e6e68711-bdd2-497f-bcfc-bb670240ec46",
+        "submission_id": "bcdc0edd-3732-49ae-8989-f21679f43b84",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "950da498-e857-480c-946c-0e7ad4a44ab1",
+        "graph_id": "intelligent-report",
+        "ledger_marker": "lr:e3777a47-5c7e-4a7a-b4dd-4bf2cc1cd554:e6e68711-bdd2-497f-bcfc-bb670240ec46",
+        "capability_selection": {
+          "id": "4f2708ed-cec1-4d56-aa7b-9f59d95f4397",
+          "selection_id": "4f2708ed-cec1-4d56-aa7b-9f59d95f4397",
+          "selection_digest": "214b516233b073c7155079084fe3ee173ee9da37b5b29c39610aef2a8a3fe829",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "explicit",
+            "skill_id": "skill:intelligent-report:acceptance-s1"
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "explicit",
+          "skill_id": "skill:intelligent-report:acceptance-s1",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_52db086da9b22b28b3c95bd7",
+          "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T07:15:37.495928+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e6a-9fcb-7182-a6c5-4b18a5d3bd77",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 13.53
+    },
+    {
+      "graph": "deep-research",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "9acda9ff-9dcc-4638-8b93-cdd13dc05078",
+      "selected_skill": "skill:deep-research:acceptance-s1",
+      "admission": {
+        "request_id": "5c7e0c75-7587-416b-acd0-97d88d9641ca",
+        "attempt_id": "8cbc86d2-52f3-4599-9d0c-79d9cb0802e3",
+        "submission_id": "a0f1ce7d-4728-4a26-a4a4-ec48dcee614a",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "9acda9ff-9dcc-4638-8b93-cdd13dc05078",
+        "graph_id": "deep-research",
+        "ledger_marker": "lr:5c7e0c75-7587-416b-acd0-97d88d9641ca:8cbc86d2-52f3-4599-9d0c-79d9cb0802e3",
+        "capability_selection": {
+          "id": "59250d9b-cc0d-40aa-9976-7cac1682b203",
+          "selection_id": "59250d9b-cc0d-40aa-9976-7cac1682b203",
+          "selection_digest": "ee936faaaa21555feb89dedd59632ee002599a8b13de125424ed4ba96fe689fe",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "explicit",
+            "skill_id": "skill:deep-research:acceptance-s1"
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "explicit",
+          "skill_id": "skill:deep-research:acceptance-s1",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_e3864fe25f6b731080c69db0",
+          "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T07:15:35.433335+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e6a-9fcc-7802-a92c-3d5d898e7b1f",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 13.546
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "19dbeb65-f08d-4198-ab66-d0b4bc8db2b2",
+      "selected_skill": "skill:intelligent-report:acceptance-s1",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e6a-a035-79a3-b8a9-25d1f8293c6f",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "82cbc751-6061-418c-bb65-552f4abb5d35",
+        "submission_id": "fab7ec14-74a3-4005-89b1-d6ba86af61e4",
+        "capability_selection": {
+          "selection_id": "a15246d4-508a-4bed-b40e-32132281b5f3",
+          "selection_digest": "214b516233b073c7155079084fe3ee173ee9da37b5b29c39610aef2a8a3fe829",
+          "skill_mode": "explicit",
+          "skill_id": "skill:intelligent-report:acceptance-s1",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+          "catalog_version": "cat_52db086da9b22b28b3c95bd7",
+          "selection_source": "user_explicit",
+          "id": "a15246d4-508a-4bed-b40e-32132281b5f3"
+        }
+      },
+      "answers": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 13.806
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "5b00162a-41ff-4523-bbe3-27c252212258",
+      "selected_skill": "skill:intelligent-tracing:acceptance-s1",
+      "admission": {
+        "request_id": "12a4c4ae-e3bf-4191-ba2a-a4329b3db998",
+        "attempt_id": "3da41331-1804-4b51-b37b-54e4c373e1eb",
+        "submission_id": "0da12e01-5ed9-4036-b9ed-0c2633494270",
+        "admission_status": "admitting",
+        "operation_kind": "initial",
+        "reused": false,
+        "thread_id": "5b00162a-41ff-4523-bbe3-27c252212258",
+        "graph_id": "intelligent-tracing",
+        "ledger_marker": "lr:12a4c4ae-e3bf-4191-ba2a-a4329b3db998:3da41331-1804-4b51-b37b-54e4c373e1eb",
+        "capability_selection": {
+          "id": "fcedb3af-dd75-412c-9dc2-4e2be99e4fbe",
+          "selection_id": "fcedb3af-dd75-412c-9dc2-4e2be99e4fbe",
+          "selection_digest": "1ae7319b78742ae8de7044ed2e84ec54865a61f02336b923c629111971abf84e",
+          "digest_version": 2,
+          "selection_status": "collected",
+          "skill": {
+            "mode": "explicit",
+            "skill_id": "skill:intelligent-tracing:acceptance-s1"
+          },
+          "mcp": {
+            "mode": "allowlist",
+            "tool_ids": []
+          },
+          "skill_mode": "explicit",
+          "skill_id": "skill:intelligent-tracing:acceptance-s1",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "catalog_version": "cat_f6d7445bc1ce62abf5436164",
+          "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+          "selection_source": "user_explicit",
+          "validation_time": "2026-10-15T07:15:48.883051+00:00"
+        }
+      },
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e6a-cc40-7601-9cf5-ef4754ce4cbb",
+      "run_status": "success",
+      "answers": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 9.031
+    },
+    {
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "a963b735-f691-4345-88e0-2c53978cf9d7",
+      "selected_skill": "skill:deep-research:acceptance-s1",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e6a-cd2a-74b1-bc0e-2d3b32fe3922",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "545ebdf3-c22a-4dc3-ad08-386413881fb0",
+        "submission_id": "81783940-b3ac-4027-9b51-b2b73b1c3fd2",
+        "capability_selection": {
+          "selection_id": "7b815ddf-e95b-4552-ae45-1bb100cd70f4",
+          "selection_digest": "ee936faaaa21555feb89dedd59632ee002599a8b13de125424ed4ba96fe689fe",
+          "skill_mode": "explicit",
+          "skill_id": "skill:deep-research:acceptance-s1",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+          "catalog_version": "cat_e3864fe25f6b731080c69db0",
+          "selection_source": "user_explicit",
+          "id": "7b815ddf-e95b-4552-ae45-1bb100cd70f4"
+        }
+      },
+      "answers": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 9.163
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "cf82fbab-e5cc-4c0c-b3e4-3b4c2fc23852",
+      "selected_skill": "skill:intelligent-tracing:acceptance-s1",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e6a-ce5e-7f10-89c0-6cd9da5e0c1a",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "3ba99c0f-0f1d-4942-982b-cf2c1f031b75",
+        "submission_id": "546acaab-9fab-48e8-949d-352839b883bd",
+        "capability_selection": {
+          "selection_id": "35f9e409-e8e1-4a62-8a60-9f0d883c8c2e",
+          "selection_digest": "1ae7319b78742ae8de7044ed2e84ec54865a61f02336b923c629111971abf84e",
+          "skill_mode": "explicit",
+          "skill_id": "skill:intelligent-tracing:acceptance-s1",
+          "mcp_mode": "allowlist",
+          "tool_ids": [],
+          "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+          "catalog_version": "cat_f6d7445bc1ce62abf5436164",
+          "selection_source": "user_explicit",
+          "id": "35f9e409-e8e1-4a62-8a60-9f0d883c8c2e"
+        }
+      },
+      "answers": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 9.072
+    }
+  ]
+}

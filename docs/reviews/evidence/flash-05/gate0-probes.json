@@ -1,0 +1,79 @@
+{
+  "gate": "Gate 0",
+  "run": "flash-05",
+  "timestamp": "2026-10-15T00:48:00+08:00",
+  "environment": {
+    "os": "macOS",
+    "python": "3.13.3",
+    "apple_container": {
+      "postgres": "aa-sel05-pg",
+      "postgres_port": 15434,
+      "postgres_db": "air_agent_selection05",
+      "redis": "aa-sel05-redis",
+      "redis_port": 16381
+    },
+    "ports": {
+      "admin_api": 8104,
+      "frontend": 3104,
+      "native": 2032
+    }
+  },
+  "probes": [
+    {
+      "name": "test_gate0_mcp_same_name_disambiguation_and_zero_calls",
+      "status": "PASSED",
+      "details": {
+        "tenants": ["gate0-corp-a", "gate0-corp-b"],
+        "users": ["gate0_u1", "gate0_u2"],
+        "servers": ["controlled-one", "controlled-two"],
+        "tool": "query",
+        "verified_behaviors": [
+          "两企业双成员跨租户独立会话与绑定",
+          "两MCP服务同名工具 query 经 factory.call 分流到各自服务端，call_count 精确为 1",
+          "企业B未授权 controlled-two 时，调用抛出 McpAuthorizationError，服务端2网络请求增量严格为 0",
+          "实时撤销企业A对 controlled-one 授权（status='disabled'）后，调用抛出 McpAuthorizationError，服务端1网络请求增量严格为 0"
+        ]
+      }
+    },
+    {
+      "name": "test_gate0_deepagents_skills_boundary",
+      "status": "PASSED",
+      "details": {
+        "skills_root": "src/basic_qa/skills",
+        "backend": "BoundedSkillsBackend + CompositeBackend",
+        "verified_behaviors": [
+          "读取已授权技能 /skills/air-quality-basic-query/SKILL.md 成功，返回完整内容",
+          "读取未授权技能 /skills/comparison-composition/SKILL.md 抛出 PermissionError，安全拦截生效"
+        ]
+      }
+    },
+    {
+      "name": "test_gate0_compiled_graph_dynamic_dispatch",
+      "status": "PASSED",
+      "details": {
+        "graph_type": "Compiled StateGraph with ToolNode awrap_tool_call",
+        "verified_behaviors": [
+          "编译后动态发现的受控 MCP 工具（mcp_controlled__query）成功调度并返回结果",
+          "未授权动态工具（mcp_forbidden__query）被安全包装器拦截为 error 状态 ToolMessage"
+        ]
+      }
+    },
+    {
+      "name": "test_gate0_six_graphs_import_no_network",
+      "status": "PASSED",
+      "details": {
+        "graphs": [
+          "basic_qa.graph",
+          "data_analysis.graph",
+          "deep_research.graph",
+          "intelligent_analysis.graph",
+          "intelligent_report.graph",
+          "intelligent_tracing.graph"
+        ],
+        "verified_behaviors": [
+          "六图模块无外部网络依赖，均正常导入并暴露 graph 实例"
+        ]
+      }
+    }
+  ]
+}

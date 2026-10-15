@@ -1,0 +1,7 @@
+intelligent-report native wait True False None {"detail":"目标企业与当前会话上下文不一致，请刷新后重试"}
+deep-research native wait True False None {"detail":"目标企业与当前会话上下文不一致，请刷新后重试"}
+intelligent-report bff wait True False None {"detail":"目标企业与当前会话上下文不一致，请刷新后重试"}
+deep-research bff wait True False None {"detail":"目标企业与当前会话上下文不一致，请刷新后重试"}
+intelligent-tracing native wait True False None {"detail":"目标企业与当前会话上下文不一致，请刷新后重试"}
+intelligent-tracing bff wait True False None {"detail":"目标企业与当前会话上下文不一致，请刷新后重试"}
+passed 0 / 6

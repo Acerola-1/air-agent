@@ -38,6 +38,7 @@ class Settings(BaseSettings):
 
     agent_interactions_enabled: bool = False
     agent_interactions_enabled_at: dt.datetime | None = None
+    agent_capability_selection_enabled: bool = False
 
     @field_validator("agent_interactions_enabled_at", mode="before")
     @classmethod

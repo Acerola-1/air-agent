@@ -53,7 +53,7 @@ async def test_all_intents_update_summary(monkeypatch):
         return_value={"summary": "记忆", "summary_covered_message_id": "a"}
     )
     monkeypatch.setattr(module, "update_conversation_summary", update)
-    monkeypatch.setattr(module, "ensure_mcp_tools", AsyncMock())
+    monkeypatch.setattr(module, "refresh_authorized_mcp_tools", AsyncMock())
     for intent in ["chitchat", "knowledge", "data_query"]:
         result = await nodes().prepare_model({"messages": [], "intent": intent}, {})
         assert result["summary_covered_message_id"] == "a"

@@ -20,6 +20,29 @@ CancelPhase = Literal["queued", "processing", "output", "unknown"]
 EvidenceSource = Literal["platform_read", "runtime_callback", "browser_observed"]
 
 
+class CapabilitySelectionSkillIn(BaseModel):
+    mode: Literal["auto", "explicit"] = "auto"
+    skill_id: str | None = Field(default=None, max_length=200)
+
+    model_config = {"extra": "forbid"}
+
+
+class CapabilitySelectionMcpIn(BaseModel):
+    mode: Literal["auto", "allowlist"] = "auto"
+    tool_ids: list[str] = Field(default_factory=list, max_length=20)
+
+    model_config = {"extra": "forbid"}
+
+
+class CapabilitySelectionIn(BaseModel):
+    schema_version: Literal["agent.capability-selection.v1"] = "agent.capability-selection.v1"
+    skill: CapabilitySelectionSkillIn = Field(default_factory=CapabilitySelectionSkillIn)
+    mcp: CapabilitySelectionMcpIn = Field(default_factory=CapabilitySelectionMcpIn)
+    catalog_version: str | None = Field(default=None, max_length=200)
+
+    model_config = {"extra": "forbid"}
+
+
 class AdmitRequestIn(BaseModel):
     """受理请求。`content` 只用于计算规范摘要与（可选）受控原文快照，不进入事件。"""
 
@@ -32,6 +55,10 @@ class AdmitRequestIn(BaseModel):
     source_attempt_id: uuid.UUID | None = None
     store_content: bool = False
     retention_days: int | None = Field(default=None, ge=1, le=3650)
+    menu_name: str | None = Field(default=None, max_length=128)
+    capability_selection: CapabilitySelectionIn | None = None
+
+    model_config = {"extra": "forbid"}
 
 
 class AdmissionResultOut(BaseModel):
@@ -44,6 +71,7 @@ class AdmissionResultOut(BaseModel):
     thread_id: str
     graph_id: str
     ledger_marker: str
+    capability_selection: dict[str, Any] | None = None
 
 
 class StartClaimIn(BaseModel):

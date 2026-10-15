@@ -1,0 +1,770 @@
+{
+  "kind": "official_0.15.1_API_real_original_hy3_same_gateway_bridge_corrected",
+  "cells": [
+    {
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "c5e8236d-8222-4ad8-8426-3a2037469bea",
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4c-d1c3-7a91-8721-0d65dbe075f2",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "f13426fa-125a-4cb0-a3cc-c558b3dd4595",
+        "submission_id": "5b906d4e-947c-43f0-b659-4c119402562a",
+        "capability_selection": {
+          "selection_id": "70e5b685-57b2-4e2d-9416-b7f8eebc3240",
+          "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "material_version": "auto",
+          "catalog_version": null,
+          "selection_source": "automatic",
+          "id": "70e5b685-57b2-4e2d-9416-b7f8eebc3240"
+        }
+      },
+      "answers": [
+        {
+          "content": "您好，我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 6668,
+            "output_tokens": 67,
+            "total_tokens": 6735,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 49
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 33.658
+    },
+    {
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "39e6321d-6057-41b1-9077-07bc191c0290",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4c-d1c2-7770-8908-79461c5411ed",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "您好，我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 6668,
+            "output_tokens": 55,
+            "total_tokens": 6723,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 3456
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 37
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 33.753
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "495ddf41-0185-4442-b282-35a2a51615d1",
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4c-d1b9-7dc3-91a8-4a4e8df46f23",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "8983e19c-cba0-431f-83bb-d7f70b06b558",
+        "submission_id": "f718c185-d5ba-4a50-85f3-8357968e802b",
+        "capability_selection": {
+          "selection_id": "c5ed5d07-63c7-4e35-bc47-a1c2caf3faa1",
+          "selection_digest": "f3c7bd584e730543e08d8d8300be6b67425ce442c0124c302cd491b18453ee97",
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "material_version": "auto",
+          "catalog_version": null,
+          "selection_source": "automatic",
+          "id": "c5ed5d07-63c7-4e35-bc47-a1c2caf3faa1"
+        }
+      },
+      "answers": [
+        {
+          "content": "您好，我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 5836,
+            "output_tokens": 66,
+            "total_tokens": 5902,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 3456
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 48
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 33.933
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "326c0375-ee18-47ba-8d25-302f23016aea",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4d-54fb-7d30-a8c1-509a47badcea",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "您好，我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 5836,
+            "output_tokens": 65,
+            "total_tokens": 5901,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 3456
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 47
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 2.868
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "23af1da3-1c80-4472-9939-a9894508b504",
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4d-5fe7-73a2-a175-8d2ed7e638a7",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "10bb1da0-6283-4603-8971-144c80162bd6",
+        "submission_id": "f94aeb04-8d80-4933-9f2a-03178985944a",
+        "capability_selection": {
+          "selection_id": "d6c7af6d-1a0c-4c74-9ac3-e735ecb46201",
+          "selection_digest": "4b1d00bbb0c587cb27849d8a5edc43a85d4b77be7526d6dc0754d390cf0d021c",
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "material_version": "auto",
+          "catalog_version": null,
+          "selection_source": "automatic",
+          "id": "d6c7af6d-1a0c-4c74-9ac3-e735ecb46201"
+        }
+      },
+      "answers": [
+        {
+          "content": "你好！有什么可以帮您的吗？",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.806
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "71d6dd2d-3b05-4a8b-8266-0ac0d668aafa",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4d-55dc-7bd2-a620-57dbcf5da0b5",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "你好，我是中科宇图的空气质量数据智能分析助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 4661,
+            "output_tokens": 37,
+            "total_tokens": 4698,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 18
+            }
+          }
+        }
+      ],
+      "loaded_skill": "broadcast-hour",
+      "state_keys": [
+        "messages",
+        "selected_skill",
+        "selected_skill_path",
+        "selected_skill_description",
+        "selected_skill_allowed_tools",
+        "skill_rules_content",
+        "skill_search_attempted",
+        "skill_search_question",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 7.248
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "cf7d54bf-797e-450c-865a-7e8ab594ad1d",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4d-6ad6-7892-92ca-c4697e5965a8",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "你好！很高兴为您服务，有什么可以帮您的吗？",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.581
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "fcec75dd-111c-47c8-91c1-b94c54da79af",
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4d-5551-75f3-bb5b-e59f26ebebdf",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "db642c6d-e353-4d04-bc99-4d5a04602de9",
+        "submission_id": "eb2d48f8-a2a6-4693-969a-6837c7f3fa70",
+        "capability_selection": {
+          "selection_id": "0715ba1e-f1ff-471d-86bd-56db77c252de",
+          "selection_digest": "c7d9dffd6892fd7c8ae47187fbaa8d6a4b800404ea55a815a5b221cee86ad116",
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "material_version": "auto",
+          "catalog_version": null,
+          "selection_source": "automatic",
+          "id": "0715ba1e-f1ff-471d-86bd-56db77c252de"
+        }
+      },
+      "answers": [
+        {
+          "content": "你好，我是中科宇图的空气质量数据智能分析助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 4661,
+            "output_tokens": 46,
+            "total_tokens": 4707,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 27
+            }
+          }
+        }
+      ],
+      "loaded_skill": "broadcast-hour",
+      "state_keys": [
+        "messages",
+        "selected_skill",
+        "selected_skill_path",
+        "selected_skill_description",
+        "selected_skill_allowed_tools",
+        "skill_rules_content",
+        "skill_search_attempted",
+        "skill_search_question",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 10.078
+    },
+    {
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "9dc2856d-b20a-4cb8-a6f8-4d1599b86080",
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4d-731e-7281-8cc8-1e25bcd93322",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "a2228bac-913f-457a-8317-93ca04368bae",
+        "submission_id": "2a0f733f-f993-47a9-8bcd-7d3db2612602",
+        "capability_selection": {
+          "selection_id": "a8681b07-28ec-4b7e-a6e5-8e9861636670",
+          "selection_digest": "c1ab876a93d16880a24add72d9feca62b2fab5f36351ad5220cd50981cda02a7",
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "material_version": "auto",
+          "catalog_version": null,
+          "selection_source": "automatic",
+          "id": "a8681b07-28ec-4b7e-a6e5-8e9861636670"
+        }
+      },
+      "answers": [
+        {
+          "content": "你好！有什么可以帮您的吗？",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.691
+    },
+    {
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "2c0b6a24-abdd-491d-abfc-d3ff4aa2b66d",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4d-7504-72c0-8644-5df922fc2c3e",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "你好！有什么我可以帮您的吗？",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 4.487
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "thread_id": "1e537618-0e27-4e21-80d6-cb5214c948c0",
+      "http_status": 200,
+      "sse_error_events": [],
+      "run_id": "01a13e4d-7c8a-7bf2-acb7-384982ce292d",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": true,
+        "attempt_id": "33eea57a-363f-4b62-8ac3-17f06e70934b",
+        "submission_id": "2f15ea59-9e9f-4497-824d-ad219b483a82",
+        "capability_selection": {
+          "selection_id": "52eba587-8ede-41ff-b701-7986e14ef5fb",
+          "selection_digest": "f35f838bf4c17042c2cdf82d595449dabfaaa22c784524f0c90dad65dac6e128",
+          "skill_mode": "auto",
+          "skill_id": null,
+          "mcp_mode": "auto",
+          "tool_ids": [],
+          "material_version": "auto",
+          "catalog_version": null,
+          "selection_source": "automatic",
+          "id": "52eba587-8ede-41ff-b701-7986e14ef5fb"
+        }
+      },
+      "answers": [
+        {
+          "content": "你好！我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.826
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "thread_id": "9413d44b-a851-4e39-8243-9d7aceb485c3",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4d-7caf-76d1-843e-33c70f6341ea",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "你好！很高兴为你服务。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.825
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "8384c3ea-bebf-4183-b065-67b8bba274d5",
+      "selected_skill": "skill:intelligent-analysis:broadcast-hour",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4d-87f3-7151-90c0-b5453a53ebbd",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "您好，我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 5783,
+            "output_tokens": 61,
+            "total_tokens": 5844,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 43
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 35.211
+    },
+    {
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "4adb6dea-f8d1-4825-aaa9-da50e53430da",
+      "selected_skill": "skill:basic-qa:air-quality-basic-query",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4d-87f2-7851-8b96-e391de5672bd",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "您好，我是中科宇图的空气质量数据查询助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 6207,
+            "output_tokens": 73,
+            "total_tokens": 6280,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 3456
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 55
+            }
+          }
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "intent",
+        "skill_rules_content",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 35.213
+    },
+    {
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "500a35bf-6589-4d2d-b173-9748898fb996",
+      "selected_skill": null,
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4e-116e-7421-9810-730f7e85702a",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "你好！有什么我可以帮您的吗？",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.73
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "6ad3dedb-bee8-4e07-a3ab-b9b308f48228",
+      "selected_skill": null,
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4e-116c-76c0-bc7d-b1cb62935555",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "你好！很高兴为你提供空气质量相关的查询与咨询服务。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.737
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "668bc4fe-59d8-48ee-b848-6159148aef15",
+      "selected_skill": null,
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4e-1bd7-7240-94d4-5cc32eb6af65",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "你好！我是您的空气质量数据查询助手，很高兴为您服务。",
+          "usage": null
+        }
+      ],
+      "loaded_skill": null,
+      "state_keys": [
+        "messages",
+        "files",
+        "_quickjs_snapshot_payload"
+      ],
+      "passed": true,
+      "elapsed_s": 2.777
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "thread_id": "dc2e8bf6-525f-4417-924e-52dc0a035b91",
+      "selected_skill": "skill:data-analysis:broadcast-hour",
+      "http_status": 200,
+      "error": null,
+      "run_id": "01a13e4d-87f2-7851-8b96-e3a6af81ff9f",
+      "run_status": "success",
+      "confirm": {
+        "confirmed": false,
+        "reason": "no_pending_attempt"
+      },
+      "answers": [
+        {
+          "content": "你好！我是中科宇图的空气质量数据智能分析助手，很高兴为您服务。",
+          "usage": {
+            "input_tokens": 4661,
+            "output_tokens": 68,
+            "total_tokens": 4729,
+            "input_token_details": {
+              "audio": 0,
+              "cache_read": 0
+            },
+            "output_token_details": {
+              "audio": 0,
+              "reasoning": 49
+            }
+          }
+        }
+      ],
+      "loaded_skill": "broadcast-hour",
+      "state_keys": [
+        "messages",
+        "selected_skill",
+        "selected_skill_path",
+        "selected_skill_description",
+        "selected_skill_allowed_tools",
+        "skill_rules_content",
+        "skill_search_attempted",
+        "skill_search_question",
+        "system_prompt",
+        "context_metrics",
+        "data_status",
+        "data_model_started_at"
+      ],
+      "passed": true,
+      "elapsed_s": 42.811
+    }
+  ]
+}

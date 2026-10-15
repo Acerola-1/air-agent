@@ -1,0 +1,78 @@
+{
+  "boundary": "真实DeepAgents执行器/受限身份查询/PG；模型为受控fixture，不冒充真实LLM",
+  "observations": [
+    {
+      "observation_id": "a87695e0-313a-445f-8ea1-508c593f0b5f",
+      "logical_call_id": "23382734-8399-4d1b-ad60-ba3275f40c8e",
+      "role": "main",
+      "parent_observation_id": null,
+      "submission_id": "24a4079e-04b9-4a83-8b15-d7f16499bdc3",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cache_read_tokens": null,
+        "cache_write_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "observation_id": "6bb993ad-c743-4e34-8f84-54dbeaeb27b5",
+      "logical_call_id": "317cd388-2d6c-4ddd-b119-914fc6618c60",
+      "role": "subagent",
+      "parent_observation_id": "a87695e0-313a-445f-8ea1-508c593f0b5f",
+      "submission_id": "24a4079e-04b9-4a83-8b15-d7f16499bdc3",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cache_read_tokens": null,
+        "cache_write_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "observation_id": "2d336d0b-a20c-46aa-a0d2-76a07727d839",
+      "logical_call_id": "7787ceef-90e8-4b13-b5df-14b707495c41",
+      "role": "main",
+      "parent_observation_id": null,
+      "submission_id": "24a4079e-04b9-4a83-8b15-d7f16499bdc3",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cache_read_tokens": null,
+        "cache_write_tokens": null,
+        "reasoning_tokens": null
+      }
+    },
+    {
+      "observation_id": "727a7914-6278-4866-8cd0-e3094e4f3574",
+      "logical_call_id": "05854b9f-69b5-4c1e-8715-742ee7c50984",
+      "role": "summarizer",
+      "parent_observation_id": null,
+      "submission_id": "24a4079e-04b9-4a83-8b15-d7f16499bdc3",
+      "usage": {
+        "input_tokens": 10,
+        "output_tokens": 5,
+        "total_tokens": 15,
+        "cache_read_tokens": null,
+        "cache_write_tokens": null,
+        "reasoning_tokens": null
+      }
+    }
+  ],
+  "collector": {
+    "enqueued": 8,
+    "written": 8,
+    "dropped": 0,
+    "failed": 0,
+    "retries": 0,
+    "queue_size": 0,
+    "in_flight": 0,
+    "pending": 0,
+    "queue_high_watermark": 3,
+    "last_drop_reason": ""
+  },
+  "real_langfuse_readback": []
+}

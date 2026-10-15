@@ -50,6 +50,7 @@ export type SubmissionContext = {
   submissionKey: string;
   userMessageId?: string | null;
   operationKind?: "initial" | "retry" | "regenerate" | "resume";
+  capabilitySelection?: Record<string, unknown> | null;
 };
 let submissionContext: SubmissionContext | null = null;
 
@@ -72,6 +73,9 @@ function tenantHeaders(): Record<string, string> {
     headers["x-submission-key"] = submissionContext.submissionKey;
     if (submissionContext.userMessageId) headers["x-user-message-id"] = submissionContext.userMessageId;
     if (submissionContext.operationKind) headers["x-operation-kind"] = submissionContext.operationKind;
+    if (submissionContext.capabilitySelection) {
+      headers["x-capability-selection"] = JSON.stringify(submissionContext.capabilitySelection);
+    }
   }
   return headers;
 }
@@ -205,15 +209,17 @@ export async function listActiveRunIds(threadId: string): Promise<string[]> {
 }
 
 /** F05：运行列表（含状态）——空活动列表不能当作已取消，需要看到可信状态。 */
-export type RunSummary = { run_id: string; status: string | null };
+export type RunSummary = { run_id: string; status: string | null; submission_key?: string | null };
 
 export async function listRecentRuns(threadId: string): Promise<RunSummary[]> {
   const runs = (await apiClient().runs.list(threadId, { limit: 5 })) as unknown as {
     run_id?: string;
     status?: string;
+    metadata?: { ledger_submission_key?: unknown };
   }[];
   return (Array.isArray(runs) ? runs : [])
-    .map((r) => ({ run_id: String(r.run_id ?? ""), status: r.status == null ? null : String(r.status) }))
+    .map((r) => ({ run_id: String(r.run_id ?? ""), status: r.status == null ? null : String(r.status),
+      submission_key: typeof r.metadata?.ledger_submission_key === "string" ? r.metadata.ledger_submission_key : null }))
     .filter((r) => r.run_id);
 }
 
@@ -296,8 +302,8 @@ export async function streamRun(opts: {
 export async function confirmRunAdmission(
   threadId: string,
   runId: string,
-  onConfirmedAttempt?: (attemptId: string) => void,
-): Promise<boolean> {
+  onConfirmedAttempt?: (attemptId: string, serverSelection?: Record<string, unknown> | null) => void,
+): Promise<{ confirmed: boolean; attempt_id?: string; capability_selection?: Record<string, unknown> | null } | boolean> {
   try {
     const res = await fetch("/api/agent-runs/confirm", {
       method: "POST",
@@ -306,11 +312,16 @@ export async function confirmRunAdmission(
       cache: "no-store",
     });
     if (!res.ok) return false;
-    const data = (await res.json()) as { confirmed?: boolean; attempt_id?: string };
-    if (data.confirmed === true && typeof data.attempt_id === "string") {
-      onConfirmedAttempt?.(data.attempt_id);
+    const data = (await res.json()) as { confirmed?: boolean; attempt_id?: string; capability_selection?: Record<string, unknown> | null };
+    const confirmed = Boolean(data.confirmed);
+    if (confirmed && typeof data.attempt_id === "string") {
+      onConfirmedAttempt?.(data.attempt_id, data.capability_selection ?? null);
     }
-    return data.confirmed === true;
+    return {
+      confirmed,
+      attempt_id: data.attempt_id,
+      capability_selection: data.capability_selection ?? null,
+    };
   } catch {
     return false;
   }

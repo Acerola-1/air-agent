@@ -1,0 +1,3 @@
+2026-10-15 15:21:51 +0800 | INFO     | common.models:<module>:15 - 模型注册表初始化开始
+2026-10-15 15:21:52 +0800 | INFO     | common.mcp_client:<module>:199 - MCP 公共目录懒加载 + 企业授权执行层就绪
+real loaded/executed/selection correlation 12 passed

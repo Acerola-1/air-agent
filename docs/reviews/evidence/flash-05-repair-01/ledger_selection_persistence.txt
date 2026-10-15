@@ -1,0 +1,18 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.1, pluggy-1.6.0 -- /Users/acerola/Dev/Python/air_agent/admin/api/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/acerola/Dev/Python/air_agent/admin/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 7 items
+
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_1_schema_validation PASSED [ 14%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_1_allowed_tools_non_mandatory_and_required_tools_conflict PASSED [ 28%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_2_composite_foreign_key_and_rls PASSED [ 42%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_3_atomic_transaction_and_rollback PASSED [ 57%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_4_idempotency_digest_and_conflict PASSED [ 71%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_4_delivery_switch_fallback PASSED [ 85%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_5_readback_deletion_and_resume PASSED [100%]
+
+============================== 7 passed in 2.90s ===============================

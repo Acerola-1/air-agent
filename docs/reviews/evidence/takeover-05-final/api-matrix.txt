@@ -1,0 +1,37 @@
+basic-qa bff stream False False None {"detail":"会话不可访问"}
+basic-qa bff wait False False None {"detail":"会话不可访问"}
+basic-qa native wait False True success 
+basic-qa native stream False True success 
+intelligent-analysis bff stream False False None {"detail":"会话不可访问"}
+intelligent-analysis bff wait False False None {"detail":"会话不可访问"}
+intelligent-analysis native stream False True success 
+intelligent-analysis native wait False True success 
+data-analysis bff stream False False None {"detail":"会话不可访问"}
+data-analysis bff wait False False None {"detail":"会话不可访问"}
+intelligent-report native stream False True success 
+data-analysis native stream False True success 
+intelligent-report bff stream False False None {"detail":"会话不可访问"}
+intelligent-report bff wait False False None {"detail":"会话不可访问"}
+intelligent-report native wait False True success 
+data-analysis native wait False True success 
+deep-research bff stream False False None {"detail":"会话不可访问"}
+deep-research bff wait False False None {"detail":"会话不可访问"}
+deep-research native stream False True success 
+deep-research native wait False True success 
+intelligent-tracing bff stream False False None {"detail":"会话不可访问"}
+intelligent-tracing bff wait False False None {"detail":"会话不可访问"}
+intelligent-tracing native stream False True success 
+intelligent-tracing native wait False True success 
+basic-qa bff wait True False None {"detail":"会话不可访问"}
+intelligent-analysis bff wait True False None {"detail":"会话不可访问"}
+basic-qa native wait True True success 
+data-analysis bff wait True False None {"detail":"会话不可访问"}
+intelligent-analysis native wait True True success 
+intelligent-report bff wait True False None {"detail":"会话不可访问"}
+intelligent-report native wait True True success 
+deep-research native wait True True success 
+deep-research bff wait True False None {"detail":"会话不可访问"}
+intelligent-tracing bff wait True False None {"detail":"会话不可访问"}
+data-analysis native wait True True success 
+intelligent-tracing native wait True True success 
+passed 18 / 36

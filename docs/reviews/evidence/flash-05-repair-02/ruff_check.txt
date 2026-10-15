@@ -1,0 +1,688 @@
+I001 [*] Import block is un-sorted or un-formatted
+  --> admin/api/tests/benchmark_admission_overhead.py:10:1
+   |
+ 8 |   """
+ 9 |
+10 | / from __future__ import annotations
+11 | |
+12 | | import asyncio
+13 | | import datetime as dt
+14 | | import json
+15 | | import os
+16 | | import statistics
+17 | | import time
+18 | | import uuid
+19 | | from pathlib import Path
+20 | |
+21 | | from httpx import ASGITransport
+22 | | from sqlalchemy import text
+23 | |
+24 | | from app.config import get_settings
+25 | | from app.db import OwnerSessionLocal
+26 | | from app.main import app
+27 | | from app.models import Tenant, TenantMembership, User
+28 | | from app.security import hash_password
+29 | | from app.services import ledger as ledger_service
+30 | | from tests.ctx_client import ContextClient
+   | |__________________________________________^
+   |
+help: Organize imports
+
+F401 [*] `datetime` imported but unused
+  --> admin/api/tests/benchmark_admission_overhead.py:13:20
+   |
+12 | import asyncio
+13 | import datetime as dt
+   |                    ^^
+14 | import json
+15 | import os
+   |
+help: Remove unused import: `datetime`
+
+F401 [*] `os` imported but unused
+  --> admin/api/tests/benchmark_admission_overhead.py:15:8
+   |
+13 | import datetime as dt
+14 | import json
+15 | import os
+   |        ^^
+16 | import statistics
+17 | import time
+   |
+help: Remove unused import: `os`
+
+F401 [*] `app.services.ledger` imported but unused
+  --> admin/api/tests/benchmark_admission_overhead.py:29:36
+   |
+27 | from app.models import Tenant, TenantMembership, User
+28 | from app.security import hash_password
+29 | from app.services import ledger as ledger_service
+   |                                    ^^^^^^^^^^^^^^
+30 | from tests.ctx_client import ContextClient
+   |
+help: Remove unused import: `app.services.ledger`
+
+E501 Line too long (116 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:109:101
+    |
+107 |             text(
+108 |                 "INSERT INTO mcp_identity_bindings ("
+109 |                 " tenant_id, membership_id, server_key, external_subject, credential_ref, protocol_version, status)"
+    |                                                                                                     ^^^^^^^^^^^^^^^^
+110 |                 " VALUES (:t, :m, 'business', 'sub_bench', 'env:BENCH_REF', 'v1', 'active')"
+111 |                 " ON CONFLICT DO NOTHING"
+    |
+
+F841 Local variable `total_probes` is assigned to but never used
+   --> admin/api/tests/benchmark_admission_overhead.py:186:5
+    |
+184 |     # 实测错误率与故障注入测试
+185 |     # 注入 50 次请求：45 次合法显式选择，5 次非法/伪造选择，实测失败捕获率与错误率
+186 |     total_probes = 50
+    |     ^^^^^^^^^^^^
+187 |     fault_rejected = 0
+188 |     normal_success = 0
+    |
+help: Remove assignment to unused variable `total_probes`
+
+E501 Line too long (112 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:255:101
+    |
+253 |             "capability_selection": {
+254 |                 "schema_version": "agent.capability-selection.v1",
+255 |                 "skill": {"mode": "explicit", "skill_id": "skill:intelligent-analysis:air-quality-basic-query"},
+    |                                                                                                     ^^^^^^^^^^^^
+256 |                 "mcp": {"mode": "allowlist", "tool_ids": []},
+257 |                 "catalog_version": "v1",
+    |
+
+E501 Line too long (121 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:284:101
+    |
+282 |     # 清理测试数据
+283 |     async with OwnerSessionLocal() as session:
+284 |         await session.execute(text("DELETE FROM agent_capability_selections WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^
+285 |         await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), {"t": str(tenant_a)})
+286 |         await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (111 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:285:101
+    |
+283 |     async with OwnerSessionLocal() as session:
+284 |         await session.execute(text("DELETE FROM agent_capability_selections WHERE tenant_id = :t"), {"t": str(tenant_a)})
+285 |         await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^
+286 |         await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+287 |         await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (112 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:286:101
+    |
+284 |         await session.execute(text("DELETE FROM agent_capability_selections WHERE tenant_id = :t"), {"t": str(tenant_a)})
+285 |         await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), {"t": str(tenant_a)})
+286 |         await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^
+287 |         await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+288 |         await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (108 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:287:101
+    |
+285 |         await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), {"t": str(tenant_a)})
+286 |         await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+287 |         await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^
+288 |         await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+289 |         await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (106 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:288:101
+    |
+286 |         await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+287 |         await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+288 |         await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^
+289 |         await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+290 |         await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (115 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:289:101
+    |
+287 |         await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+288 |         await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+289 |         await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^^^^
+290 |         await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), {"t": str(tenant_a)})
+291 |         await session.execute(text("DELETE FROM tenant_memberships WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (110 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:290:101
+    |
+288 |         await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+289 |         await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+290 |         await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^
+291 |         await session.execute(text("DELETE FROM tenant_memberships WHERE tenant_id = :t"), {"t": str(tenant_a)})
+292 |         await session.execute(text("DELETE FROM tenants WHERE id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (112 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:291:101
+    |
+289 |         await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+290 |         await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), {"t": str(tenant_a)})
+291 |         await session.execute(text("DELETE FROM tenant_memberships WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^
+292 |         await session.execute(text("DELETE FROM tenants WHERE id = :t"), {"t": str(tenant_a)})
+293 |         await session.execute(text("DELETE FROM users WHERE id = :u"), {"u": str(user_a)})
+    |
+
+E501 Line too long (122 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:298:69
+    |
+296 |     output = {
+297 |         "admission_full_path_benchmark": {
+298 |             "description": "全路径受理与能力保护开销（含 HTTP、身份上下文、材料校验、v2 摘要比对、原子持久化与事实发射）",
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^
+299 |             "sample_size": 35,
+300 |             "warmup_runs": 5,
+    |
+
+E501 Line too long (126 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:302:101
+    |
+300 |             "warmup_runs": 5,
+301 |             "round_1": {
+302 |                 "auto_baseline_ms": {"p50": round(p50_auto_1, 3), "p95": round(p95_auto_1, 3), "mean": round(mean_auto_1, 3)},
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+303 |                 "explicit_protected_ms": {"p50": round(p50_exp_1, 3), "p95": round(p95_exp_1, 3), "mean": round(mean_exp_1, 3)},
+304 |                 "delta_p95_ms": round(delta_p95_1, 3),
+    |
+
+E501 Line too long (128 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:303:101
+    |
+301 |             "round_1": {
+302 |                 "auto_baseline_ms": {"p50": round(p50_auto_1, 3), "p95": round(p95_auto_1, 3), "mean": round(mean_auto_1, 3)},
+303 |                 "explicit_protected_ms": {"p50": round(p50_exp_1, 3), "p95": round(p95_exp_1, 3), "mean": round(mean_exp_1, 3)},
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+304 |                 "delta_p95_ms": round(delta_p95_1, 3),
+305 |             },
+    |
+
+E501 Line too long (126 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:307:101
+    |
+305 |             },
+306 |             "round_2": {
+307 |                 "auto_baseline_ms": {"p50": round(p50_auto_2, 3), "p95": round(p95_auto_2, 3), "mean": round(mean_auto_2, 3)},
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+308 |                 "explicit_protected_ms": {"p50": round(p50_exp_2, 3), "p95": round(p95_exp_2, 3), "mean": round(mean_exp_2, 3)},
+309 |                 "delta_p95_ms": round(delta_p95_2, 3),
+    |
+
+E501 Line too long (128 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:308:101
+    |
+306 |             "round_2": {
+307 |                 "auto_baseline_ms": {"p50": round(p50_auto_2, 3), "p95": round(p95_auto_2, 3), "mean": round(mean_auto_2, 3)},
+308 |                 "explicit_protected_ms": {"p50": round(p50_exp_2, 3), "p95": round(p95_exp_2, 3), "mean": round(mean_exp_2, 3)},
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+309 |                 "delta_p95_ms": round(delta_p95_2, 3),
+310 |             },
+    |
+
+E501 Line too long (133 > 100)
+   --> admin/api/tests/benchmark_admission_overhead.py:326:101
+    |
+324 |     }
+325 |
+326 |     out_path = Path("/Users/acerola/Dev/Python/air_agent/docs/reviews/evidence/flash-05-repair-02/benchmark-admission-overhead.json")
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+327 |     out_path.parent.mkdir(parents=True, exist_ok=True)
+328 |     out_path.write_text(json.dumps(output, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> admin/api/tests/probe_live.py:3:1
+   |
+ 1 |   """独立复测探针：真实服务端受理与声明裁决（R01 / R04 / R07）."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import asyncio
+ 6 | | import datetime as dt
+ 7 | | import json
+ 8 | | import uuid
+ 9 | | from pathlib import Path
+10 | |
+11 | | from httpx import ASGITransport
+12 | | from sqlalchemy import text
+13 | |
+14 | | from app.config import get_settings
+15 | | from app.db import OwnerSessionLocal
+16 | | from app.main import app
+17 | | from app.models import Tenant, TenantMembership, User
+18 | | from app.security import hash_password
+19 | | from app.services import ledger as ledger_service
+20 | | from tests.ctx_client import ContextClient
+   | |__________________________________________^
+   |
+help: Organize imports
+
+F401 [*] `datetime` imported but unused
+ --> admin/api/tests/probe_live.py:6:20
+  |
+5 | import asyncio
+6 | import datetime as dt
+  |                    ^^
+7 | import json
+8 | import uuid
+  |
+help: Remove unused import: `datetime`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> admin/api/tests/probe_live.py:9:21
+   |
+ 7 | import json
+ 8 | import uuid
+ 9 | from pathlib import Path
+   |                     ^^^^
+10 |
+11 | from httpx import ASGITransport
+   |
+help: Remove unused import: `pathlib.Path`
+
+E501 Line too long (116 > 100)
+   --> admin/api/tests/probe_live.py:99:101
+    |
+ 97 |             text(
+ 98 |                 "INSERT INTO mcp_identity_bindings ("
+ 99 |                 " tenant_id, membership_id, server_key, external_subject, credential_ref, protocol_version, status)"
+    |                                                                                                     ^^^^^^^^^^^^^^^^
+100 |                 " VALUES (:t, :m, 'business', 'sub_probe', 'env:REF', 'v1', 'active')"
+101 |                 " ON CONFLICT DO NOTHING"
+    |
+
+E501 Line too long (116 > 100)
+   --> admin/api/tests/probe_live.py:109:101
+    |
+107 |             text(
+108 |                 "INSERT INTO mcp_identity_bindings ("
+109 |                 " tenant_id, membership_id, server_key, external_subject, credential_ref, protocol_version, status)"
+    |                                                                                                     ^^^^^^^^^^^^^^^^
+110 |                 " VALUES (:t, :m, 'unverified_svc', 'sub_unv', 'env:REF', 'unverified', 'active')"
+111 |                 " ON CONFLICT DO NOTHING"
+    |
+
+E501 Line too long (104 > 100)
+   --> admin/api/tests/probe_live.py:156:101
+    |
+154 |                 "capability_selection": {
+155 |                     "schema_version": "agent.capability-selection.v1",
+156 |                     "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
+    |                                                                                                     ^^^^
+157 |                     "mcp": {"mode": "allowlist", "tool_ids": []},
+158 |                     "catalog_version": "not-a-real-catalog-123",
+    |
+
+E501 Line too long (104 > 100)
+   --> admin/api/tests/probe_live.py:178:101
+    |
+176 |                 "capability_selection": {
+177 |                     "schema_version": "agent.capability-selection.v1",
+178 |                     "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
+    |                                                                                                     ^^^^
+179 |                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+180 |                     "catalog_version": "v1",
+    |
+
+F401 [*] `app.models.AuthSession` imported but unused
+   --> admin/api/tests/probe_live.py:196:36
+    |
+194 |         # R01: 4. claim_start 使用 v2 摘要进行校验
+195 |         async with OwnerSessionLocal() as session:
+196 |             from app.models import AuthSession
+    |                                    ^^^^^^^^^^^
+197 |             from app.services.identity import Identity
+    |
+help: Remove unused import: `app.models.AuthSession`
+
+E501 Line too long (122 > 100)
+   --> admin/api/tests/probe_live.py:204:101
+    |
+202 |             sess_obj = (
+203 |                 await session.execute(
+204 |                     text("SELECT id, ctx_version FROM auth_sessions WHERE user_id = :u ORDER BY created_at DESC LIMIT 1"),
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^
+205 |                     {"u": str(user_a)},
+206 |                 )
+    |
+
+E501 Line too long (125 > 100)
+   --> admin/api/tests/probe_live.py:281:101
+    |
+279 |         # 清理
+280 |         async with OwnerSessionLocal() as session:
+281 |             await session.execute(text("DELETE FROM agent_capability_selections WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+282 |             await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), {"t": str(tenant_a)})
+283 |             await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (115 > 100)
+   --> admin/api/tests/probe_live.py:282:101
+    |
+280 |         async with OwnerSessionLocal() as session:
+281 |             await session.execute(text("DELETE FROM agent_capability_selections WHERE tenant_id = :t"), {"t": str(tenant_a)})
+282 |             await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^^^^
+283 |             await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+284 |             await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (116 > 100)
+   --> admin/api/tests/probe_live.py:283:101
+    |
+281 |             await session.execute(text("DELETE FROM agent_capability_selections WHERE tenant_id = :t"), {"t": str(tenant_a)})
+282 |             await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), {"t": str(tenant_a)})
+283 |             await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^^^^^
+284 |             await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+285 |             await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (112 > 100)
+   --> admin/api/tests/probe_live.py:284:101
+    |
+282 |             await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), {"t": str(tenant_a)})
+283 |             await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+284 |             await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^
+285 |             await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+286 |             await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (110 > 100)
+   --> admin/api/tests/probe_live.py:285:101
+    |
+283 |             await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), {"t": str(tenant_a)})
+284 |             await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+285 |             await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^
+286 |             await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+287 |             await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (119 > 100)
+   --> admin/api/tests/probe_live.py:286:101
+    |
+284 |             await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), {"t": str(tenant_a)})
+285 |             await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+286 |             await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^^^^^^^^
+287 |             await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), {"t": str(tenant_a)})
+288 |             await session.execute(text("DELETE FROM tenant_memberships WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (114 > 100)
+   --> admin/api/tests/probe_live.py:287:101
+    |
+285 |             await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), {"t": str(tenant_a)})
+286 |             await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+287 |             await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^^^
+288 |             await session.execute(text("DELETE FROM tenant_memberships WHERE tenant_id = :t"), {"t": str(tenant_a)})
+289 |             await session.execute(text("DELETE FROM tenants WHERE id = :t"), {"t": str(tenant_a)})
+    |
+
+E501 Line too long (116 > 100)
+   --> admin/api/tests/probe_live.py:288:101
+    |
+286 |             await session.execute(text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), {"t": str(tenant_a)})
+287 |             await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), {"t": str(tenant_a)})
+288 |             await session.execute(text("DELETE FROM tenant_memberships WHERE tenant_id = :t"), {"t": str(tenant_a)})
+    |                                                                                                     ^^^^^^^^^^^^^^^^
+289 |             await session.execute(text("DELETE FROM tenants WHERE id = :t"), {"t": str(tenant_a)})
+290 |             await session.execute(text("DELETE FROM users WHERE id = :u"), {"u": str(user_a)})
+    |
+
+F811 Redefinition of unused `logger` from line 33
+  --> src/common/config/checkpointing.py:33:20
+   |
+31 | from typing import Any
+32 |
+33 | from loguru import logger
+   |                    ------ previous definition of `logger` here
+34 |
+35 | from common.config import config
+36 |
+37 | logger = logging.getLogger(__name__)
+   | ^^^^^^ `logger` redefined here
+   |
+help: Remove definition: `logger`
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/common/identity/db.py:10:1
+   |
+ 8 |   """
+ 9 |
+10 | / from __future__ import annotations
+11 | |
+12 | | import asyncio
+13 | | import os
+14 | | from dataclasses import dataclass
+15 | | from typing import Any
+16 | |
+17 | |
+18 | | import psycopg
+19 | | from psycopg_pool import AsyncConnectionPool
+   | |____________________________________________^
+20 |
+21 |   _IDENTITY_SQL = """
+   |
+help: Organize imports
+
+E402 Module level import not at top of file
+  --> tests/benchmark_capability_overhead.py:31:1
+   |
+29 |   )
+30 |
+31 | / from common.capabilities import (
+32 | |     discover_authorized_mcp_catalog,
+33 | |     filter_capability_mcp_tools,
+34 | |     list_graph_skills,
+35 | |     validate_skill_selection,
+36 | | )
+   | |_^
+   |
+
+T201 `print` found
+   --> tests/benchmark_capability_overhead.py:256:5
+    |
+254 |     out_file = out_dir / "overhead-benchmark.json"
+255 |     out_file.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+256 |     print(f"Written benchmark to {out_file}")
+    |     ^^^^^
+257 |     print(json.dumps(result, ensure_ascii=False, indent=2))
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> tests/benchmark_capability_overhead.py:257:5
+    |
+255 |     out_file.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+256 |     print(f"Written benchmark to {out_file}")
+257 |     print(json.dumps(result, ensure_ascii=False, indent=2))
+    |     ^^^^^
+    |
+help: Remove `print`
+
+E402 Module level import not at top of file
+  --> tests/probe_modules.py:15:1
+   |
+13 | os.environ.setdefault("MCP_SERVER_NAME", "ipp")
+14 |
+15 | from common.capabilities import BoundedSkillsBackend, filter_capability_mcp_tools
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+16 | from common.mcp_scoped import ScopedMCPToolFactory
+17 | from common.skill_router import SkillSemanticRouter
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/probe_modules.py:15:1
+   |
+13 |   os.environ.setdefault("MCP_SERVER_NAME", "ipp")
+14 |
+15 | / from common.capabilities import BoundedSkillsBackend, filter_capability_mcp_tools
+16 | | from common.mcp_scoped import ScopedMCPToolFactory
+17 | | from common.skill_router import SkillSemanticRouter
+18 | | from langchain_core.tools import StructuredTool
+   | |_______________________________________________^
+   |
+help: Organize imports
+
+E402 Module level import not at top of file
+  --> tests/probe_modules.py:16:1
+   |
+15 | from common.capabilities import BoundedSkillsBackend, filter_capability_mcp_tools
+16 | from common.mcp_scoped import ScopedMCPToolFactory
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 | from common.skill_router import SkillSemanticRouter
+18 | from langchain_core.tools import StructuredTool
+   |
+
+E402 Module level import not at top of file
+  --> tests/probe_modules.py:17:1
+   |
+15 | from common.capabilities import BoundedSkillsBackend, filter_capability_mcp_tools
+16 | from common.mcp_scoped import ScopedMCPToolFactory
+17 | from common.skill_router import SkillSemanticRouter
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+18 | from langchain_core.tools import StructuredTool
+   |
+
+E402 Module level import not at top of file
+  --> tests/probe_modules.py:18:1
+   |
+16 | from common.mcp_scoped import ScopedMCPToolFactory
+17 | from common.skill_router import SkillSemanticRouter
+18 | from langchain_core.tools import StructuredTool
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+T201 `print` found
+   --> tests/probe_modules.py:148:5
+    |
+146 |     }
+147 |
+148 |     print(json.dumps(report, ensure_ascii=False, indent=2))
+    |     ^^^^^
+149 |     return report
+    |
+help: Remove `print`
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests/test_capabilities_catalog.py:11:1
+   |
+10 |   # ruff: noqa: E402
+11 | / from __future__ import annotations
+12 | |
+13 | | import base64
+14 | | import hashlib
+15 | | import hmac
+16 | | import json
+17 | | import os
+18 | | import sys
+19 | | import time
+20 | | import uuid
+21 | | from pathlib import Path
+22 | |
+23 | | import pytest
+24 | | from fastapi import HTTPException
+25 | | from fastapi.testclient import TestClient
+26 | | import httpx
+   | |____________^
+   |
+help: Organize imports
+
+F401 [*] `fastapi.testclient.TestClient` imported but unused
+  --> tests/test_capabilities_catalog.py:25:32
+   |
+23 | import pytest
+24 | from fastapi import HTTPException
+25 | from fastapi.testclient import TestClient
+   |                                ^^^^^^^^^^
+26 | import httpx
+   |
+help: Remove unused import: `fastapi.testclient.TestClient`
+
+T201 `print` found
+   --> tests/unit_tests/test_basic_qa_skill_routing.py:130:5
+    |
+128 |     correct = sum(1 for r in results if r["correct"])
+129 |     total = len(results)
+130 |     print(f"\n{'=' * 80}")
+    |     ^^^^^
+131 |     print(f"basic-qa Skill 路由测试摘要: {correct}/{total} 通过")
+132 |     print(f"{'=' * 80}")
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> tests/unit_tests/test_basic_qa_skill_routing.py:131:5
+    |
+129 |     total = len(results)
+130 |     print(f"\n{'=' * 80}")
+131 |     print(f"basic-qa Skill 路由测试摘要: {correct}/{total} 通过")
+    |     ^^^^^
+132 |     print(f"{'=' * 80}")
+133 |     for r in results:
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> tests/unit_tests/test_basic_qa_skill_routing.py:132:5
+    |
+130 |     print(f"\n{'=' * 80}")
+131 |     print(f"basic-qa Skill 路由测试摘要: {correct}/{total} 通过")
+132 |     print(f"{'=' * 80}")
+    |     ^^^^^
+133 |     for r in results:
+134 |         mark = "✓" if r["correct"] else "✗"
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> tests/unit_tests/test_basic_qa_skill_routing.py:137:9
+    |
+135 |         score_str = f"{r['score']:.3f}" if r["score"] is not None else "N/A"
+136 |         matched_str = r["matched"] or "无匹配"
+137 |         print(
+    |         ^^^^^
+138 |             f"  {mark} [{score_str}] "
+139 |             f"{str(r['question'])[:30]:<30} → "
+    |
+help: Remove `print`
+
+T201 `print` found
+   --> tests/unit_tests/test_basic_qa_skill_routing.py:143:5
+    |
+141 |             f"(期望: {r['expected']})"
+142 |         )
+143 |     print(f"{'=' * 80}")
+    |     ^^^^^
+144 |
+145 |     assert correct == total, f"有 {total - correct} 条路由结果不符合预期，详见上方摘要"
+    |
+help: Remove `print`
+
+Found 56 errors.
+[*] 12 fixable with the `--fix` option (9 hidden fixes can be enabled with the `--unsafe-fixes` option).

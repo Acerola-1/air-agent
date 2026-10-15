@@ -452,7 +452,10 @@ export const EVENT_REGISTRY: EventRegistry = {
         "duration_ms",
         "skill_id",
         "skill_version",
-        "selection_source"
+        "selection_source",
+        "selection_id",
+        "selection_digest",
+        "submission_id"
       ],
       "required_payload_fields": [
         "attempt_id",
@@ -460,6 +463,35 @@ export const EVENT_REGISTRY: EventRegistry = {
         "span_kind"
       ],
       "summary": "服务端 span"
+    },
+    "capability.selection_accepted": {
+      "enabled": true,
+      "sources": [
+        "server"
+      ],
+      "family": "capability",
+      "payload_fields": [
+        "selection_id",
+        "selection_digest",
+        "graph_id",
+        "submission_id",
+        "skill_mode",
+        "mcp_mode",
+        "selection_source",
+        "skill_id",
+        "tool_ids",
+        "material_version"
+      ],
+      "required_payload_fields": [
+        "selection_id",
+        "selection_digest",
+        "graph_id",
+        "submission_id",
+        "skill_mode",
+        "mcp_mode",
+        "selection_source"
+      ],
+      "summary": "用户或默认能力选择已可信受理"
     }
   },
   "contract": "agent-events"

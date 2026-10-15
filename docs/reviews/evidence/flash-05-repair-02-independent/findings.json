@@ -1,0 +1,74 @@
+[
+  {
+    "id": "G01",
+    "priority": 0,
+    "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+    "start_line": 49,
+    "category": "bug",
+    "severity": "critical",
+    "content": "合法BaseTool.metadata=None使三张生产SDK图第一次模型调用前AttributeError，原guard正向对照3/3成功"
+  },
+  {
+    "id": "G02",
+    "priority": 1,
+    "path": "admin/api/migrations/versions/0013s_capability_selection.py",
+    "start_line": 55,
+    "category": "bug",
+    "severity": "high",
+    "content": "删掉selection_source列但保留CHECK；独立空库/旧head升级UndefinedColumn失败"
+  },
+  {
+    "id": "G03",
+    "priority": 1,
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 367,
+    "category": "bug",
+    "severity": "high",
+    "content": "管理进程依赖私有工厂缓存，真实运行时目录200后合法MCP选择管理422；目录版本仍仅正则校验"
+  },
+  {
+    "id": "G04",
+    "priority": 1,
+    "path": "frontend/lib/chat-store.ts",
+    "start_line": 383,
+    "category": "bug",
+    "severity": "high",
+    "content": "浏览器自行派生selection ID/digest冒充已受理事实，与真实服务端ID/材料摘要均不同"
+  },
+  {
+    "id": "G05",
+    "priority": 1,
+    "path": "src/common/mcp_authorization.py",
+    "start_line": 65,
+    "category": "security",
+    "severity": "high",
+    "content": "显式fixture=false仍因URI含test或加载pytest开放测试协议，回退原显式开关语义"
+  },
+  {
+    "id": "G06",
+    "priority": 1,
+    "path": "src/common/mcp_scoped.py",
+    "start_line": 70,
+    "category": "bug",
+    "severity": "high",
+    "content": "svc_a与svc--a仍产生相同代理名；实际_is_mcp_tool不识别别名，Auto未按scope隔离披露"
+  },
+  {
+    "id": "G07",
+    "priority": 1,
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 746,
+    "category": "bug",
+    "severity": "high",
+    "content": "省略新选择的resume继承源allowlist后，同键重投被当作Auto变更409，首次200"
+  },
+  {
+    "id": "G08",
+    "priority": 1,
+    "path": "docs/reviews/skill-tool-selection-repair-02.md",
+    "start_line": 182,
+    "category": "test",
+    "severity": "high",
+    "content": "单测/对象/人工waiting等证据不覆盖真实子任务、六图显式恢复或备份恢复矩阵"
+  }
+]

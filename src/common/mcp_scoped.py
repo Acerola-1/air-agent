@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import threading
 import time
 from collections.abc import Awaitable, Callable
@@ -66,17 +67,30 @@ class _ScopeState:
     retry_after: float = 0.0
 
 
+def server_clean_key(server_key: str) -> str:
+    """唯一单射映射：将 _ 转义为 _u_，将 - 转义为 _h_，避免任意命名（如 svc_a 与 svc--a）别名碰撞."""
+    return (server_key or "").replace("_", "_u_").replace("-", "_h_")
+
+
 class ScopedMCPToolFactory:
     """按授权作用域缓存发现结果并执行调用；跨线程/跨 event loop 去重."""
 
     def __init__(self, server_urls: dict[str, str]) -> None:
         """以 server_key → url 映射初始化授权作用域工厂."""
-        self._urls = server_urls
+        self._urls = dict(server_urls)
         self._states: dict[tuple, _ScopeState] = {}
         self._lock = threading.RLock()
         self._loading: dict[tuple, threading.Event] = {}
         self._catalog: dict[str, dict[str, Any]] = {}
         self._catalog_server: dict[str, str] = {}
+        self._tool_to_server: dict[str, set[str]] = {}
+        self._aliases: dict[str, tuple[str, str]] = {}
+        self._colliding_aliases: set[str] = set()
+
+    def register_server(self, server_key: str, url: str) -> None:
+        """动态注册服务地址."""
+        with self._lock:
+            self._urls[server_key] = url
 
     # -- 发现 ------------------------------------------------------------------
 
@@ -139,20 +153,58 @@ class ScopedMCPToolFactory:
             state.discovered = True
             state.last_error = None
             state.retry_after = 0.0
-            for tool in tools:
-                self._catalog[tool.name] = {
-                    "name": tool.name,
-                    "description": tool.description,
-                    "args_schema": tool.args_schema,
-                }
-                self._catalog_server[tool.name] = binding.server_key
+            self._index_tools_locked(tools, server_key=binding.server_key)
             event = self._loading.pop(key, None)
             if event is not None:
                 event.set()
         return state
 
+    def _index_tools_locked(self, tools: list[Any], *, server_key: str) -> None:
+        """在持锁状态下建立工具稳定 ID 与别名映射（无冲突覆盖）."""
+        clean_key = server_clean_key(server_key)
+        for tool in tools:
+            stable_id = f"mcp:{server_key}:{tool.name}"
+            alias = f"mcp_{clean_key}__{tool.name}"
+            self._catalog[stable_id] = {
+                "id": stable_id,
+                "server_key": server_key,
+                "name": tool.name,
+                "display_name": getattr(tool, "display_name", tool.name) or tool.name,
+                "description": (getattr(tool, "description", "") or tool.name)[:500],
+                "args_schema": getattr(tool, "args_schema", None),
+            }
+            self._aliases[stable_id] = (server_key, tool.name)
+
+            # 别名碰撞检测（如 service-a 与 service_a 生成相同 alias）
+            if alias in self._aliases and self._aliases[alias][0] != server_key:
+                self._aliases.pop(alias, None)
+                self._catalog_server.pop(alias, None)
+                self._colliding_aliases.add(alias)
+            elif alias not in self._colliding_aliases:
+                self._aliases[alias] = (server_key, tool.name)
+
+            if tool.name not in self._tool_to_server:
+                self._tool_to_server[tool.name] = set()
+            self._tool_to_server[tool.name].add(server_key)
+
+            if len(self._tool_to_server[tool.name]) == 1:
+                self._aliases[tool.name] = (server_key, tool.name)
+                self._catalog_server[tool.name] = server_key
+            else:
+                # 出现跨服务同名工具时，从全局别名移除原始短名，强制使用别名或显式服务
+                self._aliases.pop(tool.name, None)
+                self._catalog_server.pop(tool.name, None)
+
     async def _discover(self, binding: ScopeBinding) -> list[Any]:
         url = self._urls.get(binding.server_key)
+        if not url:
+            url = os.environ.get(
+                f"MCP_SERVER_URL_{binding.server_key.upper().replace('-', '_')}"
+            )
+            if url:
+                self._urls[binding.server_key] = url
+        if not url and binding.server_key == config.MCP_SERVER_NAME:
+            url = config.MCP_SERVER_URL
         if not url:
             raise McpAuthorizationError("未知 MCP 服务")
         # R07：认证 discovery——initialize/tools/list 与 tools/call 使用同一
@@ -184,6 +236,47 @@ class ScopedMCPToolFactory:
         run_config: Any = None,
     ) -> Any:
         """执行一次授权调用：每次重新解析绑定（撤销/轮换即时生效）."""
+        resolved_server = server_key
+        target_name = tool_name
+        with self._lock:
+            if tool_name in self._aliases:
+                s_key, t_name = self._aliases[tool_name]
+                resolved_server = resolved_server or s_key
+                target_name = t_name
+            elif tool_name.startswith("mcp:"):
+                parts = tool_name.split(":", 2)
+                if len(parts) == 3:
+                    resolved_server = resolved_server or parts[1]
+                    target_name = parts[2]
+        server_key = resolved_server
+
+        # 任务 4.3 执行侧调度约束：按已受理 MCP 白名单进行实时硬拦截（网络零调用）
+        cfg = run_config if isinstance(run_config, dict) else {}
+        configurable = cfg.get("configurable") or {}
+        metadata = cfg.get("metadata") or {}
+        mcp_mode = (
+            configurable.get("capability_mcp_mode")
+            or metadata.get("capability_mcp_mode")
+            or "auto"
+        )
+        if mcp_mode == "allowlist":
+            allowed_ids = configurable.get("capability_tool_ids")
+            if allowed_ids is None:
+                allowed_ids = metadata.get("capability_tool_ids") or []
+            allowed_set = set(allowed_ids)
+            clean_key = server_clean_key(server_key)
+            stable_id = f"mcp:{server_key}:{target_name}"
+            alias = f"mcp_{clean_key}__{target_name}"
+            if (
+                stable_id not in allowed_set
+                and alias not in allowed_set
+                and target_name not in allowed_set
+                and tool_name not in allowed_set
+            ):
+                raise McpAuthorizationError(
+                    f"未获准调用 MCP 工具 {stable_id}（不在本次已受理工具集合中）"
+                )
+
         try:
             binding = await resolve_binding(
                 tenant_id=identity.tenant_id,
@@ -191,7 +284,18 @@ class ScopedMCPToolFactory:
                 server_key=server_key,
             )
             state = await self._ensure_discovered(binding)
-            tool = next((t for t in state.tools if t.name == tool_name), None)
+            clean_key = server_clean_key(server_key)
+            tool = next(
+                (
+                    t
+                    for t in state.tools
+                    if t.name == target_name
+                    or t.name == tool_name
+                    or f"mcp:{server_key}:{t.name}" == tool_name
+                    or f"mcp_{clean_key}__{t.name}" == tool_name
+                ),
+                None,
+            )
             if tool is None:
                 raise McpAuthorizationError("工具不在当前授权作用域已发现清单内")
         except McpAuthorizationError:
@@ -242,13 +346,7 @@ class ScopedMCPToolFactory:
     def register_catalog(self, tools: list[Any], *, server_key: str) -> None:
         """把公共目录（schema 定义）并入 catalog（匿名 tools/list 的结果）."""
         with self._lock:
-            for tool in tools:
-                self._catalog[tool.name] = {
-                    "name": tool.name,
-                    "description": getattr(tool, "description", "") or tool.name,
-                    "args_schema": tool.args_schema,
-                }
-                self._catalog_server[tool.name] = server_key
+            self._index_tools_locked(tools, server_key=server_key)
 
     # -- 披露 ------------------------------------------------------------------
 
@@ -260,12 +358,45 @@ class ScopedMCPToolFactory:
     def server_of(self, tool_name: str) -> str | None:
         """工具所属 server_key."""
         with self._lock:
+            if tool_name in self._aliases:
+                return self._aliases[tool_name][0]
+            if tool_name.startswith("mcp:"):
+                parts = tool_name.split(":", 2)
+                if len(parts) == 3:
+                    return parts[1]
+            if (
+                tool_name in self._tool_to_server
+                and len(self._tool_to_server[tool_name]) > 1
+            ):
+                return None
             return self._catalog_server.get(tool_name)
 
     def known_tool_names(self) -> set[str]:
         """公共目录中的工具名集合."""
         with self._lock:
+            return {entry["name"] for entry in self._catalog.values()}
+
+    def known_tool_ids(self) -> set[str]:
+        """公共目录中的稳定工具 ID 集合."""
+        with self._lock:
             return set(self._catalog)
+
+    def authorized_servers_for_scope(
+        self, tenant_id: str, membership_id: str | None = None
+    ) -> set[str]:
+        """返回已为该租户/成员发现可用的 MCP server_key 集合."""
+        with self._lock:
+            servers: set[str] = set()
+            for key, state in self._states.items():
+                if len(key) >= 4 and str(key[0]) == str(tenant_id):
+                    if (
+                        membership_id is None
+                        or key[1] is None
+                        or str(key[1]) == str(membership_id)
+                    ):
+                        if state.discovered and not state.last_error:
+                            servers.add(str(key[3]))
+            return servers
 
     def reset_for_tests(self) -> None:
         """清空作用域状态与目录，供单元测试使用."""
@@ -274,6 +405,8 @@ class ScopedMCPToolFactory:
             self._loading.clear()
             self._catalog.clear()
             self._catalog_server.clear()
+            self._tool_to_server.clear()
+            self._aliases.clear()
 
 
 def _build_interceptor(binding: ScopeBinding) -> Callable[..., Awaitable[Any]]:
@@ -336,21 +469,45 @@ def build_proxy_tools() -> list[StructuredTool]:
     """
     factory = get_factory()
     tools: list[StructuredTool] = []
-    for entry in factory.catalog_entries():
+    entries = factory.catalog_entries()
+    name_counts: dict[str, int] = {}
+    for entry in entries:
+        tname = entry["name"]
+        name_counts[tname] = name_counts.get(tname, 0) + 1
 
-        def _make(name: str = entry["name"]) -> StructuredTool:
+    for entry in entries:
+        raw_name = entry["name"]
+        server_key = entry["server_key"]
+        clean_key = server_clean_key(server_key)
+        if name_counts.get(raw_name, 0) > 1:
+            tool_proxy_name = f"mcp_{clean_key}__{raw_name}"
+        else:
+            tool_proxy_name = raw_name
+
+        def _make(
+            p_name: str = tool_proxy_name,
+            s_key: str = server_key,
+            s_id: str = entry["id"],
+            entry_ref: dict[str, Any] = entry,
+        ) -> StructuredTool:
             async def _blocked(**kwargs: Any) -> Any:
                 raise McpAuthorizationError(
                     "MCP 工具必须经授权执行层调用，直接调用被拒绝"
                 )
 
-            return StructuredTool.from_function(
+            st = StructuredTool.from_function(
                 coroutine=_blocked,
-                name=name,
-                description=entry["description"] or name,
-                args_schema=entry["args_schema"],
+                name=p_name,
+                description=entry_ref["description"] or p_name,
+                args_schema=entry_ref["args_schema"],
                 handle_tool_error=False,
+                metadata={"server_key": s_key, "stable_id": s_id, "is_mcp": True},
             )
+            st.__dict__["server_key"] = s_key
+            st.__dict__["stable_id"] = s_id
+            st.__dict__["is_mcp"] = True
+            st.__dict__["_is_mcp"] = True
+            return st
 
         tools.append(_make())
     return tools

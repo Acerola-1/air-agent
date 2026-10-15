@@ -63,6 +63,32 @@ def _build_mcp() -> FastMCP:
     app = FastMCP("air-agent-mcp-fixture")
 
     @app.tool()
+    async def helper_get_latest_time(
+        user_id: str, region: str, ctx: Context
+    ) -> CallToolResult:
+        """真实业务 Skill 白名单中的受控工具名，仅供独立调度验收."""
+        subject = _identity_from_ctx(ctx)
+        CALLS.setdefault(subject, []).append(
+            {"user_id": user_id, "region": region, "tool": "helper_get_latest_time"}
+        )
+        return CallToolResult(
+            content=[
+                {
+                    "type": "text",
+                    "text": json.dumps(
+                        {
+                            "success": True,
+                            "date": "2026-10-15",
+                            "auth_subject": subject,
+                            "received_user_id": user_id,
+                        }
+                    ),
+                }
+            ],
+            isError=False,
+        )
+
+    @app.tool()
     async def query_air(user_id: str, region: str, ctx: Context) -> CallToolResult:
         """按授权主体查询区域空气质量（fixture）."""
         subject = _identity_from_ctx(ctx)
@@ -73,6 +99,26 @@ def _build_mcp() -> FastMCP:
             "auth_subject": subject,
             "received_user_id": user_id,
             "data": {**DATA.get(subject, {}), "region": region},
+        }
+        return CallToolResult(
+            content=[{"type": "text", "text": json.dumps(payload, ensure_ascii=False)}],
+            isError=False,
+        )
+
+    @app.tool()
+    async def query(user_id: str, region: str, ctx: Context) -> CallToolResult:
+        """同名 query 工具（Gate 0 / A03 探针与验收）."""
+        subject = _identity_from_ctx(ctx)
+        CALLS.setdefault(subject, []).append(
+            {"user_id": user_id, "region": region, "tool": "query"}
+        )
+        payload = {
+            "code": 200,
+            "success": True,
+            "auth_subject": subject,
+            "received_user_id": user_id,
+            "tool": "query",
+            "data": {**DATA.get(subject, {}), "region": region, "from_query": True},
         }
         return CallToolResult(
             content=[{"type": "text", "text": json.dumps(payload, ensure_ascii=False)}],
@@ -173,7 +219,18 @@ def build_asgi() -> Any:
 
     async def calls(request: Any) -> JSONResponse:
         subject = request.query_params.get("subject", "")
-        return JSONResponse({"count": len(CALLS.get(subject, [])), "all": CALLS})
+        tool = request.query_params.get("tool", "")
+        if subject:
+            items = list(CALLS.get(subject, []))
+        else:
+            items = [c for sub in CALLS.values() for c in sub]
+        if tool:
+            items = [
+                c
+                for c in items
+                if c.get("tool") == tool or (tool == "query_air" and "tool" not in c)
+            ]
+        return JSONResponse({"count": len(items), "all": CALLS})
 
     async def reset(request: Any) -> JSONResponse:
         reset_state()
@@ -267,10 +324,15 @@ class FixtureServer:
                 f"http://127.0.0.1:{self.port}/admin/flaky", json={"count": count}
             )
 
-    async def call_count(self, subject: str) -> int:
+    async def call_count(self, subject: str = "", tool: str = "") -> int:
         async with httpx.AsyncClient() as client:
+            params: dict[str, str] = {}
+            if subject:
+                params["subject"] = subject
+            if tool:
+                params["tool"] = tool
             res = await client.get(
                 f"http://127.0.0.1:{self.port}/admin/calls",
-                params={"subject": subject},
+                params=params,
             )
             return int(res.json()["count"])

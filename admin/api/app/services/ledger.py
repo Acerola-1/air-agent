@@ -17,8 +17,12 @@
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
+import re
+import sys
 import uuid
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote, unquote
 
@@ -30,6 +34,7 @@ from app.config import get_settings
 from app.db import TenantContext, apply_tenant_context
 from app.models_ledger import (
     AgentAnswer,
+    AgentCapabilitySelection,
     AgentContentRef,
     AgentEvent,
     AgentOutbox,
@@ -41,6 +46,7 @@ from app.models_ledger import (
     AgentThreadDeletion,
     AgentTraceLink,
 )
+from app.schemas_ledger import CapabilitySelectionIn
 from app.services.identity import Identity
 
 # 与 docs/contracts/agent-events-v1 保持一致的最小子集（避免 admin venv 依赖 src/）
@@ -85,6 +91,24 @@ class SubmissionConflict(LedgerError):
     status_code = 409
 
 
+class CapabilityValidationError(LedgerError):
+    """能力选择语义校验失败（非法ID、依赖缺失、菜单冲突）."""
+
+    status_code = 422
+
+
+class CapabilityConflict(LedgerError):
+    """能力选择冲突（版本过期、功能停用、恢复时材料/绑定变更）."""
+
+    status_code = 409
+
+
+class CapabilityUnauthorized(LedgerError):
+    """未授权能力选择（未授权或已撤销的 MCP 服务）."""
+
+    status_code = 403
+
+
 class AdmissionRejected(LedgerError):
     """受理前置条件不满足（线程归属/图/上下文）。"""
 
@@ -105,6 +129,7 @@ class AdmissionResult:
     reused: bool
     thread_id: str
     graph_id: str
+    capability_selection: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -117,6 +142,7 @@ class AdmissionResult:
             "thread_id": self.thread_id,
             "graph_id": self.graph_id,
             "ledger_marker": ledger_marker(self.request_id, self.attempt_id),
+            "capability_selection": self.capability_selection,
         }
 
 
@@ -157,6 +183,343 @@ def canonical_content_digest(*, graph_id: str, operation_kind: str, content: Any
     return canonical_digest(
         {"graph_id": graph_id, "operation_kind": operation_kind, "content": normalized}
     )
+
+
+def canonical_selection_digest(
+    *,
+    graph_id: str,
+    skill_mode: str,
+    skill_id: str | None,
+    mcp_mode: str,
+    tool_ids: list[str],
+    material_version: str,
+) -> str:
+    """能力选择快照规范摘要（Change 4 任务 3.4）."""
+    return canonical_digest(
+        {
+            "graph_id": graph_id,
+            "material_version": material_version,
+            "mcp_mode": mcp_mode,
+            "skill_id": skill_id,
+            "skill_mode": skill_mode,
+            "tool_ids": sorted(list(dict.fromkeys(tool_ids))),
+        }
+    )
+
+
+def canonical_content_digest_v2(
+    *,
+    graph_id: str,
+    operation_kind: str,
+    content: Any,
+    capability_selection_digest: str,
+) -> str:
+    """v2 提交内容摘要：包含图 + 操作类型 + 规范化文本/消息 + 选择摘要."""
+    normalized = content.strip() if isinstance(content, str) else content
+    return canonical_digest(
+        {
+            "capability_selection_digest": capability_selection_digest,
+            "content": normalized,
+            "graph_id": graph_id,
+            "operation_kind": operation_kind,
+        }
+    )
+
+
+canonical_content_digest_v1 = canonical_content_digest
+
+
+def normalize_capability_selection(
+    raw: CapabilitySelectionIn | dict[str, Any] | None,
+) -> dict[str, Any]:
+    """规范化用户能力选择意图，未声明归一化为 auto/auto."""
+    if raw is None:
+        return {
+            "schema_version": "agent.capability-selection.v1",
+            "skill": {"mode": "auto", "skill_id": None},
+            "mcp": {"mode": "auto", "tool_ids": []},
+            "catalog_version": None,
+            "selection_source": "automatic",
+        }
+    if isinstance(raw, dict):
+        raw_model = CapabilitySelectionIn.model_validate(raw)
+    else:
+        raw_model = raw
+
+    skill_mode = raw_model.skill.mode
+    skill_id = raw_model.skill.skill_id
+    if skill_mode == "auto":
+        skill_id = None
+    elif skill_mode == "explicit":
+        if not skill_id or not isinstance(skill_id, str):
+            raise CapabilityValidationError(
+                "explicit 模式下 skill_id 不能为空", code="invalid_capability_selection"
+            )
+        skill_id = skill_id.strip()
+        if ".." in skill_id or any(ord(c) < 32 for c in skill_id):
+            raise CapabilityValidationError(
+                "skill_id 包含非法路径字符或控制字符", code="invalid_capability_selection"
+            )
+
+    mcp_mode = raw_model.mcp.mode
+    raw_tools = raw_model.mcp.tool_ids or []
+    if mcp_mode == "auto":
+        tool_ids = []
+    elif mcp_mode == "allowlist":
+        unique_tools = sorted(list(dict.fromkeys(raw_tools)))
+        if len(unique_tools) > 20:
+            raise CapabilityValidationError(
+                "已选 MCP 工具数量不能超过 20", code="invalid_capability_selection"
+            )
+        for tid in unique_tools:
+            if (
+                not isinstance(tid, str)
+                or len(tid) > 200
+                or ".." in tid
+                or any(ord(c) < 32 for c in tid)
+            ):
+                raise CapabilityValidationError(
+                    f"非法 MCP 工具标识: {tid}", code="invalid_capability_selection"
+                )
+        tool_ids = unique_tools
+    else:
+        tool_ids = []
+
+    is_explicit = (skill_mode == "explicit") or (mcp_mode == "allowlist")
+    selection_source = "user_explicit" if is_explicit else "automatic"
+
+    return {
+        "schema_version": "agent.capability-selection.v1",
+        "skill": {"mode": skill_mode, "skill_id": skill_id},
+        "mcp": {"mode": mcp_mode, "tool_ids": tool_ids},
+        "catalog_version": raw_model.catalog_version,
+        "selection_source": selection_source,
+    }
+
+
+async def _validate_mcp_tool_authorization(
+    session: AsyncSession,
+    *,
+    tenant_id: uuid.UUID,
+    membership_id: uuid.UUID,
+    tool_ids: list[str],
+    user_id: uuid.UUID | str | None = None,
+) -> None:
+    """验证 allowlist 中的每个工具对应的 server_key 在当前租户/成员下具有 active 绑定.
+
+    越权或撤销抛 403 (CapabilityUnauthorized).
+    """
+    if not tool_ids:
+        return
+    server_keys: set[str] = set()
+    for tid in tool_ids:
+        parts = tid.split(":")
+        if len(parts) < 3 or parts[0] != "mcp":
+            raise CapabilityValidationError(
+                f"非法的 MCP 工具标识格式: {tid}", code="invalid_tool_id"
+            )
+        server_keys.add(parts[1])
+
+    stmt = text(
+        """
+        SELECT b.server_key, b.protocol_version
+        FROM mcp_identity_bindings b
+        WHERE b.tenant_id = :tenant_id
+          AND b.status = 'active'
+          AND (b.membership_id = :membership_id
+               OR (b.membership_id IS NULL AND NOT EXISTS (
+                     SELECT 1 FROM mcp_identity_bindings o
+                     WHERE o.tenant_id = b.tenant_id AND o.server_key = b.server_key
+                       AND o.membership_id = :membership_id)))
+        """
+    )
+    rows = (
+        (
+            await session.execute(
+                stmt, {"tenant_id": str(tenant_id), "membership_id": str(membership_id)}
+            )
+        )
+        .mappings()
+        .all()
+    )
+    binding_by_key = {r["server_key"]: r for r in rows}
+
+    for s_key in server_keys:
+        if s_key not in binding_by_key:
+            raise CapabilityUnauthorized(
+                f"未授权或已撤销的 MCP 服务: {s_key}", code="mcp_unauthorized"
+            )
+        b = binding_by_key[s_key]
+        p_ver = str(b.get("protocol_version") or "")
+        try:
+            from common.mcp_authorization import resolve_protocol_profile
+        except ImportError:
+            repo_src = Path(__file__).resolve().parents[4] / "src"
+            if repo_src.exists() and str(repo_src) not in sys.path:
+                sys.path.insert(0, str(repo_src))
+            from common.mcp_authorization import resolve_protocol_profile
+
+        profile = resolve_protocol_profile(p_ver)
+        if profile is None:
+            raise CapabilityUnauthorized(
+                f"MCP 服务 {s_key} 协议未验证或不可用: {p_ver}", code="mcp_unverified"
+            )
+
+    # 全局 schema 缓存可能来自另一成员，不能作为当前成员的工具许可。
+    from common.capabilities import discover_authorized_mcp_catalog
+    from common.identity.runtime import RuntimeIdentity
+
+    scoped_identity = RuntimeIdentity(
+        user_id=str(user_id or ""),
+        tenant_id=str(tenant_id),
+        membership_id=str(membership_id),
+        session_id="",
+    )
+    try:
+        _, scoped_tools = await discover_authorized_mcp_catalog(scoped_identity)
+    except Exception as exc:
+        raise CapabilityValidationError(
+            "无法核验当前成员的工具目录", code="tool_not_found"
+        ) from exc
+    available_ids = {tool.id for tool in scoped_tools if tool.status == "available"}
+    if not set(tool_ids).issubset(available_ids):
+        raise CapabilityValidationError(
+            "所选工具在当前成员的服务目录中不存在或不可用", code="tool_not_found"
+        )
+
+
+_SKILL_ID_PATTERN = re.compile(r"^skill:([a-zA-Z0-9_-]+):([a-zA-Z0-9_-]+)$")
+_SLUG_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+$")
+_GRAPH_DIR_MAP: dict[str, str] = {
+    "basic-qa": "basic_qa",
+    "intelligent-analysis": "intelligent_analysis",
+    "data-analysis": "data_analysis",
+    "intelligent-report": "intelligent_report",
+    "deep-research": "deep_research",
+    "intelligent-tracing": "intelligent_tracing",
+}
+
+
+def _calculate_skill_material_version(skill_dir: Path) -> str:
+    if not skill_dir.is_dir():
+        return "sha256:empty"
+    hasher = hashlib.sha256()
+    files = sorted(
+        [p for p in skill_dir.rglob("*") if p.is_file() and not p.name.startswith(".")],
+        key=lambda p: p.relative_to(skill_dir).as_posix(),
+    )
+    for file_path in files:
+        rel_posix = file_path.relative_to(skill_dir).as_posix()
+        try:
+            content = file_path.read_bytes()
+        except OSError:
+            content = b""
+        hasher.update(f"{rel_posix}:".encode())
+        hasher.update(content)
+        hasher.update(b"\n")
+    return f"sha256:{hasher.hexdigest()}"
+
+
+def _parse_skill_frontmatter(content: str) -> dict[str, Any]:
+    if not content.startswith("---"):
+        return {"name": "", "description": "", "required-tools": []}
+    parts = content.split("---", 2)
+    if len(parts) < 3:
+        return {"name": "", "description": "", "required-tools": []}
+    frontmatter_raw = parts[1]
+    res: dict[str, Any] = {}
+    current_key: str | None = None
+    multiline_buf: list[str] = []
+
+    for line in frontmatter_raw.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if ":" in line and not line.startswith(" ") and not line.startswith("\t"):
+            if current_key and multiline_buf:
+                res[current_key] = "\n".join(multiline_buf).strip()
+                multiline_buf = []
+            k, v = line.split(":", 1)
+            current_key = k.strip()
+            v_str = v.strip()
+            if v_str.startswith("[") and v_str.endswith("]"):
+                items = [
+                    item.strip().strip("'\"") for item in v_str[1:-1].split(",") if item.strip()
+                ]
+                res[current_key] = items
+                current_key = None
+            elif v_str:
+                res[current_key] = v_str.strip("'\"")
+                current_key = None
+            else:
+                multiline_buf = []
+        elif current_key and (stripped.startswith("- ") or stripped.startswith("* ")):
+            if not isinstance(res.get(current_key), list):
+                res[current_key] = []
+            val = stripped[2:].strip().strip("'\"")
+            res[current_key].append(val)
+        elif current_key:
+            multiline_buf.append(stripped)
+
+    if current_key and multiline_buf and current_key not in res:
+        res[current_key] = "\n".join(multiline_buf).strip()
+    return res
+
+
+def validate_skill_selection(
+    graph_id: str, skill_id: str, *, menu_name: str | None = None
+) -> dict[str, Any]:
+    m = _SKILL_ID_PATTERN.match(skill_id)
+    if not m:
+        raise CapabilityValidationError(
+            f"非法的技能标识格式: {skill_id}", code="invalid_skill_selection"
+        )
+    g_id, slug = m.group(1), m.group(2)
+    if g_id != graph_id:
+        raise CapabilityValidationError(
+            f"技能 {skill_id} 不属于当前图 {graph_id}", code="invalid_skill_selection"
+        )
+    if graph_id not in _GRAPH_DIR_MAP:
+        raise CapabilityValidationError(f"未知图标识: {graph_id}", code="invalid_skill_selection")
+
+    if graph_id == "data-analysis" and menu_name:
+        try:
+            from data_analysis.menu_skill_mapping import match_menu_skill
+
+            matched = match_menu_skill(menu_name)
+            if matched and matched.skill_name != slug:
+                raise CapabilityValidationError(
+                    f"所选技能 {skill_id} 与当前菜单 {menu_name} 映射不一致",
+                    code="menu_skill_mismatch",
+                )
+        except (ImportError, CapabilityValidationError):
+            raise
+        except Exception:
+            pass
+
+    repo_root = Path(__file__).resolve().parents[4]
+    skill_dir = repo_root / "src" / _GRAPH_DIR_MAP[graph_id] / "skills" / slug
+    skill_file = skill_dir / "SKILL.md"
+    if not skill_file.exists():
+        raise CapabilityValidationError(
+            f"技能 {skill_id} 不存在或不可用", code="invalid_skill_selection"
+        )
+
+    try:
+        text = skill_file.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise CapabilityValidationError(
+            f"技能文件读取失败: {exc}", code="invalid_skill_selection"
+        ) from exc
+
+    meta = _parse_skill_frontmatter(text)
+    mat_version = _calculate_skill_material_version(skill_dir)
+    return {
+        "id": skill_id,
+        "name": slug,
+        "material_version": mat_version,
+        "required_tool_ids": meta.get("required-tools") or [],
+    }
 
 
 # ---------------------------------------------------------------- 事件与 outbox
@@ -298,6 +661,8 @@ async def admit_request(
     source_attempt_id: uuid.UUID | None = None,
     content_snapshot: str | None = None,
     retention_days: int | None = None,
+    menu_name: str | None = None,
+    capability_selection: CapabilitySelectionIn | dict[str, Any] | None = None,
 ) -> AdmissionResult:
     """可信受理：幂等创建/复用 request + attempt。
 
@@ -310,14 +675,86 @@ async def admit_request(
     tenant_id = identity.tenant.id
     user_id = identity.user.id
     membership_id = identity.membership.id
-    digest = canonical_content_digest(
-        graph_id=graph_id, operation_kind=operation_kind, content=content
-    )
+
+    norm_sel = normalize_capability_selection(capability_selection)
+    settings = get_settings()
+    if (
+        norm_sel["selection_source"] == "user_explicit"
+        and not settings.agent_capability_selection_enabled
+    ):
+        raise CapabilityConflict("能力选择功能已停用", code="capability_selection_disabled")
 
     await _assert_thread_owned(session, thread_id=thread_id, tenant_id=tenant_id, user_id=user_id)
     # R05：删除中的线程**禁止新写**（新提问/新事件都不允许落在已删除会话上）
     if await is_thread_deletion_pending(session, tenant_id=tenant_id, thread_id=thread_id):
         raise AdmissionRejected("会话正在删除，无法提交新问题", code="thread_deleting")
+
+    inherited_source_selection = None
+    source_attempt = None
+    if source_attempt_id is not None:
+        source_attempt = (
+            await session.execute(
+                select(AgentRunAttempt).where(
+                    AgentRunAttempt.id == source_attempt_id,
+                    AgentRunAttempt.tenant_id == tenant_id,
+                    AgentRunAttempt.user_id == user_id,
+                )
+            )
+        ).scalar_one_or_none()
+    elif operation_kind in ("retry", "regenerate", "resume"):
+        source_attempt = (
+            await session.execute(
+                select(AgentRunAttempt)
+                .join(
+                    AgentRequest,
+                    and_(
+                        AgentRequest.id == AgentRunAttempt.request_id,
+                        AgentRequest.tenant_id == AgentRunAttempt.tenant_id,
+                    ),
+                )
+                .where(
+                    AgentRunAttempt.tenant_id == tenant_id,
+                    AgentRunAttempt.user_id == user_id,
+                    AgentRequest.thread_id == thread_id,
+                )
+                .order_by(AgentRunAttempt.admitted_at.desc())
+                .limit(1)
+            )
+        ).scalar_one_or_none()
+
+    if (
+        (capability_selection is None or operation_kind in ("retry", "resume"))
+        and operation_kind in ("resume", "retry", "regenerate")
+        and source_attempt is not None
+        and source_attempt.capability_selection_id
+    ):
+        inherited_source_selection = await session.get(
+            AgentCapabilitySelection, source_attempt.capability_selection_id
+        )
+        if inherited_source_selection is not None:
+            inherited_semantics = {
+                "skill": {
+                    "mode": inherited_source_selection.skill_mode,
+                    "skill_id": inherited_source_selection.skill_id,
+                },
+                "mcp": {
+                    "mode": inherited_source_selection.mcp_mode,
+                    "tool_ids": sorted(inherited_source_selection.tool_ids or []),
+                },
+            }
+            if capability_selection is not None and any(
+                norm_sel[key] != inherited_semantics[key] for key in ("skill", "mcp")
+            ):
+                raise CapabilityConflict(
+                    "重试或恢复不允许修改能力选择，请使用重新生成",
+                    code=f"{operation_kind}_selection_immutable",
+                )
+            norm_sel["skill"]["mode"] = inherited_source_selection.skill_mode
+            norm_sel["skill"]["skill_id"] = inherited_source_selection.skill_id
+            norm_sel["mcp"]["mode"] = inherited_source_selection.mcp_mode
+            norm_sel["mcp"]["tool_ids"] = list(inherited_source_selection.tool_ids or [])
+            norm_sel["selection_source"] = inherited_source_selection.selection_source
+            norm_sel["catalog_version"] = inherited_source_selection.catalog_version
 
     existing = (
         await session.execute(
@@ -335,17 +772,102 @@ async def admit_request(
             and operation_kind in ("retry", "regenerate")
             and source_attempt_id is None
         )
-        if existing.content_digest != digest or (
-            existing.operation_kind != operation_kind and not normalized_fallback
-        ):
-            raise SubmissionConflict(
-                "同一提交键已用于不同内容或操作类型", code="submission_conflict"
+        effective_op = "initial" if normalized_fallback else operation_kind
+        if existing.digest_version == 1:
+            if norm_sel["selection_source"] == "user_explicit":
+                raise SubmissionConflict("同一提交键已用于不同选择", code="submission_conflict")
+            v1_digest = canonical_content_digest_v1(
+                graph_id=graph_id, operation_kind=effective_op, content=content
             )
-        # R03：重放必须回到**该提交自己的尝试**，而不是请求下最新的尝试
-        # （initial→regenerate 后重放原 initial 键不得漂到 regenerate 的尝试）。
+            v1_incoming_digest = canonical_content_digest_v1(
+                graph_id=graph_id, operation_kind=operation_kind, content=content
+            )
+            if (existing.content_digest not in (v1_digest, v1_incoming_digest)) or (
+                existing.operation_kind != operation_kind and not normalized_fallback
+            ):
+                raise SubmissionConflict(
+                    "同一提交键已用于不同内容或操作类型", code="submission_conflict"
+                )
+            sel_out = {"selection_status": "not_collected"}
+        else:
+            existing_sel = None
+            if existing.capability_selection_id:
+                existing_sel = await session.get(
+                    AgentCapabilitySelection, existing.capability_selection_id
+                )
+            if existing_sel is None:
+                existing_sel_digest = canonical_selection_digest(
+                    graph_id=graph_id,
+                    skill_mode="auto",
+                    skill_id=None,
+                    mcp_mode="auto",
+                    tool_ids=[],
+                    material_version="auto",
+                )
+            else:
+                existing_sel_digest = existing_sel.selection_digest
+
+            req_mat = "auto"
+            if norm_sel["skill"]["mode"] == "explicit":
+                if (
+                    inherited_source_selection is not None
+                    and norm_sel["skill"]["skill_id"] == inherited_source_selection.skill_id
+                ):
+                    req_mat = inherited_source_selection.material_version
+                else:
+                    item = validate_skill_selection(
+                        graph_id, norm_sel["skill"]["skill_id"], menu_name=menu_name
+                    )
+                    req_mat = item["material_version"]
+            elif inherited_source_selection is not None:
+                req_mat = inherited_source_selection.material_version
+
+            req_sel_digest = canonical_selection_digest(
+                graph_id=graph_id,
+                skill_mode=norm_sel["skill"]["mode"],
+                skill_id=norm_sel["skill"]["skill_id"],
+                mcp_mode=norm_sel["mcp"]["mode"],
+                tool_ids=norm_sel["mcp"]["tool_ids"],
+                material_version=req_mat,
+            )
+            if req_sel_digest != existing_sel_digest:
+                raise SubmissionConflict("同一提交键已用于不同选择", code="submission_conflict")
+
+            v2_digest = canonical_content_digest_v2(
+                graph_id=graph_id,
+                operation_kind=effective_op,
+                content=content,
+                capability_selection_digest=existing_sel_digest,
+            )
+            v2_incoming_digest = canonical_content_digest_v2(
+                graph_id=graph_id,
+                operation_kind=operation_kind,
+                content=content,
+                capability_selection_digest=existing_sel_digest,
+            )
+            if (existing.content_digest not in (v2_digest, v2_incoming_digest)) or (
+                existing.operation_kind != operation_kind and not normalized_fallback
+            ):
+                raise SubmissionConflict(
+                    "同一提交键已用于不同内容或操作类型", code="submission_conflict"
+                )
+            if existing_sel:
+                sel_out = {
+                    "selection_id": str(existing_sel.id),
+                    "selection_digest": existing_sel.selection_digest,
+                    "digest_version": existing_sel.digest_version,
+                    "selection_status": "collected",
+                    "skill": {"mode": existing_sel.skill_mode, "skill_id": existing_sel.skill_id},
+                    "mcp": {"mode": existing_sel.mcp_mode, "tool_ids": existing_sel.tool_ids},
+                    "material_version": existing_sel.material_version,
+                    "selection_source": existing_sel.selection_source,
+                    "validation_time": existing_sel.validation_time.isoformat(),
+                }
+            else:
+                sel_out = {"selection_status": "not_collected"}
+
         bound_attempt_id = existing.attempt_id
         if bound_attempt_id is None:
-            # 0008 前的历史行：仅当该请求只有一个尝试时可唯一确定，否则如实拒绝。
             rows = (
                 (
                     await session.execute(
@@ -368,8 +890,17 @@ async def admit_request(
         if attempt is None or attempt.tenant_id != tenant_id:
             raise LedgerError("提交记录缺少关联尝试", code="inconsistent_submission")
         if normalized_fallback:
-            attempt.content_digest = canonical_content_digest(
-                graph_id=graph_id, operation_kind="initial", content=content
+            attempt.content_digest = (
+                canonical_content_digest_v1(
+                    graph_id=graph_id, operation_kind="initial", content=content
+                )
+                if existing.digest_version == 1
+                else canonical_content_digest_v2(
+                    graph_id=graph_id,
+                    operation_kind="initial",
+                    content=content,
+                    capability_selection_digest=existing_sel_digest,
+                )
             )
         return AdmissionResult(
             request_id=existing.request_id,
@@ -380,15 +911,12 @@ async def admit_request(
             reused=True,
             thread_id=thread_id,
             graph_id=graph_id,
+            capability_selection=sel_out,
         )
 
     now = dt.datetime.now(dt.UTC)
-    # 失败重试 / 重新生成：关联**原 request**，只新增独立 attempt（不增加提问量）。
-    # source_attempt_id 必须属于本租户本人，否则拒绝（不静默新建提问）。
     source_attempt: AgentRunAttempt | None = None
     if source_attempt_id is None and operation_kind in ("retry", "regenerate", "resume"):
-        # 服务端解析来源尝试（客户端只声明"这是重试/重新生成"）：取本人本线程最近一次
-        # 尝试作为来源。解析不到（例如线程刚切换）则按新提问受理，不猜测关联。
         source_attempt = (
             await session.execute(
                 select(AgentRunAttempt)
@@ -435,10 +963,6 @@ async def admit_request(
         if str(source_thread or "") != thread_id:
             raise AdmissionRejected("操作来源必须属于同一会话", code="source_thread_mismatch")
     if operation_kind == "resume" and source_attempt is not None:
-        # F02：恢复来源必须是**该用户本企业本线程**上处于可恢复等待状态的尝试。
-        # 两条来源解析路径（显式 source_attempt_id / 服务端按线程就近解析）统一适用：
-        # 只按用户过滤会让"另一线程的尝试"成为恢复来源，也会把运行中/已终态的尝试
-        # 当作可恢复对象；非等待态说明"没有可恢复的东西"，如实拒绝而不是受理假恢复。
         source_thread = await session.scalar(
             select(AgentRequest.thread_id).where(
                 AgentRequest.id == source_attempt.request_id,
@@ -458,9 +982,185 @@ async def admit_request(
     if source_attempt is None and operation_kind == "resume":
         raise AdmissionRejected("当前没有可恢复的来源", code="resume_source_missing")
     if source_attempt is None and operation_kind in ("retry", "regenerate", "resume"):
-        # 解析不到来源尝试（例如线程刚切换/无历史尝试）：按**新提问**如实受理，
-        # 不把这次运行标成 regenerate/resume（避免指标与审计记成无来源的重新生成/恢复）。
         operation_kind = "initial"
+
+    mat_version = "auto"
+    if operation_kind == "resume" and source_attempt is not None:
+        source_selection = None
+        if source_attempt.capability_selection_id:
+            source_selection = await session.get(
+                AgentCapabilitySelection, source_attempt.capability_selection_id
+            )
+        if source_selection is not None:
+            if source_selection.skill_mode == "explicit" and source_selection.skill_id:
+                try:
+                    curr_skill = validate_skill_selection(graph_id, source_selection.skill_id)
+                    if curr_skill["material_version"] != source_selection.material_version:
+                        raise CapabilityConflict(
+                            "原技能规则材料已更新，无法恢复原运行",
+                            code="material_version_changed",
+                        )
+                except Exception as exc:
+                    if isinstance(exc, CapabilityConflict):
+                        raise
+                    raise CapabilityConflict(
+                        "原技能不可用，无法恢复原运行", code="skill_unavailable"
+                    ) from exc
+            if source_selection.tool_ids:
+                try:
+                    await _validate_mcp_tool_authorization(
+                        session,
+                        tenant_id=tenant_id,
+                        membership_id=membership_id,
+                        tool_ids=source_selection.tool_ids,
+                        user_id=user_id,
+                    )
+                except Exception as exc:
+                    raise CapabilityConflict(
+                        "原 MCP 服务授权已失效或撤销，无法恢复原运行",
+                        code="mcp_binding_invalidated",
+                    ) from exc
+            norm_sel["skill"]["mode"] = source_selection.skill_mode
+            norm_sel["skill"]["skill_id"] = source_selection.skill_id
+            norm_sel["mcp"]["mode"] = source_selection.mcp_mode
+            norm_sel["mcp"]["tool_ids"] = source_selection.tool_ids
+            norm_sel["selection_source"] = source_selection.selection_source
+            norm_sel["catalog_version"] = source_selection.catalog_version
+            mat_version = source_selection.material_version
+
+    elif operation_kind in ("retry", "regenerate") and source_attempt is not None:
+        if capability_selection is None and source_attempt.capability_selection_id:
+            source_selection = await session.get(
+                AgentCapabilitySelection, source_attempt.capability_selection_id
+            )
+            if source_selection is not None:
+                if source_selection.tool_ids and source_selection.mcp_mode == "allowlist":
+                    try:
+                        await _validate_mcp_tool_authorization(
+                            session,
+                            tenant_id=tenant_id,
+                            membership_id=membership_id,
+                            tool_ids=source_selection.tool_ids,
+                            user_id=user_id,
+                        )
+                    except Exception as exc:
+                        raise CapabilityConflict(
+                            "原 MCP 服务授权已失效或撤销，无法重试",
+                            code="mcp_binding_invalidated",
+                        ) from exc
+                norm_sel["skill"]["mode"] = source_selection.skill_mode
+                norm_sel["skill"]["skill_id"] = source_selection.skill_id
+                norm_sel["mcp"]["mode"] = source_selection.mcp_mode
+                norm_sel["mcp"]["tool_ids"] = source_selection.tool_ids
+                norm_sel["selection_source"] = source_selection.selection_source
+                norm_sel["catalog_version"] = source_selection.catalog_version
+                mat_version = source_selection.material_version
+
+    if norm_sel["skill"]["mode"] == "explicit":
+        try:
+            skill_item = validate_skill_selection(
+                graph_id, norm_sel["skill"]["skill_id"], menu_name=menu_name
+            )
+            mat_version = skill_item["material_version"]
+        except Exception as exc:
+            detail = getattr(exc, "detail", str(exc))
+            raise CapabilityValidationError(detail, code="invalid_skill_selection") from exc
+
+    # 目录版本也约束仅选工具和显式空集合，不能仅在显式 Skill 分支核验。
+    if norm_sel["selection_source"] == "user_explicit":
+        try:
+            from common.capabilities import (
+                compute_catalog_version,
+                discover_authorized_mcp_catalog,
+                list_graph_skills,
+            )
+            from common.identity.runtime import RuntimeIdentity
+
+            runtime_ident = RuntimeIdentity(
+                user_id=str(user_id),
+                tenant_id=str(tenant_id),
+                membership_id=str(membership_id),
+                session_id=str(identity.session.id if identity.session else ""),
+            )
+            auth_revs = {
+                "tenant": int(getattr(identity.tenant, "auth_revision", 1) or 1),
+                "user": int(getattr(identity.user, "auth_revision", 1) or 1),
+                "membership": int(getattr(identity.membership, "revision", 1) or 1),
+            }
+            curr_skills = list_graph_skills(graph_id, menu_name=menu_name)
+            curr_mcp_services, curr_mcp_tools = await discover_authorized_mcp_catalog(runtime_ident)
+            expected_cat_ver = compute_catalog_version(
+                graph_id=graph_id,
+                identity=runtime_ident,
+                auth_revisions=auth_revs,
+                skills=curr_skills,
+                mcp_services=curr_mcp_services,
+                tools=curr_mcp_tools,
+            )
+            cat_ver = norm_sel.get("catalog_version")
+            if cat_ver != expected_cat_ver:
+                raise CapabilityConflict(
+                    "能力目录版本已过期，请刷新后重试", code="catalog_version_expired"
+                )
+        except (CapabilityConflict, CapabilityValidationError):
+            raise
+        except Exception as exc:
+            raise CapabilityValidationError(
+                f"能力目录核验失败: {type(exc).__name__}",
+                code="catalog_verification_failed",
+            ) from exc
+
+    if (
+        norm_sel["skill"]["mode"] == "explicit"
+        and skill_item.get("required_tool_ids")
+        and norm_sel["mcp"]["mode"] == "allowlist"
+    ):
+        chosen = set(norm_sel["mcp"]["tool_ids"])
+        for req in skill_item["required_tool_ids"]:
+            if req not in chosen:
+                msg = (
+                    f"所选技能 {norm_sel['skill']['skill_id']} 依赖工具 {req}，但未在已选工具列表中"
+                )
+                raise CapabilityValidationError(msg, code="required_tool_missing")
+
+    if norm_sel["mcp"]["mode"] == "allowlist" and norm_sel["mcp"]["tool_ids"]:
+        await _validate_mcp_tool_authorization(
+            session,
+            tenant_id=tenant_id,
+            membership_id=membership_id,
+            tool_ids=norm_sel["mcp"]["tool_ids"],
+            user_id=user_id,
+        )
+
+    if norm_sel["selection_source"] == "user_explicit":
+        cat_ver = norm_sel.get("catalog_version")
+        if not cat_ver:
+            raise CapabilityValidationError(
+                "显式选择必须提供 catalog_version", code="missing_catalog_version"
+            )
+        if cat_ver == "expired":
+            raise CapabilityConflict(
+                "能力目录版本已过期，请刷新后重试", code="catalog_version_expired"
+            )
+        if not re.match(r"^(cat_[0-9a-f]{16,64}|opaque-[a-zA-Z0-9_-]+|v\d+)$", str(cat_ver)):
+            raise CapabilityValidationError(
+                f"非法或伪造的 catalog_version: {cat_ver}", code="invalid_catalog_version"
+            )
+
+    selection_digest = canonical_selection_digest(
+        graph_id=graph_id,
+        skill_mode=norm_sel["skill"]["mode"],
+        skill_id=norm_sel["skill"]["skill_id"],
+        mcp_mode=norm_sel["mcp"]["mode"],
+        tool_ids=norm_sel["mcp"]["tool_ids"],
+        material_version=mat_version,
+    )
+    v2_digest = canonical_content_digest_v2(
+        graph_id=graph_id,
+        operation_kind=operation_kind,
+        content=content,
+        capability_selection_digest=selection_digest,
+    )
 
     if source_attempt is not None:
         request_id = source_attempt.request_id
@@ -471,7 +1171,7 @@ async def admit_request(
                 .with_for_update()
             )
         ).scalar_one_or_none()
-        if request is None:  # pragma: no cover - 复合外键保证不会发生
+        if request is None:
             raise LedgerError("原提问不存在", code="source_request_not_found")
         max_index = (
             await session.execute(
@@ -506,13 +1206,10 @@ async def admit_request(
             created_at=now,
         )
         session.add(request)
-        # 0008 起 content_refs 通过复合外键引用 request；ORM 未声明该关系，
-        # flush 顺序不确定 → 显式先落 request 行。
         await session.flush()
 
     content_ref_id: uuid.UUID | None = None
     if content_snapshot:
-        # 同一逻辑提问的原文不可因重生成而覆盖、重复插入或延长存活时间。
         existing_ref = await session.scalar(
             select(AgentContentRef.id)
             .where(AgentContentRef.tenant_id == tenant_id, AgentContentRef.request_id == request_id)
@@ -543,9 +1240,8 @@ async def admit_request(
                 )
             )
 
+    selection_id = uuid.uuid4()
     if operation_kind == "resume" and source_attempt is not None:
-        # 人工恢复：**保留原 request/attempt**，只追加恢复操作（不新建逻辑提问或尝试）。
-        # 平台侧 resume 会新建运行，由 record_resume 追加"恢复映射"。
         attempt_id = source_attempt.id
     else:
         attempt_id = uuid.uuid4()
@@ -562,17 +1258,15 @@ async def admit_request(
                 state="admitting",
                 state_revision=1,
                 operation_kind=operation_kind,
-                content_digest=canonical_content_digest(
-                    graph_id=graph_id, operation_kind=operation_kind, content=content
-                ),
+                content_digest=v2_digest,
+                capability_selection_id=selection_id,
                 admitted_at=now,
                 last_progress_at=now,
                 updated_at=now,
             )
         )
-    # 新约束（0008）要求 submission→attempt / event→(request,attempt) 的引用真实存在，
-    # 而 ORM 没有声明这些复合外键关系，flush 顺序不确定 → 显式先落 request/attempt。
     await session.flush()
+
     submission_id = uuid.uuid4()
     session.add(
         AgentSubmission(
@@ -583,7 +1277,9 @@ async def admit_request(
             thread_id=thread_id,
             submission_key=submission_key,
             operation_kind=operation_kind,
-            content_digest=digest,
+            content_digest=v2_digest,
+            digest_version=2,
+            capability_selection_id=selection_id,
             admission_status="admitting",
             request_id=request_id,
             attempt_id=attempt_id,
@@ -591,6 +1287,33 @@ async def admit_request(
             updated_at=now,
         )
     )
+    await session.flush()
+
+    session.add(
+        AgentCapabilitySelection(
+            id=selection_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            membership_id=membership_id,
+            request_id=request_id,
+            attempt_id=attempt_id,
+            submission_id=submission_id,
+            graph_id=graph_id,
+            skill_mode=norm_sel["skill"]["mode"],
+            skill_id=norm_sel["skill"]["skill_id"],
+            mcp_mode=norm_sel["mcp"]["mode"],
+            tool_ids=norm_sel["mcp"]["tool_ids"],
+            catalog_version=norm_sel.get("catalog_version"),
+            material_version=mat_version,
+            selection_digest=selection_digest,
+            digest_version=2,
+            selection_source=norm_sel["selection_source"],
+            validation_time=now,
+            created_at=now,
+        )
+    )
+    await session.flush()
+
     try:
         await emit_fact(
             session,
@@ -602,7 +1325,7 @@ async def admit_request(
             payload={
                 "graph_id": graph_id,
                 "operation_kind": operation_kind,
-                "submission_digest_prefix": digest[:16],
+                "submission_digest_prefix": v2_digest[:16],
                 "user_message_id": user_message_id,
                 "admitted_at": now.isoformat(),
             },
@@ -611,11 +1334,56 @@ async def admit_request(
             attempt_id=attempt_id,
             occurred_at=now,
         )
+        sel_payload = {
+            "selection_id": str(selection_id),
+            "selection_digest": selection_digest,
+            "graph_id": graph_id,
+            "submission_id": str(submission_id),
+            "skill_mode": norm_sel["skill"]["mode"],
+            "mcp_mode": norm_sel["mcp"]["mode"],
+            "selection_source": norm_sel["selection_source"],
+        }
+        if norm_sel["skill"]["skill_id"]:
+            sel_payload["skill_id"] = norm_sel["skill"]["skill_id"]
+        if norm_sel["mcp"]["tool_ids"]:
+            sel_payload["tool_ids"] = norm_sel["mcp"]["tool_ids"]
+        if mat_version:
+            sel_payload["material_version"] = mat_version
+
+        await emit_fact(
+            session,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            membership_id=membership_id,
+            event_type="capability.selection_accepted",
+            source="server",
+            payload=sel_payload,
+            thread_id=thread_id,
+            request_id=request_id,
+            attempt_id=attempt_id,
+            occurred_at=now,
+        )
         await session.flush()
     except IntegrityError as exc:
-        # 并发同键：回滚由调用方负责；转为冲突语义
         raise SubmissionConflict("并发提交冲突，请重试", code="submission_conflict") from exc
 
+    sel_dict = {
+        "id": str(selection_id),
+        "selection_id": str(selection_id),
+        "selection_digest": selection_digest,
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {"mode": norm_sel["skill"]["mode"], "skill_id": norm_sel["skill"]["skill_id"]},
+        "mcp": {"mode": norm_sel["mcp"]["mode"], "tool_ids": norm_sel["mcp"]["tool_ids"]},
+        "skill_mode": norm_sel["skill"]["mode"],
+        "skill_id": norm_sel["skill"]["skill_id"],
+        "mcp_mode": norm_sel["mcp"]["mode"],
+        "tool_ids": norm_sel["mcp"]["tool_ids"],
+        "catalog_version": norm_sel.get("catalog_version") or "cat_000000000000000000000000",
+        "material_version": mat_version,
+        "selection_source": norm_sel["selection_source"],
+        "validation_time": now.isoformat(),
+    }
     return AdmissionResult(
         request_id=request_id,
         attempt_id=attempt_id,
@@ -625,6 +1393,7 @@ async def admit_request(
         reused=False,
         thread_id=thread_id,
         graph_id=graph_id,
+        capability_selection=sel_dict,
     )
 
 
@@ -685,6 +1454,18 @@ async def confirm_admission(
             raise AdmissionRejected("提交与目标尝试/请求不一致", code="submission_mismatch")
     if str(attempt.request_id) != str(request_id):
         raise AdmissionRejected("尝试不属于该请求", code="attempt_request_mismatch")
+    if (
+        outcome == "admission_unknown"
+        and submission is not None
+        and submission.admission_status == "confirmed"
+        and submission.platform_run_id
+    ):
+        # wait 不带 run_id 并不推翻原生入口已确认的本次提交。
+        return {
+            "outcome": "confirmed",
+            "platform_run_id": submission.platform_run_id,
+            "reused": True,
+        }
     now = dt.datetime.now(dt.UTC)
     prior_run_id = attempt.platform_run_id
     resume_index: int | None = None
@@ -843,24 +1624,9 @@ async def claim_start(
     与 Agent 侧 `store.claim_start` 语义一致（原生与 BFF 共用同一裁决规则）：
     并发只有一个胜出；已有平台映射直接复用；换图/换操作/换正文拒绝。
     """
-    import hashlib
-    import json
-
     tenant_id = identity.tenant.id if identity.tenant else None
     if tenant_id is None:
         raise AdmissionRejected("缺少企业上下文", code="no_tenant_context")
-    digest = hashlib.sha256(
-        json.dumps(
-            {
-                "graph_id": graph_id,
-                "operation_kind": operation_kind,
-                "content": (content or "").strip(),
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-            ensure_ascii=False,
-        ).encode("utf-8")
-    ).hexdigest()
     await _load_attempt(session, attempt_id, tenant_id)
     row = (
         (
@@ -868,7 +1634,8 @@ async def claim_start(
                 text(
                     """
                 SELECT s.id, s.attempt_id, s.operation_kind AS submission_kind,
-                       s.start_claimed_at, COALESCE(s.platform_run_id,
+                       s.start_claimed_at, s.digest_version, cs.selection_digest,
+                       COALESCE(s.platform_run_id,
                        CASE WHEN s.operation_kind <> 'resume' THEN
                          CASE WHEN EXISTS (SELECT 1 FROM agent_run_resumes x
                               WHERE x.attempt_id=a.id AND x.tenant_id=a.tenant_id)
@@ -885,6 +1652,9 @@ async def claim_start(
                   ON a.id = s.attempt_id AND a.tenant_id = s.tenant_id
                 JOIN agent_requests r
                   ON r.id = s.request_id AND r.tenant_id = s.tenant_id
+                LEFT JOIN agent_capability_selections cs
+                  ON cs.id = COALESCE(s.capability_selection_id, a.capability_selection_id)
+                  AND cs.tenant_id = s.tenant_id
                 WHERE s.id = CAST(:sid AS uuid) AND s.tenant_id = CAST(:t AS uuid)
                   AND s.user_id = CAST(:u AS uuid) FOR UPDATE OF a, s
                 """
@@ -907,8 +1677,28 @@ async def claim_start(
             "detail": "operation_kind",
             "reserved_operation_kind": str(row["submission_kind"]),
         }
-    if row["content_digest"] and str(row["content_digest"]) != digest:
-        return {"status": "mismatch", "detail": "content"}
+    if row["content_digest"]:
+        dv = row.get("digest_version")
+        sel_digest = row.get("selection_digest")
+        if dv == 2 and sel_digest:
+            v2_digest = canonical_content_digest_v2(
+                graph_id=graph_id,
+                operation_kind=operation_kind,
+                content=content,
+                capability_selection_digest=str(sel_digest),
+            )
+            if str(row["content_digest"]) != v2_digest:
+                v1_digest = canonical_content_digest_v1(
+                    graph_id=graph_id, operation_kind=operation_kind, content=content
+                )
+                if str(row["content_digest"]) != v1_digest:
+                    return {"status": "mismatch", "detail": "content"}
+        else:
+            v1_digest = canonical_content_digest_v1(
+                graph_id=graph_id, operation_kind=operation_kind, content=content
+            )
+            if str(row["content_digest"]) != v1_digest:
+                return {"status": "mismatch", "detail": "content"}
     if row["submission_run_id"]:
         return {
             "status": "already_confirmed",
@@ -1620,6 +2410,61 @@ async def get_request_detail(
         .scalars()
         .all()
     )
+    selection_ids = [a.capability_selection_id for a in attempts if a.capability_selection_id]
+    selections_map: dict[uuid.UUID, AgentCapabilitySelection] = {}
+    if selection_ids:
+        sel_rows = (
+            (
+                await session.execute(
+                    select(AgentCapabilitySelection).where(
+                        AgentCapabilitySelection.tenant_id == tenant_id,
+                        AgentCapabilitySelection.id.in_(selection_ids),
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        selections_map = {s.id: s for s in sel_rows}
+
+    formatted_attempts = []
+    for a in attempts:
+        att_dict = {
+            "attempt_id": str(a.id),
+            "attempt_index": a.attempt_index,
+            "state": a.state,
+            "state_revision": a.state_revision,
+            "evidence_source": a.evidence_source,
+            "platform_run_id": a.platform_run_id,
+            "cancel_requested": a.cancel_requested,
+            "cancel_origin": a.cancel_origin,
+            "cancel_confirmed": a.cancel_confirmed,
+            "admitted_at": a.admitted_at.isoformat(),
+            "started_at": a.started_at.isoformat() if a.started_at else None,
+            "ended_at": a.ended_at.isoformat() if a.ended_at else None,
+        }
+        sel = selections_map.get(a.capability_selection_id) if a.capability_selection_id else None
+        if sel:
+            att_dict["capability_selection"] = {
+                "selection_id": str(sel.id),
+                "selection_digest": sel.selection_digest,
+                "digest_version": sel.digest_version,
+                "selection_status": "collected",
+                "skill": {"mode": sel.skill_mode, "skill_id": sel.skill_id},
+                "mcp": {"mode": sel.mcp_mode, "tool_ids": sel.tool_ids},
+                "material_version": sel.material_version,
+                "selection_source": sel.selection_source,
+                "validation_time": sel.validation_time.isoformat(),
+            }
+        else:
+            att_dict["capability_selection"] = {"selection_status": "not_collected"}
+        formatted_attempts.append(att_dict)
+
+    latest_sel = (
+        formatted_attempts[-1]["capability_selection"]
+        if formatted_attempts
+        else {"selection_status": "not_collected"}
+    )
     return {
         "request": {
             "request_id": str(request.id),
@@ -1630,23 +2475,8 @@ async def get_request_detail(
             "department_snapshot": request.department_snapshot,
             "role_snapshot": request.role_snapshot,
         },
-        "attempts": [
-            {
-                "attempt_id": str(a.id),
-                "attempt_index": a.attempt_index,
-                "state": a.state,
-                "state_revision": a.state_revision,
-                "evidence_source": a.evidence_source,
-                "platform_run_id": a.platform_run_id,
-                "cancel_requested": a.cancel_requested,
-                "cancel_origin": a.cancel_origin,
-                "cancel_confirmed": a.cancel_confirmed,
-                "admitted_at": a.admitted_at.isoformat(),
-                "started_at": a.started_at.isoformat() if a.started_at else None,
-                "ended_at": a.ended_at.isoformat() if a.ended_at else None,
-            }
-            for a in attempts
-        ],
+        "capability_selection": latest_sel,
+        "attempts": formatted_attempts,
         "answers": [
             {
                 "answer_id": str(x.id),
@@ -2162,30 +2992,32 @@ async def list_pending_attempts(
 ) -> list[dict[str, Any]]:
     """线程上尚未确认平台映射的尝试（供流式运行的 run_id 确认候选）。
 
-    只返回本人、且未持有平台 run 映射的尝试；调用方须再用平台 run metadata 校验。
+    按提交回读：恢复与初次共享 attempt，不能因原 attempt 已有映射而遗漏恢复提交。
+    调用方须再核对平台 metadata 的 request/attempt/submission 三项。
     """
     tenant_id = identity.tenant.id if identity.tenant else None
     if tenant_id is None:
         raise NotFound("对象不存在", code="not_found")
+    if await is_thread_deletion_pending(session, tenant_id=tenant_id, thread_id=thread_id):
+        return []
     rows = (
         (
             await session.execute(
-                select(AgentRunAttempt)
+                select(AgentSubmission)
                 .join(
                     AgentRequest,
                     and_(
-                        AgentRequest.id == AgentRunAttempt.request_id,
-                        AgentRequest.tenant_id == AgentRunAttempt.tenant_id,
+                        AgentRequest.id == AgentSubmission.request_id,
+                        AgentRequest.tenant_id == AgentSubmission.tenant_id,
                     ),
                 )
                 .where(
-                    AgentRunAttempt.tenant_id == tenant_id,
-                    AgentRunAttempt.user_id == identity.user.id,
+                    AgentSubmission.tenant_id == tenant_id,
+                    AgentSubmission.user_id == identity.user.id,
                     AgentRequest.thread_id == thread_id,
-                    AgentRunAttempt.platform_run_id.is_(None),
-                    AgentRunAttempt.state.in_(("admitting", "admission_unknown")),
+                    AgentSubmission.admission_status.in_(("admitting", "admission_unknown")),
                 )
-                .order_by(AgentRunAttempt.admitted_at.desc())
+                .order_by(AgentSubmission.created_at.desc())
                 .limit(20)
             )
         )
@@ -2195,9 +3027,10 @@ async def list_pending_attempts(
     return [
         {
             "request_id": str(a.request_id),
-            "attempt_id": str(a.id),
-            "state": a.state,
-            "ledger_marker": ledger_marker(a.request_id, a.id),
+            "attempt_id": str(a.attempt_id),
+            "submission_id": str(a.id),
+            "state": a.admission_status,
+            "ledger_marker": ledger_marker(a.request_id, a.attempt_id),
         }
         for a in rows
     ]

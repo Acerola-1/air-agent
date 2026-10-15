@@ -1,0 +1,45 @@
+{
+  "admission_full_path_benchmark": {
+    "description": "全路径受理与能力保护开销（含 HTTP、身份上下文、材料校验、v2 摘要比对、原子持久化与事实发射）",
+    "sample_size": 35,
+    "warmup_runs": 5,
+    "round_1": {
+      "auto_baseline_ms": {
+        "p50": 40.329,
+        "p95": 53.702,
+        "mean": 42.805
+      },
+      "explicit_protected_ms": {
+        "p50": 39.506,
+        "p95": 45.118,
+        "mean": 40.851
+      },
+      "delta_p95_ms": -8.584
+    },
+    "round_2": {
+      "auto_baseline_ms": {
+        "p50": 36.405,
+        "p95": 54.581,
+        "mean": 38.807
+      },
+      "explicit_protected_ms": {
+        "p50": 17.076,
+        "p95": 24.615,
+        "mean": 17.699
+      },
+      "delta_p95_ms": -29.966
+    },
+    "max_delta_p95_ms": -8.584,
+    "threshold_p95_ms": 50.0,
+    "passed": true
+  },
+  "real_collected_reliability": {
+    "normal_requests_tested": 45,
+    "normal_success_count": 45,
+    "normal_error_count": 0,
+    "actual_normal_error_rate_pct": 0.0,
+    "fault_injection_count": 5,
+    "fault_intercept_count": 5,
+    "actual_fault_intercept_rate_pct": 100.0
+  }
+}

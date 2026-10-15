@@ -86,6 +86,8 @@ async def admit_request(
             source_attempt_id=payload.source_attempt_id,
             content_snapshot=payload.content if payload.store_content else None,
             retention_days=payload.retention_days,
+            menu_name=payload.menu_name,
+            capability_selection=payload.capability_selection,
         )
     except ledger_service.LedgerError as exc:
         raise _error(exc) from exc

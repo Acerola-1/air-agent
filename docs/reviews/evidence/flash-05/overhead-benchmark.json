@@ -1,0 +1,65 @@
+{
+  "check": "capability selection local protection overhead & directory fault bounds",
+  "conditions": "same process, local memory/fs verification, 35 samples x 2 rounds, warmup 5",
+  "threshold": "本地新增 P95 ≤ 50ms",
+  "external_wait_seconds": 0.0,
+  "error_rate": "0.0%",
+  "rounds": [
+    {
+      "round": 1,
+      "auto_baseline": {
+        "samples": 35,
+        "p50_ms": 1.2145,
+        "p95_ms": 1.2341,
+        "mean_ms": 1.2122
+      },
+      "explicit_protected": {
+        "samples": 35,
+        "p50_ms": 1.2853,
+        "p95_ms": 2.3337,
+        "mean_ms": 1.4146
+      },
+      "tool_filtering": {
+        "samples": 35,
+        "p50_ms": 0.0061,
+        "p95_ms": 0.0062,
+        "mean_ms": 0.0061
+      },
+      "delta_p95_ms": 1.0996
+    },
+    {
+      "round": 2,
+      "auto_baseline": {
+        "samples": 35,
+        "p50_ms": 1.2747,
+        "p95_ms": 2.212,
+        "mean_ms": 1.3893
+      },
+      "explicit_protected": {
+        "samples": 35,
+        "p50_ms": 1.2228,
+        "p95_ms": 1.2943,
+        "mean_ms": 1.2549
+      },
+      "tool_filtering": {
+        "samples": 35,
+        "p50_ms": 0.006,
+        "p95_ms": 0.0061,
+        "mean_ms": 0.006
+      },
+      "delta_p95_ms": -0.9177
+    }
+  ],
+  "directory_fault_bounds": {
+    "single_server_timeout_sec": 2.0,
+    "total_catalog_timeout_sec": 5.0,
+    "max_concurrency": 3,
+    "error_rate_in_normal_path": "0.0%",
+    "fault_degradation": "诚实标记 unavailable / temporarily_unavailable，不阻断可用部分"
+  },
+  "verdict": {
+    "max_delta_p95_ms": 1.0996,
+    "passed": true,
+    "notes": "本地保护（选择规范化、材料校验、白名单过滤）新增 P95 远低于 50ms 阈值"
+  }
+}

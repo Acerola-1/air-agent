@@ -1,0 +1,97 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.1, pluggy-1.6.0 -- /tmp/aa-takeover35-py313/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/acerola/Dev/Python/air_agent/admin/api
+configfile: pyproject.toml
+plugins: timeout-2.4.0, asyncio-1.4.0, langsmith-0.10.15, anyio-4.14.2
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 45 items
+
+admin/api/tests/test_event_ledger_api.py::test_admit_creates_request_attempt_and_event PASSED [  2%]
+admin/api/tests/test_event_ledger_api.py::test_submission_idempotent_and_conflict PASSED [  4%]
+admin/api/tests/test_event_ledger_api.py::test_admit_rejects_unconfirmed_thread PASSED [  6%]
+admin/api/tests/test_event_ledger_api.py::test_admit_rejects_cross_tenant_thread PASSED [  8%]
+admin/api/tests/test_event_ledger_api.py::test_admission_unknown_not_success_and_not_retried PASSED [ 11%]
+admin/api/tests/test_event_ledger_api.py::test_admission_confirm_requires_internal_token PASSED [ 13%]
+admin/api/tests/test_event_ledger_api.py::test_admission_confirmed_sets_running PASSED [ 15%]
+admin/api/tests/test_event_ledger_api.py::test_state_evidence_rank_and_no_terminal_regression PASSED [ 17%]
+admin/api/tests/test_event_ledger_api.py::test_stop_intent_independent_of_terminal PASSED [ 20%]
+admin/api/tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected FAILED [ 22%]
+admin/api/tests/test_event_ledger_api.py::test_self_readback_no_content_and_operations_split PASSED [ 24%]
+admin/api/tests/test_event_ledger_api.py::test_same_user_two_tenants_isolated PASSED [ 26%]
+admin/api/tests/test_event_ledger_api.py::test_metrics_denominator_and_not_collected PASSED [ 28%]
+admin/api/tests/test_event_ledger_api.py::test_metrics_requires_permission PASSED [ 31%]
+admin/api/tests/test_event_ledger_api.py::test_f02_resume_start_claim_uses_its_own_digest PASSED [ 33%]
+admin/api/tests/test_event_ledger_api.py::test_f02_resume_source_must_be_waiting_and_same_thread PASSED [ 35%]
+admin/api/tests/test_event_ledger_api.py::test_f02_confirm_is_submission_scoped PASSED [ 37%]
+admin/api/tests/test_event_ledger_api.py::test_f04_late_internal_callbacks_after_deletion_are_refused PASSED [ 40%]
+admin/api/tests/test_event_ledger_api.py::test_61_runs_listing_cursor_scope_and_max_page PASSED [ 42%]
+admin/api/tests/test_event_ledger_api.py::test_thread_deletion_marks_immediately PASSED [ 44%]
+admin/api/tests/test_event_ledger_api.py::test_metrics_latency_percentiles_from_detail PASSED [ 46%]
+admin/api/tests/test_event_ledger_api.py::test_retry_and_regenerate_link_original_request PASSED [ 48%]
+admin/api/tests/test_event_ledger_api.py::test_source_attempt_requires_same_user_and_kind PASSED [ 51%]
+admin/api/tests/test_event_ledger_api.py::test_regenerate_without_source_becomes_initial PASSED [ 53%]
+admin/api/tests/test_event_ledger_api.py::test_historical_import_excluded_from_default_cohort PASSED [ 55%]
+admin/api/tests/test_event_ledger_api.py::test_r03_replay_returns_its_own_attempt_after_regenerate PASSED [ 57%]
+admin/api/tests/test_event_ledger_api.py::test_r03_resume_keeps_request_and_attempt PASSED [ 60%]
+admin/api/tests/test_event_ledger_api.py::test_r03_confirmation_only_affects_that_operation PASSED [ 62%]
+admin/api/tests/test_event_ledger_api.py::test_r01_admin_start_claim_single_winner_and_mismatch PASSED [ 64%]
+admin/api/tests/test_event_ledger_api.py::test_r05_deletion_requires_ownership_or_permission PASSED [ 66%]
+admin/api/tests/test_event_ledger_api.py::test_r05_deletion_blocks_reads_and_new_writes PASSED [ 68%]
+admin/api/tests/test_event_ledger_api.py::test_f04_deleted_thread_stays_blocked_after_cleanup PASSED [ 71%]
+admin/api/tests/test_event_ledger_api.py::test_f04_deletion_record_is_permanent_after_cleanup PASSED [ 73%]
+admin/api/tests/test_event_ledger_api.py::test_r05_content_read_is_per_request_not_per_thread PASSED [ 75%]
+admin/api/tests/test_event_ledger_api.py::test_takeover_regenerate_reuses_original_snapshot PASSED [ 77%]
+admin/api/tests/test_event_ledger_api.py::test_takeover_fallback_operation_is_startable_and_replayable PASSED [ 80%]
+admin/api/tests/test_event_ledger_api.py::test_takeover_request_cannot_extend_server_retention PASSED [ 82%]
+admin/api/tests/test_event_ledger_api.py::test_takeover_tenant_retention_override_and_source_scope PASSED [ 84%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_1_schema_validation PASSED [ 86%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_1_allowed_tools_non_mandatory_and_required_tools_conflict PASSED [ 88%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_2_composite_foreign_key_and_rls PASSED [ 91%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_3_atomic_transaction_and_rollback PASSED [ 93%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_4_idempotency_digest_and_conflict PASSED [ 95%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_4_delivery_switch_fallback PASSED [ 97%]
+admin/api/tests/test_ledger_selection_persistence.py::test_task_3_5_readback_deletion_and_resume PASSED [100%]
+
+=================================== FAILURES ===================================
+_______________ test_browser_events_all_reserved_types_rejected ________________
+
+ledger_env = {'tenant_a': UUID('b8e52ccc-441d-4319-a6bc-e8c7c2b1bb4c'), 'tenant_b': UUID('d2510a34-95a1-4ce8-9a16-4194ee7343db'), 'user_a': UUID('b04a4758-bac4-4841-858d-79845e82d4d1'), 'user_b': UUID('f5c10125-51ba-48ee-93e1-e997e2f73927')}
+
+    async def test_browser_events_all_reserved_types_rejected(ledger_env) -> None:
+        env = ledger_env
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            forged = {
+                "schema_version": "1.0",
+                "event_id": str(uuid.uuid4()),
+                "event_type": "run.state_observed",
+                "occurred_at": "2026-10-13T02:00:00.000Z",
+                "source": "browser",
+                "tenant_id": str(env["tenant_a"]),
+                "user_id": str(env["user_a"]),
+                "membership_id": "33333333-3333-4333-8333-333333333333",
+                "payload": {
+                    "state": "succeeded",
+                    "evidence_source": "browser_observed",
+                    "state_revision": 1,
+                },
+            }
+            res = await client.post(
+                "/agent/events/browser",
+                json={"events": [forged]},
+                headers={"origin": "http://localhost:3000"},
+            )
+            assert res.status_code == 200, res.text
+            body = res.json()
+            assert body["accepted"] is False
+>           assert body["items"][0]["reason"] == "source_not_allowed"
+E           AssertionError: assert 'collection_disabled' == 'source_not_allowed'
+E             
+E             - source_not_allowed
+E             + collection_disabled
+
+admin/api/tests/test_event_ledger_api.py:541: AssertionError
+=========================== short test summary info ============================
+FAILED admin/api/tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected
+======================== 1 failed, 44 passed in 24.84s =========================

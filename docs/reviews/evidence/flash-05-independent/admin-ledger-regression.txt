@@ -1,0 +1,387 @@
+......F..F....F.FF.........FF......F
+=================================== FAILURES ===================================
+____________________ test_admission_confirmed_sets_running _____________________
+
+ledger_env = {'tenant_a': UUID('80707941-cfa4-4fb8-a119-fb6e52d0d6a4'), 'tenant_b': UUID('501a27d6-65c0-4db1-98f0-25c4c831eb63'), 'user_a': UUID('2b49815a-3dec-42e3-ac63-25fd58a7355a'), 'user_b': UUID('ab6c4c22-46f3-4e32-a88c-6e9d041ef18f')}
+
+    async def test_admission_confirmed_sets_running(ledger_env) -> None:
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            admitted = (
+                await client.post("/agent/requests", json=_admit_body(thread_id, "confirm-0001"))
+            ).json()
+>           await _start_claim(client, admitted, thread_id)
+
+admin/api/tests/test_event_ledger_api.py:418: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <ctx_client.ContextClient object at 0x10f59e8b0>
+admitted = {'request_id': '918601de-105d-4800-85fc-4508a84905d0', 'attempt_id': 'b20c92e3-29ea-4893-9300-323310706c77', 'submission_id': '0bd343b4-8d9b-4a35-8c05-35a4a238b63e', 'admission_status': 'admitting', ...}
+thread_id = 'ced8b49d-cffc-45e4-9456-22b61bae7bfc', content = '问题'
+
+    async def _start_claim(client, admitted: dict, thread_id: str, content: str = "问题") -> dict:
+        """取启动权（R01）：受控入口在创建平台运行前必须成功，之后才能回填受理结果。"""
+        res = await client.post(
+            "/agent/runs/start-claim",
+            headers={"x-internal-token": _internal_token()},
+            json={
+                "submission_id": admitted["submission_id"],
+                "attempt_id": admitted["attempt_id"],
+                "thread_id": thread_id,
+                "graph_id": "basic-qa",
+                "operation_kind": admitted.get("operation_kind", "initial"),
+                "content": content,
+            },
+        )
+        assert res.status_code == 200, res.text
+>       assert res.json()["status"] == "claimed", res.text
+E       AssertionError: {"status":"mismatch","start_claim_token":null,"platform_run_id":null,"state":null,"detail":"content","reserved_graph_id":null,"reserved_operation_kind":null}
+E       assert 'mismatch' == 'claimed'
+E         
+E         - claimed
+E         + mismatch
+
+admin/api/tests/test_event_ledger_api.py:193: AssertionError
+_______________ test_browser_events_all_reserved_types_rejected ________________
+
+ledger_env = {'tenant_a': UUID('ed3919b7-7719-40b0-ae00-a6bbeae16224'), 'tenant_b': UUID('3d284388-99e0-4bdc-be4b-ba074be74380'), 'user_a': UUID('d3e1b1e1-108f-472a-81d6-897f949b7e94'), 'user_b': UUID('117e3dee-6462-4993-8c4a-7a4981b2f0c9')}
+
+    async def test_browser_events_all_reserved_types_rejected(ledger_env) -> None:
+        env = ledger_env
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            forged = {
+                "schema_version": "1.0",
+                "event_id": str(uuid.uuid4()),
+                "event_type": "run.state_observed",
+                "occurred_at": "2026-10-13T02:00:00.000Z",
+                "source": "browser",
+                "tenant_id": str(env["tenant_a"]),
+                "user_id": str(env["user_a"]),
+                "membership_id": "33333333-3333-4333-8333-333333333333",
+                "payload": {
+                    "state": "succeeded",
+                    "evidence_source": "browser_observed",
+                    "state_revision": 1,
+                },
+            }
+            res = await client.post(
+                "/agent/events/browser",
+                json={"events": [forged]},
+                headers={"origin": "http://localhost:3000"},
+            )
+            assert res.status_code == 200, res.text
+            body = res.json()
+            assert body["accepted"] is False
+>           assert body["items"][0]["reason"] == "source_not_allowed"
+E           AssertionError: assert 'collection_disabled' == 'source_not_allowed'
+E             
+E             - source_not_allowed
+E             + collection_disabled
+
+admin/api/tests/test_event_ledger_api.py:541: AssertionError
+_______________ test_f02_resume_start_claim_uses_its_own_digest ________________
+
+ledger_env = {'tenant_a': UUID('dd12e990-7889-4f2f-8157-740b42399e5f'), 'tenant_b': UUID('512ed0c6-6bd9-443b-b036-355e7af71016'), 'user_a': UUID('4a6091bb-1296-4cc9-b0c1-009c0e38df37'), 'user_b': UUID('ff098f5a-48ea-4d19-94ac-c44800a4bd48')}
+
+    async def test_f02_resume_start_claim_uses_its_own_digest(ledger_env) -> None:
+        """F02 反例 resume-deletion：恢复的启动权按**本次 resume 提交**的摘要裁决.
+    
+        修复前：start-claim 比对初次 attempt 的 content_digest（含 operation_kind=initial），
+        恢复提交必然 mismatch/content；HTTP 200 里带 mismatch 不算成功。
+        """
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            initial = (
+                await client.post(
+                    "/agent/requests", json=_admit_body(thread_id, "f02-initial-01", "问题")
+                )
+            ).json()
+            await _set_attempt_state(env["tenant_a"], initial["attempt_id"], "waiting_input")
+            resumed = (
+                await client.post(
+                    "/agent/requests",
+                    json={
+                        "thread_id": thread_id,
+                        "submission_key": "f02-resume-01",
+                        "graph_id": "basic-qa",
+                        "operation_kind": "resume",
+                        "content": "",
+                        "source_attempt_id": initial["attempt_id"],
+                    },
+                )
+            ).json()
+            assert resumed["request_id"] == initial["request_id"]
+            assert resumed["attempt_id"] == initial["attempt_id"]
+            res = await client.post(
+                "/agent/runs/start-claim",
+                headers={"x-internal-token": _internal_token()},
+                json={
+                    "submission_id": resumed["submission_id"],
+                    "attempt_id": resumed["attempt_id"],
+                    "thread_id": thread_id,
+                    "graph_id": "basic-qa",
+                    "operation_kind": "resume",
+                    "content": "",
+                },
+            )
+            assert res.status_code == 200, res.text
+>           assert res.json()["status"] == "claimed", res.text
+E           AssertionError: {"status":"mismatch","start_claim_token":null,"platform_run_id":null,"state":null,"detail":"content","reserved_graph_id":null,"reserved_operation_kind":null}
+E           assert 'mismatch' == 'claimed'
+E             
+E             - claimed
+E             + mismatch
+
+admin/api/tests/test_event_ledger_api.py:729: AssertionError
+____________________ test_f02_confirm_is_submission_scoped _____________________
+
+ledger_env = {'tenant_a': UUID('6a49cfa9-ddff-4ecb-8fb9-811cac3023e9'), 'tenant_b': UUID('e0f13a5f-b9b6-4fc0-b873-0bc7437c333b'), 'user_a': UUID('fb43471c-5e7c-4b85-b8ee-098b410a1921'), 'user_b': UUID('da2c52f4-f719-4486-9f49-58a5cd09e5d3')}
+
+    async def test_f02_confirm_is_submission_scoped(ledger_env) -> None:
+        """F02：恢复确认不得改写共享同一 attempt 的初次提交受理状态，并落恢复映射."""
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        token = {"x-internal-token": _internal_token()}
+        try:
+            initial = (
+                await client.post("/agent/requests", json=_admit_body(thread_id, "f02-scope-01"))
+            ).json()
+            await _set_attempt_state(env["tenant_a"], initial["attempt_id"], "waiting_input")
+            resumed = (
+                await client.post(
+                    "/agent/requests",
+                    json={
+                        "thread_id": thread_id,
+                        "submission_key": "f02-scope-02",
+                        "graph_id": "basic-qa",
+                        "operation_kind": "resume",
+                        "content": "",
+                        "source_attempt_id": initial["attempt_id"],
+                    },
+                )
+            ).json()
+>           await _start_claim(client, initial, thread_id)
+
+admin/api/tests/test_event_ledger_api.py:805: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <ctx_client.ContextClient object at 0x10fa621a0>
+admitted = {'request_id': 'da709332-03fa-49b8-b6cb-85fafaf21c58', 'attempt_id': '234a257f-7a11-43c9-ab69-e383afd4c01e', 'submission_id': 'f031b456-dccf-4b50-b471-8272de5c1b8f', 'admission_status': 'admitting', ...}
+thread_id = '06e525e1-d573-4e53-9144-89bd4b2cf4ed', content = '问题'
+
+    async def _start_claim(client, admitted: dict, thread_id: str, content: str = "问题") -> dict:
+        """取启动权（R01）：受控入口在创建平台运行前必须成功，之后才能回填受理结果。"""
+        res = await client.post(
+            "/agent/runs/start-claim",
+            headers={"x-internal-token": _internal_token()},
+            json={
+                "submission_id": admitted["submission_id"],
+                "attempt_id": admitted["attempt_id"],
+                "thread_id": thread_id,
+                "graph_id": "basic-qa",
+                "operation_kind": admitted.get("operation_kind", "initial"),
+                "content": content,
+            },
+        )
+        assert res.status_code == 200, res.text
+>       assert res.json()["status"] == "claimed", res.text
+E       AssertionError: {"status":"mismatch","start_claim_token":null,"platform_run_id":null,"state":null,"detail":"content","reserved_graph_id":null,"reserved_operation_kind":null}
+E       assert 'mismatch' == 'claimed'
+E         
+E         - claimed
+E         + mismatch
+
+admin/api/tests/test_event_ledger_api.py:193: AssertionError
+_________ test_f04_late_internal_callbacks_after_deletion_are_refused __________
+
+ledger_env = {'tenant_a': UUID('e264b3b4-36f7-41c6-ace7-2654cf6b837b'), 'tenant_b': UUID('5080f3d0-5f3f-40bf-80d1-835f6600360d'), 'user_a': UUID('a1e793d6-a6c5-4f1a-912f-b2d95fe1a20b'), 'user_b': UUID('bb91f984-c13f-4113-87da-b7f116d4ad2a')}
+
+    async def test_f04_late_internal_callbacks_after_deletion_are_refused(ledger_env) -> None:
+        """F04：删除后到达的内部回调（状态/回答/受理确认/恢复）必须被拒绝且不写新事件。
+    
+        修复前：这些内部写入端点只校验尝试归属，删除后仍会写入新的运行事件与回答。
+        """
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        token = {"x-internal-token": _internal_token()}
+        try:
+            admitted = (
+                await client.post("/agent/requests", json=_admit_body(thread_id, "f04-late-0001"))
+            ).json()
+>           await _start_claim(client, admitted, thread_id)
+
+admin/api/tests/test_event_ledger_api.py:867: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <ctx_client.ContextClient object at 0x10fab1e60>
+admitted = {'request_id': 'b8947e44-10be-44b3-896b-e1ee978ab69e', 'attempt_id': '82440e4d-39a3-4c56-b0a2-e263df61ee6c', 'submission_id': '7bbeee6e-edda-49dc-84b8-f9421c406583', 'admission_status': 'admitting', ...}
+thread_id = '6867cee8-14d4-4e07-a6e8-a792c39b9eb6', content = '问题'
+
+    async def _start_claim(client, admitted: dict, thread_id: str, content: str = "问题") -> dict:
+        """取启动权（R01）：受控入口在创建平台运行前必须成功，之后才能回填受理结果。"""
+        res = await client.post(
+            "/agent/runs/start-claim",
+            headers={"x-internal-token": _internal_token()},
+            json={
+                "submission_id": admitted["submission_id"],
+                "attempt_id": admitted["attempt_id"],
+                "thread_id": thread_id,
+                "graph_id": "basic-qa",
+                "operation_kind": admitted.get("operation_kind", "initial"),
+                "content": content,
+            },
+        )
+        assert res.status_code == 200, res.text
+>       assert res.json()["status"] == "claimed", res.text
+E       AssertionError: {"status":"mismatch","start_claim_token":null,"platform_run_id":null,"state":null,"detail":"content","reserved_graph_id":null,"reserved_operation_kind":null}
+E       assert 'mismatch' == 'claimed'
+E         
+E         - claimed
+E         + mismatch
+
+admin/api/tests/test_event_ledger_api.py:193: AssertionError
+______________ test_r03_confirmation_only_affects_that_operation _______________
+
+ledger_env = {'tenant_a': UUID('79e8f0db-c947-4d76-ab8d-8f7b5b776a6e'), 'tenant_b': UUID('4a3b4540-ce10-465b-9e8d-1241f0e2eb0a'), 'user_a': UUID('d0a19df3-0419-4235-bde9-e80ccf643b88'), 'user_b': UUID('e5054c8a-1578-41f1-b59a-ec41de687dc4')}
+
+    async def test_r03_confirmation_only_affects_that_operation(ledger_env) -> None:
+        """确认只影响本次操作的 submission，不批量改写同请求下其它操作。"""
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        token = {"x-internal-token": _internal_token()}
+        try:
+            base = (
+                await client.post("/agent/requests", json=_admit_body(thread_id, "r03-conf-0001"))
+            ).json()
+            regen = (
+                await client.post(
+                    "/agent/requests",
+                    json={
+                        **_admit_body(thread_id, "r03-conf-0002"),
+                        "operation_kind": "regenerate",
+                        "source_attempt_id": base["attempt_id"],
+                    },
+                )
+            ).json()
+>           await _start_claim(client, base, thread_id)
+
+admin/api/tests/test_event_ledger_api.py:1409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+client = <ctx_client.ContextClient object at 0x10fab1570>
+admitted = {'request_id': 'ec12e7d4-1ad1-4531-9642-74292f18d8fb', 'attempt_id': '29a2faf3-e3e4-4312-a9ef-9311c64be1f7', 'submission_id': '5822c5c8-6a93-44f5-9413-0539de678ff4', 'admission_status': 'admitting', ...}
+thread_id = 'a54d31da-e378-48d7-a0d1-55b93b8bd541', content = '问题'
+
+    async def _start_claim(client, admitted: dict, thread_id: str, content: str = "问题") -> dict:
+        """取启动权（R01）：受控入口在创建平台运行前必须成功，之后才能回填受理结果。"""
+        res = await client.post(
+            "/agent/runs/start-claim",
+            headers={"x-internal-token": _internal_token()},
+            json={
+                "submission_id": admitted["submission_id"],
+                "attempt_id": admitted["attempt_id"],
+                "thread_id": thread_id,
+                "graph_id": "basic-qa",
+                "operation_kind": admitted.get("operation_kind", "initial"),
+                "content": content,
+            },
+        )
+        assert res.status_code == 200, res.text
+>       assert res.json()["status"] == "claimed", res.text
+E       AssertionError: {"status":"mismatch","start_claim_token":null,"platform_run_id":null,"state":null,"detail":"content","reserved_graph_id":null,"reserved_operation_kind":null}
+E       assert 'mismatch' == 'claimed'
+E         
+E         - claimed
+E         + mismatch
+
+admin/api/tests/test_event_ledger_api.py:193: AssertionError
+____________ test_r01_admin_start_claim_single_winner_and_mismatch _____________
+
+ledger_env = {'tenant_a': UUID('d7bdae71-ded7-49d2-8085-51562216432c'), 'tenant_b': UUID('35605582-8e37-4159-b39c-b35409291930'), 'user_a': UUID('af280be0-28ae-4cb9-b559-1941d1adb404'), 'user_b': UUID('84ca9c6a-515f-4b82-8afb-031ddabbd557')}
+
+    async def test_r01_admin_start_claim_single_winner_and_mismatch(ledger_env) -> None:
+        """反例 live-admission（BFF 侧）：同一提交只能启动一次，换图/换正文拒绝。"""
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        token = {"x-internal-token": _internal_token()}
+        try:
+            admitted = (
+                await client.post("/agent/requests", json=_admit_body(thread_id, "r01-claim-0001"))
+            ).json()
+            payload = {
+                "submission_id": admitted["submission_id"],
+                "attempt_id": admitted["attempt_id"],
+                "thread_id": thread_id,
+                "graph_id": "basic-qa",
+                "operation_kind": "initial",
+                "content": "问题",
+            }
+            first = await client.post("/agent/runs/start-claim", json=payload, headers=token)
+            assert first.status_code == 200, first.text
+>           assert first.json()["status"] == "claimed"
+E           AssertionError: assert 'mismatch' == 'claimed'
+E             
+E             - claimed
+E             + mismatch
+
+admin/api/tests/test_event_ledger_api.py:1458: AssertionError
+_________ test_takeover_fallback_operation_is_startable_and_replayable _________
+
+ledger_env = {'tenant_a': UUID('3cf95094-dd92-4678-acbe-c2ada16a0e3c'), 'tenant_b': UUID('b969642c-fc4a-4200-b547-d3bbe30b35ad'), 'user_a': UUID('a5742ab6-137b-4d50-b112-6c22d361d1d6'), 'user_b': UUID('c18d2dbd-e6df-41d5-940b-f7a1a1a27b77')}
+
+    async def test_takeover_fallback_operation_is_startable_and_replayable(ledger_env):
+        env = ledger_env
+        thread = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            body = {**_admit_body(thread, "fallback-regenerate"), "operation_kind": "regenerate"}
+            first = await client.post("/agent/requests", json=body)
+            assert first.status_code == 200 and first.json()["operation_kind"] == "initial"
+            item = first.json()
+            claim = await client.post(
+                "/agent/runs/start-claim",
+                headers={"x-internal-token": _internal_token()},
+                json={
+                    "submission_id": item["submission_id"],
+                    "attempt_id": item["attempt_id"],
+                    "thread_id": thread,
+                    "graph_id": "basic-qa",
+                    "operation_kind": "initial",
+                    "content": "问题",
+                },
+            )
+>           assert claim.status_code == 200 and claim.json()["status"] == "claimed"
+E           AssertionError: assert (200 == 200 and 'mismatch' == 'claimed'
+E            +  where 200 = <Response [200 OK]>.status_code
+E             
+E             - claimed
+E             + mismatch)
+
+admin/api/tests/test_event_ledger_api.py:1766: AssertionError
+=========================== short test summary info ============================
+FAILED admin/api/tests/test_event_ledger_api.py::test_admission_confirmed_sets_running
+FAILED admin/api/tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected
+FAILED admin/api/tests/test_event_ledger_api.py::test_f02_resume_start_claim_uses_its_own_digest
+FAILED admin/api/tests/test_event_ledger_api.py::test_f02_confirm_is_submission_scoped
+FAILED admin/api/tests/test_event_ledger_api.py::test_f04_late_internal_callbacks_after_deletion_are_refused
+FAILED admin/api/tests/test_event_ledger_api.py::test_r03_confirmation_only_affects_that_operation
+FAILED admin/api/tests/test_event_ledger_api.py::test_r01_admin_start_claim_single_winner_and_mismatch
+FAILED admin/api/tests/test_event_ledger_api.py::test_takeover_fallback_operation_is_startable_and_replayable
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 8 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+8 failed, 28 passed in 31.04s

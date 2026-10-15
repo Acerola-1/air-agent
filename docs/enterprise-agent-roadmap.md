@@ -1,6 +1,6 @@
 # Air Agent 企业化总体路线图
 
-日期：2026-10-12；状态更新2026-10-15。第1/2项已接管验收；第3/5项已同步规格并归档，用户豁免3最后的剪贴板文本实机抽查；真实企业MCP/生产门禁保留。下一项展开4，独立IAM并行规划/实施，不把全文理解成全部功能已经实现。
+日期：2026-10-12；状态更新2026-10-15。第1/2项已接管验收；第3/5项已同步规格并归档，用户豁免3最后的剪贴板文本实机抽查；第4项已由协调者补修验收并按用户指示归档，保留系统中文输入法候选窗物理抽查，未冒充实测。真实企业MCP/生产门禁保留。下一阶段为6–10的细化规划，与独立IAM消费者切换协调，不把全文理解成全部功能已经实现。
 
 ## 1. 已确认的产品边界
 
@@ -220,3 +220,7 @@ Change4允许沿**现有可信身份/绑定接口**实施，能力选择只依�
 ## 2026-10-15 Change4实施包已冻结
 
 下一步实施add-skill-tool-selection，详见该change的proposal/design/tasks、contract-extension、acceptance和handoff；通用启动提示词为docs/handoffs/skill-tool-selection-goal.md。匿名运行05从包含此包的dev提交独立启动。当前身份接口保持，允许与独立IAM实现并行；不等待Java消费者切换、不实施entitlement。3/5归档记录与真实生产门禁保持，上方较早阶段排序由本段最新授权更新。
+
+## 2026-10-15阶段收尾
+
+Change4主规格已同步，归档路径为`openspec/changes/archive/2026-10-15-add-skill-tool-selection/`。当前事实与保留项见[最终验收](reviews/skill-tool-selection-final-acceptance.md)，模型归属见[评分记录](reviews/anonymous-model-scorecard.md)。表中早期基线与旧派发安排为历史记录；当前身份仍在admin/api，Java IAM尚未接管消费者，两个现有前端仍为Next.js。用户本次关闭此阶段，尚未授权实施6–10。

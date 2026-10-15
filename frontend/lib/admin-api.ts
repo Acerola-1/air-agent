@@ -12,9 +12,11 @@ import type { AdminSessionContext } from "@/lib/admin-api-contract";
 
 export class AdminApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  json?: unknown;
+  constructor(status: number, message: string, json?: unknown) {
     super(message);
     this.status = status;
+    this.json = json;
   }
 }
 
@@ -73,7 +75,7 @@ export async function adminFetch(
 
 function unwrap<T>(result: { status: number; json: unknown }, okStatuses: number[]): T {
   if (!okStatuses.includes(result.status)) {
-    throw new AdminApiError(result.status, extractDetail(result.json, result.status));
+    throw new AdminApiError(result.status, extractDetail(result.json, result.status), result.json);
   }
   return result.json as T;
 }

@@ -1,0 +1,24 @@
+{
+  "kind": "compiled_actual_chat_store_with_delayed_confirmation",
+  "sent_selection": {
+    "schema_version": "agent.capability-selection.v1",
+    "skill": {
+      "mode": "explicit",
+      "skill_id": "skill:basic-qa:S1"
+    },
+    "mcp": {
+      "mode": "auto",
+      "tool_ids": []
+    },
+    "catalog_version": "controlled"
+  },
+  "accepted_after_draft_changed": {
+    "id": "abd037ba-36fc-5186-a80a-487e719e7e89",
+    "skill_mode": "explicit",
+    "skill_id": "skill:basic-qa:S1",
+    "mcp_mode": "auto",
+    "tool_ids": [],
+    "selection_digest": "abd037ba36fca186680a487e719e7e899b75dc924ade902708df3677ceabd345",
+    "selection_source": "admitted"
+  }
+}

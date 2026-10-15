@@ -1,0 +1,8 @@
+{
+  "removed_only_own_controlled_materials": [
+    "src/deep_research/skills/acceptance-s1/SKILL.md",
+    "src/intelligent_report/skills/acceptance-s1/SKILL.md",
+    "src/intelligent_tracing/skills/acceptance-s1/SKILL.md"
+  ],
+  "preserved_materials": "deep-fixture-materials.json"
+}

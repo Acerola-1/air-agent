@@ -1,0 +1,107 @@
+{
+  "kind": "actual_admin_ASGI_auth_and_nonowner_PostgreSQL_native_gate",
+  "model_network_calls": 0,
+  "ids": {
+    "tenant": "3f605d22-0e82-4d29-b328-73ac7e5a0a34",
+    "user": "575de0b6-b373-4a10-9809-7d430742aacd",
+    "member": "957899a8-45da-4882-ad27-1f82fd37da4d",
+    "thread": "f1c4217d-c395-4734-b481-58512b744e19"
+  },
+  "actual_frontend_payload": {
+    "status": 200,
+    "errors": {
+      "request_id": "94bf8cff-38f5-449a-b964-d16adf01a64a",
+      "attempt_id": "e8ba96ad-011f-4fe1-b908-dc511100d3fe",
+      "submission_id": "0b6624d5-fad2-4fda-9d6f-eb147d4d1280",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "f1c4217d-c395-4734-b481-58512b744e19",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:94bf8cff-38f5-449a-b964-d16adf01a64a:e8ba96ad-011f-4fe1-b908-dc511100d3fe",
+      "capability_selection": {
+        "id": "2bbd3db3-dcf5-433c-852c-fab3b0129134",
+        "selection_id": "2bbd3db3-dcf5-433c-852c-fab3b0129134",
+        "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "auto",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "auto",
+        "tool_ids": [],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "automatic",
+        "validation_time": "2026-10-14T21:06:14.309916+00:00"
+      }
+    }
+  },
+  "old_client_omits_selection": {
+    "status": 200
+  },
+  "auto_admission": {
+    "request_id": "97a2611b-a038-4e34-ae3b-0eea2af4c99d",
+    "attempt_id": "841aa8a2-362c-4fe5-8945-53aafabccd3a",
+    "submission_id": "74e1b1f1-1115-469b-a52b-47ebef5eebfe",
+    "admission_status": "admitting",
+    "operation_kind": "initial",
+    "reused": false,
+    "thread_id": "f1c4217d-c395-4734-b481-58512b744e19",
+    "graph_id": "basic-qa",
+    "ledger_marker": "lr:97a2611b-a038-4e34-ae3b-0eea2af4c99d:841aa8a2-362c-4fe5-8945-53aafabccd3a",
+    "capability_selection": {
+      "id": "3fad0a1d-df47-48c8-bbc2-2f634e3e37f7",
+      "selection_id": "3fad0a1d-df47-48c8-bbc2-2f634e3e37f7",
+      "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "auto",
+        "tool_ids": []
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "auto",
+      "tool_ids": [],
+      "catalog_version": "cat_000000000000000000000000",
+      "material_version": "auto",
+      "selection_source": "automatic",
+      "validation_time": "2026-10-14T21:06:14.365617+00:00"
+    }
+  },
+  "actual_native_claim_after_real_admission": {
+    "status": "claimed",
+    "start_claim_token": "cc871b74-85f2-4b22-b546-8e19b8202f6b"
+  },
+  "native_create_run_hook": {
+    "accepted": false,
+    "exception": "HTTPException",
+    "status": 409,
+    "detail": {
+      "code": "run_already_started",
+      "error": "启动权已被消费（可能并发或响应丢失），不得重复创建"
+    }
+  },
+  "forged_catalog_unknown_tool_unverified_protocol": {
+    "status": 403
+  },
+  "flag_disabled_auto_admission": {
+    "status": 200
+  },
+  "flag_disabled_auto_claim": {
+    "status": "claimed",
+    "start_claim_token": "a72b1d8b-f5f3-49c3-bc0f-cc1628dd845e"
+  }
+}

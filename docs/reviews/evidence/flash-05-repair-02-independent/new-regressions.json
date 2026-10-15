@@ -1,0 +1,30 @@
+{
+  "remaining_alias_collision": {
+    "server_encodings": {
+      "svc_a": "svc__a",
+      "svc--a": "svc__a"
+    },
+    "proxy_names": [
+      "mcp_svc__a__query",
+      "mcp_svc__a__query"
+    ]
+  },
+  "actual_production_middleware_plain_local_tool": {
+    "error": "AttributeError",
+    "detail": "'NoneType' object has no attribute 'get'",
+    "handler_reached": false,
+    "metadata": null
+  },
+  "fixture_gate_false_but_database_name_contains_test": {
+    "fixture_mode_enabled": true,
+    "v1_fixture_profile_enabled": true,
+    "v1_profile_enabled": true
+  },
+  "aliased_proxies_recognized_as_mcp": {
+    "mcp_svc__a__query": false
+  },
+  "auto_disclosure_from_global_catalog": [
+    "mcp_svc__a__query",
+    "mcp_svc__a__query"
+  ]
+}

@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
 from dataclasses import dataclass
 from typing import Any
@@ -100,6 +101,36 @@ async def fetch_mcp_binding(
     )
 
 
+_ACTIVE_BINDINGS_SQL = """
+SELECT b.tenant_id::text AS tenant_id, b.membership_id::text AS membership_id,
+       b.server_key, b.external_subject, b.credential_ref, b.protocol_version,
+       b.auth_revision, b.status
+FROM mcp_identity_bindings b
+WHERE b.tenant_id = %(tenant_id)s
+  AND b.status = 'active'
+  AND (b.membership_id = %(membership_id)s
+       OR (b.membership_id IS NULL AND NOT EXISTS (
+             SELECT 1 FROM mcp_identity_bindings o
+             WHERE o.tenant_id = b.tenant_id AND o.server_key = b.server_key
+               AND o.membership_id = %(membership_id)s)))
+ORDER BY b.server_key ASC
+"""
+
+
+async def fetch_active_mcp_bindings(
+    tenant_id: str, membership_id: str
+) -> list[dict]:
+    """获取企业对当前成员生效的所有 active 绑定（成员覆盖优先于企业默认）."""
+    return await _fetch_all(
+        _ACTIVE_BINDINGS_SQL,
+        {
+            "tenant_id": tenant_id,
+            "membership_id": membership_id,
+        },
+        {"air_agent.tenant_id": tenant_id, "air_agent.user_id": ""},
+    )
+
+
 async def binding_exists(tenant_id: str, server_key: str) -> bool:
     """该企业在该服务上是否存在任意绑定（供懒可用判定，不解析凭据）."""
     row = await _fetch_row(
@@ -128,7 +159,7 @@ def _uri() -> str:
 async def get_pool() -> AsyncConnectionPool:
     """返回共享连接池（首次调用打开）."""
     global _POOL
-    if _POOL is None:
+    if _POOL is None or getattr(_POOL, "_closed", False):
         _POOL = AsyncConnectionPool(
             conninfo=_uri(),
             min_size=1,
@@ -145,8 +176,14 @@ async def close_pool() -> None:
     """关闭并释放连接池."""
     global _POOL
     if _POOL is not None:
-        await _POOL.close()
-        _POOL = None
+        try:
+            await _POOL.close(timeout=0.5)
+        except (Exception, asyncio.CancelledError):
+            pass
+        finally:
+            _POOL = None
+
+
 
 
 async def _execute(sql: str, params: dict[str, Any], guc: dict[str, str]) -> None:
@@ -157,12 +194,19 @@ async def _execute(sql: str, params: dict[str, Any], guc: dict[str, str]) -> Non
 async def _fetch_row(
     sql: str, params: dict[str, Any], guc: dict[str, str]
 ) -> dict | None:
-    return await _run(sql, params, guc, fetch=True)
+    return await _run(sql, params, guc, fetch="one")
+
+
+async def _fetch_all(
+    sql: str, params: dict[str, Any], guc: dict[str, str]
+) -> list[dict]:
+    res = await _run(sql, params, guc, fetch="all")
+    return res or []
 
 
 async def _run(
-    sql: str, params: dict[str, Any], guc: dict[str, str], *, fetch: bool
-) -> dict | None:
+    sql: str, params: dict[str, Any], guc: dict[str, str], *, fetch: str | bool
+) -> Any:
     try:
         pool = await get_pool()
     except IdentityBackendUnavailable:
@@ -181,6 +225,9 @@ async def _run(
                 cur = await conn.execute(sql, params)
                 if not fetch:
                     return None
+                if fetch == "all":
+                    rows = await cur.fetchall()
+                    return [dict(r) for r in rows]
                 row = await cur.fetchone()
                 return dict(row) if row is not None else None
     except psycopg.Error as exc:

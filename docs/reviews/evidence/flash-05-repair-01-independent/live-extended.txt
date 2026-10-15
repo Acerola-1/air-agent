@@ -1,0 +1,299 @@
+{
+  "kind": "actual_admin_ASGI_auth_and_nonowner_PostgreSQL_native_gate",
+  "model_network_calls": 0,
+  "ids": {
+    "tenant": "d89df818-3bb8-46ef-b1d5-73c22ece4e13",
+    "user": "b8fcd376-060f-409f-86da-95e4612f29b7",
+    "member": "fd26c8b9-3f9f-4434-aeef-a938afd4cf2c",
+    "thread": "51d5be06-e0f6-4a8e-acc6-50a1350a96d3"
+  },
+  "actual_frontend_payload": {
+    "status": 200,
+    "errors": {
+      "request_id": "92939779-d622-40c9-a4d8-f220ac87a72f",
+      "attempt_id": "19f885fe-88f0-4138-97fb-bf21a536b36a",
+      "submission_id": "b79797d9-fc81-43c2-b03a-37e5c80c610f",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "51d5be06-e0f6-4a8e-acc6-50a1350a96d3",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:92939779-d622-40c9-a4d8-f220ac87a72f:19f885fe-88f0-4138-97fb-bf21a536b36a",
+      "capability_selection": {
+        "id": "66a8a9f9-312d-436e-b866-48eaa6739f9e",
+        "selection_id": "66a8a9f9-312d-436e-b866-48eaa6739f9e",
+        "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "auto",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "auto",
+        "tool_ids": [],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "automatic",
+        "validation_time": "2026-10-14T22:02:08.057321+00:00"
+      }
+    }
+  },
+  "old_client_omits_selection": {
+    "status": 200
+  },
+  "auto_admission": {
+    "request_id": "36a32d33-1f4f-4814-a6e9-3ccdde685efe",
+    "attempt_id": "ed3478f8-6b27-468d-bc44-c3cde88eff3e",
+    "submission_id": "0e89dba6-8703-4b50-8538-1c7645633731",
+    "admission_status": "admitting",
+    "operation_kind": "initial",
+    "reused": false,
+    "thread_id": "51d5be06-e0f6-4a8e-acc6-50a1350a96d3",
+    "graph_id": "basic-qa",
+    "ledger_marker": "lr:36a32d33-1f4f-4814-a6e9-3ccdde685efe:ed3478f8-6b27-468d-bc44-c3cde88eff3e",
+    "capability_selection": {
+      "id": "9240f83b-89be-4948-9678-635bde82f758",
+      "selection_id": "9240f83b-89be-4948-9678-635bde82f758",
+      "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "auto",
+        "tool_ids": []
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "auto",
+      "tool_ids": [],
+      "catalog_version": "cat_000000000000000000000000",
+      "material_version": "auto",
+      "selection_source": "automatic",
+      "validation_time": "2026-10-14T22:02:08.172994+00:00"
+    }
+  },
+  "actual_native_claim_after_real_admission": {
+    "status": "claimed",
+    "start_claim_token": "fd23090d-64b4-43d8-ae62-e547a47c1775"
+  },
+  "native_create_run_hook": {
+    "accepted": true
+  },
+  "valid_shape_forged_catalog_unknown_tool_empty_factory": {
+    "status": 200,
+    "body": {
+      "request_id": "36c4f99e-1333-497e-a75a-eb9649fc5abc",
+      "attempt_id": "194251c7-f9c5-4219-b80f-30621ff35fd4",
+      "submission_id": "882270bd-86a2-4b57-b7f2-c5081c53f049",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "51d5be06-e0f6-4a8e-acc6-50a1350a96d3",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:36c4f99e-1333-497e-a75a-eb9649fc5abc:194251c7-f9c5-4219-b80f-30621ff35fd4",
+      "capability_selection": {
+        "id": "6000a728-2f56-45a4-ab1e-9bbaa4e127c1",
+        "selection_id": "6000a728-2f56-45a4-ab1e-9bbaa4e127c1",
+        "selection_digest": "d9932e01f3d65e5e8bea7cbd3876aaff8d4a1feeb47caec4cc98b37e860e477e",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:does_not_exist"
+          ]
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:does_not_exist"
+        ],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-14T22:02:08.742387+00:00"
+      }
+    }
+  },
+  "tool_exists_only_on_another_server": {
+    "status": 200,
+    "body": {
+      "request_id": "5ecfc8e5-0790-4983-984d-ff3f9cfa2f44",
+      "attempt_id": "74dc6fc3-0fa6-4101-83da-893f56e923d3",
+      "submission_id": "c3e86795-8cd2-4f34-8f94-5eeedcee2111",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "51d5be06-e0f6-4a8e-acc6-50a1350a96d3",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:5ecfc8e5-0790-4983-984d-ff3f9cfa2f44:74dc6fc3-0fa6-4101-83da-893f56e923d3",
+      "capability_selection": {
+        "id": "82c4036d-227b-40fe-a024-c45b5172cdb2",
+        "selection_id": "82c4036d-227b-40fe-a024-c45b5172cdb2",
+        "selection_digest": "e198a7a631977d21c8b9ee02818a6c998dc4b15fae8ea824ff5c2aa881238486",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:exists_elsewhere"
+          ]
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:exists_elsewhere"
+        ],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-14T22:02:08.806324+00:00"
+      }
+    }
+  },
+  "unknown_protocol_not_literal_unverified": {
+    "status": 200,
+    "body": {
+      "request_id": "1741d475-e033-47d6-b773-b20d0f717dc9",
+      "attempt_id": "99515669-d650-4a56-b6af-6b62c5394f3b",
+      "submission_id": "f4d7f159-cabb-42bb-9013-1a26be507d07",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "51d5be06-e0f6-4a8e-acc6-50a1350a96d3",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:1741d475-e033-47d6-b773-b20d0f717dc9:99515669-d650-4a56-b6af-6b62c5394f3b",
+      "capability_selection": {
+        "id": "e6ec0f54-2413-475e-b857-1ae0159c63a6",
+        "selection_id": "e6ec0f54-2413-475e-b857-1ae0159c63a6",
+        "selection_digest": "e198a7a631977d21c8b9ee02818a6c998dc4b15fae8ea824ff5c2aa881238486",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:exists_elsewhere"
+          ]
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:exists_elsewhere"
+        ],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-14T22:02:08.933039+00:00"
+      }
+    }
+  },
+  "replay_explicit_first_status": 200,
+  "same_key_explicit_changed_to_explicit_auto": {
+    "status": 200,
+    "body": {
+      "request_id": "c60ac3c9-e6e7-4074-a1e4-663725d7b394",
+      "attempt_id": "569bf314-63eb-4e97-8305-b60adf63ed94",
+      "submission_id": "791d6c3c-6adf-4ef9-9cdd-44091b570d34",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": true,
+      "thread_id": "51d5be06-e0f6-4a8e-acc6-50a1350a96d3",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:c60ac3c9-e6e7-4074-a1e4-663725d7b394:569bf314-63eb-4e97-8305-b60adf63ed94",
+      "capability_selection": {
+        "selection_id": "68c28e77-fc9e-410f-bd45-7d6fc8e2e651",
+        "selection_digest": "e198a7a631977d21c8b9ee02818a6c998dc4b15fae8ea824ff5c2aa881238486",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:exists_elsewhere"
+          ]
+        },
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-14T22:02:08.998021+00:00"
+      }
+    }
+  },
+  "resume_inherit": {
+    "status": 200,
+    "body": {
+      "request_id": "c60ac3c9-e6e7-4074-a1e4-663725d7b394",
+      "attempt_id": "569bf314-63eb-4e97-8305-b60adf63ed94",
+      "submission_id": "3fa24647-c48a-4411-9698-025fb84e0efa",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "51d5be06-e0f6-4a8e-acc6-50a1350a96d3",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:c60ac3c9-e6e7-4074-a1e4-663725d7b394:569bf314-63eb-4e97-8305-b60adf63ed94",
+      "capability_selection": {
+        "id": "264a9b27-0be3-4645-a093-bc278253511e",
+        "selection_id": "264a9b27-0be3-4645-a093-bc278253511e",
+        "selection_digest": "e198a7a631977d21c8b9ee02818a6c998dc4b15fae8ea824ff5c2aa881238486",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:exists_elsewhere"
+          ]
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:exists_elsewhere"
+        ],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-14T22:02:09.090050+00:00"
+      }
+    }
+  },
+  "native_resume_with_selected_mcp": {
+    "accepted": true
+  },
+  "flag_disabled_auto_admission": {
+    "status": 200
+  },
+  "flag_disabled_auto_claim": {
+    "status": "claimed",
+    "start_claim_token": "42f69a66-4439-4fe4-88dd-572bac9550c4"
+  }
+}

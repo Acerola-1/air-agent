@@ -1,0 +1,19 @@
+basic-qa bff stream False True success 
+basic-qa bff wait False True success 
+intelligent-analysis bff stream False True success 
+intelligent-analysis bff wait False True success 
+intelligent-report bff stream False True success 
+data-analysis bff wait False True success 
+intelligent-report bff wait False True success 
+data-analysis bff stream False True success 
+deep-research bff stream False True success 
+deep-research bff wait False True success 
+intelligent-tracing bff stream False True success 
+intelligent-tracing bff wait False True success 
+intelligent-analysis bff wait True True success 
+basic-qa bff wait True True success 
+deep-research bff wait True True success 
+intelligent-report bff wait True True success 
+intelligent-tracing bff wait True True success 
+data-analysis bff wait True True success 
+passed 18 / 18

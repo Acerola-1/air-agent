@@ -1,0 +1,98 @@
+✔ embedded frontend copy matches canonical contract files (1.053875ms)
+✔ every sample case matches the expected verdict (same set as Python) (1.379167ms)
+✔ browser cannot claim server terminal facts (0.075792ms)
+✔ reserved types are registered but rejected as not enabled (0.077125ms)
+✔ enabled types equal core plus browser and runtime (0.087583ms)
+✔ batch validation returns per-item results and enforces browser limits (0.406167ms)
+✔ forbidden payload key wins over whitelist (0.078041ms)
+✔ 默认草稿为自动模式，toPayload 输出规范标准 agent.capability-selection.v1 (67.962667ms)
+✔ 用户显式选择 Skill 与 MCP 工具列表，toPayload 标注 user_explicit 并按字母序去重 (2.960083ms)
+✔ 选择 MCP allowlist 空集代表禁用 MCP，toggleTool 可添加与移除工具 (0.899583ms)
+✔ 切换图或租户时，旧草稿被清空重置为默认，且目录异步加载有 loading/error 状态 (1.510792ms)
+✔ Epoch 隔离：迟到的旧请求（如 A→B→A 切换时旧请求晚到）被丢弃，不覆盖当前目录 (0.950583ms)
+✔ context meter uses provider input after completion and labels preparation estimates (88.126958ms)
+✔ every intermediate frame excludes tool JSON and internal summaries from body (7.144208ms)
+✔ old run callbacks and completion cannot clear a newer run (2.941834ms)
+✔ stop sends server cancellation and ignores late metadata safely (3.693917ms)
+✔ legacy double answer merges, marked draft hidden, archives require actual stored status (2.302042ms)
+✔ SDK error event becomes failed completion, metadata and custom consumed (1.678208ms)
+✔ proxy: unified identity gates, ticket upstream, v2 scope, tenant checks (1829.470042ms)
+✔ archive scope v2 signing requires configured keys (3.118792ms)
+✔ stopStreaming only confirms after server reaches terminal run status (610.511375ms)
+✔ stopStreaming reports unconfirmed when cancellation and status both fail (6.226458ms)
+✔ stop cancel 409 is context_changed, never a false confirmation (6.00975ms)
+✔ stop after 404 cancel confirms only on observed terminal status (4.581666ms)
+✔ stop treats missing/unknown run status as unconfirmed (9.24425ms)
+✔ stop with empty run list within grace window is unconfirmed unknown (3216.914083ms)
+✔ stop recovers late run id from recent runs and waits terminal (6.083ms)
+✔ stop before run id arrives recovers the active run from the run list (6.44375ms)
+✔ proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surfaces 409 (7.032625ms)
+✔ stop cannot confirm the previous answer while current run metadata is delayed (3216.935833ms)
+✔ unconfirmed stop keeps the run for late metadata and blocks new submissions (3215.584542ms)
+✔ 页面导航离开记录 origin=navigation 的独立停止意图 (6.958209ms)
+✔ 无活动运行时的导航不产生停止事实 (6.053833ms)
+✔ 重新生成声明 regenerate 并复用上一条用户问题（不新增提问） (5.431292ms)
+✔ 重新发送声明 retry (5.121333ms)
+✔ R01 代理：原生入口单点裁决——首笔成功、重放复用/待确认、绝不重复创建平台运行 (11.979542ms)
+✔ 官方 interrupt 的权威状态确认本次已停止执行，不冒充业务已取消 (3.376833ms)
+✔ 采集开关默认关闭，服务端拒绝启用时不产生计时或事件 (76.284083ms)
+✔ 未确认映射不永久负缓存，确认后可再次回读 (2.582708ms)
+✔ A到B到A后旧代次回读不能覆盖当前映射 (2.960166ms)
+✔ 旧企业保存响应不会作为新企业的成功结果 (2.115584ms)
+✔ 旧批次完成不删除新企业队列且新请求绑定新企业 (6.481375ms)
+✔ 队列100条、批次50条和256KiB均有界 (5.180208ms)
+✔ 进度不充当首正文；不完整、完成和离开分别计时 (2.1275ms)
+✔ 旧企业迟到的启用策略不能开启当前企业采集 (1.292375ms)
+✔ DOM完成早于可信attempt确认时仍保留计时，不误用平台run UUID (1.868084ms)
+{
+  "r02_payload_strictness": {
+    "payload_selection_source_property": "user_explicit",
+    "serialized_has_selection_source": false,
+    "serialized_keys": [
+      "schema_version",
+      "skill",
+      "mcp",
+      "catalog_version"
+    ],
+    "skill_mode": "explicit",
+    "skill_id": "skill:basic-qa:air-quality-basic-query",
+    "mcp_mode": "allowlist",
+    "tool_ids": [
+      "mcp:business:query"
+    ]
+  },
+  "r08_scope_switch_isolation": {
+    "draft_skill_mode": "auto",
+    "draft_skill_id": null,
+    "draft_mcp_mode": "auto",
+    "draft_tool_ids": [],
+    "accepted_selection": null
+  },
+  "all_passed": true
+}
+✔ frontend/tests/probe_client.cjs (237.286833ms)
+{
+  "kind": "real_React_server_render_actual_TSX_controlled_stores",
+  "backend_skill_fields": [
+    "id",
+    "name",
+    "title",
+    "description",
+    "material_version",
+    "status",
+    "required_tool_ids",
+    "required_tools"
+  ],
+  "rendered": true,
+  "contains_label": true,
+  "all_passed": true
+}
+✔ frontend/tests/probe_react.cjs (249.739667ms)
+ℹ tests 48
+ℹ suites 0
+ℹ pass 48
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12470.933334

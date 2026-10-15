@@ -1,0 +1,34 @@
+2026-10-15 14:25:11 +0800 | INFO     | common.models:<module>:15 - 模型注册表初始化开始
+2026-10-15 14:25:11 +0800 | INFO     | common.mcp_client:<module>:199 - MCP 公共目录懒加载 + 企业授权执行层就绪
+/Users/acerola/Dev/Python/air_agent/src/deep_research/graph.py:54: LangChainBetaWarning: The class `CodeInterpreterMiddleware` is in beta. It is actively being worked on, so the API may change.
+  CodeInterpreterMiddleware(ptc=[]),
+{
+  "kind": "actual_three_production_DeepAgents_graph_ainvoke_with_controlled_model",
+  "guard_isolation": "Only identity guard is patched to allow; all model/tool middleware and compiled graphs are production implementations. No provider network.",
+  "deep_research": {
+    "ok": true,
+    "last_message": "controlled success"
+  },
+  "intelligent_report": {
+    "ok": true,
+    "last_message": "controlled success"
+  },
+  "intelligent_tracing": {
+    "ok": true,
+    "last_message": "controlled success"
+  },
+  "positive_control_original_guard": {
+    "deep_research": {
+      "ok": true,
+      "last_message": "controlled success"
+    },
+    "intelligent_report": {
+      "ok": true,
+      "last_message": "controlled success"
+    },
+    "intelligent_tracing": {
+      "ok": true,
+      "last_message": "controlled success"
+    }
+  }
+}

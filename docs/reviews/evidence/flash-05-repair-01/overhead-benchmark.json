@@ -1,0 +1,122 @@
+{
+  "check": "capability selection local protection & admission full-path overhead",
+  "benchmark_environment": {
+    "os": "macOS",
+    "python_agent_runtime": "3.13.3",
+    "database": "PostgreSQL 17-alpine (aa-sel05-pg on 15434)",
+    "sample_size_per_round": 35,
+    "rounds": 2,
+    "warmup_runs": 5
+  },
+  "threshold": "本地及受理保护新增 P95 ≤ 50ms",
+  "external_wait_seconds": 0.0,
+  "local_helper_overhead": {
+    "description": "本地内存/文件层 helper 开销（list_graph_skills, validate_skill_selection, filter_capability_mcp_tools）",
+    "rounds": [
+      {
+        "round": 1,
+        "auto_baseline_ms": {
+          "samples": 35,
+          "p50": 1.2462,
+          "p95": 2.2561,
+          "mean": 1.3443
+        },
+        "explicit_protected_ms": {
+          "samples": 35,
+          "p50": 1.3341,
+          "p95": 2.4545,
+          "mean": 1.5368
+        },
+        "tool_filtering_ms": {
+          "samples": 35,
+          "p50": 0.0097,
+          "p95": 0.0107,
+          "mean": 0.0098
+        },
+        "delta_p95_ms": 0.1983
+      },
+      {
+        "round": 2,
+        "auto_baseline_ms": {
+          "samples": 35,
+          "p50": 1.2825,
+          "p95": 2.3677,
+          "mean": 1.4716
+        },
+        "explicit_protected_ms": {
+          "samples": 35,
+          "p50": 1.2676,
+          "p95": 2.3923,
+          "mean": 1.5182
+        },
+        "tool_filtering_ms": {
+          "samples": 35,
+          "p50": 0.0097,
+          "p95": 0.0099,
+          "mean": 0.0097
+        },
+        "delta_p95_ms": 0.0246
+      }
+    ],
+    "max_delta_p95_ms": 0.1983,
+    "passed": true
+  },
+  "admission_full_path_benchmark": {
+    "description": "全路径受理与能力保护开销（含 HTTP、身份上下文、材料校验、v2 摘要比对、原子持久化与事实发射）",
+    "sample_size": 35,
+    "warmup_runs": 5,
+    "round_1": {
+      "auto_baseline_ms": {
+        "p50": 54.326,
+        "p95": 73.49,
+        "mean": 52.559
+      },
+      "explicit_protected_ms": {
+        "p50": 54.016,
+        "p95": 76.034,
+        "mean": 55.998
+      },
+      "delta_p95_ms": 2.544
+    },
+    "round_2": {
+      "auto_baseline_ms": {
+        "p50": 32.873,
+        "p95": 102.342,
+        "mean": 49.29
+      },
+      "explicit_protected_ms": {
+        "p50": 23.648,
+        "p95": 26.989,
+        "mean": 23.025
+      },
+      "delta_p95_ms": -75.353
+    },
+    "max_delta_p95_ms": 2.544,
+    "threshold_p95_ms": 50.0,
+    "passed": true
+  },
+  "directory_fault_bounds_measured": {
+    "configured_single_timeout_sec": 0.2,
+    "configured_total_timeout_sec": 0.5,
+    "actual_elapsed_sec": 0.2019,
+    "slow_server_degraded_status": "temporarily_unavailable",
+    "fast_server_status": "available",
+    "harvested_tools_count": 1,
+    "upper_bound_maintained": true
+  },
+  "real_collected_reliability": {
+    "normal_requests_tested": 45,
+    "normal_error_count": 0,
+    "actual_normal_error_rate_pct": 0.0,
+    "fault_injection_count": 5,
+    "fault_intercept_count": 5,
+    "actual_fault_intercept_rate_pct": 100.0
+  },
+  "overall_verdict": {
+    "local_helper_passed": true,
+    "admission_full_path_passed": true,
+    "fault_bounds_passed": true,
+    "fault_intercept_rate_pct": 100.0,
+    "overall_passed": true
+  }
+}

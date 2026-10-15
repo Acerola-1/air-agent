@@ -1,0 +1,615 @@
+{
+  "total_files": 101,
+  "reviewed_files": 60,
+  "skipped_files": 41,
+  "coverage_rate": 0.594059405940594,
+  "note": "文件审查不是全行为验收。排除项中的tasks/作者报告/selection专项另检。",
+  "files": [
+    {
+      "path": "admin/api/app/config.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "admin/api/app/models_ledger.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "admin/api/app/routers/ledger.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "admin/api/app/schemas_ledger.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "admin/api/app/services/enterprise_permissions.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/lib/admin-api.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/lib/agent-ledger.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/next-env.d.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/package.json",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/business_graph/skill_content.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "src/common/config/settings.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/event_ledger/store.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/mcp_authorization.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "src/common/mcp_scoped.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "src/common/observability/skill_adapter.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "src/common/observability/store.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/skill_discovery.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/data_analysis/nodes.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "tests/mcp_fixture/server.py",
+      "status": "modified",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "admin/api/migrations/versions/0013s_capability_selection.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "admin/api/tests/benchmark_admission_overhead.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "admin/api/tests/probe_live.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/anonymous-input.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/baseline-comparison.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/client-probes.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/findings.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/live-probes.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/module-probes.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/ocr-preview.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/ocr-rules.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/premium-audit-generated.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/probe-client.cjs",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/probe-live.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/probe-modules.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/probe-react.cjs",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/raw-log-preservation.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/react-catalog-shape.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/review-closeout.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/review-coverage.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/run-tests.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/ui-static-audit.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/accepted-readback.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/anonymous-input.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/client-probes.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/dynamic-graph-objects.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/findings.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/live-probes.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/module-probes.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/modules-extended.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/ocr-preview.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/ocr-rules.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-accepted.cjs",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-client.cjs",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-dynamic.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-live.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-migrations.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-modules-extended.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-modules.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/react-catalog-shape.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/review-closeout.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/review-coverage.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/run-tests.py",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/verification-preservation.json",
+      "status": "added",
+      "review": "skipped",
+      "reason": "协调者历史审计产物，仅核对保留，不重复当作者代码审查"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/overhead-benchmark.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/benchmark-admission-overhead.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/overhead-benchmark.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/gate0-probes.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/overhead-benchmark.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/specs-baseline-comparison.json",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/app/api/capabilities/route.ts",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/components/chat/CapabilitySelector.tsx",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/lib/capability-store.ts",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/lib/digest.ts",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "frontend/tests/capability-store-contract.test.cjs",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/tests/probe_client.cjs",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "frontend/tests/probe_react.cjs",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    },
+    {
+      "path": "src/common/capabilities.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "tests/benchmark_capability_overhead.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "本轮修复文件及数据检查，结合真实SDK/跨进程API/迁移或编译客户端反例"
+    },
+    {
+      "path": "tests/probe_modules.py",
+      "status": "added",
+      "review": "reviewed",
+      "reason": "与首修同指纹，沿用已完成文件审查并复查本轮相关契约"
+    }
+  ]
+}

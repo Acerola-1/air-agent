@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.1, pluggy-1.6.0 -- /Users/acerola/Dev/Python/air_agent/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/acerola/Dev/Python/air_agent
+configfile: pyproject.toml
+plugins: timeout-2.4.0, langsmith-0.10.15, anyio-4.14.2
+collecting ... collected 4 items
+
+tests/test_gate0_verification.py::test_gate0_mcp_same_name_disambiguation_and_zero_calls[asyncio] PASSED [ 25%]
+tests/test_gate0_verification.py::test_gate0_deepagents_skills_boundary[asyncio] PASSED [ 50%]
+tests/test_gate0_verification.py::test_gate0_compiled_graph_dynamic_dispatch[asyncio] PASSED [ 75%]
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/common/business_graph/builder.py:126: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node(
+
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/data_analysis/graph.py:132: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
+
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/deep_research/graph.py:54: LangChainBetaWarning: The class `CodeInterpreterMiddleware` is in beta. It is actively being worked on, so the API may change.
+    CodeInterpreterMiddleware(ptc=[]),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 4 passed, 4 warnings in 4.20s =========================

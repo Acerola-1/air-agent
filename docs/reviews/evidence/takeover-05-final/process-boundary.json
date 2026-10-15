@@ -1,0 +1,64 @@
+{
+  "kind": "real_HTTP_separate_admin_and_runtime_custom_app_processes_with_real_MCP_fixture",
+  "ids": {
+    "tenant": "dd8ef7d0-12d1-4dbc-8b17-c529a1385fe6",
+    "user": "eb92b308-aaa0-4606-b78a-82147a450e45",
+    "member": "7fe2445c-9f51-442e-94a1-963979a9b9e6",
+    "thread": "c6c6c86b-d80d-49e2-a6a6-22c88d905eeb"
+  },
+  "native_catalog_status": 200,
+  "native_tools": [
+    "mcp:controlled-one:delayed_query",
+    "mcp:controlled-one:flaky_query",
+    "mcp:controlled-one:query",
+    "mcp:controlled-one:query_air",
+    "mcp:controlled-one:slow_query"
+  ],
+  "admit_legitimate_catalog_selection_status": 200,
+  "admit_legitimate_catalog_selection_body": {
+    "request_id": "c743d559-7cc6-4bcd-82d5-77358a485e0f",
+    "attempt_id": "9587f0fd-cc95-4094-bcb0-7050bbac0e0d",
+    "submission_id": "83467c89-89b7-409e-a8c3-5bb73be48740",
+    "admission_status": "admitting",
+    "operation_kind": "initial",
+    "reused": false,
+    "thread_id": "c6c6c86b-d80d-49e2-a6a6-22c88d905eeb",
+    "graph_id": "basic-qa",
+    "ledger_marker": "lr:c743d559-7cc6-4bcd-82d5-77358a485e0f:9587f0fd-cc95-4094-bcb0-7050bbac0e0d",
+    "capability_selection": {
+      "id": "d4cfce67-0495-404e-bf62-b26b5e62aedb",
+      "selection_id": "d4cfce67-0495-404e-bf62-b26b5e62aedb",
+      "selection_digest": "d6f42aa1da7288425c80ffb776a3af6f0c4b8a06dd0f09675e9e34cfb95db345",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:query_air"
+        ]
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [
+        "mcp:controlled-one:query_air"
+      ],
+      "catalog_version": "cat_dee23f7506d5eafba8dc9274",
+      "material_version": "auto",
+      "selection_source": "user_explicit",
+      "validation_time": "2026-10-15T06:32:27.256993+00:00"
+    }
+  },
+  "mcp_call_count": 0,
+  "forged_tool_catalog_status": 409,
+  "forged_empty_catalog_status": 409,
+  "process_ids": [
+    98747,
+    98748
+  ],
+  "owned_processes_stopped": true
+}

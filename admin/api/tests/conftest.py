@@ -12,6 +12,23 @@ from __future__ import annotations
 
 import os
 
+for key in (
+    "POSTGRES_USER",
+    "POSTGRES_PASSWORD",
+    "MCP_SERVER_URL",
+    "SILICONFLOW_API_KEY",
+    "DEEPSEEK_API_KEY",
+    "XFYUN_MAAS_API_KEY",
+    "XIAOMI_MIMO_API_KEY",
+    "SERPER_API_KEY",
+    "ARK_API_KEY",
+    "MAIN_LLM_API_KEY",
+):
+    os.environ.setdefault(key, "test")
+
+os.environ.setdefault("TENANT_ENFORCE_RUNTIME_IDENTITY", "false")
+os.environ.setdefault("TENANT_MCP_FIXTURE_MODE", "true")
+
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine

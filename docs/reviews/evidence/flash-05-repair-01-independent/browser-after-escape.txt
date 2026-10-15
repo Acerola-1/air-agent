@@ -1,0 +1,35 @@
+- banner:
+  - generic: Air Agent
+  - generic: 空气质量智能助手 · Powered by LangGraph
+- complementary:
+  - button "New Thread":
+    - text: New Thread
+  - paragraph: 暂无会话，点击 New Thread 开始
+- main:
+  - alert:
+    - paragraph: 请求处理遇到问题
+    - paragraph: 会话列表暂时无法读取，请重试。
+  - button "基础问答 basic-qa":
+    - generic: 基础问答
+    - generic: basic-qa
+  - generic "回答模式（快速 / 专家）":
+    - button "快速" [pressed]
+    - button "专家"
+  - button "能力与工具选择" [active]:
+    - generic: "技能: air-quality-basic-query · 工具: 自动"
+  - button "等待后端提供上下文用量":
+    - generic: 用量待更新
+  - generic "独立审计"
+  - generic: ind05_d26b0760aa
+  - button "退出"
+  - textbox "消息输入框":
+    - /placeholder: 问问空气质量情况、达标研判、或者查询具体城市数据… (Shift+Enter 换行)
+  - generic: 按 Enter 发送
+  - button "发送消息" [disabled]:
+- button "打开画布窗口":
+- button:
+- paragraph: 当前没有画布内容
+- paragraph: Agent 在生成报告、图表、长文分析时会自动在这里打开画布.
+- paragraph: 快捷键 ⌘ ⇧ K 随时切换画布.
+- button: 关闭窗口
+- alert

@@ -1,0 +1,65 @@
+[
+  {
+    "id": "F01",
+    "priority": 1,
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 1004,
+    "category": "security",
+    "severity": "high",
+    "content": "合法格式伪造catalog、未知/错服务工具、未知协议均受理200；未做真实目录校验"
+  },
+  {
+    "id": "F02",
+    "priority": 1,
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 735,
+    "category": "bug",
+    "severity": "high",
+    "content": "同键显式改Auto返回200并复用旧选择，未拒绝冲突"
+  },
+  {
+    "id": "F03",
+    "priority": 1,
+    "path": "src/common/mcp_scoped.py",
+    "start_line": 450,
+    "category": "bug",
+    "severity": "high",
+    "content": "service-a/service_a同名工具生成重复代理；三张SDK图仍固定导入期工具"
+  },
+  {
+    "id": "F04",
+    "priority": 2,
+    "path": "src/common/capabilities.py",
+    "start_line": 775,
+    "category": "bug",
+    "severity": "medium",
+    "content": "glob/aglob覆盖签名缺path，合法SDK调用TypeError"
+  },
+  {
+    "id": "F05",
+    "priority": 1,
+    "path": "frontend/lib/chat-store.ts",
+    "start_line": 274,
+    "category": "bug",
+    "severity": "high",
+    "content": "确认时从当前draft伪造已受理计划，发送S1回读成S2、run_id冒selection_id且digest空"
+  },
+  {
+    "id": "F06",
+    "priority": 1,
+    "path": "src/common/observability/skill_adapter.py",
+    "start_line": 87,
+    "category": "bug",
+    "severity": "high",
+    "content": "executed固定loaded-rules丢失manual，选择关联未穿透适配器"
+  },
+  {
+    "id": "F07",
+    "priority": 1,
+    "path": "docs/reviews/skill-tool-selection-repair-01.md",
+    "start_line": 129,
+    "category": "test",
+    "severity": "high",
+    "content": "性能数字与原始JSON不一致，错误率写常量；未实测项仍勾选"
+  }
+]

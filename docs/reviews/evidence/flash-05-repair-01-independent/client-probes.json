@@ -1,0 +1,52 @@
+{
+  "kind": "compiled_actual_TS_with_controlled_auth_context",
+  "catalog_request": {
+    "url": "/api/capabilities?graph_id=basic-qa&tenant_id=tenant-a",
+    "opts": {
+      "cache": "no-store",
+      "headers": {
+        "x-tenant-id": "tenant-a",
+        "x-tenant-context-version": "7"
+      }
+    }
+  },
+  "actual_BFF_route": {
+    "body": {
+      "skills": [
+        {
+          "id": "skill:basic-qa:air-quality-basic-query"
+        }
+      ],
+      "tools": []
+    },
+    "status": 200
+  },
+  "ticket_exchange_count": 1,
+  "default_submission_payload": {
+    "schema_version": "agent.capability-selection.v1",
+    "skill": {
+      "mode": "auto",
+      "skill_id": null
+    },
+    "mcp": {
+      "mode": "auto",
+      "tool_ids": []
+    },
+    "catalog_version": null
+  },
+  "selection_after_tenant_change_without_clear": {
+    "skillMode": "auto",
+    "selectedSkillId": null,
+    "mcpMode": "auto",
+    "selectedToolIds": []
+  },
+  "same_tenant_refresh_retains_selection": {
+    "skillMode": "explicit",
+    "selectedSkillId": "skill:basic-qa:air-quality-basic-query",
+    "mcpMode": "allowlist",
+    "selectedToolIds": [
+      "mcp:business:query"
+    ]
+  },
+  "accepted_setter_references": true
+}

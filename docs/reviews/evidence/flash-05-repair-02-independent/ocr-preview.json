@@ -1,0 +1,1173 @@
+{
+  "schema_version": "1",
+  "mode": "workspace",
+  "repository": "/Users/acerola/Dev/Python/air_agent",
+  "total_files": 180,
+  "reviewable_count": 101,
+  "excluded_count": 79,
+  "total_insertions": 19065,
+  "total_deletions": 192,
+  "reviewable_files": [
+    {
+      "path": "admin/api/app/config.py",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/models_ledger.py",
+      "status": "modified",
+      "insertions": 73,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/routers/ledger.py",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/schemas_ledger.py",
+      "status": "modified",
+      "insertions": 28,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/app/services/enterprise_permissions.py",
+      "status": "modified",
+      "insertions": 7,
+      "deletions": 2
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "status": "modified",
+      "insertions": 770,
+      "deletions": 72
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 1
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "modified",
+      "insertions": 169,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "status": "modified",
+      "insertions": 65,
+      "deletions": 6
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/lib/admin-api.ts",
+      "status": "modified",
+      "insertions": 4,
+      "deletions": 2
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 1
+    },
+    {
+      "path": "frontend/lib/agent-ledger.ts",
+      "status": "modified",
+      "insertions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "insertions": 135,
+      "deletions": 4
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "status": "modified",
+      "insertions": 4,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/next-env.d.ts",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 2
+    },
+    {
+      "path": "frontend/package.json",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 1
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "insertions": 15,
+      "deletions": 1
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "status": "modified",
+      "insertions": 47,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "status": "modified",
+      "insertions": 55,
+      "deletions": 12
+    },
+    {
+      "path": "src/common/business_graph/skill_content.py",
+      "status": "modified",
+      "insertions": 14,
+      "deletions": 4
+    },
+    {
+      "path": "src/common/business_graph/tool_wrappers.py",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/config/settings.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "modified",
+      "insertions": 33,
+      "deletions": 1
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "modified",
+      "insertions": 169,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/event_ledger/store.py",
+      "status": "modified",
+      "insertions": 98,
+      "deletions": 5
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "status": "modified",
+      "insertions": 53,
+      "deletions": 6
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "status": "modified",
+      "insertions": 119,
+      "deletions": 1
+    },
+    {
+      "path": "src/common/mcp_authorization.py",
+      "status": "modified",
+      "insertions": 17,
+      "deletions": 1
+    },
+    {
+      "path": "src/common/mcp_scoped.py",
+      "status": "modified",
+      "insertions": 160,
+      "deletions": 23
+    },
+    {
+      "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "status": "modified",
+      "insertions": 17,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/observability/skill_adapter.py",
+      "status": "modified",
+      "insertions": 55,
+      "deletions": 5
+    },
+    {
+      "path": "src/common/observability/store.py",
+      "status": "modified",
+      "insertions": 9,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/skill_discovery.py",
+      "status": "modified",
+      "insertions": 54,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "status": "modified",
+      "insertions": 14,
+      "deletions": 1
+    },
+    {
+      "path": "src/data_analysis/nodes.py",
+      "status": "modified",
+      "insertions": 20,
+      "deletions": 1
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 2
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 2
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "status": "modified",
+      "insertions": 3,
+      "deletions": 2
+    },
+    {
+      "path": "tests/mcp_fixture/server.py",
+      "status": "modified",
+      "insertions": 38,
+      "deletions": 3
+    },
+    {
+      "path": "admin/api/migrations/versions/0013s_capability_selection.py",
+      "status": "added",
+      "insertions": 172,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/tests/benchmark_admission_overhead.py",
+      "status": "added",
+      "insertions": 376,
+      "deletions": 0
+    },
+    {
+      "path": "admin/api/tests/probe_live.py",
+      "status": "added",
+      "insertions": 308,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/anonymous-input.json",
+      "status": "added",
+      "insertions": 79,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/baseline-comparison.json",
+      "status": "added",
+      "insertions": 40,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/client-probes.json",
+      "status": "added",
+      "insertions": 39,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/findings.json",
+      "status": "added",
+      "insertions": 92,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/live-probes.json",
+      "status": "added",
+      "insertions": 107,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/module-probes.json",
+      "status": "added",
+      "insertions": 58,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/ocr-preview.json",
+      "status": "added",
+      "insertions": 366,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/ocr-rules.json",
+      "status": "added",
+      "insertions": 84,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/premium-audit-generated.json",
+      "status": "added",
+      "insertions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/probe-client.cjs",
+      "status": "added",
+      "insertions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/probe-live.py",
+      "status": "added",
+      "insertions": 67,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/probe-modules.py",
+      "status": "added",
+      "insertions": 46,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/probe-react.cjs",
+      "status": "added",
+      "insertions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/raw-log-preservation.json",
+      "status": "added",
+      "insertions": 26,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/react-catalog-shape.json",
+      "status": "added",
+      "insertions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/review-closeout.json",
+      "status": "added",
+      "insertions": 63,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/review-coverage.json",
+      "status": "added",
+      "insertions": 363,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/run-tests.py",
+      "status": "added",
+      "insertions": 9,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/ui-static-audit.json",
+      "status": "added",
+      "insertions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/accepted-readback.json",
+      "status": "added",
+      "insertions": 24,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/anonymous-input.json",
+      "status": "added",
+      "insertions": 174,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/client-probes.json",
+      "status": "added",
+      "insertions": 52,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/dynamic-graph-objects.json",
+      "status": "added",
+      "insertions": 17,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/findings.json",
+      "status": "added",
+      "insertions": 65,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/live-probes.json",
+      "status": "added",
+      "insertions": 167,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/module-probes.json",
+      "status": "added",
+      "insertions": 58,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/modules-extended.json",
+      "status": "added",
+      "insertions": 30,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/ocr-preview.json",
+      "status": "added",
+      "insertions": 796,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/ocr-rules.json",
+      "status": "added",
+      "insertions": 109,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-accepted.cjs",
+      "status": "added",
+      "insertions": 8,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-client.cjs",
+      "status": "added",
+      "insertions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-dynamic.py",
+      "status": "added",
+      "insertions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-live.py",
+      "status": "added",
+      "insertions": 87,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-migrations.py",
+      "status": "added",
+      "insertions": 17,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-modules-extended.py",
+      "status": "added",
+      "insertions": 34,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/probe-modules.py",
+      "status": "added",
+      "insertions": 46,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/react-catalog-shape.json",
+      "status": "added",
+      "insertions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/review-closeout.json",
+      "status": "added",
+      "insertions": 22,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/review-coverage.json",
+      "status": "added",
+      "insertions": 441,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/run-tests.py",
+      "status": "added",
+      "insertions": 9,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/verification-preservation.json",
+      "status": "added",
+      "insertions": 8,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/overhead-benchmark.json",
+      "status": "added",
+      "insertions": 122,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/benchmark-admission-overhead.json",
+      "status": "added",
+      "insertions": 45,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/overhead-benchmark.json",
+      "status": "added",
+      "insertions": 123,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/gate0-probes.json",
+      "status": "added",
+      "insertions": 79,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/overhead-benchmark.json",
+      "status": "added",
+      "insertions": 65,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/specs-baseline-comparison.json",
+      "status": "added",
+      "insertions": 25,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/app/api/capabilities/route.ts",
+      "status": "added",
+      "insertions": 85,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/components/chat/CapabilitySelector.tsx",
+      "status": "added",
+      "insertions": 443,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/lib/capability-store.ts",
+      "status": "added",
+      "insertions": 279,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/lib/digest.ts",
+      "status": "added",
+      "insertions": 137,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/tests/capability-store-contract.test.cjs",
+      "status": "added",
+      "insertions": 170,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/tests/probe_client.cjs",
+      "status": "added",
+      "insertions": 91,
+      "deletions": 0
+    },
+    {
+      "path": "frontend/tests/probe_react.cjs",
+      "status": "added",
+      "insertions": 112,
+      "deletions": 0
+    },
+    {
+      "path": "src/common/capabilities.py",
+      "status": "added",
+      "insertions": 1106,
+      "deletions": 0
+    },
+    {
+      "path": "tests/benchmark_capability_overhead.py",
+      "status": "added",
+      "insertions": 261,
+      "deletions": 0
+    },
+    {
+      "path": "tests/probe_modules.py",
+      "status": "added",
+      "insertions": 153,
+      "deletions": 0
+    }
+  ],
+  "excluded_files": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "DESIGN.md",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 2,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "UX-CONTRACT.md",
+      "status": "modified",
+      "insertions": 13,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/anonymous-model-scorecard.md",
+      "status": "modified",
+      "insertions": 24,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-skill-tool-selection/tasks.md",
+      "status": "modified",
+      "insertions": 29,
+      "deletions": 29,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_ledger_selection_persistence.py",
+      "status": "added",
+      "insertions": 801,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/handoffs/skill-tool-selection-review-01-goal.md",
+      "status": "added",
+      "insertions": 15,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/handoffs/skill-tool-selection-review-02-goal.md",
+      "status": "added",
+      "insertions": 35,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/README.md",
+      "status": "added",
+      "insertions": 19,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/admin-ledger-regression.txt",
+      "status": "added",
+      "insertions": 387,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-admin.txt",
+      "status": "added",
+      "insertions": 2,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-core.txt",
+      "status": "added",
+      "insertions": 21,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-frontend-build.txt",
+      "status": "added",
+      "insertions": 48,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-integration-final.txt",
+      "status": "added",
+      "insertions": 276,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-npm-contracts.txt",
+      "status": "added",
+      "insertions": 56,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-openspec-validate.txt",
+      "status": "added",
+      "insertions": 1,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-pytest-admin.txt",
+      "status": "added",
+      "insertions": 22,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-pytest-core.txt",
+      "status": "added",
+      "insertions": 57,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-root-unit-final.txt",
+      "status": "added",
+      "insertions": 517,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-ruff-check.txt",
+      "status": "added",
+      "insertions": 1,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/author-tsc-check.txt",
+      "status": "added",
+      "insertions": 2,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/baseline-admin-ledger.txt",
+      "status": "added",
+      "insertions": 43,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/baseline-empty-migration.txt",
+      "status": "added",
+      "insertions": 19,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/baseline-root-unit.txt",
+      "status": "added",
+      "insertions": 89,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/browser-catalog-error.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/browser-catalog-error.txt",
+      "status": "added",
+      "insertions": 29,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/empty-migration.txt",
+      "status": "added",
+      "insertions": 156,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/frontend-contracts.txt",
+      "status": "added",
+      "insertions": 56,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/root-unit.txt",
+      "status": "added",
+      "insertions": 89,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/ruff.txt",
+      "status": "added",
+      "insertions": 100,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/tsc.txt",
+      "status": "added",
+      "insertions": 2,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-independent/upgrade-existing-migration.txt",
+      "status": "added",
+      "insertions": 3,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/README.md",
+      "status": "added",
+      "insertions": 17,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/admin-ledger.txt",
+      "status": "added",
+      "insertions": 43,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/browser-after-escape.txt",
+      "status": "added",
+      "insertions": 35,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/browser-catalog.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/browser-catalog.txt",
+      "status": "added",
+      "insertions": 3,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/browser-selection.png",
+      "status": "binary",
+      "insertions": 0,
+      "deletions": 0,
+      "exclude_reason": "binary"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/core-sandbox-denied.txt",
+      "status": "added",
+      "insertions": 891,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/core.txt",
+      "status": "added",
+      "insertions": 21,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/empty-to-old-head.txt",
+      "status": "added",
+      "insertions": 19,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/frontend-build-permitted.txt",
+      "status": "added",
+      "insertions": 46,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/frontend-build.txt",
+      "status": "added",
+      "insertions": 11,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/frontend-contracts.txt",
+      "status": "added",
+      "insertions": 58,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/live-extended.txt",
+      "status": "added",
+      "insertions": 299,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/old-head-to-new-head.txt",
+      "status": "added",
+      "insertions": 3,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/openspec-validate.txt",
+      "status": "added",
+      "insertions": 1,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/root-unit.txt",
+      "status": "added",
+      "insertions": 89,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01-independent/ruff.txt",
+      "status": "added",
+      "insertions": 100,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/capabilities_catalog.txt",
+      "status": "added",
+      "insertions": 22,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/event_ledger_api.txt",
+      "status": "added",
+      "insertions": 49,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/event_ledger_contract.txt",
+      "status": "added",
+      "insertions": 22,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/frontend_contracts.txt",
+      "status": "added",
+      "insertions": 56,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/gate0_verification.txt",
+      "status": "added",
+      "insertions": 29,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/ledger_selection_persistence.txt",
+      "status": "added",
+      "insertions": 18,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/overhead_benchmark.txt",
+      "status": "added",
+      "insertions": 126,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/probe_client.txt",
+      "status": "added",
+      "insertions": 26,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/probe_live.txt",
+      "status": "added",
+      "insertions": 24,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/probe_modules.txt",
+      "status": "added",
+      "insertions": 36,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/probe_react.txt",
+      "status": "added",
+      "insertions": 16,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-01/six_graphs_execution.txt",
+      "status": "added",
+      "insertions": 31,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/admin_tests.txt",
+      "status": "added",
+      "insertions": 97,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/core_28_tests.txt",
+      "status": "added",
+      "insertions": 57,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/frontend_build.txt",
+      "status": "added",
+      "insertions": 50,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/frontend_tests.txt",
+      "status": "added",
+      "insertions": 58,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/probe-accepted.txt",
+      "status": "added",
+      "insertions": 24,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/probe-live.txt",
+      "status": "added",
+      "insertions": 167,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/probe-modules-extended.txt",
+      "status": "added",
+      "insertions": 30,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/root_unit_tests.txt",
+      "status": "added",
+      "insertions": 227,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05-repair-02/ruff_check.txt",
+      "status": "added",
+      "insertions": 688,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/flash-blind-05-add-skill-tool-selection.md",
+      "status": "added",
+      "insertions": 91,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/flash-blind-05-repair-01-review.md",
+      "status": "added",
+      "insertions": 107,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/skill-tool-selection-acceptance.md",
+      "status": "added",
+      "insertions": 195,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/skill-tool-selection-repair-01.md",
+      "status": "added",
+      "insertions": 214,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "docs/reviews/skill-tool-selection-repair-02.md",
+      "status": "added",
+      "insertions": 231,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/test_capabilities_catalog.py",
+      "status": "added",
+      "insertions": 538,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/test_gate0_verification.py",
+      "status": "added",
+      "insertions": 372,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/test_six_graphs_execution_constraints.py",
+      "status": "added",
+      "insertions": 728,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    }
+  ]
+}

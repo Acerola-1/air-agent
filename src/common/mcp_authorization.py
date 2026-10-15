@@ -53,12 +53,21 @@ VERIFIED_PROTOCOLS: dict[str, ProtocolProfile] = {
         subject_fields={"user_id": "external_subject"},
         fixture_only=True,
     ),
+    "v1": ProtocolProfile(
+        protocol_version="v1",
+        provider="bearer-env",
+        subject_fields={"user_id": "external_subject"},
+        fixture_only=True,
+    ),
 }
 
 
 def fixture_mode_enabled() -> bool:
-    """本地 fixture 协议只允许显式声明的测试环境使用（默认关闭）."""
-    return os.environ.get("TENANT_MCP_FIXTURE_MODE", "").lower() == "true"
+    """本地 fixture 协议只允许显式声明的环境使用（TENANT_MCP_FIXTURE_MODE=true，默认关闭）."""
+    return os.environ.get("TENANT_MCP_FIXTURE_MODE", "").strip().lower() in (
+        "true",
+        "1",
+    )
 
 
 def resolve_protocol_profile(protocol_version: str) -> ProtocolProfile | None:

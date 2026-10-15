@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.1, pluggy-1.6.0 -- /Users/acerola/Dev/Python/air_agent/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/acerola/Dev/Python/air_agent
+configfile: pyproject.toml
+plugins: timeout-2.4.0, langsmith-0.10.15, anyio-4.14.2
+collecting ... collected 12 items
+
+tests/unit_tests/test_event_ledger_contract.py::test_sample_cases_have_known_reason_codes PASSED [  8%]
+tests/unit_tests/test_event_ledger_contract.py::test_each_sample_matches_expected_verdict PASSED [ 16%]
+tests/unit_tests/test_event_ledger_contract.py::test_valid_samples_count_is_nonzero PASSED [ 25%]
+tests/unit_tests/test_event_ledger_contract.py::test_browser_cannot_claim_server_facts PASSED [ 33%]
+tests/unit_tests/test_event_ledger_contract.py::test_reserved_types_rejected_not_enabled PASSED [ 41%]
+tests/unit_tests/test_event_ledger_contract.py::test_enabled_types_are_the_integrated_v1_family PASSED [ 50%]
+tests/unit_tests/test_event_ledger_contract.py::test_canonical_digest_is_key_order_independent PASSED [ 58%]
+tests/unit_tests/test_event_ledger_contract.py::test_validate_batch_reports_per_item PASSED [ 66%]
+tests/unit_tests/test_event_ledger_contract.py::test_validate_batch_rejects_browser_oversize_batch PASSED [ 75%]
+tests/unit_tests/test_event_ledger_contract.py::test_states_dictionary_flags_terminal_and_ended PASSED [ 83%]
+tests/unit_tests/test_event_ledger_contract.py::test_embedded_copy_matches_published_contract PASSED [ 91%]
+tests/unit_tests/test_event_ledger_contract.py::test_registry_matches_checked_in_contract_file PASSED [100%]
+
+============================== 12 passed in 0.27s ==============================

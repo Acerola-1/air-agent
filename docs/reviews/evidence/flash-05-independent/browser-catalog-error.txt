@@ -1,0 +1,29 @@
+Browser tab: 2, Title: "127.0.0.1:3104/login", URL: "http://127.0.0.1:3104/".
+0 AXWebArea 127.0.0.1:3104/
+	1 container 能力与工具配置, ID: radix-_r_6_
+		2 heading 能力与工具配置, Value: 2, ID: radix-_r_7_
+			3 text 能力与工具配置
+		4 button 刷新能力目录
+		5 container radix-_r_8_
+			6 text 为当前执行图（ basic-qa ）选择显式技能或外部 MCP 工具集合。单选技能绕过语义匹配直接执行；指定空集合禁用 MCP。
+		7 text 页面企业上下文缺失，请刷新后重试
+		8 button 重试
+		9 button 技能选择 (0)
+			10 text 技能选择 (
+			11 text 0
+			12 text )
+		13 button MCP 工具 (0)
+			14 text MCP 工具 (
+			15 text 0
+			16 text )
+		17 button 自动匹配（默认） 智能路由 根据用户提问内容，由语义路由器动态匹配并加载最符合业务诉求的规则。
+			18 text 自动匹配（默认）
+			19 text 智能路由
+			20 text 根据用户提问内容，由语义路由器动态匹配并加载最符合业务诉求的规则。
+		21 container
+			22 text 已选:  自动匹配  · 自动
+		23 button 重置默认
+		24 button 完成
+		25 button Close
+
+The focused UI element is 4 button 刷新能力目录

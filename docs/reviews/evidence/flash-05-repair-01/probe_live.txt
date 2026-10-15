@@ -1,0 +1,24 @@
+{
+  "unverified_protocol_rejected": {
+    "status_code": 403,
+    "rejected_with_403": true
+  },
+  "forged_catalog_rejected": {
+    "status_code": 422,
+    "rejected_with_422": true
+  },
+  "normal_admission_v2_digest": {
+    "status_code": 200,
+    "has_selection": true,
+    "digest_version": 2
+  },
+  "claim_start_v2_digest_check": {
+    "claim_ok_status": "claimed",
+    "claim_tampered_status": "mismatch"
+  },
+  "resume_selection_immutable": {
+    "status_code": 409,
+    "rejected_with_409": true
+  },
+  "all_passed": true
+}

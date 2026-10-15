@@ -1,0 +1,167 @@
+{
+  "kind": "actual_admin_ASGI_auth_and_nonowner_PostgreSQL_native_gate",
+  "model_network_calls": 0,
+  "ids": {
+    "tenant": "c137d7b0-d599-4bf1-be30-dc0d6d84d30f",
+    "user": "d4d3f0eb-448c-4b68-957f-369948834c89",
+    "member": "2cce86f0-0734-406a-94fe-6d7f3fb41af7",
+    "thread": "10fc7d5d-64f6-4ed2-bd82-cad764eaa61f"
+  },
+  "actual_frontend_payload": {
+    "status": 200,
+    "errors": {
+      "request_id": "d4f953bd-ca21-4cac-aa46-e00cf79ec0ca",
+      "attempt_id": "3027cb2a-fc04-4314-8e36-568e11f5cfbe",
+      "submission_id": "39e905b7-0762-4258-b777-4ee41bba874f",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "10fc7d5d-64f6-4ed2-bd82-cad764eaa61f",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:d4f953bd-ca21-4cac-aa46-e00cf79ec0ca:3027cb2a-fc04-4314-8e36-568e11f5cfbe",
+      "capability_selection": {
+        "id": "816cacc2-a152-4dd5-a7f0-d59b88b783c5",
+        "selection_id": "816cacc2-a152-4dd5-a7f0-d59b88b783c5",
+        "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "auto",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "auto",
+        "tool_ids": [],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "automatic",
+        "validation_time": "2026-10-14T23:00:22.638470+00:00"
+      }
+    }
+  },
+  "old_client_omits_selection": {
+    "status": 200
+  },
+  "auto_admission": {
+    "request_id": "30f2bf55-9200-4779-b641-731cbc78ffd6",
+    "attempt_id": "8d24e3d3-c5f9-480d-8675-afccf27c3c17",
+    "submission_id": "8e2fdf04-b513-4114-bef4-863d39132e4a",
+    "admission_status": "admitting",
+    "operation_kind": "initial",
+    "reused": false,
+    "thread_id": "10fc7d5d-64f6-4ed2-bd82-cad764eaa61f",
+    "graph_id": "basic-qa",
+    "ledger_marker": "lr:30f2bf55-9200-4779-b641-731cbc78ffd6:8d24e3d3-c5f9-480d-8675-afccf27c3c17",
+    "capability_selection": {
+      "id": "3020bc12-a48a-4451-b79e-d802c135d64b",
+      "selection_id": "3020bc12-a48a-4451-b79e-d802c135d64b",
+      "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "auto",
+        "tool_ids": []
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "auto",
+      "tool_ids": [],
+      "catalog_version": "cat_000000000000000000000000",
+      "material_version": "auto",
+      "selection_source": "automatic",
+      "validation_time": "2026-10-14T23:00:22.692327+00:00"
+    }
+  },
+  "actual_native_claim_after_real_admission": {
+    "status": "claimed",
+    "start_claim_token": "5db275da-fe96-4aa3-954b-f5f57dff50a3"
+  },
+  "native_create_run_hook": {
+    "accepted": true
+  },
+  "valid_shape_forged_catalog_unknown_tool_empty_factory": {
+    "status": 422,
+    "body": {
+      "detail": "能力目录为空或工具尚未发现"
+    }
+  },
+  "tool_exists_only_on_another_server": {
+    "status": 422,
+    "body": {
+      "detail": "所选工具 mcp:controlled-one:exists_elsewhere 在服务 controlled-one 上不存在或未发现"
+    }
+  },
+  "unknown_protocol_not_literal_unverified": {
+    "status": 403,
+    "body": {
+      "detail": "MCP 服务 controlled-one 协议未验证或不可用: future-unknown-protocol"
+    }
+  },
+  "replay_explicit_first_status": 200,
+  "same_key_explicit_changed_to_explicit_auto": {
+    "status": 409,
+    "body": {
+      "detail": "同一提交键已用于不同选择"
+    }
+  },
+  "resume_inherit": {
+    "status": 200,
+    "body": {
+      "request_id": "13e0f0be-3eef-458d-8a57-acd46bad1690",
+      "attempt_id": "1726670f-1249-4f83-a5a6-621a3ce27133",
+      "submission_id": "c077c670-ae1e-4cda-bc28-d6f5263e1803",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "10fc7d5d-64f6-4ed2-bd82-cad764eaa61f",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:13e0f0be-3eef-458d-8a57-acd46bad1690:1726670f-1249-4f83-a5a6-621a3ce27133",
+      "capability_selection": {
+        "id": "59acd228-a7e8-44a5-9f9a-a20d04f732e6",
+        "selection_id": "59acd228-a7e8-44a5-9f9a-a20d04f732e6",
+        "selection_digest": "e198a7a631977d21c8b9ee02818a6c998dc4b15fae8ea824ff5c2aa881238486",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:exists_elsewhere"
+          ]
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:exists_elsewhere"
+        ],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-14T23:00:23.334752+00:00"
+      }
+    }
+  },
+  "native_resume_with_selected_mcp": {
+    "accepted": true
+  },
+  "flag_disabled_auto_admission": {
+    "status": 200
+  },
+  "flag_disabled_auto_claim": {
+    "status": "claimed",
+    "start_claim_token": "1368c47e-1f39-4f28-82ed-f866976352c9"
+  }
+}

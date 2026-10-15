@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.1, pluggy-1.6.0 -- /Users/acerola/Dev/Python/air_agent/admin/api/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/acerola/Dev/Python/air_agent/admin/api
+configfile: pyproject.toml
+plugins: asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 38 items
+
+admin/api/tests/test_event_ledger_api.py::test_admit_creates_request_attempt_and_event PASSED [  2%]
+admin/api/tests/test_event_ledger_api.py::test_submission_idempotent_and_conflict PASSED [  5%]
+admin/api/tests/test_event_ledger_api.py::test_admit_rejects_unconfirmed_thread PASSED [  7%]
+admin/api/tests/test_event_ledger_api.py::test_admit_rejects_cross_tenant_thread PASSED [ 10%]
+admin/api/tests/test_event_ledger_api.py::test_admission_unknown_not_success_and_not_retried PASSED [ 13%]
+admin/api/tests/test_event_ledger_api.py::test_admission_confirm_requires_internal_token PASSED [ 15%]
+admin/api/tests/test_event_ledger_api.py::test_admission_confirmed_sets_running PASSED [ 18%]
+admin/api/tests/test_event_ledger_api.py::test_state_evidence_rank_and_no_terminal_regression PASSED [ 21%]
+admin/api/tests/test_event_ledger_api.py::test_stop_intent_independent_of_terminal PASSED [ 23%]
+admin/api/tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected PASSED [ 26%]
+admin/api/tests/test_event_ledger_api.py::test_self_readback_no_content_and_operations_split PASSED [ 28%]
+admin/api/tests/test_event_ledger_api.py::test_same_user_two_tenants_isolated PASSED [ 31%]
+admin/api/tests/test_event_ledger_api.py::test_metrics_denominator_and_not_collected PASSED [ 34%]
+admin/api/tests/test_event_ledger_api.py::test_metrics_requires_permission PASSED [ 36%]
+admin/api/tests/test_event_ledger_api.py::test_f02_resume_start_claim_uses_its_own_digest PASSED [ 39%]
+admin/api/tests/test_event_ledger_api.py::test_f02_resume_source_must_be_waiting_and_same_thread PASSED [ 42%]
+admin/api/tests/test_event_ledger_api.py::test_f02_confirm_is_submission_scoped PASSED [ 44%]
+admin/api/tests/test_event_ledger_api.py::test_f04_late_internal_callbacks_after_deletion_are_refused PASSED [ 47%]
+admin/api/tests/test_event_ledger_api.py::test_61_runs_listing_cursor_scope_and_max_page PASSED [ 50%]
+admin/api/tests/test_event_ledger_api.py::test_thread_deletion_marks_immediately PASSED [ 52%]
+admin/api/tests/test_event_ledger_api.py::test_metrics_latency_percentiles_from_detail PASSED [ 55%]
+admin/api/tests/test_event_ledger_api.py::test_retry_and_regenerate_link_original_request PASSED [ 57%]
+admin/api/tests/test_event_ledger_api.py::test_source_attempt_requires_same_user_and_kind PASSED [ 60%]
+admin/api/tests/test_event_ledger_api.py::test_regenerate_without_source_becomes_initial PASSED [ 63%]
+admin/api/tests/test_event_ledger_api.py::test_historical_import_excluded_from_default_cohort PASSED [ 65%]
+admin/api/tests/test_event_ledger_api.py::test_r03_replay_returns_its_own_attempt_after_regenerate PASSED [ 68%]
+admin/api/tests/test_event_ledger_api.py::test_r03_resume_keeps_request_and_attempt PASSED [ 71%]
+admin/api/tests/test_event_ledger_api.py::test_r03_confirmation_only_affects_that_operation PASSED [ 73%]
+admin/api/tests/test_event_ledger_api.py::test_r01_admin_start_claim_single_winner_and_mismatch PASSED [ 76%]
+admin/api/tests/test_event_ledger_api.py::test_r05_deletion_requires_ownership_or_permission PASSED [ 78%]
+admin/api/tests/test_event_ledger_api.py::test_r05_deletion_blocks_reads_and_new_writes PASSED [ 81%]
+admin/api/tests/test_event_ledger_api.py::test_f04_deleted_thread_stays_blocked_after_cleanup PASSED [ 84%]
+admin/api/tests/test_event_ledger_api.py::test_f04_deletion_record_is_permanent_after_cleanup PASSED [ 86%]
+admin/api/tests/test_event_ledger_api.py::test_r05_content_read_is_per_request_not_per_thread PASSED [ 89%]
+admin/api/tests/test_event_ledger_api.py::test_takeover_regenerate_reuses_original_snapshot PASSED [ 92%]
+admin/api/tests/test_event_ledger_api.py::test_takeover_fallback_operation_is_startable_and_replayable PASSED [ 94%]
+admin/api/tests/test_event_ledger_api.py::test_takeover_request_cannot_extend_server_retention PASSED [ 97%]
+admin/api/tests/test_event_ledger_api.py::test_takeover_tenant_retention_override_and_source_scope PASSED [100%]
+
+============================= 38 passed in 20.80s ==============================

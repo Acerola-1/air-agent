@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
   const items = ((candidates.json as { items?: unknown[] })?.items ?? []) as {
     request_id: string;
     attempt_id: string;
+    submission_id: string;
   }[];
   if (items.length === 0) {
     return NextResponse.json({ confirmed: false, reason: "no_pending_attempt" });
@@ -89,7 +90,8 @@ export async function POST(req: NextRequest) {
   const matched = items.find(
     (item) =>
       runMetadata.ledger_request_id === item.request_id &&
-      runMetadata.ledger_attempt_id === item.attempt_id
+      runMetadata.ledger_attempt_id === item.attempt_id &&
+      runMetadata.ledger_submission_id === item.submission_id
   );
   if (!matched) {
     return NextResponse.json({ confirmed: false, reason: "marker_mismatch" });
@@ -99,11 +101,30 @@ export async function POST(req: NextRequest) {
       cookie: store,
       requestId: matched.request_id,
       attemptId: matched.attempt_id,
+      submissionId: matched.submission_id,
       outcome: "confirmed",
       platformRunId: runId,
     });
   } catch {
     return NextResponse.json({ confirmed: false, reason: "confirm_failed" });
   }
-  return NextResponse.json({ confirmed: true, attempt_id: matched.attempt_id });
+  const resolved = await adminFetch(
+    `/agent/feedback/attempts/resolve?thread_id=${encodeURIComponent(threadId)}&platform_run_id=${encodeURIComponent(runId)}`,
+    { cookie: store }
+  );
+  if (resolved.status !== 200) return NextResponse.json({ confirmed: false, reason: "selection_unavailable" });
+  return NextResponse.json({ confirmed: true, ...(resolved.json as Record<string, unknown>) });
+}
+
+/** 历史会话的已确认计划：只读本人台账，不从浏览器草稿或 checkpoint 推断。 */
+export async function GET(req: NextRequest) {
+  const ctx = await getSessionContext();
+  if (!ctx) return NextResponse.json({ error: "请先登录" }, { status: 401 });
+  const threadId = req.nextUrl.searchParams.get("thread_id") ?? "";
+  if (!/^[a-zA-Z0-9_-]+$/.test(threadId)) return NextResponse.json({ error: "会话参数无效" }, { status: 400 });
+  const result = await adminFetch(
+    `/agent/feedback/attempts/resolve?thread_id=${encodeURIComponent(threadId)}`,
+    { cookie: req.headers.get("cookie") ?? "" }
+  );
+  return NextResponse.json(result.json, { status: result.status });
 }

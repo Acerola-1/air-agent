@@ -1,0 +1,22 @@
+{
+  "author_input_unchanged": true,
+  "author_files_changed": [],
+  "protected_files_changed": [
+    "docs/reviews/anonymous-model-scorecard.md"
+  ],
+  "scorecard_change": "仅追加二修58分、60分钟、累计274分钟与建议，不改首交46/首修63",
+  "head": "8620cf78b22cb7234fe650fa5c9f032359e0d70d",
+  "product_fixed_by_reviewer": false,
+  "committed": false,
+  "pushed": false,
+  "merged": false,
+  "archived": false,
+  "score": 58,
+  "first_delivery_minutes": 131,
+  "repair_01_minutes": 83,
+  "repair_02_minutes": 60,
+  "total_minutes": 274,
+  "own_http_fixture_processes_stopped": true,
+  "temporary_migration_database_removed": true,
+  "token_usage": "未采集"
+}

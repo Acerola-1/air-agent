@@ -1,0 +1,6 @@
+basic-qa bff True 
+intelligent-analysis bff True 
+data-analysis bff True 
+intelligent-report bff True 
+deep-research bff True 
+intelligent-tracing bff True 

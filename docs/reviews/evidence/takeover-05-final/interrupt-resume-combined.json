@@ -1,0 +1,734 @@
+[
+  {
+    "graph": "basic-qa",
+    "entry": "native",
+    "thread_id": "3c9932db-50b1-4f68-8cef-d6ed9177cb0f",
+    "interrupted_run_id": "01a13e54-98bd-7cd0-a376-4e36ae9bd70c",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "f275ee48-d043-4ee9-a785-f0876142261a",
+      "selection_digest": "0734e10aa77d97ab09dde46ebe28e7ac86f9248c623b660d1842a461f6276fb4",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_a3971c257c11d717fac9ee92",
+      "selection_source": "user_explicit",
+      "id": "f275ee48-d043-4ee9-a785-f0876142261a"
+    },
+    "resume_admission": {
+      "request_id": "f5bfd733-eacd-4f37-ae97-4bfeaf3b69e2",
+      "attempt_id": "7f5e8fe3-1861-4e98-8a9d-02c943a2d84c",
+      "submission_id": "c5d39b7b-b906-4334-a5d7-0fac46346ecc",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "3c9932db-50b1-4f68-8cef-d6ed9177cb0f",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:f5bfd733-eacd-4f37-ae97-4bfeaf3b69e2:7f5e8fe3-1861-4e98-8a9d-02c943a2d84c",
+      "capability_selection": {
+        "id": "33b48dcd-6598-4055-841a-1de6ea077072",
+        "selection_id": "33b48dcd-6598-4055-841a-1de6ea077072",
+        "selection_digest": "0734e10aa77d97ab09dde46ebe28e7ac86f9248c623b660d1842a461f6276fb4",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "catalog_version": "cat_a3971c257c11d717fac9ee92",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-15T06:51:50.695699+00:00"
+      }
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e54-da5a-7300-9c97-8faf5ee0266a",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "7f5e8fe3-1861-4e98-8a9d-02c943a2d84c",
+      "submission_id": "c5d39b7b-b906-4334-a5d7-0fac46346ecc",
+      "capability_selection": {
+        "selection_id": "33b48dcd-6598-4055-841a-1de6ea077072",
+        "selection_digest": "0734e10aa77d97ab09dde46ebe28e7ac86f9248c623b660d1842a461f6276fb4",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_a3971c257c11d717fac9ee92",
+        "selection_source": "user_explicit",
+        "id": "33b48dcd-6598-4055-841a-1de6ea077072"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-analysis",
+    "entry": "native",
+    "thread_id": "d767acd8-d82b-42d6-975a-194d8d8c2cfc",
+    "interrupted_run_id": "01a13e54-f536-7623-a206-5bb0c6a14422",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "7d27549d-f639-42d1-9128-c74e593a046d",
+      "selection_digest": "48c0ded744b8eee57586ef04a347e05554dd802a98f50764967ab59f4b6b0333",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_bf44ba3ee60eee15e7d467a2",
+      "selection_source": "user_explicit",
+      "id": "7d27549d-f639-42d1-9128-c74e593a046d"
+    },
+    "resume_admission": {
+      "request_id": "56cde892-48da-4396-a241-76d72e8307a7",
+      "attempt_id": "38992f08-cb30-44d1-9266-20d80d6a7f1c",
+      "submission_id": "7b4cc27e-ce9b-45f4-96d2-5abaabfeb445",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "d767acd8-d82b-42d6-975a-194d8d8c2cfc",
+      "graph_id": "intelligent-analysis",
+      "ledger_marker": "lr:56cde892-48da-4396-a241-76d72e8307a7:38992f08-cb30-44d1-9266-20d80d6a7f1c",
+      "capability_selection": {
+        "id": "124abe24-a643-4bf1-a966-691996438fd9",
+        "selection_id": "124abe24-a643-4bf1-a966-691996438fd9",
+        "selection_digest": "48c0ded744b8eee57586ef04a347e05554dd802a98f50764967ab59f4b6b0333",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "catalog_version": "cat_bf44ba3ee60eee15e7d467a2",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-15T06:52:14.685950+00:00"
+      }
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e55-37f5-7930-a405-1c7f0bee9dd7",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "38992f08-cb30-44d1-9266-20d80d6a7f1c",
+      "submission_id": "7b4cc27e-ce9b-45f4-96d2-5abaabfeb445",
+      "capability_selection": {
+        "selection_id": "124abe24-a643-4bf1-a966-691996438fd9",
+        "selection_digest": "48c0ded744b8eee57586ef04a347e05554dd802a98f50764967ab59f4b6b0333",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_bf44ba3ee60eee15e7d467a2",
+        "selection_source": "user_explicit",
+        "id": "124abe24-a643-4bf1-a966-691996438fd9"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "data-analysis",
+    "entry": "native",
+    "thread_id": "9b44e6e7-cc55-4737-a7b0-2d1ff030d45d",
+    "interrupted_run_id": "01a13e55-5584-79c2-b215-520f8050b428",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "9ee98d7a-3496-4669-b5ad-50ad7de83f2c",
+      "selection_digest": "8126983f5aae46e983fa092c164d194d9611e4f9a697efb7513fd2439046f39f",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_7e56d966d60793bddd8beb40",
+      "selection_source": "user_explicit",
+      "id": "9ee98d7a-3496-4669-b5ad-50ad7de83f2c"
+    },
+    "resume_admission": {
+      "request_id": "efceb15f-6aa2-47f6-9fe4-8a758cdb9877",
+      "attempt_id": "bc69edd7-e161-44af-a4ed-bd29e7d030db",
+      "submission_id": "02448417-101d-40dd-a905-0cb8ae076028",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "9b44e6e7-cc55-4737-a7b0-2d1ff030d45d",
+      "graph_id": "data-analysis",
+      "ledger_marker": "lr:efceb15f-6aa2-47f6-9fe4-8a758cdb9877:bc69edd7-e161-44af-a4ed-bd29e7d030db",
+      "capability_selection": {
+        "id": "e49a1135-42a2-42aa-8ef8-f46192d94fd5",
+        "selection_id": "e49a1135-42a2-42aa-8ef8-f46192d94fd5",
+        "selection_digest": "8126983f5aae46e983fa092c164d194d9611e4f9a697efb7513fd2439046f39f",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "catalog_version": "cat_7e56d966d60793bddd8beb40",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-15T06:52:23.070585+00:00"
+      }
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e55-58bd-77b1-837a-65e86b7500df",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "bc69edd7-e161-44af-a4ed-bd29e7d030db",
+      "submission_id": "02448417-101d-40dd-a905-0cb8ae076028",
+      "capability_selection": {
+        "selection_id": "e49a1135-42a2-42aa-8ef8-f46192d94fd5",
+        "selection_digest": "8126983f5aae46e983fa092c164d194d9611e4f9a697efb7513fd2439046f39f",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_7e56d966d60793bddd8beb40",
+        "selection_source": "user_explicit",
+        "id": "e49a1135-42a2-42aa-8ef8-f46192d94fd5"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-report",
+    "entry": "native",
+    "thread_id": "43ed741f-456b-46e4-8d43-153da3dbc324",
+    "interrupted_run_id": "01a13e55-b109-7ae0-a5fc-20100ee93216",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "23b5e387-6263-49e2-b1a4-9db012760aae",
+      "selection_digest": "8daec5c5c7bfa789ceb2532249db651fa7f5dd15a9eb9611ffe737b0430af360",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_0089c99bc55108dcc137d09e",
+      "selection_source": "user_explicit",
+      "id": "23b5e387-6263-49e2-b1a4-9db012760aae"
+    },
+    "resume_admission": {
+      "request_id": "e739ba90-d87e-4392-af35-8506b69db237",
+      "attempt_id": "4116082b-dd1b-479f-9c5e-592ac0a4f45a",
+      "submission_id": "16c917a0-86e1-4ac0-9341-46701f0d1e7a",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "43ed741f-456b-46e4-8d43-153da3dbc324",
+      "graph_id": "intelligent-report",
+      "ledger_marker": "lr:e739ba90-d87e-4392-af35-8506b69db237:4116082b-dd1b-479f-9c5e-592ac0a4f45a",
+      "capability_selection": {
+        "id": "871f2d23-75f6-40e9-8bb9-6ae43af32f0f",
+        "selection_id": "871f2d23-75f6-40e9-8bb9-6ae43af32f0f",
+        "selection_digest": "8daec5c5c7bfa789ceb2532249db651fa7f5dd15a9eb9611ffe737b0430af360",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "catalog_version": "cat_0089c99bc55108dcc137d09e",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-15T06:52:46.675553+00:00"
+      }
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e55-b4e7-7200-9b4c-8f5e365e5f7d",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "4116082b-dd1b-479f-9c5e-592ac0a4f45a",
+      "submission_id": "16c917a0-86e1-4ac0-9341-46701f0d1e7a",
+      "capability_selection": {
+        "selection_id": "871f2d23-75f6-40e9-8bb9-6ae43af32f0f",
+        "selection_digest": "8daec5c5c7bfa789ceb2532249db651fa7f5dd15a9eb9611ffe737b0430af360",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_0089c99bc55108dcc137d09e",
+        "selection_source": "user_explicit",
+        "id": "871f2d23-75f6-40e9-8bb9-6ae43af32f0f"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "deep-research",
+    "entry": "native",
+    "thread_id": "5e3f4bb6-1ab3-4f85-ba46-381c3ec3b3ed",
+    "interrupted_run_id": "01a13e55-ceac-7671-a325-f4ead38cff6d",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "2ede5ca8-06aa-4e31-8900-48d823858ecf",
+      "selection_digest": "a649f88d0e29a20a7e6c054e722f718de4d32f7f0c9fb94aba4b6f3fd1ebb0d6",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_7444cd75ce98889232b3b859",
+      "selection_source": "user_explicit",
+      "id": "2ede5ca8-06aa-4e31-8900-48d823858ecf"
+    },
+    "resume_admission": {
+      "request_id": "ae374c4f-a515-4d8f-88f5-c68d69db5736",
+      "attempt_id": "b4fbb7e9-0b37-41f8-a6b3-d23753d543a9",
+      "submission_id": "7017a974-38f0-4adb-be8e-50533005a547",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "5e3f4bb6-1ab3-4f85-ba46-381c3ec3b3ed",
+      "graph_id": "deep-research",
+      "ledger_marker": "lr:ae374c4f-a515-4d8f-88f5-c68d69db5736:b4fbb7e9-0b37-41f8-a6b3-d23753d543a9",
+      "capability_selection": {
+        "id": "155af818-a2ed-4706-a35c-61bddf88fe1e",
+        "selection_id": "155af818-a2ed-4706-a35c-61bddf88fe1e",
+        "selection_digest": "a649f88d0e29a20a7e6c054e722f718de4d32f7f0c9fb94aba4b6f3fd1ebb0d6",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "catalog_version": "cat_7444cd75ce98889232b3b859",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-15T06:52:54.206287+00:00"
+      }
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e55-d251-7591-830b-a64a85ce8d40",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "b4fbb7e9-0b37-41f8-a6b3-d23753d543a9",
+      "submission_id": "7017a974-38f0-4adb-be8e-50533005a547",
+      "capability_selection": {
+        "selection_id": "155af818-a2ed-4706-a35c-61bddf88fe1e",
+        "selection_digest": "a649f88d0e29a20a7e6c054e722f718de4d32f7f0c9fb94aba4b6f3fd1ebb0d6",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_7444cd75ce98889232b3b859",
+        "selection_source": "user_explicit",
+        "id": "155af818-a2ed-4706-a35c-61bddf88fe1e"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-tracing",
+    "entry": "native",
+    "thread_id": "fb0e8641-9a2f-4da7-9340-56321a391e6b",
+    "interrupted_run_id": "01a13e55-eae3-7612-8b74-b79266a68e3a",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "c31a5bf3-06b8-48b2-b653-94dddfe7e228",
+      "selection_digest": "2aabe8c8a569e7200f19df9a048c534359b56cb6db26a6c34cb28cb8ba7691c9",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_4e476d1827b25083102ecd59",
+      "selection_source": "user_explicit",
+      "id": "c31a5bf3-06b8-48b2-b653-94dddfe7e228"
+    },
+    "resume_admission": {
+      "request_id": "b2afdbf8-e53c-472b-a499-07218bb428d8",
+      "attempt_id": "8e23a52f-dc7d-400c-9cc5-7922826ad7a5",
+      "submission_id": "1821b186-ab0f-4567-9b8e-f1de3fd1a43f",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "fb0e8641-9a2f-4da7-9340-56321a391e6b",
+      "graph_id": "intelligent-tracing",
+      "ledger_marker": "lr:b2afdbf8-e53c-472b-a499-07218bb428d8:8e23a52f-dc7d-400c-9cc5-7922826ad7a5",
+      "capability_selection": {
+        "id": "c30fe634-e83b-4cf9-98cc-2d65a2f8ecad",
+        "selection_id": "c30fe634-e83b-4cf9-98cc-2d65a2f8ecad",
+        "selection_digest": "2aabe8c8a569e7200f19df9a048c534359b56cb6db26a6c34cb28cb8ba7691c9",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "catalog_version": "cat_4e476d1827b25083102ecd59",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-15T06:53:01.481984+00:00"
+      }
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e55-eebc-7483-8eda-e800794c8be7",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "8e23a52f-dc7d-400c-9cc5-7922826ad7a5",
+      "submission_id": "1821b186-ab0f-4567-9b8e-f1de3fd1a43f",
+      "capability_selection": {
+        "selection_id": "c30fe634-e83b-4cf9-98cc-2d65a2f8ecad",
+        "selection_digest": "2aabe8c8a569e7200f19df9a048c534359b56cb6db26a6c34cb28cb8ba7691c9",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_4e476d1827b25083102ecd59",
+        "selection_source": "user_explicit",
+        "id": "c30fe634-e83b-4cf9-98cc-2d65a2f8ecad"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "basic-qa",
+    "entry": "bff",
+    "thread_id": "4e4fdb66-5771-498c-9777-f43a5bc0d1bb",
+    "interrupted_run_id": "01a13e58-ee0a-7fc3-92be-5f29f7b9cba7",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "dc8f0660-2858-46e0-ad9f-61e1583b33f7",
+      "selection_digest": "0734e10aa77d97ab09dde46ebe28e7ac86f9248c623b660d1842a461f6276fb4",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_a3971c257c11d717fac9ee92",
+      "selection_source": "user_explicit",
+      "id": "dc8f0660-2858-46e0-ad9f-61e1583b33f7"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-2e02-7413-bdfd-0140d0607254",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "fe0c70e0-78ce-4a16-bb86-154da16c6e76",
+      "submission_id": "c6abbe5f-7618-4be2-8067-456ceb03a4e1",
+      "capability_selection": {
+        "selection_id": "b45e2380-b725-4822-9873-9ee92cebd8c2",
+        "selection_digest": "0734e10aa77d97ab09dde46ebe28e7ac86f9248c623b660d1842a461f6276fb4",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_a3971c257c11d717fac9ee92",
+        "selection_source": "user_explicit",
+        "id": "b45e2380-b725-4822-9873-9ee92cebd8c2"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-analysis",
+    "entry": "bff",
+    "thread_id": "9bc0bb0d-b1be-4ce5-8eaf-9ac6e0f32e6b",
+    "interrupted_run_id": "01a13e59-3f5a-7272-9da3-a4f18c34400d",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "c7ef430e-3849-4bc9-afa2-cc5ec03fcc4f",
+      "selection_digest": "48c0ded744b8eee57586ef04a347e05554dd802a98f50764967ab59f4b6b0333",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_bf44ba3ee60eee15e7d467a2",
+      "selection_source": "user_explicit",
+      "id": "c7ef430e-3849-4bc9-afa2-cc5ec03fcc4f"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-8217-7611-8b28-96a68f62c5d0",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "52fd1f68-0d07-483d-881c-dc5fc4278849",
+      "submission_id": "a3315925-0ecf-436d-b116-5e19c4b40d61",
+      "capability_selection": {
+        "selection_id": "12738edf-0f62-4ecc-bf16-2ff40f9adc43",
+        "selection_digest": "48c0ded744b8eee57586ef04a347e05554dd802a98f50764967ab59f4b6b0333",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_bf44ba3ee60eee15e7d467a2",
+        "selection_source": "user_explicit",
+        "id": "12738edf-0f62-4ecc-bf16-2ff40f9adc43"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "data-analysis",
+    "entry": "bff",
+    "thread_id": "6cd0b2d9-2ab8-4506-8966-8834e36b7723",
+    "interrupted_run_id": "01a13e59-8c4a-7363-bf36-5a325b4ed33a",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "e8056b15-a8b7-4d00-a1a9-264a68148615",
+      "selection_digest": "8126983f5aae46e983fa092c164d194d9611e4f9a697efb7513fd2439046f39f",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_7e56d966d60793bddd8beb40",
+      "selection_source": "user_explicit",
+      "id": "e8056b15-a8b7-4d00-a1a9-264a68148615"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-8f5b-70d3-b505-f747794d2af0",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "77e90c27-2314-4e25-90a5-f859277a43e6",
+      "submission_id": "bc9b6fe5-2f81-4e8a-89e2-3ca98d30d202",
+      "capability_selection": {
+        "selection_id": "c839a01e-b34f-41f5-ae50-b3bd097ec16b",
+        "selection_digest": "8126983f5aae46e983fa092c164d194d9611e4f9a697efb7513fd2439046f39f",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_7e56d966d60793bddd8beb40",
+        "selection_source": "user_explicit",
+        "id": "c839a01e-b34f-41f5-ae50-b3bd097ec16b"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-report",
+    "entry": "bff",
+    "thread_id": "02ea1e07-1d45-49d5-bf86-37514d6b59c4",
+    "interrupted_run_id": "01a13e59-abc7-7ce1-ae46-ac902d4d0225",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "7779b6b3-1335-4589-8164-f849bd6fc460",
+      "selection_digest": "8daec5c5c7bfa789ceb2532249db651fa7f5dd15a9eb9611ffe737b0430af360",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_0089c99bc55108dcc137d09e",
+      "selection_source": "user_explicit",
+      "id": "7779b6b3-1335-4589-8164-f849bd6fc460"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-ae63-7211-901a-3eeee5eefcef",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "bb02a14f-34e6-4608-aeb0-bdbba0442fda",
+      "submission_id": "7368abbd-b3ef-4fd6-a760-4b1e183ae1dd",
+      "capability_selection": {
+        "selection_id": "4dbb5442-a77a-4c64-a697-00af7e1184c1",
+        "selection_digest": "8daec5c5c7bfa789ceb2532249db651fa7f5dd15a9eb9611ffe737b0430af360",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_0089c99bc55108dcc137d09e",
+        "selection_source": "user_explicit",
+        "id": "4dbb5442-a77a-4c64-a697-00af7e1184c1"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "deep-research",
+    "entry": "bff",
+    "thread_id": "3a7930f7-1377-4ec6-9276-08fec2f5b639",
+    "interrupted_run_id": "01a13e59-bab1-7432-ba7a-39eee83becb6",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "41742fa7-8bec-4fce-ac72-c70b3111cf45",
+      "selection_digest": "a649f88d0e29a20a7e6c054e722f718de4d32f7f0c9fb94aba4b6f3fd1ebb0d6",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_7444cd75ce98889232b3b859",
+      "selection_source": "user_explicit",
+      "id": "41742fa7-8bec-4fce-ac72-c70b3111cf45"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-bcfc-7c12-8d23-5bff3ccd3458",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "33337df7-2d53-476b-a835-1fcecae67a62",
+      "submission_id": "656ccc2d-0151-44d6-9713-79a4b5e74d0b",
+      "capability_selection": {
+        "selection_id": "a2e282d3-4235-42a1-bf3d-7ceb1c11970a",
+        "selection_digest": "a649f88d0e29a20a7e6c054e722f718de4d32f7f0c9fb94aba4b6f3fd1ebb0d6",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_7444cd75ce98889232b3b859",
+        "selection_source": "user_explicit",
+        "id": "a2e282d3-4235-42a1-bf3d-7ceb1c11970a"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-tracing",
+    "entry": "bff",
+    "thread_id": "6955e253-8982-4c8d-a513-2882ab7cacaa",
+    "interrupted_run_id": "01a13e59-cb56-7e33-a210-84a9379b979e",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "bf4787d7-3ec6-431a-88da-2c330649db1b",
+      "selection_digest": "2aabe8c8a569e7200f19df9a048c534359b56cb6db26a6c34cb28cb8ba7691c9",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_4e476d1827b25083102ecd59",
+      "selection_source": "user_explicit",
+      "id": "bf4787d7-3ec6-431a-88da-2c330649db1b"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-ceeb-7d82-887f-7d1075a34d8f",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "307464c1-ea79-47b7-82e4-8ee73b808293",
+      "submission_id": "bf292477-0e6f-41b8-9b50-92c91206ab69",
+      "capability_selection": {
+        "selection_id": "456b3d19-5b70-4655-9461-039b4a113553",
+        "selection_digest": "2aabe8c8a569e7200f19df9a048c534359b56cb6db26a6c34cb28cb8ba7691c9",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_4e476d1827b25083102ecd59",
+        "selection_source": "user_explicit",
+        "id": "456b3d19-5b70-4655-9461-039b4a113553"
+      }
+    },
+    "passed": true
+  }
+]

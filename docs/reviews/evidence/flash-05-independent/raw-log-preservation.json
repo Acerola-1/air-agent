@@ -1,0 +1,26 @@
+{
+  "reason": "*.log被Git忽略，保留原始字节的.txt副本供后续归档；不改原始日志",
+  "mapping": {
+    "docs/reviews/evidence/flash-05/npm-contracts.log": "docs/reviews/evidence/flash-05-independent/author-npm-contracts.txt",
+    "docs/reviews/evidence/flash-05/pytest-admin.log": "docs/reviews/evidence/flash-05-independent/author-pytest-admin.txt",
+    "docs/reviews/evidence/flash-05/openspec-validate.log": "docs/reviews/evidence/flash-05-independent/author-openspec-validate.txt",
+    "docs/reviews/evidence/flash-05/tsc-check.log": "docs/reviews/evidence/flash-05-independent/author-tsc-check.txt",
+    "docs/reviews/evidence/flash-05/pytest-core.log": "docs/reviews/evidence/flash-05-independent/author-pytest-core.txt",
+    "docs/reviews/evidence/flash-05/ruff-check.log": "docs/reviews/evidence/flash-05-independent/author-ruff-check.txt",
+    "docs/reviews/evidence/flash-05/root-unit-final.log": "docs/reviews/evidence/flash-05-independent/author-root-unit-final.txt",
+    "docs/reviews/evidence/flash-05/frontend-build.log": "docs/reviews/evidence/flash-05-independent/author-frontend-build.txt",
+    "docs/reviews/evidence/flash-05/integration-final.log": "docs/reviews/evidence/flash-05-independent/author-integration-final.txt",
+    "docs/reviews/evidence/flash-05-independent/author-core.log": "docs/reviews/evidence/flash-05-independent/author-core.txt",
+    "docs/reviews/evidence/flash-05-independent/root-unit.log": "docs/reviews/evidence/flash-05-independent/root-unit.txt",
+    "docs/reviews/evidence/flash-05-independent/upgrade-existing-migration.log": "docs/reviews/evidence/flash-05-independent/upgrade-existing-migration.txt",
+    "docs/reviews/evidence/flash-05-independent/baseline-admin-ledger.log": "docs/reviews/evidence/flash-05-independent/baseline-admin-ledger.txt",
+    "docs/reviews/evidence/flash-05-independent/baseline-empty-migration.log": "docs/reviews/evidence/flash-05-independent/baseline-empty-migration.txt",
+    "docs/reviews/evidence/flash-05-independent/baseline-root-unit.log": "docs/reviews/evidence/flash-05-independent/baseline-root-unit.txt",
+    "docs/reviews/evidence/flash-05-independent/ruff.log": "docs/reviews/evidence/flash-05-independent/ruff.txt",
+    "docs/reviews/evidence/flash-05-independent/frontend-contracts.log": "docs/reviews/evidence/flash-05-independent/frontend-contracts.txt",
+    "docs/reviews/evidence/flash-05-independent/author-admin.log": "docs/reviews/evidence/flash-05-independent/author-admin.txt",
+    "docs/reviews/evidence/flash-05-independent/admin-ledger-regression.log": "docs/reviews/evidence/flash-05-independent/admin-ledger-regression.txt",
+    "docs/reviews/evidence/flash-05-independent/tsc.log": "docs/reviews/evidence/flash-05-independent/tsc.txt",
+    "docs/reviews/evidence/flash-05-independent/empty-migration.log": "docs/reviews/evidence/flash-05-independent/empty-migration.txt"
+  }
+}

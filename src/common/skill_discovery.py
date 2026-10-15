@@ -187,6 +187,60 @@ def create_find_skill_tool(
         config: RunnableConfig,
     ) -> Command[Any]:
         """根据用户问题查找最匹配的业务 Skill，命中后直接内联其规则与允许的工具."""
+        # 任务 4.2 / 4.4：显式 Skill 单选直接内联
+        configurable = config.get("configurable", {}) or {}
+        skill_mode = configurable.get("capability_skill_mode") or "auto"
+        if skill_mode == "explicit":
+            skill_id = configurable.get("capability_skill_id") or ""
+            explicit_slug = skill_id.split(":")[-1] if skill_id else ""
+            skill_meta = getattr(router, "_skills_by_name", {}).get(explicit_slug)
+            if skill_meta is not None:
+                from common.observability.skill_adapter import emit_skill_stage
+
+                mode = get_routing_context(configurable).mode
+                allowed_tools = list(skill_meta.allowed_tools)
+                candidate = SkillRouteCandidate(
+                    name=explicit_slug,
+                    description=skill_meta.description,
+                    path=f"/skills/{explicit_slug}/SKILL.md",
+                    allowed_tools=skill_meta.allowed_tools,
+                    similarity_score=1.0,
+                )
+                emit_skill_stage(
+                    config, explicit_slug, "matched", body=None, source="manual"
+                )
+                emit_skill_stage(config, explicit_slug, "selected", source="manual")
+                payload = _single_candidate_payload(
+                    candidate, mode, router, allowed_tools
+                )
+                emit_skill_stage(
+                    config,
+                    explicit_slug,
+                    "loaded",
+                    body=str(payload.get("skill_instructions") or ""),
+                    status="succeeded"
+                    if str(payload.get("skill_instructions") or "").strip()
+                    else "failed",
+                    source="manual",
+                )
+                return Command(
+                    update={
+                        "messages": [
+                            ToolMessage(
+                                content=json.dumps(payload, ensure_ascii=False),
+                                tool_call_id=tool_call_id,
+                            )
+                        ],
+                        "skill_search_attempted": True,
+                        "skill_search_question": question,
+                        "selected_skill": explicit_slug,
+                        "selected_skill_path": candidate.path,
+                        "selected_skill_description": candidate.description,
+                        "selected_skill_allowed_tools": allowed_tools,
+                        "selected_skill_score": 1.0,
+                    }
+                )
+
         candidates: Sequence[SkillRouteCandidate] = await router.amatch(question)
         from common.observability.skill_adapter import emit_skill_stage
 

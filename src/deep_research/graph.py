@@ -6,11 +6,12 @@ from pathlib import Path
 from typing import Any
 
 from deepagents import create_deep_agent
-from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend
+from deepagents.backends import CompositeBackend, StateBackend
 from langchain.agents.middleware.types import AgentMiddleware
 from langchain_quickjs import CodeInterpreterMiddleware
 
 from common.artifacts.create_artifact_tool import build_create_artifact_tool
+from common.capabilities import BoundedSkillsBackend
 from common.event_ledger.lifecycle import LedgerLifecycleMiddleware
 from common.langfuse_tracing import with_langfuse_tracing
 from common.mcp_client import get_business_mcp_tools
@@ -62,7 +63,7 @@ _mcp_tools = get_business_mcp_tools()
 _backend = CompositeBackend(
     default=StateBackend(),
     routes={
-        "/skills/": FilesystemBackend(root_dir=str(SKILLS_DIR), virtual_mode=True),
+        "/skills/": BoundedSkillsBackend(root_dir=str(SKILLS_DIR), virtual_mode=True),
     },
 )
 

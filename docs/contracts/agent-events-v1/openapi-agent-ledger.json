@@ -237,12 +237,19 @@
           {
             "in": "query",
             "name": "platform_run_id",
-            "required": true,
+            "required": false,
             "schema": {
-              "maxLength": 128,
-              "minLength": 1,
-              "title": "Platform Run Id",
-              "type": "string"
+              "anyOf": [
+                {
+                  "maxLength": 128,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Platform Run Id"
             }
           }
         ],

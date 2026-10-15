@@ -1,0 +1,183 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 0012o_delivery -> 0013s_capability_selection, 用户授权能力选择快照与复合关联（Change 4 任务 3.2）.
+Traceback (most recent call last):
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1946, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/cursor.py", line 117, in execute
+    raise ex.with_traceback(None)
+psycopg.errors.UndefinedColumn: column "selection_source" does not exist
+LINE 26:  CONSTRAINT ck_agent_selections_source CHECK (selection_sour...
+                                                       ^
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/__main__.py", line 4, in <module>
+    main(prog="alembic")
+    ~~~~^^^^^^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/config.py", line 1039, in main
+    CommandLine(prog=prog).main(argv=argv)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/config.py", line 1029, in main
+    self.run_cmd(cfg, options)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/config.py", line 963, in run_cmd
+    fn(
+    ~~^
+        config,
+        ^^^^^^^
+        *[getattr(options, k, None) for k in positional],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **{k: getattr(options, k, None) for k in kwarg},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/command.py", line 487, in upgrade
+    script.run_env()
+    ~~~~~~~~~~~~~~^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/script/base.py", line 550, in run_env
+    util.load_python_file(self.dir, "env.py")
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/util/pyfiles.py", line 114, in load_python_file
+    module = load_module_py(module_id, path)
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/util/pyfiles.py", line 132, in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/Users/acerola/Dev/Python/air_agent/admin/api/migrations/env.py", line 52, in <module>
+    run_migrations_online()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/acerola/Dev/Python/air_agent/admin/api/migrations/env.py", line 45, in run_migrations_online
+    context.run_migrations()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 8, in run_migrations
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/runtime/environment.py", line 970, in run_migrations
+    self.get_context().run_migrations(**kw)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/runtime/migration.py", line 616, in run_migrations
+    step.migration_fn(**kw)
+    ~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/acerola/Dev/Python/air_agent/admin/api/migrations/versions/0013s_capability_selection.py", line 38, in upgrade
+    op.create_table(
+    ~~~~~~~~~~~~~~~^
+        "agent_capability_selections",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<69 lines>...
+        ),
+        ^^
+    )
+    ^
+  File "<string>", line 8, in create_table
+  File "<string>", line 3, in create_table
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/operations/ops.py", line 1323, in create_table
+    return operations.invoke(op)
+           ~~~~~~~~~~~~~~~~~^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/operations/base.py", line 448, in invoke
+    return fn(self, operation)
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/operations/toimpl.py", line 139, in create_table
+    operations.impl.create_table(table, **kw)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/ddl/impl.py", line 434, in create_table
+    self._exec(schema.CreateTable(table, **kw))
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/alembic/ddl/impl.py", line 252, in _exec
+    return conn.execute(construct, params)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1451, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/sql/ddl.py", line 203, in _execute_on_connection
+    return connection._execute_ddl(
+           ~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1560, in _execute_ddl
+    ret = self._execute_context(
+        dialect,
+    ...<4 lines>...
+        compiled,
+    )
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1825, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1965, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2335, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1946, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/cursor.py", line 117, in execute
+    raise ex.with_traceback(None)
+sqlalchemy.exc.ProgrammingError: (psycopg.errors.UndefinedColumn) column "selection_source" does not exist
+LINE 26:  CONSTRAINT ck_agent_selections_source CHECK (selection_sour...
+                                                       ^
+[SQL: 
+CREATE TABLE agent_capability_selections (
+	id UUID DEFAULT gen_random_uuid() NOT NULL, 
+	tenant_id UUID NOT NULL, 
+	user_id UUID NOT NULL, 
+	membership_id UUID NOT NULL, 
+	request_id UUID NOT NULL, 
+	attempt_id UUID NOT NULL, 
+	submission_id UUID NOT NULL, 
+	graph_id TEXT NOT NULL, 
+	skill_mode TEXT DEFAULT 'auto' NOT NULL, 
+	skill_id TEXT, 
+	mcp_mode TEXT DEFAULT 'auto' NOT NULL, 
+	tool_ids JSONB DEFAULT '[]' NOT NULL, 
+	catalog_version TEXT, 
+	material_version TEXT NOT NULL, 
+	selection_digest TEXT NOT NULL, 
+	digest_version INTEGER DEFAULT '2' NOT NULL, 
+	validation_time TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL, 
+	PRIMARY KEY (id), 
+	CONSTRAINT uq_agent_selections_id_tenant UNIQUE (id, tenant_id), 
+	CONSTRAINT uq_agent_selections_tenant_submission UNIQUE (tenant_id, submission_id), 
+	CONSTRAINT ck_agent_selections_skill_mode CHECK (skill_mode IN ('auto', 'explicit')), 
+	CONSTRAINT ck_agent_selections_mcp_mode CHECK (mcp_mode IN ('auto', 'allowlist')), 
+	CONSTRAINT ck_agent_selections_source CHECK (selection_source IN ('user_explicit', 'automatic')), 
+	CONSTRAINT fk_agent_selections_submission_same_tenant FOREIGN KEY(submission_id, tenant_id) REFERENCES agent_submissions (id, tenant_id) ON DELETE CASCADE, 
+	CONSTRAINT fk_agent_selections_attempt_same_tenant FOREIGN KEY(attempt_id, tenant_id) REFERENCES agent_run_attempts (id, tenant_id) ON DELETE CASCADE, 
+	CONSTRAINT fk_agent_selections_request_same_tenant FOREIGN KEY(request_id, tenant_id) REFERENCES agent_requests (id, tenant_id) ON DELETE CASCADE, 
+	CONSTRAINT fk_agent_selections_membership_same_tenant FOREIGN KEY(membership_id, tenant_id) REFERENCES tenant_memberships (id, tenant_id) ON DELETE CASCADE, 
+	CONSTRAINT fk_agent_selections_user FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE, 
+	CONSTRAINT fk_agent_selections_tenant FOREIGN KEY(tenant_id) REFERENCES tenants (id) ON DELETE CASCADE
+)
+
+]
+(Background on this error at: https://sqlalche.me/e/21/f405)

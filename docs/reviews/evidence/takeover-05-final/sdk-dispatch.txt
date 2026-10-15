@@ -1,0 +1,472 @@
+2026-10-15 14:33:01 +0800 | INFO     | common.models:<module>:15 - 模型注册表初始化开始
+2026-10-15 14:33:05 +0800 | INFO     | common.mcp_client:<module>:199 - MCP 公共目录懒加载 + 企业授权执行层就绪
+/Users/acerola/Dev/Python/air_agent/src/deep_research/graph.py:54: LangChainBetaWarning: The class `CodeInterpreterMiddleware` is in beta. It is actively being worked on, so the API may change.
+  CodeInterpreterMiddleware(ptc=[]),
+2026-10-15 14:33:06 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: ba4d28d4108f4e67a2e09e1904a3885f
+2026-10-15 14:33:06 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:07 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: 698860a3847748ccb035c8ba487ff60f
+2026-10-15 14:33:07 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:07 +0800 | WARNING  | common.business_graph.tool_wrappers:execute_mcp_tool_request:135 - MCP 调用被授权层拒绝: tool=query_air, category=McpAuthorizationError
+2026-10-15 14:33:07 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: e22a2ae726a1414db9cfa960ae93579e
+2026-10-15 14:33:07 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:07 +0800 | WARNING  | common.business_graph.tool_wrappers:execute_mcp_tool_request:135 - MCP 调用被授权层拒绝: tool=query_air, category=McpAuthorizationError
+2026-10-15 14:33:07 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: 903ce52147434c8286208bb76f28c34f
+2026-10-15 14:33:07 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:08 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: 1932e65fe56d423697f7b27cc4730762
+2026-10-15 14:33:08 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:08 +0800 | WARNING  | common.business_graph.tool_wrappers:execute_mcp_tool_request:135 - MCP 调用被授权层拒绝: tool=query_air, category=McpAuthorizationError
+2026-10-15 14:33:08 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: 2e3fc73fbfc141d680f6970d09199b21
+2026-10-15 14:33:08 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:08 +0800 | WARNING  | common.business_graph.tool_wrappers:execute_mcp_tool_request:135 - MCP 调用被授权层拒绝: tool=query_air, category=McpAuthorizationError
+2026-10-15 14:33:08 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: 8a0e06f8bd9344b1a90c3e46d401f64c
+2026-10-15 14:33:08 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:08 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: b9192d426ab344189510a7c5ae198d74
+2026-10-15 14:33:08 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:08 +0800 | WARNING  | common.business_graph.tool_wrappers:execute_mcp_tool_request:135 - MCP 调用被授权层拒绝: tool=query_air, category=McpAuthorizationError
+2026-10-15 14:33:09 - mcp.client.streamable_http - INFO - streamable_http.py:181 - _maybe_extract_session_id_from_response() - Received session ID: 344df4b65c0b4d4589de4b38fc2e435a
+2026-10-15 14:33:09 - mcp.client.streamable_http - INFO - streamable_http.py:193 - _maybe_extract_protocol_version_from_message() - Negotiated protocol version: 2025-11-25
+2026-10-15 14:33:09 +0800 | WARNING  | common.business_graph.tool_wrappers:execute_mcp_tool_request:135 - MCP 调用被授权层拒绝: tool=query_air, category=McpAuthorizationError
+{
+  "kind": "actual_production_DeepAgents_SDK_PG_guard_real_HTTP_MCP_controlled_model",
+  "graphs": {
+    "deep_research": {
+      "main_network_delta": 1,
+      "main_tools": [
+        {
+          "name": "query",
+          "status": "success",
+          "content": "{\"code\": 200, \"success\": true, \"auth_subject\": \"subject-a\", \"received_user_id\": \"subject-a\", \"tool\": \"query\", \"data\": {\"city\": \"杭州市\", \"value\": 61, \"region\": \"杭州市\", \"from_query\": true}}"
+        },
+        {
+          "name": "query_air",
+          "status": "error",
+          "content": "{\"code\": 403, \"success\": false, \"message\": \"当前授权不允许调用该工具\"}"
+        }
+      ],
+      "child_network_delta": 1,
+      "child_messages": [
+        {
+          "type": "human",
+          "name": null,
+          "content": "受控子任务调用"
+        },
+        {
+          "type": "ai",
+          "name": "deep-research",
+          "content": ""
+        },
+        {
+          "type": "tool",
+          "name": "task",
+          "content": "子任务受控完成"
+        },
+        {
+          "type": "ai",
+          "name": "deep-research",
+          "content": "主任务受控结束"
+        }
+      ],
+      "all_disclosed_schemas": [
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ]
+      ]
+    },
+    "intelligent_report": {
+      "main_network_delta": 1,
+      "main_tools": [
+        {
+          "name": "query",
+          "status": "success",
+          "content": "{\"code\": 200, \"success\": true, \"auth_subject\": \"subject-a\", \"received_user_id\": \"subject-a\", \"tool\": \"query\", \"data\": {\"city\": \"杭州市\", \"value\": 61, \"region\": \"杭州市\", \"from_query\": true}}"
+        },
+        {
+          "name": "query_air",
+          "status": "error",
+          "content": "{\"code\": 403, \"success\": false, \"message\": \"当前授权不允许调用该工具\"}"
+        }
+      ],
+      "child_network_delta": 1,
+      "child_messages": [
+        {
+          "type": "human",
+          "name": null,
+          "content": "受控子任务调用"
+        },
+        {
+          "type": "ai",
+          "name": "intelligent-report",
+          "content": ""
+        },
+        {
+          "type": "tool",
+          "name": "task",
+          "content": "子任务受控完成"
+        },
+        {
+          "type": "ai",
+          "name": "intelligent-report",
+          "content": "主任务受控结束"
+        }
+      ],
+      "all_disclosed_schemas": [
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ]
+      ]
+    },
+    "intelligent_tracing": {
+      "main_network_delta": 1,
+      "main_tools": [
+        {
+          "name": "query",
+          "status": "success",
+          "content": "{\"code\": 200, \"success\": true, \"auth_subject\": \"subject-a\", \"received_user_id\": \"subject-a\", \"tool\": \"query\", \"data\": {\"city\": \"杭州市\", \"value\": 61, \"region\": \"杭州市\", \"from_query\": true}}"
+        },
+        {
+          "name": "query_air",
+          "status": "error",
+          "content": "{\"code\": 403, \"success\": false, \"message\": \"当前授权不允许调用该工具\"}"
+        }
+      ],
+      "child_network_delta": 1,
+      "child_messages": [
+        {
+          "type": "human",
+          "name": null,
+          "content": "受控子任务调用"
+        },
+        {
+          "type": "ai",
+          "name": "intelligent-tracing",
+          "content": ""
+        },
+        {
+          "type": "tool",
+          "name": "task",
+          "content": "子任务受控完成"
+        },
+        {
+          "type": "ai",
+          "name": "intelligent-tracing",
+          "content": "主任务受控结束"
+        }
+      ],
+      "all_disclosed_schemas": [
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ],
+        [
+          "ls",
+          "read_file",
+          "write_file",
+          "edit_file",
+          "delete",
+          "glob",
+          "grep",
+          "task",
+          "eval",
+          "find_skill",
+          "create_artifact",
+          "query"
+        ]
+      ]
+    }
+  },
+  "passed": true
+}

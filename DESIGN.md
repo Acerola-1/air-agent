@@ -64,8 +64,8 @@ components:
 
 ## Components
 
-按钮、说明和字体分别由 shared Button、Tooltip、全局样式拥有。ProcessingNotice 为历史整理／资料处理共用状态组件；ArchiveReader 为归档资料分页读取组件。详情切换必须使用原生按钮，显示焦点并可用键盘操作。状态使用 polite live region，失败提供重试入口；动画尊重 reduced-motion。
+按钮、说明和字体分别由 shared Button、Tooltip、全局样式拥有。ProcessingNotice 为历史整理／资料处理共用状态组件；ArchiveReader 为归档资料分页读取组件；CapabilitySelector 为技能与 MCP 工具选择配置组件。详情切换必须使用原生按钮，显示焦点并可用键盘操作。状态使用 polite live region，失败提供重试入口；动画尊重 reduced-motion。
 
 ## Do's and Don'ts
 
-显示已确认终答、可读失败说明及后端容量；原文和诊断由用户主动展开。禁止把工具 JSON、内部历史摘要或模型调用草稿填入临时正文。不能从“存在引用字符串”推定资料已保存，也不能从前端累计历史长度推定模型当前上下文用量。
+显示已确认终答、可读失败说明及后端容量；原文和诊断由用户主动展开。禁止把工具 JSON、内部历史摘要或模型调用草稿填入临时正文。不能从“存在引用字符串”推定资料已保存，也不能从前端累计历史长度推定模型当前上下文用量。能力选择在运行中锁定，不得在请求中途动态变更。

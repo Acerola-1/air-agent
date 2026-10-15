@@ -1078,6 +1078,175 @@
           }
         }
       }
+    },
+    {
+      "name": "capability-selection-accepted-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-15T02:00:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "capability.selection_accepted",
+        "payload": {
+          "selection_id": "44444444-4444-4444-8444-444444444444",
+          "selection_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "graph_id": "basic-qa",
+          "submission_id": "55555555-5555-4555-8555-555555555555",
+          "skill_mode": "explicit",
+          "skill_id": "air-quality-basic-query",
+          "mcp_mode": "allowlist",
+          "tool_ids": ["ipp_query_aqi"],
+          "material_version": "v1",
+          "selection_source": "user_explicit"
+        }
+      }
+    },
+    {
+      "name": "capability-selection-accepted-browser-source-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "source_not_allowed"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-15T02:00:00.000Z",
+        "source": "browser",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "event_type": "capability.selection_accepted",
+        "payload": {
+          "selection_id": "44444444-4444-4444-8444-444444444444",
+          "selection_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "graph_id": "basic-qa",
+          "submission_id": "55555555-5555-4555-8555-555555555555",
+          "skill_mode": "auto",
+          "mcp_mode": "auto",
+          "selection_source": "automatic"
+        }
+      }
+    },
+    {
+      "name": "capability-selection-accepted-missing-required-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "missing_required_payload_field"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-15T02:00:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "event_type": "capability.selection_accepted",
+        "payload": {
+          "selection_id": "44444444-4444-4444-8444-444444444444",
+          "graph_id": "basic-qa",
+          "submission_id": "55555555-5555-4555-8555-555555555555",
+          "skill_mode": "auto",
+          "mcp_mode": "auto",
+          "selection_source": "automatic"
+        }
+      }
+    },
+    {
+      "name": "capability-selection-accepted-unknown-field-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "payload_field_not_allowed"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-15T02:00:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "event_type": "capability.selection_accepted",
+        "payload": {
+          "selection_id": "44444444-4444-4444-8444-444444444444",
+          "selection_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "graph_id": "basic-qa",
+          "submission_id": "55555555-5555-4555-8555-555555555555",
+          "skill_mode": "auto",
+          "mcp_mode": "auto",
+          "selection_source": "automatic",
+          "unknown_selection_field": true
+        }
+      }
+    },
+    {
+      "name": "capability-selection-accepted-nested-secret-invalid",
+      "expect": {
+        "valid": false,
+        "reason": "forbidden_payload_key"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-15T02:00:00.000Z",
+        "source": "server",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "event_type": "capability.selection_accepted",
+        "payload": {
+          "selection_id": "44444444-4444-4444-8444-444444444444",
+          "selection_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "graph_id": "basic-qa",
+          "submission_id": "55555555-5555-4555-8555-555555555555",
+          "skill_mode": "auto",
+          "mcp_mode": "auto",
+          "selection_source": "automatic",
+          "api_key": "secret-123"
+        }
+      }
+    },
+    {
+      "name": "runtime-span-selection-fields-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "occurred_at": "2026-10-15T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-8333-8333-333333333333",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "event_type": "runtime.span",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+          "span_kind": "skill",
+          "span_name": "air-quality-basic-query",
+          "stage": "executed",
+          "status": "succeeded",
+          "duration_ms": 320,
+          "skill_id": "air-quality-basic-query",
+          "skill_version": "1",
+          "selection_source": "manual",
+          "selection_id": "44444444-4444-4444-8444-444444444444",
+          "selection_digest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "submission_id": "55555555-5555-4555-8555-555555555555"
+        }
+      }
     }
   ],
   "major_version": 1,

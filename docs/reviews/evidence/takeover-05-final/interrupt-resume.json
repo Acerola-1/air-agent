@@ -1,0 +1,266 @@
+[
+  {
+    "graph": "basic-qa",
+    "entry": "bff",
+    "thread_id": "4e4fdb66-5771-498c-9777-f43a5bc0d1bb",
+    "interrupted_run_id": "01a13e58-ee0a-7fc3-92be-5f29f7b9cba7",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "dc8f0660-2858-46e0-ad9f-61e1583b33f7",
+      "selection_digest": "0734e10aa77d97ab09dde46ebe28e7ac86f9248c623b660d1842a461f6276fb4",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_a3971c257c11d717fac9ee92",
+      "selection_source": "user_explicit",
+      "id": "dc8f0660-2858-46e0-ad9f-61e1583b33f7"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-2e02-7413-bdfd-0140d0607254",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "fe0c70e0-78ce-4a16-bb86-154da16c6e76",
+      "submission_id": "c6abbe5f-7618-4be2-8067-456ceb03a4e1",
+      "capability_selection": {
+        "selection_id": "b45e2380-b725-4822-9873-9ee92cebd8c2",
+        "selection_digest": "0734e10aa77d97ab09dde46ebe28e7ac86f9248c623b660d1842a461f6276fb4",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_a3971c257c11d717fac9ee92",
+        "selection_source": "user_explicit",
+        "id": "b45e2380-b725-4822-9873-9ee92cebd8c2"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-analysis",
+    "entry": "bff",
+    "thread_id": "9bc0bb0d-b1be-4ce5-8eaf-9ac6e0f32e6b",
+    "interrupted_run_id": "01a13e59-3f5a-7272-9da3-a4f18c34400d",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "c7ef430e-3849-4bc9-afa2-cc5ec03fcc4f",
+      "selection_digest": "48c0ded744b8eee57586ef04a347e05554dd802a98f50764967ab59f4b6b0333",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_bf44ba3ee60eee15e7d467a2",
+      "selection_source": "user_explicit",
+      "id": "c7ef430e-3849-4bc9-afa2-cc5ec03fcc4f"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-8217-7611-8b28-96a68f62c5d0",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "52fd1f68-0d07-483d-881c-dc5fc4278849",
+      "submission_id": "a3315925-0ecf-436d-b116-5e19c4b40d61",
+      "capability_selection": {
+        "selection_id": "12738edf-0f62-4ecc-bf16-2ff40f9adc43",
+        "selection_digest": "48c0ded744b8eee57586ef04a347e05554dd802a98f50764967ab59f4b6b0333",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_bf44ba3ee60eee15e7d467a2",
+        "selection_source": "user_explicit",
+        "id": "12738edf-0f62-4ecc-bf16-2ff40f9adc43"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "data-analysis",
+    "entry": "bff",
+    "thread_id": "6cd0b2d9-2ab8-4506-8966-8834e36b7723",
+    "interrupted_run_id": "01a13e59-8c4a-7363-bf36-5a325b4ed33a",
+    "interrupted_status": "success",
+    "paused_next": [
+      "call_model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "e8056b15-a8b7-4d00-a1a9-264a68148615",
+      "selection_digest": "8126983f5aae46e983fa092c164d194d9611e4f9a697efb7513fd2439046f39f",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_7e56d966d60793bddd8beb40",
+      "selection_source": "user_explicit",
+      "id": "e8056b15-a8b7-4d00-a1a9-264a68148615"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-8f5b-70d3-b505-f747794d2af0",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "77e90c27-2314-4e25-90a5-f859277a43e6",
+      "submission_id": "bc9b6fe5-2f81-4e8a-89e2-3ca98d30d202",
+      "capability_selection": {
+        "selection_id": "c839a01e-b34f-41f5-ae50-b3bd097ec16b",
+        "selection_digest": "8126983f5aae46e983fa092c164d194d9611e4f9a697efb7513fd2439046f39f",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_7e56d966d60793bddd8beb40",
+        "selection_source": "user_explicit",
+        "id": "c839a01e-b34f-41f5-ae50-b3bd097ec16b"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-report",
+    "entry": "bff",
+    "thread_id": "02ea1e07-1d45-49d5-bf86-37514d6b59c4",
+    "interrupted_run_id": "01a13e59-abc7-7ce1-ae46-ac902d4d0225",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "7779b6b3-1335-4589-8164-f849bd6fc460",
+      "selection_digest": "8daec5c5c7bfa789ceb2532249db651fa7f5dd15a9eb9611ffe737b0430af360",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_0089c99bc55108dcc137d09e",
+      "selection_source": "user_explicit",
+      "id": "7779b6b3-1335-4589-8164-f849bd6fc460"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-ae63-7211-901a-3eeee5eefcef",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "bb02a14f-34e6-4608-aeb0-bdbba0442fda",
+      "submission_id": "7368abbd-b3ef-4fd6-a760-4b1e183ae1dd",
+      "capability_selection": {
+        "selection_id": "4dbb5442-a77a-4c64-a697-00af7e1184c1",
+        "selection_digest": "8daec5c5c7bfa789ceb2532249db651fa7f5dd15a9eb9611ffe737b0430af360",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_0089c99bc55108dcc137d09e",
+        "selection_source": "user_explicit",
+        "id": "4dbb5442-a77a-4c64-a697-00af7e1184c1"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "deep-research",
+    "entry": "bff",
+    "thread_id": "3a7930f7-1377-4ec6-9276-08fec2f5b639",
+    "interrupted_run_id": "01a13e59-bab1-7432-ba7a-39eee83becb6",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "41742fa7-8bec-4fce-ac72-c70b3111cf45",
+      "selection_digest": "a649f88d0e29a20a7e6c054e722f718de4d32f7f0c9fb94aba4b6f3fd1ebb0d6",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_7444cd75ce98889232b3b859",
+      "selection_source": "user_explicit",
+      "id": "41742fa7-8bec-4fce-ac72-c70b3111cf45"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-bcfc-7c12-8d23-5bff3ccd3458",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "33337df7-2d53-476b-a835-1fcecae67a62",
+      "submission_id": "656ccc2d-0151-44d6-9713-79a4b5e74d0b",
+      "capability_selection": {
+        "selection_id": "a2e282d3-4235-42a1-bf3d-7ceb1c11970a",
+        "selection_digest": "a649f88d0e29a20a7e6c054e722f718de4d32f7f0c9fb94aba4b6f3fd1ebb0d6",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_7444cd75ce98889232b3b859",
+        "selection_source": "user_explicit",
+        "id": "a2e282d3-4235-42a1-bf3d-7ceb1c11970a"
+      }
+    },
+    "passed": true
+  },
+  {
+    "graph": "intelligent-tracing",
+    "entry": "bff",
+    "thread_id": "6955e253-8982-4c8d-a513-2882ab7cacaa",
+    "interrupted_run_id": "01a13e59-cb56-7e33-a210-84a9379b979e",
+    "interrupted_status": "success",
+    "paused_next": [
+      "model"
+    ],
+    "pause_semantics": "官方0.15.1静态interrupt_before：run status=success，但checkpoint.next仍待执行，不能当作整图完成",
+    "original_selection": {
+      "selection_id": "bf4787d7-3ec6-431a-88da-2c330649db1b",
+      "selection_digest": "2aabe8c8a569e7200f19df9a048c534359b56cb6db26a6c34cb28cb8ba7691c9",
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "allowlist",
+      "tool_ids": [],
+      "material_version": "auto",
+      "catalog_version": "cat_4e476d1827b25083102ecd59",
+      "selection_source": "user_explicit",
+      "id": "bf4787d7-3ec6-431a-88da-2c330649db1b"
+    },
+    "resume_http_status": 200,
+    "resumed_run_id": "01a13e59-ceeb-7d82-887f-7d1075a34d8f",
+    "resumed_status": "success",
+    "resumed_confirmation": {
+      "confirmed": true,
+      "attempt_id": "307464c1-ea79-47b7-82e4-8ee73b808293",
+      "submission_id": "bf292477-0e6f-41b8-9b50-92c91206ab69",
+      "capability_selection": {
+        "selection_id": "456b3d19-5b70-4655-9461-039b4a113553",
+        "selection_digest": "2aabe8c8a569e7200f19df9a048c534359b56cb6db26a6c34cb28cb8ba7691c9",
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "material_version": "auto",
+        "catalog_version": "cat_4e476d1827b25083102ecd59",
+        "selection_source": "user_explicit",
+        "id": "456b3d19-5b70-4655-9461-039b4a113553"
+      }
+    },
+    "passed": true
+  }
+]

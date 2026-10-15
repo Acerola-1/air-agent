@@ -92,19 +92,29 @@ def create_load_skill_tool(router: SkillSemanticRouter):
         仅当系统提示中的其他候选 Skill 摘要比当前已内联的规则更匹配用户问题时调用，
         skill_name 必须取自候选摘要中的 skill_name 字段。
         """
-        mode = get_routing_context(config.get("configurable")).mode
+        configurable = config.get("configurable", {}) or {}
+        skill_mode = configurable.get("capability_skill_mode") or "auto"
+        if skill_mode == "explicit":
+            explicit_id = configurable.get("capability_skill_id") or ""
+            explicit_slug = explicit_id.split(":")[-1] if explicit_id else ""
+            if explicit_slug and skill_name != explicit_slug:
+                return (
+                    f"拒绝加载技能 {skill_name}：本次运行已锁定显式选择 {explicit_slug}，"
+                    "禁止切换其他技能。"
+                )
+
+        mode = get_routing_context(configurable).mode
         rules = load_skill_rules(router, skill_name, mode)
         from common.observability.skill_adapter import emit_skill_stage
 
-        emit_skill_stage(
-            config, skill_name, "selected", body=rules, source="agent-tool"
-        )
+        source = "manual" if skill_mode == "explicit" else "agent-tool"
+        emit_skill_stage(config, skill_name, "selected", body=rules, source=source)
         emit_skill_stage(
             config,
             skill_name,
             "loaded",
             body=rules,
-            source="agent-tool",
+            source=source,
             status="succeeded" if rules else "failed",
         )
         if rules:

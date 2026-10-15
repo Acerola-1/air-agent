@@ -18,6 +18,7 @@ import {
   recordNavigationStopBeacon,
   type LgThread, type ContextMetrics, type ProcessingStatus, type ThreadValues,
 } from "@/lib/langgraph-api";
+import { acceptedSnapshot, useCapabilityStore } from "@/lib/capability-store";
 
 export type ToolExecution = {
   id: string; name: string; args: unknown; result?: string;
@@ -63,7 +64,111 @@ type ChatState = {
 };
 let generation = 0;
 let listRequest = 0;
-type ActiveRun = { generation: number; controller: AbortController; threadId: string | null; runId: string | null; phase?: "queued" | "processing" | "unknown"; admitted?: boolean };
+type ActiveRun = {
+  generation: number;
+  controller: AbortController;
+  threadId: string | null;
+  runId: string | null;
+  submissionKey?: string;
+  streamStarted?: boolean;
+  phase?: "queued" | "processing" | "unknown";
+  admitted?: boolean;
+  submittedSelection?: Record<string, unknown>;
+  graphId?: string;
+};
+
+function sha256Sync(ascii: string): string {
+  function rightRotate(value: number, amount: number): number {
+    return (value >>> amount) | (value << (32 - amount));
+  }
+  const words: number[] = [];
+  const asciiBitLength = ascii.length * 8;
+  let hash = [
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+  ];
+  const k = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+  ];
+  for (let i = 0; i < ascii.length; i++) {
+    const code = ascii.charCodeAt(i);
+    words[i >> 2] |= (code & 0xff) << (8 * (3 - (i % 4)));
+  }
+  words[asciiBitLength >> 5] |= 0x80 << (24 - (asciiBitLength % 32));
+  words[(((asciiBitLength + 64) >> 9) << 4) + 15] = asciiBitLength;
+
+  for (let block = 0; block < words.length; block += 16) {
+    const w: number[] = [];
+    for (let i = 0; i < 16; i++) {
+      w[i] = words[block + i] | 0;
+    }
+    for (let i = 16; i < 64; i++) {
+      const s0 = rightRotate(w[i - 15], 7) ^ rightRotate(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+      const s1 = rightRotate(w[i - 2], 17) ^ rightRotate(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+      w[i] = (((w[i - 16] + s0) | 0) + ((w[i - 7] + s1) | 0)) | 0;
+    }
+    let [a, b, c, d, e, f, g, h] = hash;
+    for (let i = 0; i < 64; i++) {
+      const S1 = rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25);
+      const ch = (e & f) ^ (~e & g);
+      const temp1 = ((((h + S1) | 0) + ((ch + k[i]) | 0)) | 0) + w[i] | 0;
+      const S0 = rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22);
+      const maj = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (S0 + maj) | 0;
+      h = g; g = f; f = e; e = (d + temp1) | 0; d = c; c = b; b = a; a = (temp1 + temp2) | 0;
+    }
+    hash[0] = (hash[0] + a) | 0; hash[1] = (hash[1] + b) | 0; hash[2] = (hash[2] + c) | 0; hash[3] = (hash[3] + d) | 0;
+    hash[4] = (hash[4] + e) | 0; hash[5] = (hash[5] + f) | 0; hash[6] = (hash[6] + g) | 0; hash[7] = (hash[7] + h) | 0;
+  }
+  let result = "";
+  for (let i = 0; i < 8; i++) {
+    for (let j = 3; j >= 0; j--) {
+      const byte = (hash[i] >> (8 * j)) & 255;
+      result += (byte < 16 ? "0" : "") + byte.toString(16);
+    }
+  }
+  return result;
+}
+
+function computeCanonicalSelectionDigest(graphId: string, selection: Record<string, unknown>, materialVersion: string = "auto"): string {
+  const skill = (selection.skill as Record<string, unknown> | undefined) ?? {};
+  const mcp = (selection.mcp as Record<string, unknown> | undefined) ?? {};
+  const skillMode = (skill.mode as string) || (selection.skill_mode as string) || "auto";
+  const skillId = (skill.skill_id as string | null) ?? (selection.skill_id as string | null) ?? null;
+  const mcpMode = (mcp.mode as string) || (selection.mcp_mode as string) || "auto";
+  const rawTools = (mcp.tool_ids as string[]) || (selection.tool_ids as string[]) || [];
+  const uniqueTools = Array.from(new Set(rawTools)).sort();
+
+  const payload: Record<string, unknown> = {
+    graph_id: graphId,
+    material_version: materialVersion,
+    mcp_mode: mcpMode,
+    skill_id: skillMode === "auto" ? null : skillId,
+    skill_mode: skillMode,
+    tool_ids: mcpMode === "auto" ? [] : uniqueTools,
+  };
+  const canonicalJson = JSON.stringify(payload, Object.keys(payload).sort());
+  return sha256Sync(canonicalJson);
+}
+
+function deriveSelectionId(selectionDigest: string): string {
+  const h = selectionDigest.slice(0, 32).padEnd(32, "0");
+  return [
+    h.slice(0, 8),
+    h.slice(8, 12),
+    "5" + h.slice(13, 16),
+    "a" + h.slice(17, 20),
+    h.slice(20, 32),
+  ].join("-");
+}
+
 export type StopOutcome = { confirmed: boolean; reason?: "backend" | "context_changed" | "unknown" };
 // F05：可信终态 = 服务端 run.get 返回的运行状态进入这些值；
 // 404/不可见/状态缺失/查询失败都不是"已取消"的事实。
@@ -110,6 +215,8 @@ async function waitForTerminalStatus(
 async function confirmRunStopped(threadId: string | null, run: ActiveRun | null): Promise<StopOutcome> {
   if (!threadId) return { confirmed: true }; // 从未发起本地流：无外部运行需要确认
   if (!run) return { confirmed: true };
+  // 创建空线程尚在返回时停止：generation已失效，后续不会提交运行。
+  if (!run.streamStarted && !run.runId) return { confirmed: true };
   let target = run.runId;
   if (!target) {
     const deadline = Date.now() + STOP_LIST_RESOLVE_MS;
@@ -117,7 +224,11 @@ async function confirmRunStopped(threadId: string | null, run: ActiveRun | null)
       try {
         if (run.runId) { target = run.runId; break; }
         const recent = await listRecentRuns(threadId);
-        const active = recent.find((r) => ["pending", "running"].includes(String(r.status)));
+        // 断流可在首条 metadata 到达前将本次 run 变为 interrupted。
+        // 仅凭“最近终态”会串到上一轮；必须核对 BFF 固定的本次提交键。
+        const current = run.submissionKey && recent.find((r) => r.submission_key === run.submissionKey);
+        if (current) { target = current.run_id; break; }
+        const active = recent.find((r) => !r.submission_key && ["pending", "running"].includes(String(r.status)));
         if (active) { target = active.run_id; break; }
         // 没有本次 run_id 时，上一轮的终态不能证明本次尚在受理的提交已停止。
       } catch (err) {
@@ -131,6 +242,8 @@ async function confirmRunStopped(threadId: string | null, run: ActiveRun | null)
     }
   }
   if (!target) return { confirmed: false, reason: "unknown" };
+  run.runId = target;
+  void confirmRunAdmission(threadId, target).catch(() => {});
   try {
     await cancelRun(threadId, target);
   } catch (err) {
@@ -190,10 +303,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
     listRequest += 1;
     pendingStopRun = null;
     stopPromise = null;
+    useCapabilityStore.getState().clearForScopeSwitch(get().graphId);
     set({ threads: [], activeThreadId: null, ...emptyView, stopPending: false });
   },
   switchGraph: async (graphId) => {
     generation++; cancelActive();
+    useCapabilityStore.getState().clearForScopeSwitch(graphId);
+    void useCapabilityStore.getState().fetchCatalog(graphId);
     set({ graphId, activeThreadId: null, threads: [], ...emptyView });
     await get().loadThreads();
   },
@@ -211,10 +327,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
   openThread: async (threadId) => {
     const epoch = ++generation; cancelActive();
+    useCapabilityStore.getState().setAcceptedSelection(null);
     set({ activeThreadId: threadId, ...emptyView, loadingThread: true });
     try {
       const values = await getThreadState(threadId);
       if (generation === epoch && get().activeThreadId === threadId) set(fromValues(values));
+      const res = await fetch(`/api/agent-runs/confirm?thread_id=${encodeURIComponent(threadId)}`, { cache: "no-store" });
+      const body = res.ok ? await res.json() : null;
+      if (generation === epoch && get().activeThreadId === threadId) {
+        useCapabilityStore.getState().setAcceptedSelection(acceptedSnapshot(body?.capability_selection));
+      }
     } catch (error) {
       notifyIfContextConflict(error);
       if (generation === epoch) set({ loadingThread: false,
@@ -223,19 +345,29 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
   newThread: () => {
     generation++; cancelActive();
+    useCapabilityStore.getState().setAcceptedSelection(null);
     set({ activeThreadId: null, ...emptyView });
   },
   sendMessage: async (text, chatMode, operationKind = "initial") => {
     const previous = get(); const trimmed = text.trim();
     if (previous.isStreaming || previous.stopPending || !trimmed) return;
-    const run: ActiveRun = { generation: ++generation, controller: new AbortController(), threadId: previous.activeThreadId, runId: null };
+    const capabilitySelection = useCapabilityStore.getState().toPayload();
+    const run: ActiveRun = {
+      generation: ++generation,
+      controller: new AbortController(),
+      threadId: previous.activeThreadId,
+      runId: null,
+      submittedSelection: capabilitySelection,
+      graphId: previous.graphId,
+    };
     activeRun = run;
     const userMsg: ChatMessage = { id: generateUuidV7(), role: "user", content: trimmed, timestamp: Date.now() };
     // 稳定提交键：同一次提交的重试复用同一键（服务端按同键同内容幂等、不同内容 409）。
     const submissionKey = newSubmissionKey();
+    run.submissionKey = submissionKey;
     // 操作类型参与台账受理：initial/retry/regenerate。retry/regenerate 由服务端
     // 解析来源尝试并关联原 request（提问量不增加）。
-    setSubmissionContext({ submissionKey, userMessageId: userMsg.id, operationKind });
+    setSubmissionContext({ submissionKey, userMessageId: userMsg.id, operationKind, capabilitySelection });
     // 浏览器单调计时：同页面同测量段（页面重开新 ID，不跨页相减）。
     if (previous.activeTimingId) finishTiming(previous.activeTimingId);
     const measurementId = startTiming(run.generation);
@@ -251,6 +383,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
       const threadId = run.threadId;
       let streamedMessageId: string | null = null;
+      run.streamStarted = true;
       await streamRun({ threadId, graphId: previous.graphId,
         messages: [{ id: userMsg.id, type: "human", content: trimmed }],
         config: { configurable: { chat_mode: chatMode } }, signal: run.controller.signal,
@@ -261,10 +394,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
             if (!sameRun(run)) { void cancelRun(threadId, runId).catch(() => {}); return; }
             // 台账受理关联确认：服务端回读平台 run metadata 校验标记后才确认；
             // 失败保持"受理中"，不改写本地终态。
-            void confirmRunAdmission(threadId, runId, (attemptId) => {
+            void confirmRunAdmission(threadId, runId, (attemptId, serverSelection) => {
+              // 回调在任何状态写入前先核对本次运行，防切图/换企业的迟到响应。
+              if (generation !== run.generation || get().activeThreadId !== threadId || get().graphId !== run.graphId) return;
               timingAttachAttempt(measurementId, attemptId);
-            }).then((ok) => {
-              if (ok && sameRun(run)) run.admitted = true;
+              run.admitted = true;
+              useCapabilityStore.getState().setAcceptedSelection(acceptedSnapshot(serverSelection));
             }).catch(() => {});
           },
           onValues: (values) => {
@@ -406,7 +541,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (stopped.confirmed) pendingStopRun = null;
       set({ stopPending: !stopped.confirmed, ...(!stopped.confirmed
         ? { error: "停止尚未确认，请再次点击停止后重试；确认前不能切换企业或发送新问题。" }
-        : {}) });
+        : { error: null }) });
     }
     if (threadId && epoch === generation && get().activeThreadId === threadId) {
       void getThreadState(threadId).then((values) => {

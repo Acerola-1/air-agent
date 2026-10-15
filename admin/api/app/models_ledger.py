@@ -124,6 +124,8 @@ class AgentSubmission(Base):
     request_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
     # R03：提交稳定绑定"自己那次操作的尝试"（重放不漂到同请求下最新尝试）
     attempt_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
+    capability_selection_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
+    digest_version: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     # R01：启动权按**提交**裁决（resume 复用同一尝试但每次是新提交，各有独立槽位）
     start_claimed_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
     start_claim_token: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
@@ -168,6 +170,7 @@ class AgentRunAttempt(Base):
     request_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
     attempt_index: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     source_attempt_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
+    capability_selection_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
     graph_id: Mapped[str] = mapped_column(Text, nullable=False)
     # R01：预留比对依据（真实图在 graph_id；规范内容摘要 + 操作类型在此）
     operation_kind: Mapped[str] = mapped_column(Text, nullable=False, server_default="initial")
@@ -442,3 +445,73 @@ class AgentProjectionState(Base):
     last_event_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
     projected_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     updated_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class AgentCapabilitySelection(Base):
+    """用户授权能力选择快照（Change 4 任务 3.2）：在受理时冻结，不可篡改。"""
+
+    __tablename__ = "agent_capability_selections"
+    __table_args__ = (
+        UniqueConstraint("id", "tenant_id", name="uq_agent_selections_id_tenant"),
+        UniqueConstraint(
+            "tenant_id", "submission_id", name="uq_agent_selections_tenant_submission"
+        ),
+        CheckConstraint(
+            "skill_mode IN ('auto', 'explicit')",
+            name="ck_agent_selections_skill_mode",
+        ),
+        CheckConstraint(
+            "mcp_mode IN ('auto', 'allowlist')",
+            name="ck_agent_selections_mcp_mode",
+        ),
+        CheckConstraint(
+            "selection_source IN ('user_explicit', 'automatic')",
+            name="ck_agent_selections_source",
+        ),
+        ForeignKeyConstraint(
+            ["submission_id", "tenant_id"],
+            ["agent_submissions.id", "agent_submissions.tenant_id"],
+            ondelete="CASCADE",
+            name="fk_agent_selections_submission_same_tenant",
+        ),
+        ForeignKeyConstraint(
+            ["attempt_id", "tenant_id"],
+            ["agent_run_attempts.id", "agent_run_attempts.tenant_id"],
+            ondelete="CASCADE",
+            name="fk_agent_selections_attempt_same_tenant",
+        ),
+        ForeignKeyConstraint(
+            ["request_id", "tenant_id"],
+            ["agent_requests.id", "agent_requests.tenant_id"],
+            ondelete="CASCADE",
+            name="fk_agent_selections_request_same_tenant",
+        ),
+        ForeignKeyConstraint(
+            ["membership_id", "tenant_id"],
+            ["tenant_memberships.id", "tenant_memberships.tenant_id"],
+            ondelete="CASCADE",
+            name="fk_agent_selections_membership_same_tenant",
+        ),
+        Index("idx_agent_selections_tenant_user", "tenant_id", "user_id"),
+        Index("idx_agent_selections_attempt", "tenant_id", "attempt_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, primary_key=True)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
+    membership_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
+    request_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
+    attempt_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
+    submission_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
+    graph_id: Mapped[str] = mapped_column(Text, nullable=False)
+    skill_mode: Mapped[str] = mapped_column(Text, nullable=False, server_default="auto")
+    skill_id: Mapped[str | None] = mapped_column(Text)
+    mcp_mode: Mapped[str] = mapped_column(Text, nullable=False, server_default="auto")
+    tool_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False, server_default="[]")
+    catalog_version: Mapped[str | None] = mapped_column(Text)
+    material_version: Mapped[str] = mapped_column(Text, nullable=False)
+    selection_digest: Mapped[str] = mapped_column(Text, nullable=False)
+    digest_version: Mapped[int] = mapped_column(Integer, nullable=False, server_default="2")
+    selection_source: Mapped[str] = mapped_column(Text, nullable=False, server_default="automatic")
+    validation_time: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), nullable=False)

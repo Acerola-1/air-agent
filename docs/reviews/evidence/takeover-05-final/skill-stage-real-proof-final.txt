@@ -1,0 +1,19 @@
+2026-10-15 15:18:30 +0800 | INFO     | common.models:<module>:15 - 模型注册表初始化开始
+2026-10-15 15:18:31 +0800 | INFO     | common.mcp_client:<module>:199 - MCP 公共目录懒加载 + 企业授权执行层就绪
+Traceback (most recent call last):
+  File "/tmp/aa05f-phase-proof.py", line 35, in <module>
+    try:asyncio.run(main())
+        ~~~~~~~~~~~^^^^^^^^
+  File "/Users/acerola/Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/acerola/Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/acerola/Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/tmp/aa05f-phase-proof.py", line 18, in main
+    graph=cell['graph'];ad=cell.get('admission') or cell['confirm'];aid=ad['attempt_id'];skill=cell['selected_skill'];slug=skill.split(':')[-1];body=load_skill_rules(SkillSemanticRouter(GRAPH_SKILLS_DIRS[graph]),slug,'fast');
+                                                                        ~~^^^^^^^^^^^^^^
+KeyError: 'attempt_id'

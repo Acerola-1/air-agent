@@ -1,0 +1,100 @@
+E501 Line too long (101 > 100)
+  --> admin/api/migrations/versions/0013s_capability_selection.py:57:101
+   |
+55 |         sa.Column("digest_version", sa.Integer(), nullable=False, server_default="2"),
+56 |         sa.Column("selection_source", sa.Text(), nullable=False, server_default="automatic"),
+57 |         sa.Column("validation_time", sa.DateTime(timezone=True), nullable=False, server_default=NOW),
+   |                                                                                                     ^
+58 |         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=NOW),
+59 |         sa.UniqueConstraint("id", "tenant_id", name="uq_agent_selections_id_tenant"),
+   |
+
+E501 Line too long (104 > 100)
+  --> admin/api/migrations/versions/0013s_capability_selection.py:60:101
+   |
+58 |         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=NOW),
+59 |         sa.UniqueConstraint("id", "tenant_id", name="uq_agent_selections_id_tenant"),
+60 |         sa.UniqueConstraint("tenant_id", "submission_id", name="uq_agent_selections_tenant_submission"),
+   |                                                                                                     ^^^^
+61 |         sa.CheckConstraint("skill_mode IN ('auto', 'explicit')", name="ck_agent_selections_skill_mode"),
+62 |         sa.CheckConstraint("mcp_mode IN ('auto', 'allowlist')", name="ck_agent_selections_mcp_mode"),
+   |
+
+E501 Line too long (104 > 100)
+  --> admin/api/migrations/versions/0013s_capability_selection.py:61:101
+   |
+59 |         sa.UniqueConstraint("id", "tenant_id", name="uq_agent_selections_id_tenant"),
+60 |         sa.UniqueConstraint("tenant_id", "submission_id", name="uq_agent_selections_tenant_submission"),
+61 |         sa.CheckConstraint("skill_mode IN ('auto', 'explicit')", name="ck_agent_selections_skill_mode"),
+   |                                                                                                     ^^^^
+62 |         sa.CheckConstraint("mcp_mode IN ('auto', 'allowlist')", name="ck_agent_selections_mcp_mode"),
+63 |         sa.CheckConstraint("selection_source IN ('user_explicit', 'automatic')", name="ck_agent_selections_source"),
+   |
+
+E501 Line too long (101 > 100)
+  --> admin/api/migrations/versions/0013s_capability_selection.py:62:101
+   |
+60 |         sa.UniqueConstraint("tenant_id", "submission_id", name="uq_agent_selections_tenant_submission"),
+61 |         sa.CheckConstraint("skill_mode IN ('auto', 'explicit')", name="ck_agent_selections_skill_mode"),
+62 |         sa.CheckConstraint("mcp_mode IN ('auto', 'allowlist')", name="ck_agent_selections_mcp_mode"),
+   |                                                                                                     ^
+63 |         sa.CheckConstraint("selection_source IN ('user_explicit', 'automatic')", name="ck_agent_selections_source"),
+64 |         sa.ForeignKeyConstraint(
+   |
+
+E501 Line too long (116 > 100)
+  --> admin/api/migrations/versions/0013s_capability_selection.py:63:101
+   |
+61 |         sa.CheckConstraint("skill_mode IN ('auto', 'explicit')", name="ck_agent_selections_skill_mode"),
+62 |         sa.CheckConstraint("mcp_mode IN ('auto', 'allowlist')", name="ck_agent_selections_mcp_mode"),
+63 |         sa.CheckConstraint("selection_source IN ('user_explicit', 'automatic')", name="ck_agent_selections_source"),
+   |                                                                                                     ^^^^^^^^^^^^^^^^
+64 |         sa.ForeignKeyConstraint(
+65 |             ["submission_id", "tenant_id"],
+   |
+
+E501 Line too long (101 > 100)
+   --> admin/api/migrations/versions/0013s_capability_selection.py:129:101
+    |
+127 |             " AND (user_id = NULLIF(current_setting('air_agent.user_id', true), '')::uuid"
+128 |             " OR current_setting('air_agent.agent_operations', true) = 'on'))"
+129 |             " WITH CHECK (tenant_id = NULLIF(current_setting('air_agent.tenant_id', true), '')::uuid"
+    |                                                                                                     ^
+130 |             " AND (user_id = NULLIF(current_setting('air_agent.user_id', true), '')::uuid"
+131 |             " OR current_setting('air_agent.agent_operations', true) = 'on'))"
+    |
+
+E501 Line too long (102 > 100)
+   --> admin/api/migrations/versions/0013s_capability_selection.py:137:101
+    |
+135 |             f"CREATE POLICY selection_worker_scope ON {table} FOR ALL TO {WORKER_ROLE}"
+136 |             " USING (tenant_id = NULLIF(current_setting('air_agent.tenant_id', true), '')::uuid)"
+137 |             " WITH CHECK (tenant_id = NULLIF(current_setting('air_agent.tenant_id', true), '')::uuid)"
+    |                                                                                                     ^^
+138 |         ),
+139 |     ]
+    |
+
+E501 Line too long (102 > 100)
+   --> admin/api/migrations/versions/0013s_capability_selection.py:143:101
+    |
+141 |         f"NOT EXISTS (SELECT 1 FROM agent_run_attempts a JOIN agent_requests r "
+142 |         f"ON r.id = a.request_id AND r.tenant_id = a.tenant_id JOIN agent_thread_deletions d "
+143 |         f"ON d.thread_id = r.thread_id AND d.tenant_id = r.tenant_id WHERE a.id = {table}.attempt_id "
+    |                                                                                                     ^^
+144 |         f"AND a.tenant_id = {table}.tenant_id)"
+145 |     )
+    |
+
+E501 Line too long (110 > 100)
+   --> admin/api/migrations/versions/0013s_capability_selection.py:150:101
+    |
+148 |         (
+149 |             f"CREATE POLICY selection_deleted_guard ON {table} AS RESTRICTIVE FOR ALL TO "
+150 |             f"{RUNTIME_ROLE} USING (({guard}) OR current_setting('air_agent.deletion_cleanup', true) = 'on') "
+    |                                                                                                     ^^^^^^^^^^
+151 |             f"WITH CHECK ({guard})"
+152 |         ),
+    |
+
+Found 9 errors.

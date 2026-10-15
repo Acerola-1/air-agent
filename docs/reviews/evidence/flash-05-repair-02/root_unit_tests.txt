@@ -1,0 +1,227 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/acerola/Dev/Python/air_agent
+configfile: pyproject.toml
+plugins: timeout-2.4.0, langsmith-0.10.15, anyio-4.14.2
+collected 442 items
+
+tests/unit_tests/test_archive_http_live_auth.py ...                      [  0%]
+tests/unit_tests/test_artifact_db.py ......                              [  2%]
+tests/unit_tests/test_artifact_scope_v2.py ..........                    [  4%]
+tests/unit_tests/test_basic_qa_skill_routing.py ssssssssssssssssssssssss [  9%]
+                                                                         [  9%]
+tests/unit_tests/test_bounded_computation.py ..........                  [ 11%]
+tests/unit_tests/test_business_graph_config.py ......                    [ 13%]
+tests/unit_tests/test_business_graph_nodes.py ......                     [ 14%]
+tests/unit_tests/test_checkpointing.py ..F                               [ 15%]
+tests/unit_tests/test_context_guard.py ..........                        [ 17%]
+tests/unit_tests/test_conversation_summarizer.py .......                 [ 19%]
+tests/unit_tests/test_data_analysis_output_guard.py ...........          [ 21%]
+tests/unit_tests/test_event_ledger_contract.py ............              [ 24%]
+tests/unit_tests/test_event_ledger_lifecycle.py ............             [ 27%]
+tests/unit_tests/test_event_ledger_review02_regressions.py sssssssssssss [ 30%]
+sssssssssssss                                                            [ 33%]
+tests/unit_tests/test_event_ledger_store.py ssssssssssssssssssss         [ 37%]
+tests/unit_tests/test_event_ledger_takeover.py .........sss..            [ 40%]
+tests/unit_tests/test_graph_import_no_network.py .                       [ 40%]
+tests/unit_tests/test_guard_middleware_framework_compat.py F..           [ 41%]
+tests/unit_tests/test_knowledge_route.py FFFF                            [ 42%]
+tests/unit_tests/test_langgraph_business_graphs.py ..                    [ 42%]
+tests/unit_tests/test_mcp_client.py ......                               [ 44%]
+tests/unit_tests/test_mcp_scoped_authorization.py ...................    [ 48%]
+tests/unit_tests/test_migration_ticket_auth.py .....                     [ 49%]
+tests/unit_tests/test_observability_core.py ...................          [ 54%]
+tests/unit_tests/test_observability_pricing.py ..............            [ 57%]
+tests/unit_tests/test_observability_takeover.py ..............           [ 60%]
+tests/unit_tests/test_outbound_identity_transport.py ..                  [ 60%]
+tests/unit_tests/test_per_call_outbound_guards.py ......                 [ 62%]
+tests/unit_tests/test_permission_correction_templates.py ........        [ 64%]
+tests/unit_tests/test_permission_engine.py ............................. [ 70%]
+.                                                                        [ 70%]
+tests/unit_tests/test_permission_fact_cache.py ....                      [ 71%]
+tests/unit_tests/test_permission_facts.py ..........                     [ 73%]
+tests/unit_tests/test_permission_mcp_tools.py ..                         [ 74%]
+tests/unit_tests/test_permission_region.py ............................. [ 80%]
+.............                                                            [ 83%]
+tests/unit_tests/test_permission_result.py ..                            [ 84%]
+tests/unit_tests/test_permission_slot_extraction.py .................... [ 88%]
+..                                                                       [ 89%]
+tests/unit_tests/test_runtime_identity_revisions.py ......               [ 90%]
+tests/unit_tests/test_skill_discovery.py ...                             [ 91%]
+tests/unit_tests/test_skill_prompt_rules.py ..                           [ 91%]
+tests/unit_tests/test_skill_ranking_diagnostic.py ss                     [ 92%]
+tests/unit_tests/test_skill_router.py ....                               [ 93%]
+tests/unit_tests/test_subagent_summarizer.py ....                        [ 94%]
+tests/unit_tests/test_tenant_runtime_guard.py ...........                [ 96%]
+tests/unit_tests/test_thread_claim_protocol.py .......                   [ 98%]
+tests/unit_tests/test_ticket_key_rotation.py .....                       [ 99%]
+tests/unit_tests/test_tool_wrapper_retry.py ...                          [100%]
+
+=================================== FAILURES ===================================
+___________ test_reset_checkpointer_cache_closes_previous_connection ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112a2a2e0>
+
+    def test_reset_checkpointer_cache_closes_previous_connection(monkeypatch) -> None:
+        checkpointing.reset_checkpointer_cache()
+        checkpointer = CloseableCheckpointer()
+        monkeypatch.setattr(checkpointing, "_create_checkpointer", lambda: checkpointer)
+    
+        assert checkpointing.get_checkpointer() is checkpointer
+        checkpointing.reset_checkpointer_cache()
+    
+>       assert checkpointer.conn.closed is True
+E       assert False is True
+E        +  where False = <test_checkpointing.CloseableConnection object at 0x114dfe900>.closed
+E        +    where <test_checkpointing.CloseableConnection object at 0x114dfe900> = <test_checkpointing.CloseableCheckpointer object at 0x114dfeba0>.conn
+
+tests/unit_tests/test_checkpointing.py:69: AssertionError
+_____________ test_real_model_call_sees_platform_identity[asyncio] _____________
+
+    def wrapper() -> T:
+        try:
+>           return func(*args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+.venv/lib/python3.13/site-packages/langchain_core/runnables/config.py:698: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = GenericFakeChatModel(metadata={'lc_versions': {'langchain-core': '1.5.4', 'langchain': '1.3.15'}}, messages=<list_iterator object at 0x114feb370>)
+messages = [HumanMessage(content='hi', additional_kwargs={}, response_metadata={}, id='dd9e031f-589f-43f9-bf5c-e8e147d2cfa5')]
+stop = None
+run_manager = <langchain_core.callbacks.manager.CallbackManagerForLLMRun object at 0x1154986e0>
+kwargs = {}
+
+    @override
+    def _generate(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+>       message = next(self.messages)
+                  ^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+.venv/lib/python3.13/site-packages/langchain_core/language_models/fake_chat_models.py:261: StopIteration
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x114e43d20>
+
+    async def test_real_model_call_sees_platform_identity(monkeypatch) -> None:
+        """合法身份 + active 状态：真实框架调用必须通过守卫并完成模型调用。"""
+        agent = _agent(monkeypatch, _state())
+>       result = await agent.ainvoke(
+            {"messages": [("user", "hi")]},
+            config={"configurable": {"langgraph_auth_user": dict(_USER)}},
+        )
+
+tests/unit_tests/test_guard_middleware_framework_compat.py:79: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/langgraph/pregel/main.py:4090: in ainvoke
+    async for chunk in self.astream(
+.venv/lib/python3.13/site-packages/langgraph/pregel/main.py:3440: in astream
+    async for _ in runner.atick(
+.venv/lib/python3.13/site-packages/langgraph/pregel/_runner.py:396: in atick
+    await arun_with_retry(
+.venv/lib/python3.13/site-packages/langgraph/pregel/_retry.py:744: in arun_with_retry
+    return await task.proc.ainvoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langgraph/_internal/_runnable.py:756: in ainvoke
+    input = await asyncio.create_task(
+.venv/lib/python3.13/site-packages/langgraph/_internal/_runnable.py:522: in ainvoke
+    ret = await self.afunc(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langchain/agents/factory.py:1533: in amodel_node
+    result = await awrap_model_call_handler(request, _execute_model_async)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langchain/agents/factory.py:400: in normalized_single
+    return _to_composed_result(await single_handler(request, handler))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/common/middleware/tenant_runtime_guard_middleware.py:57: in awrap_model_call
+    return await handler(request)
+           ^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langchain/agents/factory.py:1501: in _execute_model_async
+    output = await model_.ainvoke(messages)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langchain_core/runnables/base.py:6015: in ainvoke
+    return await self.bound.ainvoke(
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:499: in ainvoke
+    llm_result = await self.agenerate_prompt(
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:1876: in agenerate_prompt
+    return await self.agenerate(
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:1834: in agenerate
+    raise exceptions[0]
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:2167: in _agenerate_with_cache
+    result = await self._agenerate(
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:2234: in _agenerate
+    return await run_in_executor(
+.venv/lib/python3.13/site-packages/langchain_core/runnables/config.py:707: in run_in_executor
+    return await asyncio.get_running_loop().run_in_executor(
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/concurrent/futures/thread.py:59: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def wrapper() -> T:
+        try:
+            return func(*args, **kwargs)
+        except StopIteration as exc:
+            # StopIteration can't be set on an asyncio.Future
+            # it raises a TypeError and leaves the Future pending forever
+            # so we need to convert it to a RuntimeError
+>           raise RuntimeError from exc
+E           RuntimeError
+E           During task with name 'model' and id 'b7868ee7-5f03-730c-895a-2bdaae38f603'
+
+.venv/lib/python3.13/site-packages/langchain_core/runnables/config.py:703: RuntimeError
+____________________ test_policy_route_fast_path_skips_llm _____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1152efa80>
+
+    def test_policy_route_fast_path_skips_llm(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:16: AttributeError
+___________________ test_knowledge_route_fast_path_skips_llm ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1152ef540>
+
+    def test_knowledge_route_fast_path_skips_llm(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:23: AttributeError
+______________________ test_route_cache_reuses_llm_result ______________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1152ef3f0>
+
+    def test_route_cache_reuses_llm_result(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:30: AttributeError
+____________________ test_ambiguous_route_uses_llm_fallback ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x114a82d60>
+
+    def test_ambiguous_route_uses_llm_fallback(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:50: AttributeError
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection
+FAILED tests/unit_tests/test_guard_middleware_framework_compat.py::test_real_model_call_sees_platform_identity[asyncio]
+FAILED tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result
+FAILED tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback
+================== 6 failed, 361 passed, 75 skipped in 45.38s ==================

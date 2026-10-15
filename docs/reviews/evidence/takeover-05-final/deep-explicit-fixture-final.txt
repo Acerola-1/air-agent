@@ -1,0 +1,7 @@
+intelligent-report native wait True True success 
+deep-research native wait True True success 
+intelligent-report bff wait True True success 
+intelligent-tracing native wait True True success 
+deep-research bff wait True True success 
+intelligent-tracing bff wait True True success 
+passed 6 / 6

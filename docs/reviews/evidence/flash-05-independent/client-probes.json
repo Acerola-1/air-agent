@@ -1,0 +1,39 @@
+{
+  "kind": "compiled_actual_TS_with_controlled_auth_context",
+  "catalog_request": {
+    "url": "/api/capabilities?graph_id=basic-qa&tenant_id=tenant-a",
+    "opts": {
+      "cache": "no-store",
+      "headers": {
+        "x-tenant-id": "tenant-a"
+      }
+    }
+  },
+  "actual_BFF_route": {
+    "body": {
+      "error": "页面企业上下文缺失，请刷新后重试",
+      "code": "context_missing"
+    },
+    "status": 403
+  },
+  "ticket_exchange_count": 0,
+  "default_submission_payload": {
+    "schema_version": "agent.capability-selection.v1",
+    "skill": {
+      "mode": "auto",
+      "skill_id": null
+    },
+    "mcp": {
+      "mode": "auto",
+      "tool_ids": []
+    },
+    "catalog_version": null
+  },
+  "selection_after_tenant_change_without_clear": {
+    "skillMode": "auto",
+    "selectedSkillId": null,
+    "mcpMode": "auto",
+    "selectedToolIds": []
+  },
+  "accepted_setter_references": true
+}

@@ -89,11 +89,14 @@ async function handleRequest(req: NextRequest, method: string) {
   if (path === "threads" && method !== "POST") {
     return NextResponse.json({ error: "请使用授权会话搜索" }, { status: 403 });
   }
-  if (!["threads", "archives", "assistants"].includes(segments[0])) {
+  if (!["threads", "archives", "assistants", "capabilities"].includes(segments[0])) {
     return NextResponse.json({ error: "此接口不可访问" }, { status: 403 });
   }
-  // 助手为全局图定义，仅开放只读发现接口（写入由 LangGraph auth 默认拒绝）。
+  // 助手与能力目录为只读发现接口（写入由 LangGraph auth 默认拒绝）。
   if (segments[0] === "assistants" && method !== "GET" && !(method === "POST" && segments[1] === "search")) {
+    return NextResponse.json({ error: "此操作不可访问" }, { status: 403 });
+  }
+  if (segments[0] === "capabilities" && method !== "GET") {
     return NextResponse.json({ error: "此操作不可访问" }, { status: 403 });
   }
 
@@ -124,6 +127,7 @@ async function handleRequest(req: NextRequest, method: string) {
     attemptId: string;
     submissionId: string;
   } | null = null;
+  let admittedSelection: Record<string, unknown> | null = null;
   if (["POST", "PUT", "PATCH"].includes(method)) {
     const raw = await req.text();
     try {
@@ -172,12 +176,28 @@ async function handleRequest(req: NextRequest, method: string) {
         | "initial" | "retry" | "regenerate" | "resume";
       const userMessageId = req.headers.get("x-user-message-id");
       const firstUserMessage = extractFirstUserContent(body.input);
+      const rawCapabilitySelection =
+        (body.capability_selection as Record<string, unknown> | undefined) ??
+        (cfg?.configurable?.capability_selection as Record<string, unknown> | undefined) ??
+        (req.headers.get("x-capability-selection")
+          ? (() => {
+              try {
+                return JSON.parse(req.headers.get("x-capability-selection")!);
+              } catch {
+                return undefined;
+              }
+            })()
+          : undefined);
       try {
         // F06：正常提交必须留下**按 request 可精确回读**的原问题来源——否则刷新/
         // 后续提问/重新生成之后，热门问题分析只剩可变 thread 指针与摘要。
         // 只保存本次用户原问题文本（受控快照，带保留期），正文不进入普通事件与指标；
         // 空内容（如 resume）不落快照。保留期由部署配置，缺省 90 天。
         const retentionDays = Number(process.env.LEDGER_CONTENT_RETENTION_DAYS ?? "90");
+        const menuName =
+          (req.headers.get("x-menu-name") as string | null) ||
+          ((body.menu_name as string | undefined) ?? null) ||
+          ((cfg?.configurable?.menu_name as string | undefined) ?? null);
         const admitted = await admitRequest({
           cookie: store,
           threadId: threadId as string,
@@ -192,8 +212,11 @@ async function handleRequest(req: NextRequest, method: string) {
             Number.isFinite(retentionDays) && retentionDays >= 1 ? retentionDays : 90,
           tenantId,
           contextVersion: Number(claimedVersion),
+          menuName,
+          capabilitySelection: rawCapabilitySelection,
         });
         operationKind = (admitted.operation_kind ?? operationKind) as typeof operationKind;
+        admittedSelection = (admitted.capability_selection as Record<string, unknown> | null) ?? null;
         ledgerAdmission = {
           requestId: admitted.request_id,
           attemptId: admitted.attempt_id,
@@ -201,15 +224,19 @@ async function handleRequest(req: NextRequest, method: string) {
         };
       } catch (err) {
         const status = err instanceof AdminApiError ? err.status : 503;
+        const errJson = err instanceof AdminApiError ? (err.json as { detail?: string; code?: string }) : undefined;
+        const detail = errJson?.detail || (err instanceof Error ? err.message : String(err));
+        const code = errJson?.code || (status === 409 ? "submission_conflict" : "ledger_admission_failed");
         return NextResponse.json(
           {
             error:
-              status === 409
+              detail ||
+              (status === 409
                 ? "该提交与已有内容不一致，请刷新后重试"
-                : "台账受理失败，本次未启动运行，请稍后重试",
-            code: status === 409 ? "submission_conflict" : "ledger_admission_failed",
+                : "台账受理失败，本次未启动运行，请稍后重试"),
+            code: code,
           },
-          { status: status === 409 ? 409 : 503 }
+          { status }
         );
       }
       // F01：启动权由**原生入口**（平台 auth hook）单点原子裁决——那是唯一不可绕过的
@@ -218,6 +245,33 @@ async function handleRequest(req: NextRequest, method: string) {
       // BFF 的职责：受理拿到 request/attempt/submission → 注入可信关联 → 转发。
       // 上游因台账裁决拒绝时，按**结构化 code** 区分处理（见下方 forward 分支）。
 
+      const capMeta = admittedSelection
+        ? {
+            capability_selection_id:
+              (admittedSelection.id as string | undefined) ??
+              (admittedSelection.selection_id as string | undefined) ??
+              "",
+            capability_skill_mode:
+              (admittedSelection.skill_mode as string | undefined) ??
+              ((admittedSelection.skill as Record<string, unknown> | undefined)?.mode as string | undefined) ??
+              "auto",
+            capability_skill_id:
+              (admittedSelection.skill_id as string | undefined) ??
+              ((admittedSelection.skill as Record<string, unknown> | undefined)?.skill_id as string | undefined) ??
+              null,
+            capability_mcp_mode:
+              (admittedSelection.mcp_mode as string | undefined) ??
+              ((admittedSelection.mcp as Record<string, unknown> | undefined)?.mode as string | undefined) ??
+              "auto",
+            capability_tool_ids:
+              (admittedSelection.tool_ids as string[] | undefined) ??
+              ((admittedSelection.mcp as Record<string, unknown> | undefined)?.tool_ids as string[] | undefined) ??
+              [],
+            capability_selection_digest:
+              (admittedSelection.selection_digest as string | undefined) ?? "",
+          }
+        : {};
+
       const marker = ledgerMarker(ledgerAdmission.requestId, ledgerAdmission.attemptId);
       const meta = (body.metadata as Record<string, unknown> | undefined) ?? {};
       body.metadata = {
@@ -225,9 +279,11 @@ async function handleRequest(req: NextRequest, method: string) {
         ledger_request_id: ledgerAdmission.requestId,
         ledger_attempt_id: ledgerAdmission.attemptId,
         ledger_submission_id: ledgerAdmission.submissionId,
+        ledger_submission_key: submissionKey,
         ledger_operation_kind: operationKind,
         ledger_graph_id: String(body.assistant_id ?? ""),
         ledger_marker: marker,
+        ...capMeta,
       };
       body.config = {
         ...cfg,
@@ -243,6 +299,7 @@ async function handleRequest(req: NextRequest, method: string) {
           ledger_submission_id: ledgerAdmission.submissionId,
           ledger_operation_kind: operationKind,
           ledger_graph_id: String(body.assistant_id ?? ""),
+          ...capMeta,
         },
       };
     }
@@ -256,6 +313,7 @@ async function handleRequest(req: NextRequest, method: string) {
         cookie: store,
         threadId,
         tenantContext: { tenantId, contextVersion: Number(claimedVersion) },
+        requestOrigin: req.headers.get("origin"),
       });
     } catch {
       return NextResponse.json(
@@ -424,6 +482,9 @@ async function handleRequest(req: NextRequest, method: string) {
       "x-ledger-marker",
       ledgerMarker(ledgerAdmission.requestId, ledgerAdmission.attemptId)
     );
+    if (admittedSelection) {
+      headers.set("x-capability-selection", JSON.stringify(admittedSelection));
+    }
   }
 
   // 台账受理结果回填。平台不提供调用方指定 run_id（任务 1.2 实测），因此：

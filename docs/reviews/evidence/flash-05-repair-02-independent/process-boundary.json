@@ -1,0 +1,27 @@
+{
+  "kind": "real_HTTP_separate_admin_and_runtime_custom_app_processes_with_real_MCP_fixture",
+  "ids": {
+    "tenant": "60b19b2e-b507-4726-a6ad-51522ca96598",
+    "user": "2b75246f-f542-48ee-a064-d616be15f845",
+    "member": "892c514f-6195-4c97-a299-2b46473ef30c",
+    "thread": "56a8b341-e45f-488f-ab2d-436ab2cb25fb"
+  },
+  "native_catalog_status": 200,
+  "native_tools": [
+    "mcp:controlled-one:delayed_query",
+    "mcp:controlled-one:flaky_query",
+    "mcp:controlled-one:query",
+    "mcp:controlled-one:query_air",
+    "mcp:controlled-one:slow_query"
+  ],
+  "admit_legitimate_catalog_selection_status": 422,
+  "admit_legitimate_catalog_selection_body": {
+    "detail": "能力目录为空或工具尚未发现"
+  },
+  "mcp_call_count": 0,
+  "process_ids": [
+    3841,
+    3842
+  ],
+  "owned_processes_stopped": true
+}

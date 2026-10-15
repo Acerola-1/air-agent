@@ -135,10 +135,10 @@ def test_mcp_backed_graphs_do_not_initialize_mcp_at_import() -> None:
 
     # 业务图节点流的 MCP 刷新在 prepare_model 节点中
     bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
-    assert "ensure_mcp_tools" in bg_nodes
+    assert "refresh_authorized_mcp_tools" in bg_nodes
     assert "get_business_tools" in bg_nodes
 
     # data-analysis 使用 StateGraph 节点流，MCP 刷新在 prepare_model 节点中
     da_nodes = Path("src/data_analysis/nodes.py").read_text(encoding="utf-8")
-    assert "ensure_mcp_tools" in da_nodes
+    assert "refresh_authorized_mcp_tools" in da_nodes
     assert "get_business_tools" in da_nodes

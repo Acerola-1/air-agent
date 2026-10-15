@@ -1,0 +1,911 @@
+{
+  "passed": true,
+  "cells": [
+    {
+      "graph": "basic-qa",
+      "entry": "native",
+      "attempt_id": "3519dbce-3ab6-4d8b-b7ef-d071b38c95fa",
+      "skill_id": "skill:basic-qa:air-quality-basic-query",
+      "current_material_version": "sha256:2a899b59771c700acb1cb8d143bd225cceb34694c4a7c5c8abff0581b9d06938",
+      "accepted_selection": {
+        "id": "2b288008-5a9a-4b26-8661-29f9bef2735f",
+        "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+        "material_version": "sha256:2a899b59771c700acb1cb8d143bd225cceb34694c4a7c5c8abff0581b9d06938"
+      },
+      "expected_loaded_body_sha256": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+      "stages": [
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "air-quality-basic-query",
+          "span_kind": "skill",
+          "span_name": "air-quality-basic-query",
+          "attempt_id": "3519dbce-3ab6-4d8b-b7ef-d071b38c95fa",
+          "selection_id": "2b288008-5a9a-4b26-8661-29f9bef2735f",
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "submission_id": "8c820d00-115f-4e32-acae-f5febf69a781",
+          "observation_id": "e3849c57-18f0-5ded-8c04-8fac929b87f8",
+          "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "air-quality-basic-query",
+          "span_kind": "skill",
+          "span_name": "air-quality-basic-query",
+          "attempt_id": "3519dbce-3ab6-4d8b-b7ef-d071b38c95fa",
+          "selection_id": "2b288008-5a9a-4b26-8661-29f9bef2735f",
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "submission_id": "8c820d00-115f-4e32-acae-f5febf69a781",
+          "observation_id": "b0397ebd-2081-5d6c-9781-08659db2e40c",
+          "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+          "selection_source": "manual"
+        }
+      ],
+      "checkpoint_rules_match": true
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "native",
+      "attempt_id": "c2d4dedd-00d5-4166-9ab6-64e14b1c4df0",
+      "skill_id": "skill:intelligent-analysis:broadcast-hour",
+      "current_material_version": "sha256:46751b0c59eb8f0e9f857f7d526438d804aa976fa81838fbd5c21d49f532d67b",
+      "accepted_selection": {
+        "id": "b4d64932-2aa3-4f5a-84fb-63efa9b17957",
+        "selection_digest": "003294897a54c12f43307618dc494e013502e16c18f8bd6c32422d5342e51152",
+        "material_version": "sha256:46751b0c59eb8f0e9f857f7d526438d804aa976fa81838fbd5c21d49f532d67b"
+      },
+      "expected_loaded_body_sha256": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+      "stages": [
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "broadcast-hour",
+          "span_kind": "skill",
+          "span_name": "broadcast-hour",
+          "attempt_id": "c2d4dedd-00d5-4166-9ab6-64e14b1c4df0",
+          "selection_id": "b4d64932-2aa3-4f5a-84fb-63efa9b17957",
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "submission_id": "56a1f99e-f35d-4969-b1d4-f1a205a66d77",
+          "observation_id": "ce2cf53b-a0ee-508b-b3db-7f7c90a638ba",
+          "selection_digest": "003294897a54c12f43307618dc494e013502e16c18f8bd6c32422d5342e51152",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "broadcast-hour",
+          "span_kind": "skill",
+          "span_name": "broadcast-hour",
+          "attempt_id": "c2d4dedd-00d5-4166-9ab6-64e14b1c4df0",
+          "selection_id": "b4d64932-2aa3-4f5a-84fb-63efa9b17957",
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "submission_id": "56a1f99e-f35d-4969-b1d4-f1a205a66d77",
+          "observation_id": "30b34078-322e-5c13-92bb-254a559af53e",
+          "selection_digest": "003294897a54c12f43307618dc494e013502e16c18f8bd6c32422d5342e51152",
+          "selection_source": "manual"
+        }
+      ],
+      "checkpoint_rules_match": true
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "native",
+      "attempt_id": "43008361-ba4a-4b30-ab2f-905f8ecbea5f",
+      "skill_id": "skill:data-analysis:broadcast-hour",
+      "current_material_version": "sha256:dd795da36980432a4efcb8e6c64b6cc0b09099cb1295d6f725ec751afe7c9e54",
+      "accepted_selection": {
+        "id": "7f5b9377-fb6d-4d0c-8716-3d9e0786cf6e",
+        "selection_digest": "57e9882c4ea0af3d601de9b37ddc1f62a170edcc0e74dc2be2a5cc3f9f8ee6ce",
+        "material_version": "sha256:dd795da36980432a4efcb8e6c64b6cc0b09099cb1295d6f725ec751afe7c9e54"
+      },
+      "expected_loaded_body_sha256": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+      "stages": [
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "broadcast-hour",
+          "span_kind": "skill",
+          "span_name": "broadcast-hour",
+          "attempt_id": "43008361-ba4a-4b30-ab2f-905f8ecbea5f",
+          "selection_id": "7f5b9377-fb6d-4d0c-8716-3d9e0786cf6e",
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "submission_id": "3e6c4a76-2cfe-4b76-9207-1920454f6197",
+          "observation_id": "d9254f03-7d45-5f2d-8358-3c457d72408b",
+          "selection_digest": "57e9882c4ea0af3d601de9b37ddc1f62a170edcc0e74dc2be2a5cc3f9f8ee6ce",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "broadcast-hour",
+          "span_kind": "skill",
+          "span_name": "broadcast-hour",
+          "attempt_id": "43008361-ba4a-4b30-ab2f-905f8ecbea5f",
+          "selection_id": "7f5b9377-fb6d-4d0c-8716-3d9e0786cf6e",
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "submission_id": "3e6c4a76-2cfe-4b76-9207-1920454f6197",
+          "observation_id": "a25ba65f-128b-53fb-b7d9-7edef929a86d",
+          "selection_digest": "57e9882c4ea0af3d601de9b37ddc1f62a170edcc0e74dc2be2a5cc3f9f8ee6ce",
+          "selection_source": "manual"
+        }
+      ],
+      "checkpoint_rules_match": true
+    },
+    {
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "attempt_id": "ba8783fe-0b2a-48ec-9c5d-6351d639a7f1",
+      "skill_id": "skill:intelligent-analysis:broadcast-hour",
+      "current_material_version": "sha256:46751b0c59eb8f0e9f857f7d526438d804aa976fa81838fbd5c21d49f532d67b",
+      "accepted_selection": {
+        "id": "ac937589-ef48-46a6-8c01-b6ee47bd2e74",
+        "selection_digest": "003294897a54c12f43307618dc494e013502e16c18f8bd6c32422d5342e51152",
+        "material_version": "sha256:46751b0c59eb8f0e9f857f7d526438d804aa976fa81838fbd5c21d49f532d67b"
+      },
+      "expected_loaded_body_sha256": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+      "stages": [
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "broadcast-hour",
+          "span_kind": "skill",
+          "span_name": "broadcast-hour",
+          "attempt_id": "ba8783fe-0b2a-48ec-9c5d-6351d639a7f1",
+          "selection_id": "ac937589-ef48-46a6-8c01-b6ee47bd2e74",
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "submission_id": "4534fb35-00ad-4b1c-b3bc-bae85939440f",
+          "observation_id": "8cbaf390-b3c8-5f23-8880-c350630d3a28",
+          "selection_digest": "003294897a54c12f43307618dc494e013502e16c18f8bd6c32422d5342e51152",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "broadcast-hour",
+          "span_kind": "skill",
+          "span_name": "broadcast-hour",
+          "attempt_id": "ba8783fe-0b2a-48ec-9c5d-6351d639a7f1",
+          "selection_id": "ac937589-ef48-46a6-8c01-b6ee47bd2e74",
+          "skill_version": "192eb0b5113a9380a8a1a4cc90f17b5533b7d24d8a2801629a768f0d3ac7bf10",
+          "submission_id": "4534fb35-00ad-4b1c-b3bc-bae85939440f",
+          "observation_id": "148a63dc-8944-5d7c-a395-936754ac5e41",
+          "selection_digest": "003294897a54c12f43307618dc494e013502e16c18f8bd6c32422d5342e51152",
+          "selection_source": "manual"
+        }
+      ],
+      "checkpoint_rules_match": true
+    },
+    {
+      "graph": "basic-qa",
+      "entry": "bff",
+      "attempt_id": "4dfe6155-9f97-4501-8740-853e8883ea2a",
+      "skill_id": "skill:basic-qa:air-quality-basic-query",
+      "current_material_version": "sha256:2a899b59771c700acb1cb8d143bd225cceb34694c4a7c5c8abff0581b9d06938",
+      "accepted_selection": {
+        "id": "2409fd76-1ed1-4760-b716-f6dfda8828dc",
+        "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+        "material_version": "sha256:2a899b59771c700acb1cb8d143bd225cceb34694c4a7c5c8abff0581b9d06938"
+      },
+      "expected_loaded_body_sha256": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+      "stages": [
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "air-quality-basic-query",
+          "span_kind": "skill",
+          "span_name": "air-quality-basic-query",
+          "attempt_id": "4dfe6155-9f97-4501-8740-853e8883ea2a",
+          "selection_id": "2409fd76-1ed1-4760-b716-f6dfda8828dc",
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "submission_id": "ce493575-8db4-4cb8-99a4-943a8b12914d",
+          "observation_id": "354932e2-1b82-5ffa-a1d1-414eb2061406",
+          "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "air-quality-basic-query",
+          "span_kind": "skill",
+          "span_name": "air-quality-basic-query",
+          "attempt_id": "4dfe6155-9f97-4501-8740-853e8883ea2a",
+          "selection_id": "2409fd76-1ed1-4760-b716-f6dfda8828dc",
+          "skill_version": "97b1be17e5e272302810f65879ef1ee1c7e54315ee24972f9f392b54e56b870c",
+          "submission_id": "ce493575-8db4-4cb8-99a4-943a8b12914d",
+          "observation_id": "ba3c9630-fdc7-5948-b60d-406f9309621e",
+          "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+          "selection_source": "manual"
+        }
+      ],
+      "checkpoint_rules_match": true
+    },
+    {
+      "graph": "data-analysis",
+      "entry": "bff",
+      "attempt_id": "04dd679c-47b4-4121-bc60-a6a243de73db",
+      "skill_id": "skill:data-analysis:broadcast-hour",
+      "current_material_version": "sha256:dd795da36980432a4efcb8e6c64b6cc0b09099cb1295d6f725ec751afe7c9e54",
+      "accepted_selection": {
+        "id": "61bc49b6-9fb6-4224-bffc-3f1f2905916d",
+        "selection_digest": "57e9882c4ea0af3d601de9b37ddc1f62a170edcc0e74dc2be2a5cc3f9f8ee6ce",
+        "material_version": "sha256:dd795da36980432a4efcb8e6c64b6cc0b09099cb1295d6f725ec751afe7c9e54"
+      },
+      "expected_loaded_body_sha256": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+      "stages": [
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "broadcast-hour",
+          "span_kind": "skill",
+          "span_name": "broadcast-hour",
+          "attempt_id": "04dd679c-47b4-4121-bc60-a6a243de73db",
+          "selection_id": "61bc49b6-9fb6-4224-bffc-3f1f2905916d",
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "submission_id": "f3f05d60-f67b-4e51-8564-5cebc831a16c",
+          "observation_id": "b3bee8a3-4d3c-5bee-929e-3147e22ba39e",
+          "selection_digest": "57e9882c4ea0af3d601de9b37ddc1f62a170edcc0e74dc2be2a5cc3f9f8ee6ce",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "broadcast-hour",
+          "span_kind": "skill",
+          "span_name": "broadcast-hour",
+          "attempt_id": "04dd679c-47b4-4121-bc60-a6a243de73db",
+          "selection_id": "61bc49b6-9fb6-4224-bffc-3f1f2905916d",
+          "skill_version": "a065e7598fac1bef3850f5cccbfb024e86c0cd0a891f4c1b3031f909eadb773a",
+          "submission_id": "f3f05d60-f67b-4e51-8564-5cebc831a16c",
+          "observation_id": "73db5bd4-f2a6-5976-a7e2-d161f53c17e6",
+          "selection_digest": "57e9882c4ea0af3d601de9b37ddc1f62a170edcc0e74dc2be2a5cc3f9f8ee6ce",
+          "selection_source": "manual"
+        }
+      ],
+      "checkpoint_rules_match": true
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "native",
+      "attempt_id": "e6e68711-bdd2-497f-bcfc-bb670240ec46",
+      "skill_id": "skill:intelligent-report:acceptance-s1",
+      "current_material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+      "accepted_selection": {
+        "id": "4f2708ed-cec1-4d56-aa7b-9f59d95f4397",
+        "selection_digest": "214b516233b073c7155079084fe3ee173ee9da37b5b29c39610aef2a8a3fe829",
+        "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769"
+      },
+      "expected_loaded_body_sha256": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+      "stages": [
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "a1a73b05707a48ff7a1113cb6ff6b8df1d5495fe2aadf9f1c9ac66953c06a407",
+          "selection_source": "agent-discovery"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "agent-discovery"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "e6e68711-bdd2-497f-bcfc-bb670240ec46",
+          "selection_id": "4f2708ed-cec1-4d56-aa7b-9f59d95f4397",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "bcdc0edd-3732-49ae-8989-f21679f43b84",
+          "observation_id": "bcf86c3f-27a8-52ba-baf5-3359a6b71b05",
+          "selection_digest": "214b516233b073c7155079084fe3ee173ee9da37b5b29c39610aef2a8a3fe829",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "e6e68711-bdd2-497f-bcfc-bb670240ec46",
+          "selection_id": "4f2708ed-cec1-4d56-aa7b-9f59d95f4397",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "bcdc0edd-3732-49ae-8989-f21679f43b84",
+          "observation_id": "dea8e885-994f-5c90-8c14-196123036b77",
+          "selection_digest": "214b516233b073c7155079084fe3ee173ee9da37b5b29c39610aef2a8a3fe829",
+          "selection_source": "manual"
+        }
+      ],
+      "real_answer": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ]
+    },
+    {
+      "graph": "deep-research",
+      "entry": "native",
+      "attempt_id": "8cbc86d2-52f3-4599-9d0c-79d9cb0802e3",
+      "skill_id": "skill:deep-research:acceptance-s1",
+      "current_material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+      "accepted_selection": {
+        "id": "59250d9b-cc0d-40aa-9976-7cac1682b203",
+        "selection_digest": "ee936faaaa21555feb89dedd59632ee002599a8b13de125424ed4ba96fe689fe",
+        "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769"
+      },
+      "expected_loaded_body_sha256": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+      "stages": [
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "a1a73b05707a48ff7a1113cb6ff6b8df1d5495fe2aadf9f1c9ac66953c06a407",
+          "selection_source": "agent-discovery"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "agent-discovery"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "8cbc86d2-52f3-4599-9d0c-79d9cb0802e3",
+          "selection_id": "59250d9b-cc0d-40aa-9976-7cac1682b203",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "a0f1ce7d-4728-4a26-a4a4-ec48dcee614a",
+          "observation_id": "43943093-7105-5104-a662-32929f5b1840",
+          "selection_digest": "ee936faaaa21555feb89dedd59632ee002599a8b13de125424ed4ba96fe689fe",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "8cbc86d2-52f3-4599-9d0c-79d9cb0802e3",
+          "selection_id": "59250d9b-cc0d-40aa-9976-7cac1682b203",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "a0f1ce7d-4728-4a26-a4a4-ec48dcee614a",
+          "observation_id": "39c8eeaa-4aa4-506d-88a2-8aea9c10a960",
+          "selection_digest": "ee936faaaa21555feb89dedd59632ee002599a8b13de125424ed4ba96fe689fe",
+          "selection_source": "manual"
+        }
+      ],
+      "real_answer": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ]
+    },
+    {
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "attempt_id": "82cbc751-6061-418c-bb65-552f4abb5d35",
+      "skill_id": "skill:intelligent-report:acceptance-s1",
+      "current_material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+      "accepted_selection": {
+        "id": "a15246d4-508a-4bed-b40e-32132281b5f3",
+        "selection_digest": "214b516233b073c7155079084fe3ee173ee9da37b5b29c39610aef2a8a3fe829",
+        "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769"
+      },
+      "expected_loaded_body_sha256": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+      "stages": [
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "82cbc751-6061-418c-bb65-552f4abb5d35",
+          "selection_id": "a15246d4-508a-4bed-b40e-32132281b5f3",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "fab7ec14-74a3-4005-89b1-d6ba86af61e4",
+          "observation_id": "a6808d71-6c7b-5e92-8554-f742c19ac2cd",
+          "selection_digest": "214b516233b073c7155079084fe3ee173ee9da37b5b29c39610aef2a8a3fe829",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "82cbc751-6061-418c-bb65-552f4abb5d35",
+          "selection_id": "a15246d4-508a-4bed-b40e-32132281b5f3",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "fab7ec14-74a3-4005-89b1-d6ba86af61e4",
+          "observation_id": "42b413c1-8a50-549f-b592-a328f20a54aa",
+          "selection_digest": "214b516233b073c7155079084fe3ee173ee9da37b5b29c39610aef2a8a3fe829",
+          "selection_source": "manual"
+        }
+      ],
+      "real_answer": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ]
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "attempt_id": "3da41331-1804-4b51-b37b-54e4c373e1eb",
+      "skill_id": "skill:intelligent-tracing:acceptance-s1",
+      "current_material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+      "accepted_selection": {
+        "id": "fcedb3af-dd75-412c-9dc2-4e2be99e4fbe",
+        "selection_digest": "1ae7319b78742ae8de7044ed2e84ec54865a61f02336b923c629111971abf84e",
+        "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769"
+      },
+      "expected_loaded_body_sha256": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+      "stages": [
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": "a1a73b05707a48ff7a1113cb6ff6b8df1d5495fe2aadf9f1c9ac66953c06a407",
+          "selection_source": "agent-discovery"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "agent-discovery"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "3da41331-1804-4b51-b37b-54e4c373e1eb",
+          "selection_id": "fcedb3af-dd75-412c-9dc2-4e2be99e4fbe",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "0da12e01-5ed9-4036-b9ed-0c2633494270",
+          "observation_id": "9ed2b94a-537c-5534-97af-fead13075417",
+          "selection_digest": "1ae7319b78742ae8de7044ed2e84ec54865a61f02336b923c629111971abf84e",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "3da41331-1804-4b51-b37b-54e4c373e1eb",
+          "selection_id": "fcedb3af-dd75-412c-9dc2-4e2be99e4fbe",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "0da12e01-5ed9-4036-b9ed-0c2633494270",
+          "observation_id": "b41018d4-d6e7-5f64-9d53-e1c577991a18",
+          "selection_digest": "1ae7319b78742ae8de7044ed2e84ec54865a61f02336b923c629111971abf84e",
+          "selection_source": "manual"
+        }
+      ],
+      "real_answer": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ]
+    },
+    {
+      "graph": "deep-research",
+      "entry": "bff",
+      "attempt_id": "545ebdf3-c22a-4dc3-ad08-386413881fb0",
+      "skill_id": "skill:deep-research:acceptance-s1",
+      "current_material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+      "accepted_selection": {
+        "id": "7b815ddf-e95b-4552-ae45-1bb100cd70f4",
+        "selection_digest": "ee936faaaa21555feb89dedd59632ee002599a8b13de125424ed4ba96fe689fe",
+        "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769"
+      },
+      "expected_loaded_body_sha256": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+      "stages": [
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "545ebdf3-c22a-4dc3-ad08-386413881fb0",
+          "selection_id": "7b815ddf-e95b-4552-ae45-1bb100cd70f4",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "81783940-b3ac-4027-9b51-b2b73b1c3fd2",
+          "observation_id": "00224660-4904-5cc7-9914-38ed0f8e369a",
+          "selection_digest": "ee936faaaa21555feb89dedd59632ee002599a8b13de125424ed4ba96fe689fe",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "545ebdf3-c22a-4dc3-ad08-386413881fb0",
+          "selection_id": "7b815ddf-e95b-4552-ae45-1bb100cd70f4",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "81783940-b3ac-4027-9b51-b2b73b1c3fd2",
+          "observation_id": "3dfbe484-4bcc-53b6-9f9a-713d5aa8dd35",
+          "selection_digest": "ee936faaaa21555feb89dedd59632ee002599a8b13de125424ed4ba96fe689fe",
+          "selection_source": "manual"
+        }
+      ],
+      "real_answer": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ]
+    },
+    {
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "attempt_id": "3ba99c0f-0f1d-4942-982b-cf2c1f031b75",
+      "skill_id": "skill:intelligent-tracing:acceptance-s1",
+      "current_material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769",
+      "accepted_selection": {
+        "id": "35f9e409-e8e1-4a62-8a60-9f0d883c8c2e",
+        "selection_digest": "1ae7319b78742ae8de7044ed2e84ec54865a61f02336b923c629111971abf84e",
+        "material_version": "sha256:87dd9bad105d96b687a7e8bec9c4e8bc687f3c6029022eb9dbe52f1416b2a769"
+      },
+      "expected_loaded_body_sha256": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+      "stages": [
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "matched",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "manual"
+        },
+        {
+          "stage": "selected",
+          "status": null,
+          "skill_version": null,
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "selection_source": "manual"
+        }
+      ],
+      "event_selection_links": [
+        {
+          "stage": "loaded",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "3ba99c0f-0f1d-4942-982b-cf2c1f031b75",
+          "selection_id": "35f9e409-e8e1-4a62-8a60-9f0d883c8c2e",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "546acaab-9fab-48e8-949d-352839b883bd",
+          "observation_id": "82a6f87f-cad9-5b1b-b85b-f9297d39fdc8",
+          "selection_digest": "1ae7319b78742ae8de7044ed2e84ec54865a61f02336b923c629111971abf84e",
+          "selection_source": "manual"
+        },
+        {
+          "stage": "executed",
+          "status": "succeeded",
+          "skill_id": "acceptance-s1",
+          "span_kind": "skill",
+          "span_name": "acceptance-s1",
+          "attempt_id": "3ba99c0f-0f1d-4942-982b-cf2c1f031b75",
+          "selection_id": "35f9e409-e8e1-4a62-8a60-9f0d883c8c2e",
+          "skill_version": "df6570a2d8760ee756dcf1e3f4d385d8aa1289c23a065125410ba07ee3d95819",
+          "submission_id": "546acaab-9fab-48e8-949d-352839b883bd",
+          "observation_id": "46375dab-39c4-502e-9998-e232b3dd3b27",
+          "selection_digest": "1ae7319b78742ae8de7044ed2e84ec54865a61f02336b923c629111971abf84e",
+          "selection_source": "manual"
+        }
+      ],
+      "real_answer": [
+        {
+          "content": "已加载本次指定技能，验收问候成功。",
+          "usage": null
+        }
+      ]
+    }
+  ]
+}

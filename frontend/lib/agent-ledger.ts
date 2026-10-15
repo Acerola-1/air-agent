@@ -21,6 +21,7 @@ export type AdmissionResult = {
   thread_id: string;
   graph_id: string;
   ledger_marker: string;
+  capability_selection?: Record<string, unknown> | null;
 };
 
 export type StopOrigin =
@@ -46,6 +47,8 @@ export async function admitRequest(input: {
   retentionDays?: number;
   tenantId: string;
   contextVersion: number;
+  menuName?: string | null;
+  capabilitySelection?: Record<string, unknown> | null;
 }): Promise<AdmissionResult> {
   const result = await adminFetch("/agent/requests", {
     method: "POST",
@@ -61,6 +64,8 @@ export async function admitRequest(input: {
       source_attempt_id: input.sourceAttemptId ?? null,
       store_content: input.storeContent ?? false,
       retention_days: input.retentionDays ?? null,
+      menu_name: input.menuName ?? null,
+      capability_selection: input.capabilitySelection ?? null,
     },
   });
   if (result.status !== 200) {
@@ -187,6 +192,7 @@ export async function recordStopIntent(input: {
   origin: StopOrigin;
   phase: "queued" | "processing" | "output" | "unknown";
   platformRunId?: string | null;
+  requestOrigin?: string | null;
   tenantId: string;
   contextVersion: number;
 }): Promise<{ attempt_id?: string; cancel_requested?: boolean; origin?: string }> {
@@ -201,7 +207,7 @@ export async function recordStopIntent(input: {
       phase: input.phase,
       platform_run_id: input.platformRunId ?? null,
     },
-    origin: "http://localhost:3000",
+    origin: input.requestOrigin,
   });
   if (result.status !== 200) {
     throw new AdminApiError(result.status, "停止意图记录失败");
@@ -214,13 +220,14 @@ export async function requestThreadDeletion(input: {
   cookie: string;
   threadId: string;
   tenantContext?: { tenantId: string; contextVersion: number } | null;
+  requestOrigin?: string | null;
 }): Promise<void> {
   const result = await adminFetch("/agent/threads/deletion", {
     method: "POST",
     cookie: input.cookie,
     tenantContext: input.tenantContext ?? null,
     body: { thread_id: input.threadId },
-    origin: "http://localhost:3000",
+    origin: input.requestOrigin,
   });
   if (result.status !== 200) throw new AdminApiError(result.status, "删除标记记录失败");
 }

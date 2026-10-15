@@ -1,0 +1,53 @@
+{
+  "configured": {
+    "error": "RemoteProtocolError",
+    "elapsed_s": 5.0078937080688775
+  },
+  "loopback": {
+    "http_status": 200,
+    "body": {
+      "id": "chatcmpl-8e5ce356e94af31984734ee7",
+      "object": "chat.completion",
+      "created": 1792046340,
+      "model": "hy3",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "你好！很高兴见到你。有什么我可以帮助你的吗？"
+          },
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 50,
+        "total_tokens": 63,
+        "completion_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 36,
+          "rejected_prediction_tokens": 0,
+          "cached_tokens": 0
+        },
+        "prompt_tokens_details": {
+          "accepted_prediction_tokens": 0,
+          "audio_tokens": 0,
+          "reasoning_tokens": 0,
+          "rejected_prediction_tokens": 0,
+          "cached_tokens": 0
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 13,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "prompt_cache_write_tokens": 0,
+        "completion_thinking_tokens": 36,
+        "credit": 0,
+        "cached_tokens": 0
+      }
+    },
+    "elapsed_s": 2.0525303329341114
+  }
+}

@@ -1,0 +1,363 @@
+{
+  "total_files": 47,
+  "reviewed_files": 47,
+  "skipped_files": 0,
+  "coverage_rate": 1.0,
+  "meaning": "文件层静态/契约审阅；不等同全部行为均已动态验收",
+  "files": [
+    {
+      "path": "admin/api/app/config.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "admin/api/app/models_ledger.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "admin/api/app/routers/ledger.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "admin/api/app/schemas_ledger.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "admin/api/app/services/enterprise_permissions.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "admin/api/app/services/ledger.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/event-registry.json",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "docs/contracts/agent-events-v1/samples/samples.json",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "生成副本与来源一致性、共享样本及三端契约测试；非独立手写实现"
+    },
+    {
+      "path": "frontend/app/api/[..._path]/route.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/components/chat/ChatPanel.tsx",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/lib/agent-events/contract-data.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "生成副本与来源一致性、共享样本及三端契约测试；非独立手写实现"
+    },
+    {
+      "path": "frontend/lib/agent-ledger.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/lib/chat-store.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/lib/langgraph-api.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/next-env.d.ts",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/package.json",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/tests/agent-events-contract.test.cjs",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/tests/chat-contract.test.cjs",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/artifact_http.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/business_graph/nodes.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/business_graph/skill_content.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/config/settings.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/event-registry.json",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "生成副本与来源一致性、共享样本及三端契约测试；非独立手写实现"
+    },
+    {
+      "path": "src/common/event_ledger/contract_data/samples.json",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "生成副本与来源一致性、共享样本及三端契约测试；非独立手写实现"
+    },
+    {
+      "path": "src/common/event_ledger/store.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/mcp_scoped.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/observability/store.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/skill_discovery.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/skill_router.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/data_analysis/nodes.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/deep_research/graph.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/intelligent_report/graph.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/intelligent_tracing/graph.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "tests/mcp_fixture/server.py",
+      "status": "modified",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "admin/api/migrations/versions/0013s_capability_selection.py",
+      "status": "added",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/gate0-probes.json",
+      "status": "added",
+      "review": "reviewed",
+      "method": "证据内容与测试实现交叉核对，不将其自述视为独立通过"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/overhead-benchmark.json",
+      "status": "added",
+      "review": "reviewed",
+      "method": "证据内容与测试实现交叉核对，不将其自述视为独立通过"
+    },
+    {
+      "path": "docs/reviews/evidence/flash-05/specs-baseline-comparison.json",
+      "status": "added",
+      "review": "reviewed",
+      "method": "证据内容与测试实现交叉核对，不将其自述视为独立通过"
+    },
+    {
+      "path": "frontend/app/api/capabilities/route.ts",
+      "status": "added",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/components/chat/CapabilitySelector.tsx",
+      "status": "added",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/lib/capability-store.ts",
+      "status": "added",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "frontend/tests/capability-store-contract.test.cjs",
+      "status": "added",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "src/common/capabilities.py",
+      "status": "added",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    },
+    {
+      "path": "tests/benchmark_capability_overhead.py",
+      "status": "added",
+      "review": "reviewed",
+      "method": "审阅变更/调用链及受影响契约；独立探针/专项按报告对应"
+    }
+  ],
+  "extra_inspected_ocr_excluded": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "DESIGN.md",
+      "status": "modified",
+      "insertions": 2,
+      "deletions": 2,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "UX-CONTRACT.md",
+      "status": "modified",
+      "insertions": 13,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "openspec/changes/add-skill-tool-selection/tasks.md",
+      "status": "modified",
+      "insertions": 29,
+      "deletions": 29,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/unit_tests/test_event_ledger_contract.py",
+      "status": "modified",
+      "insertions": 1,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "admin/api/tests/test_ledger_selection_persistence.py",
+      "status": "added",
+      "insertions": 799,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "docs/reviews/skill-tool-selection-acceptance.md",
+      "status": "added",
+      "insertions": 195,
+      "deletions": 0,
+      "exclude_reason": "unsupported_ext"
+    },
+    {
+      "path": "tests/test_capabilities_catalog.py",
+      "status": "added",
+      "insertions": 527,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/test_gate0_verification.py",
+      "status": "added",
+      "insertions": 372,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    },
+    {
+      "path": "tests/test_six_graphs_execution_constraints.py",
+      "status": "added",
+      "insertions": 696,
+      "deletions": 0,
+      "exclude_reason": "default_path"
+    }
+  ]
+}

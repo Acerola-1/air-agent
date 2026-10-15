@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-15",
+  "verdict": "needs_repair",
+  "score": 46,
+  "user_elapsed_minutes": 131,
+  "product_files_modified_by_reviewer": [],
+  "core_specialized": {
+    "passed": 28
+  },
+  "admin_specialized": {
+    "passed": 11
+  },
+  "frontend_contracts": {
+    "passed": 46
+  },
+  "tsc_exit": 0,
+  "openspec_strict_exit": 0,
+  "ruff_exit": 1,
+  "ruff_errors": 9,
+  "root_candidate_and_baseline": {
+    "passed": 361,
+    "skipped": 75,
+    "failed": 6,
+    "same_failure_set": true
+  },
+  "admin_ledger_candidate": {
+    "passed": 28,
+    "failed": 8,
+    "stopped_at_maxfail": 8
+  },
+  "admin_ledger_baseline": {
+    "passed": 38,
+    "failed": 1
+  },
+  "new_admin_failures_at_least": 7,
+  "migration_empty_candidate": "failed_undefined_table",
+  "migration_empty_baseline": "passed",
+  "migration_existing_upgrade": "passed",
+  "official_image_24_runs_retested": false,
+  "end_to_end_performance_accepted": false,
+  "real_model_calls": 0,
+  "independent_browser": "real_login_and_catalog_403",
+  "original_author_containers_preserved": [
+    "aa-sel05-pg",
+    "aa-sel05-redis"
+  ],
+  "review_services_stopped": [
+    8104,
+    3104
+  ],
+  "review_empty_databases_removed": [
+    "aa05_independent_empty",
+    "aa05_independent_baseline_empty"
+  ],
+  "synthetic_probe_rows": "保留在作者专用验收库供复验，非真实用户数据",
+  "backup_path_local_only": "/tmp/aa05-pre-review.dump",
+  "commit_push_archive": false,
+  "author_logs_present": 9,
+  "author_logs_preserved_as_txt": true,
+  "known_real_secret_matches": 0,
+  "original_delivery_fingerprints_unchanged": 66,
+  "diff_check": "仅作者原改动src/common/artifact_http.py:267末尾多余空行，未修改"
+}

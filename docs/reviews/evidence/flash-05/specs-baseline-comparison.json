@@ -1,0 +1,25 @@
+{
+  "scope": "OpenSpec规范校验对照",
+  "change_under_test": "add-skill-tool-selection",
+  "strict_validation": {
+    "command": "openspec validate add-skill-tool-selection --strict",
+    "exit": 0,
+    "result": "Change 'add-skill-tool-selection' is valid"
+  },
+  "historical_specs_baseline": {
+    "source": "docs/reviews/evidence/takeover-03-05/archive-validation-baseline.json",
+    "failed_historical_specs_count": 9,
+    "failed_historical_specs": [
+      "air-quality-forecast-skill-rules",
+      "chart-data-push",
+      "composite-backend-routing",
+      "forecast-data-bidirectional-rule",
+      "permission-check-subagent",
+      "silent-agent-output",
+      "skill-content-basic",
+      "skill-three-layer-system",
+      "subagent-architecture"
+    ],
+    "new_failures_introduced": 0
+  }
+}

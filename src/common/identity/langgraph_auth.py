@@ -294,19 +294,43 @@ def _pin_ledger_ids(
     submission_id: str,
     operation_kind: str,
     graph_id: str,
+    capability_snapshot: dict[str, Any] | None = None,
 ) -> None:
     """把服务端裁决过的关联写入 metadata 与 config.configurable（覆盖客户端自报值）.
 
     `ledger_graph_id` 固定为**平台可信映射解析出的实际执行图**，而不是客户端自报值：
     图内收尾节点的换图比对因此以事实为基准（F03）。
+    同时注入权威的能力选择快照字段（任务 4.1），执行层仅消费服务端注入的值。
     """
-    pinned = {
+    pinned: dict[str, Any] = {
         "ledger_request_id": request_id,
         "ledger_attempt_id": attempt_id,
         "ledger_submission_id": submission_id,
         "ledger_operation_kind": operation_kind,
         "ledger_graph_id": graph_id,
     }
+    if capability_snapshot:
+        pinned["capability_selection_id"] = str(capability_snapshot["id"])
+        pinned["capability_selection_digest"] = str(
+            capability_snapshot["selection_digest"]
+        )
+        pinned["capability_skill_mode"] = str(
+            capability_snapshot.get("skill_mode") or "auto"
+        )
+        pinned["capability_skill_id"] = capability_snapshot.get("skill_id")
+        pinned["capability_mcp_mode"] = str(
+            capability_snapshot.get("mcp_mode") or "auto"
+        )
+        pinned["capability_tool_ids"] = list(capability_snapshot.get("tool_ids") or [])
+        pinned["capability_catalog_version"] = capability_snapshot.get(
+            "catalog_version"
+        )
+        pinned["capability_material_version"] = capability_snapshot.get(
+            "material_version"
+        )
+        pinned["capability_selection_source"] = str(
+            capability_snapshot.get("selection_source") or "automatic"
+        )
     if not isinstance(value, dict):
         return
     metadata = value.get("metadata")
@@ -776,6 +800,99 @@ async def on_thread_create_run(
     graph_id = actual_graph
     declared_kind = _ledger_operation_kind(value)
     content = _run_input_content(value)
+
+    # 任务 4.1：核对 metadata、kwargs.config 与顶层 config 里的能力选择声明（防多层不一致与伪造）
+    declared_sel_ids = _payload_values(value, "capability_selection_id")
+    if len(declared_sel_ids) > 1:
+        raise Auth.exceptions.HTTPException(
+            status_code=409,
+            detail="运行请求在 metadata 与 config 中声明了冲突的 capability_selection_id，拒绝创建",
+        )
+    declared_sel_digests = _payload_values(value, "capability_selection_digest")
+    if len(declared_sel_digests) > 1:
+        raise Auth.exceptions.HTTPException(
+            status_code=409,
+            detail="运行请求在 metadata 与 config 中声明了冲突的 capability_selection_digest，拒绝创建",
+        )
+
+    # 任务 4.1：从数据库读取已受理的不可变能力选择快照
+    from common.event_ledger.store import fetch_capability_selection_snapshot
+
+    snapshot = None
+    try:
+        snapshot = await fetch_capability_selection_snapshot(
+            scope, attempt_id=attempt_id, submission_id=submission_id
+        )
+    except LedgerBackendUnavailable as exc:
+        raise Auth.exceptions.HTTPException(
+            status_code=503,
+            detail={
+                "code": "ledger_unavailable",
+                "error": "台账服务暂不可用，拒绝创建运行",
+            },
+        ) from exc
+
+    if snapshot is not None:
+        if str(snapshot.get("graph_id") or "") != actual_graph:
+            raise Auth.exceptions.HTTPException(
+                status_code=409,
+                detail=(
+                    f"能力选择快照绑定的图（{snapshot.get('graph_id')}）与实际执行图（{actual_graph}）"
+                    "不一致，拒绝创建"
+                ),
+            )
+        if declared_sel_ids and declared_sel_ids[0] != str(snapshot["id"]):
+            raise Auth.exceptions.HTTPException(
+                status_code=409,
+                detail="声明的 capability_selection_id 与台账已受理快照不一致，拒绝创建",
+            )
+        if declared_sel_digests and declared_sel_digests[0] != str(
+            snapshot["selection_digest"]
+        ):
+            raise Auth.exceptions.HTTPException(
+                status_code=409,
+                detail="声明的 capability_selection_digest 与台账已受理快照不一致，拒绝创建",
+            )
+
+        # 任务 4.5：恢复 (resume) 保护——必须继承原选择与材料，变更或授权撤销即阻断
+        if declared_kind == "resume":
+            if snapshot.get("skill_mode") == "explicit" and snapshot.get("skill_id"):
+                from common.capabilities import (
+                    GRAPH_SKILLS_DIRS,
+                    calculate_skill_material_version,
+                )
+
+                skill_slug = snapshot["skill_id"].split(":")[-1]
+                base_dir = GRAPH_SKILLS_DIRS.get(actual_graph)
+                skill_dir = base_dir / skill_slug if base_dir else None
+                current_mat = (
+                    calculate_skill_material_version(skill_dir)
+                    if skill_dir
+                    else "sha256:missing"
+                )
+                if current_mat != snapshot.get("material_version"):
+                    raise Auth.exceptions.HTTPException(
+                        status_code=409,
+                        detail="恢复执行失败：所选技能的规则材料版本已发生变更，请重新发起请求",
+                    )
+            if snapshot.get("mcp_mode") == "allowlist" and snapshot.get("tool_ids"):
+                from common.identity.db import fetch_active_mcp_bindings
+
+                active_bindings = await fetch_active_mcp_bindings(
+                    scope.tenant_id, scope.membership_id
+                )
+                active_servers = {
+                    (b["server_key"] if isinstance(b, dict) else b.server_key)
+                    for b in active_bindings
+                }
+                for tid in snapshot["tool_ids"]:
+                    parts = tid.split(":")
+                    if len(parts) >= 2 and parts[1] not in active_servers:
+                        raise Auth.exceptions.HTTPException(
+                            status_code=403,
+                            detail=f"恢复执行失败：所选 MCP 服务 {parts[1]} 授权已被撤销或失效",
+                        )
+
     try:
         reservation = await attempt_reservation(
             scope, attempt_id=attempt_id, thread_id=thread_id, allow_terminal=True
@@ -869,6 +986,7 @@ async def on_thread_create_run(
         submission_id=submission_id,
         operation_kind=declared_kind or "initial",
         graph_id=actual_graph,
+        capability_snapshot=snapshot,
     )
     # 元数据缺失也必须注入可信身份；否则平台运行列表过滤会隐藏合法的
     # metadata-only 运行，补偿无法定位。客户端同名声明在这里无条件覆盖。

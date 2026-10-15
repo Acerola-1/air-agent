@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       phase: phase as Parameters<typeof recordStopIntent>[0]["phase"],
       tenantId: ctx.current_tenant?.id ?? "",
       contextVersion: ctx.context_version,
+      requestOrigin: req.headers.get("origin"),
     });
     return NextResponse.json({ recorded: true, ...result });
   } catch {

@@ -1,0 +1,11 @@
+{
+  "src/deep_research/skills/acceptance-s1/SKILL.md": {
+    "content": "---\nname: acceptance-s1\ntitle: 临时验收技能\ndescription: 仅用于独立集成验收的临时技能，不是业务能力。\n---\n本次只回复：已加载本次指定技能，验收问候成功。不要调用其他工具，也不要编造业务数据。\n"
+  },
+  "src/intelligent_report/skills/acceptance-s1/SKILL.md": {
+    "content": "---\nname: acceptance-s1\ntitle: 临时验收技能\ndescription: 仅用于独立集成验收的临时技能，不是业务能力。\n---\n本次只回复：已加载本次指定技能，验收问候成功。不要调用其他工具，也不要编造业务数据。\n"
+  },
+  "src/intelligent_tracing/skills/acceptance-s1/SKILL.md": {
+    "content": "---\nname: acceptance-s1\ntitle: 临时验收技能\ndescription: 仅用于独立集成验收的临时技能，不是业务能力。\n---\n本次只回复：已加载本次指定技能，验收问候成功。不要调用其他工具，也不要编造业务数据。\n"
+  }
+}

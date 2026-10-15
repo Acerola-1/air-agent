@@ -1,0 +1,53 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.1, pluggy-1.6.0 -- /Users/acerola/Dev/Python/air_agent/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/acerola/Dev/Python/air_agent
+configfile: pyproject.toml
+plugins: timeout-2.4.0, langsmith-0.10.15, anyio-4.14.2
+collecting ... collected 28 items
+
+tests/test_capabilities_catalog.py::test_task_2_1_skill_catalog_and_material_fingerprint PASSED [  3%]
+tests/test_capabilities_catalog.py::test_task_2_2_mcp_catalog_same_name_disambiguation[asyncio] PASSED [  7%]
+tests/test_capabilities_catalog.py::test_task_2_3_capabilities_pagination_and_tampered_cursor[asyncio] PASSED [ 10%]
+tests/test_capabilities_catalog.py::test_task_2_3_artifact_http_capabilities_endpoint[asyncio] PASSED [ 14%]
+tests/test_capabilities_catalog.py::test_task_2_4_metadata_cache_vs_auth_isolation[asyncio] PASSED [ 17%]
+tests/test_capabilities_catalog.py::test_task_2_3_mcp_partial_failure_and_timeout[asyncio] PASSED [ 21%]
+tests/test_gate0_verification.py::test_gate0_mcp_same_name_disambiguation_and_zero_calls[asyncio] PASSED [ 25%]
+tests/test_gate0_verification.py::test_gate0_deepagents_skills_boundary[asyncio] PASSED [ 28%]
+tests/test_gate0_verification.py::test_gate0_compiled_graph_dynamic_dispatch[asyncio] PASSED [ 32%]
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network PASSED [ 35%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_1_native_hook_metadata_config_consistency[asyncio] PASSED [ 39%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_2_business_graph_explicit_skill_and_menu_determinism[asyncio] PASSED [ 42%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_3_mcp_disclosure_and_real_dispatch_two_layer_rejection[asyncio] PASSED [ 46%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_4_deepagents_skills_and_subtasks_boundary[asyncio] PASSED [ 50%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_5_resume_and_retry_immutability[asyncio] PASSED [ 53%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_6_delivery_switch_and_graph_import PASSED [ 57%]
+tests/unit_tests/test_event_ledger_contract.py::test_sample_cases_have_known_reason_codes PASSED [ 60%]
+tests/unit_tests/test_event_ledger_contract.py::test_each_sample_matches_expected_verdict PASSED [ 64%]
+tests/unit_tests/test_event_ledger_contract.py::test_valid_samples_count_is_nonzero PASSED [ 67%]
+tests/unit_tests/test_event_ledger_contract.py::test_browser_cannot_claim_server_facts PASSED [ 71%]
+tests/unit_tests/test_event_ledger_contract.py::test_reserved_types_rejected_not_enabled PASSED [ 75%]
+tests/unit_tests/test_event_ledger_contract.py::test_enabled_types_are_the_integrated_v1_family PASSED [ 78%]
+tests/unit_tests/test_event_ledger_contract.py::test_canonical_digest_is_key_order_independent PASSED [ 82%]
+tests/unit_tests/test_event_ledger_contract.py::test_validate_batch_reports_per_item PASSED [ 85%]
+tests/unit_tests/test_event_ledger_contract.py::test_validate_batch_rejects_browser_oversize_batch PASSED [ 89%]
+tests/unit_tests/test_event_ledger_contract.py::test_states_dictionary_flags_terminal_and_ended PASSED [ 92%]
+tests/unit_tests/test_event_ledger_contract.py::test_embedded_copy_matches_published_contract PASSED [ 96%]
+tests/unit_tests/test_event_ledger_contract.py::test_registry_matches_checked_in_contract_file PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/common/business_graph/builder.py:126: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node(
+
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/data_analysis/graph.py:132: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
+
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/deep_research/graph.py:54: LangChainBetaWarning: The class `CodeInterpreterMiddleware` is in beta. It is actively being worked on, so the API may change.
+    CodeInterpreterMiddleware(ptc=[]),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 28 passed, 4 warnings in 9.19s ========================

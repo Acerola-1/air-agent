@@ -1,0 +1,92 @@
+{
+  "basic_qa": {
+    "model_schema_names": [
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "parse_region_tool",
+        "websearch_tool",
+        "helper_get_latest_time"
+      ],
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "parse_region_tool",
+        "websearch_tool",
+        "helper_get_latest_time"
+      ],
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "parse_region_tool",
+        "websearch_tool",
+        "helper_get_latest_time"
+      ]
+    ],
+    "allowed_tool_disclosed": true,
+    "forbidden_tool_absent": true,
+    "network_delta": 1,
+    "rules_loaded": true
+  },
+  "intelligent_analysis": {
+    "model_schema_names": [
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "parse_region_tool",
+        "websearch_tool",
+        "helper_get_latest_time"
+      ],
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "parse_region_tool",
+        "websearch_tool",
+        "helper_get_latest_time"
+      ],
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "parse_region_tool",
+        "websearch_tool",
+        "helper_get_latest_time"
+      ]
+    ],
+    "allowed_tool_disclosed": true,
+    "forbidden_tool_absent": true,
+    "network_delta": 1,
+    "rules_loaded": true
+  },
+  "data_analysis": {
+    "model_schema_names": [
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "helper_get_latest_time"
+      ],
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "helper_get_latest_time"
+      ],
+      [
+        "create_artifact",
+        "compute_artifact",
+        "get_beijing_time",
+        "helper_get_latest_time"
+      ]
+    ],
+    "allowed_tool_disclosed": true,
+    "forbidden_tool_absent": true,
+    "network_delta": 1,
+    "rules_loaded": true
+  }
+}

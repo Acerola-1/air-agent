@@ -1,0 +1,43 @@
+.........F...................................                            [100%]
+=================================== FAILURES ===================================
+_______________ test_browser_events_all_reserved_types_rejected ________________
+
+ledger_env = {'tenant_a': UUID('e40dbb29-a797-4971-bfe7-a07259044501'), 'tenant_b': UUID('9afb29ff-70c3-4dc5-a477-ad8e964f7408'), 'user_a': UUID('2af18c2c-969b-44d5-a3c9-8b24967a5188'), 'user_b': UUID('90272d58-8819-4794-8356-031a634753fc')}
+
+    async def test_browser_events_all_reserved_types_rejected(ledger_env) -> None:
+        env = ledger_env
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            forged = {
+                "schema_version": "1.0",
+                "event_id": str(uuid.uuid4()),
+                "event_type": "run.state_observed",
+                "occurred_at": "2026-10-13T02:00:00.000Z",
+                "source": "browser",
+                "tenant_id": str(env["tenant_a"]),
+                "user_id": str(env["user_a"]),
+                "membership_id": "33333333-3333-4333-8333-333333333333",
+                "payload": {
+                    "state": "succeeded",
+                    "evidence_source": "browser_observed",
+                    "state_revision": 1,
+                },
+            }
+            res = await client.post(
+                "/agent/events/browser",
+                json={"events": [forged]},
+                headers={"origin": "http://localhost:3000"},
+            )
+            assert res.status_code == 200, res.text
+            body = res.json()
+            assert body["accepted"] is False
+>           assert body["items"][0]["reason"] == "source_not_allowed"
+E           AssertionError: assert 'collection_disabled' == 'source_not_allowed'
+E             
+E             - source_not_allowed
+E             + collection_disabled
+
+admin/api/tests/test_event_ledger_api.py:541: AssertionError
+=========================== short test summary info ============================
+FAILED admin/api/tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected
+1 failed, 44 passed in 35.97s

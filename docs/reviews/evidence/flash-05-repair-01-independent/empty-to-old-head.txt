@@ -1,0 +1,19 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001, 初始化 RBAC、行政区划、关注城市与审计表
+INFO  [alembic.runtime.migration] Running upgrade 0001 -> 0002, 审计日志冗余存操作人账号
+INFO  [alembic.runtime.migration] Running upgrade 0002 -> 0003, 企业身份域：租户/部门/成员/角色作用域/可撤销会话/MCP 绑定/线程归属/迁移台账 + RLS
+INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, 归档存储租户维度：tool_artifact_storage 增加 tenant_id 与索引
+INFO  [alembic.runtime.migration] Running upgrade 0004 -> 0005, 轮次01 修复：归属 pending 状态、受限列授权、归档/计算 RLS 与维护角色（R01/R03/R08）
+INFO  [alembic.runtime.migration] Running upgrade 0005 -> 0006, 线程归属认领会话绑定列（轮次复验 F01）
+INFO  [alembic.runtime.migration] Running upgrade 0006 -> 0007, Agent 事件台账：可信提问/尝试/回答/Trace 关联、事件与事务 outbox、删除与投影
+INFO  [alembic.runtime.migration] Running upgrade 0007 -> 0008, 台账纠正迁移：启动权原子裁决、提交↔尝试稳定关联、事件关联复合约束、原文按请求引用
+INFO  [alembic.runtime.migration] Running upgrade 0008 -> 0009, 台账第二轮纠正迁移：启动权释放状态、服务级只读校准能力与有界校准运行台账
+INFO  [alembic.runtime.migration] Running upgrade 0009 -> 0010, 协调者补修：按提交保存不可漂移的平台运行映射.
+INFO  [alembic.runtime.migration] Running upgrade 0010 -> 0012_observability, 观测域表：逐调用观测、价格版本、计费修订、消费投影（change complete-agent-observability）
+INFO  [alembic.runtime.migration] Running upgrade 0010 -> 0011_feedback, 回答反馈：当前评价、操作历史与意见正文（change add-chat-feedback-interactions）.
+INFO  [alembic.runtime.migration] Running upgrade 0011_feedback, 0012_observability -> 0013_merge, 合并两个独立实施分支，保留已执行迁移。
+INFO  [alembic.runtime.migration] Running upgrade 0013_merge -> 0011f_integrity, 补齐反馈幂等、父子和永久删除边界。
+INFO  [alembic.runtime.migration] Running upgrade 0011f_integrity -> 0012o_integrity, 修复观测关联、计费状态和删除隔离。
+INFO  [alembic.runtime.migration] Running upgrade 0012o_integrity -> 0012o_pricing, 价格纠错保留旧版本；运行角色仅在已授权事务内发布价格。
+INFO  [alembic.runtime.migration] Running upgrade 0012o_pricing -> 0012o_delivery, 保存逐模型远端跨度映射与物理网络尝试证据。

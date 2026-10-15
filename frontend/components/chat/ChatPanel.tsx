@@ -26,6 +26,7 @@ import { useSessionStore } from "@/lib/session-client";
 import { Markdown } from "@/components/chat/Markdown";
 import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
+import { CapabilitySelector } from "@/components/chat/CapabilitySelector";
 import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
 import { ContextMeter } from "@/components/chat/ContextMeter";
 import { TenantBadge } from "@/components/chat/TenantBadge";
@@ -497,6 +498,7 @@ function Composer({
 }) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const composingRef = useRef(false);
   const canSend = text.trim().length > 0 && !disabled;
   const username = useSessionStore((s) => s.username);
   const logout = useSessionStore((s) => s.logout);
@@ -510,7 +512,7 @@ function Composer({
   }, [text, disabled, onSend]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+    if (e.key === "Enter" && !e.shiftKey && !composingRef.current && !e.nativeEvent.isComposing && e.nativeEvent.keyCode !== 229) {
       e.preventDefault();
       submit();
     }
@@ -528,6 +530,7 @@ function Composer({
         <div className="flex flex-wrap items-center gap-2 px-1 pt-0.5">
           <GraphSwitcher />
           <ModeSwitcher />
+          <CapabilitySelector />
 
           {/* 上下文容量监控胶囊指示器 */}
           <ContextMeter />
@@ -562,6 +565,8 @@ function Composer({
             el.style.height = "auto";
             el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
           }}
+          onCompositionStart={() => { composingRef.current = true; }}
+          onCompositionEnd={() => { composingRef.current = false; }}
           onKeyDown={onKeyDown}
           placeholder="问问空气质量情况、达标研判、或者查询具体城市数据… (Shift+Enter 换行)"
           aria-label="消息输入框"

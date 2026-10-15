@@ -35,7 +35,8 @@ export async function confirmRunWithMarker(input: {
     };
     const matches =
       data.metadata?.ledger_request_id === input.requestId &&
-      data.metadata?.ledger_attempt_id === input.attemptId;
+      data.metadata?.ledger_attempt_id === input.attemptId &&
+      (!input.submissionId || data.metadata?.ledger_submission_id === input.submissionId);
     if (!matches) return false;
     await confirmAdmission({
       cookie: input.cookie,

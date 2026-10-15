@@ -1,0 +1,16 @@
+{
+  "kind": "real_React_server_render_actual_TSX_controlled_stores",
+  "backend_skill_fields": [
+    "id",
+    "name",
+    "title",
+    "description",
+    "material_version",
+    "status",
+    "required_tool_ids",
+    "required_tools"
+  ],
+  "rendered": true,
+  "contains_label": true,
+  "all_passed": true
+}

@@ -1,0 +1,36 @@
+2026-10-15 05:30:54 - deepagents.backends.filesystem - INFO - filesystem.py:85 - _resolve_ripgrep_path() - ripgrep ('rg') not found on PATH; using Python grep fallback. Install ripgrep for faster searches and automatic .gitignore handling.
+2026-10-15 05:30:54 +0800 | INFO     | common.mcp_client:<module>:199 - MCP 公共目录懒加载 + 企业授权执行层就绪
+2026-10-15 05:30:54 +0800 | INFO     | common.models:<module>:15 - 模型注册表初始化开始
+{
+  "router_path_escape": {
+    "outside_path_resolved": false
+  },
+  "bounded_backend_isolation": {
+    "read_other_skill_blocked": true,
+    "download_other_skill_visible": false,
+    "grep_root_non_selected_visible": false
+  },
+  "mcp_collision_and_proxies": {
+    "alias_collision": {
+      "resolved_server_on_collision": null,
+      "colliding_aliases": [
+        "mcp_service_a__query"
+      ]
+    },
+    "normal_two_service_disclosure": {
+      "all_proxy_names": [
+        "mcp_controlled_one__query",
+        "mcp_controlled_two__query"
+      ],
+      "selected_first_service_disclosed_names": [
+        "mcp_controlled_one__query"
+      ]
+    }
+  },
+  "cursor_pagination": {
+    "cursor_encoded": true,
+    "offset_decoded_matches": true,
+    "tampered_cursor_rejected": true
+  },
+  "all_passed": true
+}

@@ -82,7 +82,7 @@ async def resolve_timing_attempt(
     session: SessionDep,
     identity: ActiveTenantIdentity,
     thread_id: str = Query(min_length=1, max_length=128),
-    platform_run_id: str = Query(min_length=1, max_length=128),
+    platform_run_id: str | None = Query(default=None, min_length=1, max_length=128),
 ) -> dict:
     from sqlalchemy import text
 
@@ -90,14 +90,19 @@ async def resolve_timing_attempt(
         (
             await session.execute(
                 text(
-                    "SELECT s.attempt_id::text,s.id::text AS submission_id "
+                    "SELECT s.attempt_id::text,s.id::text AS submission_id, "
+                    "c.id::text AS selection_id,c.selection_digest,c.skill_mode,c.skill_id, "
+                    "c.mcp_mode,c.tool_ids,c.material_version,c.catalog_version,c.selection_source "
                     "FROM agent_submissions s JOIN agent_requests q "
                     "ON q.tenant_id=s.tenant_id AND q.id=s.request_id "
+                    "LEFT JOIN agent_capability_selections c "
+                    "ON c.tenant_id=s.tenant_id AND c.id=s.capability_selection_id "
                     "WHERE s.tenant_id=:tenant AND s.user_id=:user "
-                    "AND s.thread_id=:thread AND s.platform_run_id=:run "
+                    "AND s.thread_id=:thread "
+                    "AND (CAST(:run AS text) IS NULL OR s.platform_run_id=CAST(:run AS text)) "
                     "AND s.admission_status='confirmed' AND NOT EXISTS "
                     "(SELECT 1 FROM agent_thread_deletions d WHERE d.tenant_id=q.tenant_id "
-                    "AND d.thread_id=q.thread_id) LIMIT 1"
+                    "AND d.thread_id=q.thread_id) ORDER BY s.created_at DESC LIMIT 1"
                 ),
                 {
                     "tenant": identity.tenant.id,
@@ -112,7 +117,28 @@ async def resolve_timing_attempt(
     )
     if row is None:
         raise HTTPException(status_code=404, detail="运行关联不可访问")
-    return dict(row)
+    selection = None
+    if row["selection_id"]:
+        selection = {
+            key: row[key]
+            for key in (
+                "selection_id",
+                "selection_digest",
+                "skill_mode",
+                "skill_id",
+                "mcp_mode",
+                "tool_ids",
+                "material_version",
+                "catalog_version",
+                "selection_source",
+            )
+        }
+        selection["id"] = row["selection_id"]
+    return {
+        "attempt_id": row["attempt_id"],
+        "submission_id": row["submission_id"],
+        "capability_selection": selection,
+    }
 
 
 @router.put(

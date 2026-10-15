@@ -197,6 +197,9 @@ class Config:
     CONVERSATION_SUMMARY_KEEP_TURNS: int = _get_env_int(
         "CONVERSATION_SUMMARY_KEEP_TURNS", 3
     )
+    AGENT_CAPABILITY_SELECTION_ENABLED: bool = _get_env_bool(
+        "AGENT_CAPABILITY_SELECTION_ENABLED", False
+    )
 
 
 config = Config()

@@ -67,7 +67,13 @@ class ObservabilityModelMiddleware(AgentMiddleware):  # type: ignore[misc]
             from common.observability.skill_adapter import emit_skill_stage
 
             name = path.rsplit("/", 2)[-2]
-            emit_skill_stage(config, name, "selected", source="agent-read")
+            cfg = config.get("configurable") or {}
+            source = (
+                "manual"
+                if cfg.get("capability_skill_mode") == "explicit"
+                else "agent-read"
+            )
+            emit_skill_stage(config, name, "selected", source=source)
             body = getattr(result, "content", None)
             ok = (
                 getattr(result, "status", None) != "error"
@@ -80,7 +86,7 @@ class ObservabilityModelMiddleware(AgentMiddleware):  # type: ignore[misc]
                 "loaded",
                 status="succeeded" if ok else "failed",
                 body=body if ok else None,
-                source="agent-read",
+                source=source,
             )
         return result
 

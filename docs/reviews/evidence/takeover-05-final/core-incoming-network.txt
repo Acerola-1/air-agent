@@ -1,0 +1,17 @@
+............................                                             [100%]
+=============================== warnings summary ===============================
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/common/business_graph/builder.py:126: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node(
+
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/data_analysis/graph.py:132: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
+
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/deep_research/graph.py:54: LangChainBetaWarning: The class `CodeInterpreterMiddleware` is in beta. It is actively being worked on, so the API may change.
+    CodeInterpreterMiddleware(ptc=[]),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+28 passed, 4 warnings in 8.27s

@@ -21,14 +21,19 @@ def permission_statements(available=None):
                 f"({guard})"
             ),
         ]
-    for table in (
+    obs_tables = [
         "agent_model_observations",
         "agent_capability_spans",
         "agent_tool_calls",
         "agent_tool_call_attempts",
         "agent_cost_revisions",
         "agent_trace_links",
-    ):
+    ]
+    if available is not None and "agent_capability_selections" in available:
+        obs_tables.append("agent_capability_selections")
+    for table in obs_tables:
+        if available is not None and table not in available:
+            continue
         guard = (
             f"NOT EXISTS (SELECT 1 FROM agent_run_attempts a JOIN agent_requ"
             f"ests r ON r.id=a.request_id AND r.tenant_id=a.tenant_id JOIN a"

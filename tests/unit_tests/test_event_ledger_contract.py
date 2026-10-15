@@ -95,6 +95,7 @@ def test_reserved_types_rejected_not_enabled() -> None:
 def test_enabled_types_are_the_integrated_v1_family() -> None:
     assert enabled_event_types() == {
         "request.accepted",
+        "capability.selection_accepted",
         "run.admission_confirmed",
         "run.state_observed",
         "run.cancel_requested",

@@ -218,3 +218,49 @@ async def observability_health(request: Request) -> dict[str, Any]:
     from common.observability.collector import collector_health
 
     return collector_health()
+
+
+@app.get("/capabilities")
+async def get_capabilities(
+    request: Request,
+    graph_id: str,
+    limit: int = 200,
+    cursor: str | None = None,
+    menu_name: str | None = None,
+) -> dict[str, Any]:
+    """原生能力目录接口（Change 4 任务 2.3）：按当前人类成员授权实时返回 Skill 与 MCP 目录.
+
+    严格鉴权：必须活跃人类成员；迁移凭据与内部校准票据一律 403；
+    单个 MCP 2秒/总 5秒超时控制，部分服务不可用时返回 200 并标 temporarily_unavailable.
+    """
+    actor = await _authenticate_custom(request)
+    if actor.get("is_migration"):
+        raise HTTPException(status_code=403, detail="迁移凭据不允许访问能力目录")
+    if actor.get("is_reconcile"):
+        raise HTTPException(status_code=403, detail="内部校准凭据不允许访问能力目录")
+    if not actor.get("tenant_id") or not actor.get("membership_id"):
+        raise HTTPException(status_code=403, detail="缺少有效企业成员身份")
+
+    from common.capabilities import get_capabilities_catalog
+    from common.identity.runtime import RuntimeIdentity
+
+    identity = RuntimeIdentity(
+        user_id=actor["identity"],
+        tenant_id=actor["tenant_id"],
+        membership_id=actor["membership_id"],
+        session_id=actor["session_id"],
+    )
+    auth_revisions = {
+        "tenant": int(actor.get("tenant_auth_revision") or 1),
+        "user": int(actor.get("user_auth_revision") or 1),
+        "membership": int(actor.get("membership_revision") or 1),
+    }
+
+    return await get_capabilities_catalog(
+        graph_id=graph_id,
+        identity=identity,
+        auth_revisions=auth_revisions,
+        limit=limit,
+        cursor=cursor,
+        menu_name=menu_name,
+    )

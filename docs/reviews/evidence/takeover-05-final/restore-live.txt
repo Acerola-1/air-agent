@@ -1,0 +1,25 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_restore_reapplies_tombstone_before_runtime_reads _____________
+
+ledger_env = {'tenant_a': UUID('219dc2a3-a8d9-4608-a3a3-b8cb64ba0fcf'), 'tenant_b': UUID('a4779872-338b-440b-a1da-0734ef10e20c'), 'user_a': UUID('18184c3d-99bc-4466-8803-eb86eb899c80'), 'user_b': UUID('f3cebf7c-f737-4770-9c36-62381acf8e87')}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10d3b0a70>
+
+    async def test_restore_reapplies_tombstone_before_runtime_reads(ledger_env, monkeypatch):
+        container = "aa-sel05-pg"
+        owner = os.environ["DATABASE_URI"]
+        parsed = urlsplit(owner)
+        assert parsed.username == "air_agent" and parsed.path == "/air_agent_selection05"
+        raw = json.loads(subprocess.check_output(["container", "inspect", container], text=True))[0]
+        ips = {
+            n["ipv4Address"].split("/")[0] for n in raw["status"]["networks"] if n.get("ipv4Address")
+        }
+>       assert parsed.hostname in ips, "只能操作已核实的独立临时容器"
+E       AssertionError: 只能操作已核实的独立临时容器
+E       assert '127.0.0.1' in {'192.168.66.23'}
+E        +  where '127.0.0.1' = SplitResult(scheme='postgresql', netloc='air_agent:air_agent_test@127.0.0.1:15434', path='/air_agent_selection05', query='', fragment='').hostname
+
+admin/api/tests/test_capability_restore_live.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED admin/api/tests/test_capability_restore_live.py::test_restore_reapplies_tombstone_before_runtime_reads
+1 failed in 0.89s

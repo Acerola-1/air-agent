@@ -48,7 +48,7 @@ function deferred() { let resolve; const promise = new Promise((done) => { resol
 function fixture(options = {}) {
   const streams = [], canceled = [], stopIntents = [], navigationStops = [], state = { messages: [] };
   let ids = 0, submissionContext = null;
-  const api = { searchThreads: async()=>[], createThread: async()=>`t${++ids}`, getThreadState: async()=>state,
+  const api = { searchThreads: async()=>[], createThread: options.createThread ?? (async()=>`t${++ids}`), getThreadState: async()=>state,
     updateThreadMetadata: async()=>{}, deleteThread: async()=>{}, deriveTitle:(s)=>s,
     cancelRun:async(thread,run)=>{ canceled.push([thread,run]); if (options.cancelThrows) { const e = new Error('cancel'); e.status = options.cancelThrows; throw e; } },
     getRunStatus: options.getRunStatus ?? (async(thread, run) => {
@@ -66,7 +66,7 @@ function fixture(options = {}) {
     // 台账接线（change add-agent-event-ledger）：提交键/关联确认/停止意图
     newSubmissionKey: ()=> 'sub-key',
     setSubmissionContext: (ctx)=>{ submissionContext = ctx; },
-    confirmRunAdmission: async()=> true,
+    confirmRunAdmission: options.confirmRunAdmission ?? (async()=> true),
     recordStopIntent: async(input)=>{ stopIntents.push(input); return true; },
     recordNavigationStopBeacon: (input)=>{ navigationStops.push(input); return true; },
     streamRun: (opts)=>{ const wait = deferred(); streams.push({...opts,wait}); return wait.promise; } };
@@ -77,9 +77,26 @@ function fixture(options = {}) {
     timingDisplayComplete:(id)=>timingCalls.push(['complete',id]),
     timingProgressSeen:(id)=>timingCalls.push(['progress',id]),
     timingAttachAttempt:(id,a)=>timingCalls.push(['attach',id,a]) };
+  const acceptedSnapshots = [];
+  const { acceptedSnapshot } = load("lib/capability-store.ts", { zustand });
+  const capStoreStub = {
+    getState: () => ({
+      setAcceptedSelection: (value) => acceptedSnapshots.push(value),
+      clearForScopeSwitch: () => {},
+      fetchCatalog: async () => {},
+      toPayload: () => ({
+        schema_version: 'agent.capability-selection.v1',
+        skill: { mode: 'auto', skill_id: null },
+        mcp: { mode: 'auto', tool_ids: [] },
+        catalog_version: null,
+        selection_source: 'automatic',
+      }),
+    }),
+  };
   const module = load('lib/chat-store.ts', { zustand, '@/lib/uuidv7':{ generateUuidV7:()=>`msg${++ids}` },
-    '@/lib/user-identity':{getUserIdentity:()=> 'user'}, '@/lib/langgraph-api':api, '@/lib/feedback/client':timingStubs });
-  return { ...module, streams, canceled, stopIntents, navigationStops, state, api, timingCalls, getSubmissionContext: ()=> submissionContext };
+    '@/lib/user-identity':{getUserIdentity:()=> 'user'}, '@/lib/langgraph-api':api, '@/lib/feedback/client':timingStubs,
+    '@/lib/capability-store': { useCapabilityStore: capStoreStub, acceptedSnapshot } });
+  return { ...module, acceptedSnapshots, streams, canceled, stopIntents, navigationStops, state, api, timingCalls, getSubmissionContext: ()=> submissionContext };
 }
 
 test('every intermediate frame excludes tool JSON and internal summaries from body', async()=>{
@@ -636,4 +653,95 @@ test('官方 interrupt 的权威状态确认本次已停止执行，不冒充业
   const result=await store.getState().stopStreaming();assert.equal(result.confirmed,true);
   assert.equal(store.getState().stopPending,false);
   stream.wait.resolve();await running;
+});
+
+
+test('确认回读采用服务端真实选择，运行结束后的同代次迟到确认仍可关联', async () => {
+  const gate = deferred();
+  const f = fixture({ confirmRunAdmission: async (_t, _r, callback) => {
+    const body = await gate.promise;
+    callback(body.attempt_id, body.capability_selection);
+    return body;
+  }});
+  const work = f.useChatStore.getState().sendMessage('问题', 'fast'); await tick();
+  f.streams[0].handlers.onRun('run'); f.streams[0].wait.resolve(); await work;
+  gate.resolve({ confirmed: true, attempt_id: 'attempt', capability_selection: {
+    selection_id: 'server-uuid', selection_digest: 'server-digest',
+    skill: { mode: 'explicit', skill_id: 'skill:basic-qa:s1' }, mcp: { mode: 'allowlist', tool_ids: [] },
+  }}); await tick();
+  const actual = f.acceptedSnapshots.at(-1);
+  assert.equal(actual.id, 'server-uuid'); assert.equal(actual.selection_digest, 'server-digest');
+  assert.equal(actual.skill_id, 'skill:basic-qa:s1'); assert.equal(actual.mcp_mode, 'allowlist');
+});
+
+test('换会话后迟到的确认回调不能污染新会话的已受理选择', async () => {
+  const gate = deferred();
+  const f = fixture({ confirmRunAdmission: async (_t, _r, callback) => {
+    const body = await gate.promise; callback('old-attempt', body); return { confirmed: true };
+  }});
+  const work = f.useChatStore.getState().sendMessage('旧问题', 'fast'); await tick();
+  f.streams[0].handlers.onRun('old-run'); f.useChatStore.getState().newThread();
+  const count = f.acceptedSnapshots.length;
+  gate.resolve({ id: 'old-selection', selection_digest: 'old-digest' }); await tick();
+  assert.equal(f.acceptedSnapshots.length, count);
+  assert.equal(f.acceptedSnapshots.at(-1), null);
+  f.streams[0].wait.resolve(); await work;
+});
+
+test('停止首条 metadata 丢失后按本次提交键找回已 interrupted 的运行', async()=>{
+  const f=fixture({listRecentRuns:async()=>[
+    {run_id:'other',status:'success',submission_key:'other-key'},
+    {run_id:'this-interrupted',status:'interrupted',submission_key:'sub-key'},
+  ],getRunStatus:async()=>({found:true,status:'interrupted'})});
+  const running=f.useChatStore.getState().sendMessage('current','fast'); await tick();
+  const result=await f.useChatStore.getState().stopStreaming();
+  assert.equal(result.confirmed,true);
+  assert.equal(f.useChatStore.getState().stopPending,false);
+  assert.deepEqual(f.canceled,[[f.streams[0].threadId,'this-interrupted']]);
+  f.streams[0].wait.resolve(); await running;
+});
+
+test('停止不得把其他提交的终态或活动运行当成本次运行',async()=>{
+  const f=fixture({listRecentRuns:async()=>[
+    {run_id:'other-terminal',status:'interrupted',submission_key:'other-key'},
+    {run_id:'other-active',status:'running',submission_key:'other-key'},
+  ]});
+  const running=f.useChatStore.getState().sendMessage('current','fast'); await tick();
+  assert.equal((await f.useChatStore.getState().stopStreaming()).confirmed,false);
+  assert.deepEqual(f.canceled,[]);
+  f.streams[0].wait.resolve(); await running;
+});
+
+test('台账写操作透传真实来源，不伪造 localhost:3000',async()=>{
+  const calls=[];
+  const ledger=load('lib/agent-ledger.ts',{
+    'server-only':{},'@/lib/admin-api':{adminFetch:async(path,init)=>{calls.push({path,init});return {status:200,json:{}};},AdminApiError:class extends Error{}},
+  });
+  await ledger.recordStopIntent({cookie:'synthetic',threadId:'t',tenantId:'tenant',contextVersion:1,origin:'user_stop',phase:'queued',requestOrigin:'http://localhost:3104'});
+  await ledger.requestThreadDeletion({cookie:'synthetic',threadId:'t',requestOrigin:'https://untrusted.invalid'});
+  assert.equal(calls[0].init.origin,'http://localhost:3104');
+  assert.equal(calls[1].init.origin,'https://untrusted.invalid','跨站来源由管理端继续拒绝，不能伪装成可信来源');
+});
+
+test('空线程创建未返回时停止，迟到创建不能继续发起模型运行',async()=>{
+  const created=deferred(),f=fixture({createThread:()=>created.promise});
+  const running=f.useChatStore.getState().sendMessage('current','fast'); await tick();
+  assert.equal((await f.useChatStore.getState().stopStreaming()).confirmed,true);
+  created.resolve('late-created-thread');await running;
+  assert.equal(f.streams.length,0);
+  assert.equal(f.useChatStore.getState().stopPending,false);
+});
+
+test('wait确认也必须匹配本次submission，不能接受同attempt另一恢复提交',async()=>{
+  const oldFetch=global.fetch,calls=[];
+  const {confirmRunWithMarker}=load('lib/run-admission.ts',{
+    'server-only':{},'@/lib/agent-ledger':{confirmAdmission:async(input)=>calls.push(input)},
+  });
+  const input={base:'http://local',ticket:'synthetic',cookie:'synthetic',threadId:'t',runId:'r',requestId:'req',attemptId:'a',submissionId:'current',marker:'lr:req:a'};
+  try{
+    global.fetch=async()=>Response.json({run_id:'r',metadata:{ledger_request_id:'req',ledger_attempt_id:'a',ledger_submission_id:'old'}});
+    assert.equal(await confirmRunWithMarker(input),false);assert.equal(calls.length,0);
+    global.fetch=async()=>Response.json({run_id:'r',metadata:{ledger_request_id:'req',ledger_attempt_id:'a',ledger_submission_id:'current'}});
+    assert.equal(await confirmRunWithMarker(input),true);assert.equal(calls[0].submissionId,'current');
+  }finally{global.fetch=oldFetch;}
 });

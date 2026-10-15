@@ -1,0 +1,40 @@
+{
+  "owned_processes": [
+    {
+      "label": "admin",
+      "pid": 14410,
+      "terminated": true
+    },
+    {
+      "label": "frontend",
+      "pid": 98170,
+      "terminated": true
+    }
+  ],
+  "browser_viewport_reset": true,
+  "own_browser_tab_closed": true,
+  "preserve": [
+    "aa-sel05-pg",
+    "aa-sel05-redis",
+    "shared_15432",
+    "user_3107",
+    "IAM",
+    "knowledge_base"
+  ],
+  "containers": [
+    {
+      "operation": "container stop aa05f-langgraph",
+      "exit": 0
+    },
+    {
+      "operation": "container rm aa05f-langgraph",
+      "exit": 0
+    }
+  ],
+  "remaining_owned_temporary_databases": [],
+  "owned_ports_closed": {
+    "8104": true,
+    "3104": true,
+    "2026": true
+  }
+}

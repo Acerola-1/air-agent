@@ -429,8 +429,21 @@ class SkillSemanticRouter:
 
     def resolve_skill_file(self, name: str) -> Path | None:
         """返回已加载 Skill 的真实 SKILL.md 路径，用于命中后内联规则内容."""
+        import re
+
+        if not name or ".." in name or not re.match(r"^[a-zA-Z0-9_-]+$", name):
+            return None
         skill = self._skills_by_name.get(name)
-        return skill.path if skill is not None else None
+        if skill is not None:
+            return skill.path
+        try:
+            skills_root = self.skills_dir.resolve()
+            candidate = (self.skills_dir / name / "SKILL.md").resolve()
+            if candidate.is_relative_to(skills_root) and candidate.is_file():
+                return candidate
+        except (ValueError, OSError):
+            return None
+        return None
 
     def _exposed_skill_path(self, skill_file: Path) -> str:
         """返回本地 Skill 文件在后端可见的虚拟路径."""

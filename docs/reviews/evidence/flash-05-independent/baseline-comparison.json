@@ -1,0 +1,40 @@
+{
+  "candidate": [
+    "admin/api/tests/test_event_ledger_api.py::test_admission_confirmed_sets_running",
+    "admin/api/tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected",
+    "admin/api/tests/test_event_ledger_api.py::test_f02_resume_start_claim_uses_its_own_digest",
+    "admin/api/tests/test_event_ledger_api.py::test_f02_confirm_is_submission_scoped",
+    "admin/api/tests/test_event_ledger_api.py::test_f04_late_internal_callbacks_after_deletion_are_refused",
+    "admin/api/tests/test_event_ledger_api.py::test_r03_confirmation_only_affects_that_operation",
+    "admin/api/tests/test_event_ledger_api.py::test_r01_admin_start_claim_single_winner_and_mismatch",
+    "admin/api/tests/test_event_ledger_api.py::test_takeover_fallback_operation_is_startable_and_replayable"
+  ],
+  "baseline": [
+    "admin/api/tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected"
+  ],
+  "new_failures": [
+    "admin/api/tests/test_event_ledger_api.py::test_admission_confirmed_sets_running",
+    "admin/api/tests/test_event_ledger_api.py::test_f02_confirm_is_submission_scoped",
+    "admin/api/tests/test_event_ledger_api.py::test_f02_resume_start_claim_uses_its_own_digest",
+    "admin/api/tests/test_event_ledger_api.py::test_f04_late_internal_callbacks_after_deletion_are_refused",
+    "admin/api/tests/test_event_ledger_api.py::test_r01_admin_start_claim_single_winner_and_mismatch",
+    "admin/api/tests/test_event_ledger_api.py::test_r03_confirmation_only_affects_that_operation",
+    "admin/api/tests/test_event_ledger_api.py::test_takeover_fallback_operation_is_startable_and_replayable"
+  ],
+  "root_candidate": [
+    "tests/unit_tests/test_artifact_db.py::test_pg_failure_never_falls_back[asyncio]",
+    "tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection",
+    "tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm",
+    "tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm",
+    "tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result",
+    "tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback"
+  ],
+  "root_baseline": [
+    "tests/unit_tests/test_artifact_db.py::test_pg_failure_never_falls_back[asyncio]",
+    "tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection",
+    "tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm",
+    "tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm",
+    "tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result",
+    "tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback"
+  ]
+}

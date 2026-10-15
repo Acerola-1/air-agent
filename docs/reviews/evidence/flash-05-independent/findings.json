@@ -1,0 +1,92 @@
+[
+  {
+    "id": "R01",
+    "priority": 0,
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 1040,
+    "severity": "critical",
+    "category": "bug",
+    "content": "新受理无条件写v2摘要，但src/common/event_ledger/store.py::claim_start仍计算v1，管理端start_claim同样按v1。真实同问题受理200后native hook返回409 run_request_mismatch/content；关闭选择开关也失败。必须把摘要版本/可信选择绑定同时接入两端启动裁决，并保留旧v1重放。"
+  },
+  {
+    "id": "R02",
+    "priority": 1,
+    "path": "frontend/lib/capability-store.ts",
+    "start_line": 108,
+    "severity": "high",
+    "category": "bug",
+    "content": "目录fetch只带cache，无x-tenant-id/x-tenant-context-version，而新BFF要求这两个头；真实浏览器固定403。toPayload额外发送selection_source又被CapabilitySelectionIn(extra=forbid)拒绝，默认聊天实际422。目录的required_tool_ids与组件required_tools不一致，真实React渲染成功目录时TypeError。三处跨端契约须整体修复，不能放宽可信source让客户端赋值。"
+  },
+  {
+    "id": "R03",
+    "priority": 1,
+    "path": "admin/api/app/services/enterprise_permissions.py",
+    "start_line": 31,
+    "severity": "high",
+    "category": "bug",
+    "content": "把新选择表加入旧0012o_integrity调用的默认permission_statements，但表要到0013s才创建，空库迁移在ALTER TABLE处UndefinedTable。原基线空库迁移成功，旧head增量升级也成功，证明当前全新安装新增回归。策略必须基于实际存在表或在正确新revision注册，不能改写已发布旧迁移来掩盖。"
+  },
+  {
+    "id": "R04",
+    "priority": 1,
+    "path": "admin/api/app/services/ledger.py",
+    "start_line": 924,
+    "severity": "high",
+    "category": "security",
+    "content": "目录校验只拒绝字面字符串expired，MCP校验只查server active绑定，未检查真实工具目录、协议可用及当前版本。真实API接受not-a-real-catalog、does_not_exist工具及unverified协议并冻结快照200；须在受理前从当前可信目录验证版本/工具/材料和菜单，失败在运行前拒绝。"
+  },
+  {
+    "id": "R05",
+    "priority": 1,
+    "path": "src/common/capabilities.py",
+    "start_line": 664,
+    "severity": "high",
+    "category": "security",
+    "content": "BoundedSkillsBackend没有覆盖download_files/adownload_files，且grep(path=\"\")和目录根操作不会限制结果；独立真实文件系统探针可下载/搜索未选S2内容。skill_router新增路径fallback也接受../outside逃出当前技能目录。须按真实SDK所有读/列举/下载/搜索入口封闭边界，严格resolve及根目录过滤，并用真实子Agent正反例验证。"
+  },
+  {
+    "id": "R06",
+    "priority": 1,
+    "path": "src/common/mcp_scoped.py",
+    "start_line": 170,
+    "severity": "high",
+    "category": "bug",
+    "content": "稳定ID索引没有接到模型代理：build_proxy_tools仍输出两个同名query，server_of(query)仍落到后注册服务；选择controlled-one后过滤得到空工具集。连字符替换下划线的别名还会碰撞。DeepAgents仍持有导入时空工具集，显式图/真实SDK的编译后发现与子任务调度没有交付证据。须统一稳定ID→合法唯一别名→授权dispatch及按scope披露，接通真实图。"
+  },
+  {
+    "id": "R07",
+    "priority": 1,
+    "path": "src/common/identity/langgraph_auth.py",
+    "start_line": 884,
+    "severity": "high",
+    "category": "bug",
+    "content": "fetch_active_mcp_bindings返回dict列表，此处按b.server_key访问使合法MCP恢复AttributeError。管理受理继承source选择但不继承catalog_version，retry/resume省略新选择实际422 missing catalog；相同attempt又可能有多submission快照但runtime只按attempt取one。须按不可变submission/attempt正确继承/取回和复核当前授权，不新造歧义快照。"
+  },
+  {
+    "id": "R08",
+    "priority": 1,
+    "path": "frontend/components/chat/CapabilitySelector.tsx",
+    "start_line": 44,
+    "severity": "high",
+    "category": "bug",
+    "content": "企业变化effect只fetchCatalog，没有clearForScopeSwitch；store不追踪用户/ctx_version，fetchCatalog设置新tenant仍保留旧显式Skill/工具。独立编译TS探针证实换企业后旧选择未清。acceptedSelection只有setter无生产调用，BFF又按flat字段读取admin嵌套响应，已受理事实回读与当前草稿没有接通。须按user/tenant/graph/ctx/epoch清理并接权威回读，防A→B→A。"
+  },
+  {
+    "id": "R09",
+    "priority": 2,
+    "path": "src/common/capabilities.py",
+    "start_line": 614,
+    "severity": "medium",
+    "category": "bug",
+    "content": "进入工具分页后cur_idx重新从total_skills起算，未加已有tool_offset。独立5工具limit=1得到tool0、tool1、tool1…且游标永不结束；超大小截断也未修正游标。total timeout时gather已成功服务结果被整体丢弃。须保证分页无重漏及部分成功不因慢服务消失。"
+  },
+  {
+    "id": "R10",
+    "priority": 1,
+    "path": "openspec/changes/add-skill-tool-selection/tasks.md",
+    "start_line": 50,
+    "severity": "high",
+    "category": "test",
+    "content": "7.1及其他任务全部勾选，但所引六图测试仅hasattr导入、Gate0动态分发为测试内自建wrapper、Deep测试无实际子Agent，未交24个真实run/受理证据；9份.log被Git忽略但磁盘实际存在，已核对并另保留原始.txt，不把它们误记为缺失。性能脚本只测本地helper，超时/错误率写常量；record_span新增关联参数也未接入skill_adapter，executed来源仍loaded-rules。须恢复未实测任务状态并提交真实矩阵/观测/恢复/浏览器证据，不能用专项绿代替完成。"
+  }
+]

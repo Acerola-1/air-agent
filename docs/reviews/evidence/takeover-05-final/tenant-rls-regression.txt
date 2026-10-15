@@ -1,0 +1,4 @@
+exit 0 log docs/reviews/evidence/takeover-05-final/tenant-rls-pytest.txt
+..............................                                           [100%]
+30 passed in 14.38s
+

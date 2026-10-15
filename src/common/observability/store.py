@@ -540,6 +540,9 @@ async def record_span(
     skill_version: str | None = None,
     selection_source: str | None = None,
     model_observation_id: str | None = None,
+    selection_id: str | None = None,
+    selection_digest: str | None = None,
+    submission_id: str | None = None,
 ) -> dict[str, Any]:
     """写入一条能力 span（Skill 阶段 matched/selected/loaded/executed 各一行）."""
     try:
@@ -623,6 +626,12 @@ async def record_span(
                     payload["skill_version"] = skill_version
                 if selection_source:
                     payload["selection_source"] = selection_source
+                if selection_id:
+                    payload["selection_id"] = selection_id
+                if selection_digest:
+                    payload["selection_digest"] = selection_digest
+                if submission_id:
+                    payload["submission_id"] = submission_id
                 written = await _write_event_in(
                     conn,
                     ctx,

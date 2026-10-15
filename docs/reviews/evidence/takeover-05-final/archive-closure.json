@@ -1,0 +1,31 @@
+{
+  "archive": {
+    "change": "add-skill-tool-selection",
+    "archivedAs": "2026-10-15-add-skill-tool-selection",
+    "path": "/Users/acerola/Dev/Python/air_agent/openspec/changes/archive/2026-10-15-add-skill-tool-selection",
+    "specsUpdated": false
+  },
+  "root": {
+    "path": "/Users/acerola/Dev/Python/air_agent",
+    "source": "nearest"
+  },
+  "specs_synced_before_archive": {
+    "new": [
+      "agent-authorized-capability-catalog",
+      "agent-request-capability-selection"
+    ],
+    "updated": [
+      "agent-capability-observability"
+    ],
+    "strict_valid": true,
+    "historical_failed_specs_unchanged": 9
+  },
+  "accepted_remaining_checks": [
+    {
+      "task": "5.4",
+      "detail": "系统中文输入法候选窗物理选词抽查",
+      "physically_verified": false,
+      "resolution": "用户在知悉保留项后指示归档提交push，接受保留关闭；checkbox未伪改完成"
+    }
+  ]
+}

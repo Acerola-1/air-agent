@@ -1,0 +1,30 @@
+{
+  "kind": "actual_three_production_DeepAgents_graph_ainvoke_with_controlled_model",
+  "guard_isolation": "Only identity guard is patched to allow; all model/tool middleware and compiled graphs are production implementations. No provider network.",
+  "deep_research": {
+    "ok": true,
+    "last_message": "controlled success"
+  },
+  "intelligent_report": {
+    "ok": true,
+    "last_message": "controlled success"
+  },
+  "intelligent_tracing": {
+    "ok": true,
+    "last_message": "controlled success"
+  },
+  "positive_control_original_guard": {
+    "deep_research": {
+      "ok": true,
+      "last_message": "controlled success"
+    },
+    "intelligent_report": {
+      "ok": true,
+      "last_message": "controlled success"
+    },
+    "intelligent_tracing": {
+      "ok": true,
+      "last_message": "controlled success"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "kind": "independent_module_and_real_filesystem_probes",
+  "frontend_default_payload": {
+    "accepted": true
+  },
+  "read_other_skill": {
+    "blocked": true
+  },
+  "download_other_skill": {
+    "returned": "<class 'list'>",
+    "non_selected_content_visible": false
+  },
+  "grep_root": {
+    "non_selected_visible": false
+  },
+  "pagination": {
+    "pages": [
+      [
+        "mcp:s:tool0"
+      ],
+      [
+        "mcp:s:tool1"
+      ],
+      [
+        "mcp:s:tool2"
+      ],
+      [
+        "mcp:s:tool3"
+      ],
+      [
+        "mcp:s:tool4"
+      ]
+    ],
+    "still_has_cursor": false,
+    "expected_5_distinct": true
+  },
+  "router_path_escape": {
+    "outside_path_resolved": false
+  },
+  "alias_collision": {
+    "alias": "mcp_service_a__query",
+    "resolved_server": null,
+    "stable_ids": [
+      "mcp:service-a:query",
+      "mcp:service_a:query"
+    ]
+  },
+  "normal_two_service_disclosure": {
+    "proxy_names": [
+      "mcp_controlled_one__query",
+      "mcp_controlled_two__query"
+    ],
+    "raw_query_server": null,
+    "selected_first_service_disclosed_names": [
+      "mcp_controlled_one__query"
+    ]
+  }
+}

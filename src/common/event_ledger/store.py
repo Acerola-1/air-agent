@@ -1008,6 +1008,41 @@ async def attach_platform_run(
     }
 
 
+def canonical_content_digest_v1(*, graph_id: str, operation_kind: str, content: Any) -> str:  # noqa: ANN401
+    """与 admin 侧一致的 v1 提交内容摘要（规范化 json）."""
+    normalized = content.strip() if isinstance(content, str) else content
+    canonical = json.dumps(
+        {"graph_id": graph_id, "operation_kind": operation_kind, "content": normalized},
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def canonical_content_digest_v2(
+    *,
+    graph_id: str,
+    operation_kind: str,
+    content: Any,  # noqa: ANN401
+    capability_selection_digest: str,
+) -> str:
+    """与 admin 侧一致的 v2 提交内容摘要（包含选择快照摘要）."""
+    normalized = content.strip() if isinstance(content, str) else content
+    canonical = json.dumps(
+        {
+            "capability_selection_digest": capability_selection_digest,
+            "content": normalized,
+            "graph_id": graph_id,
+            "operation_kind": operation_kind,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 # ------------------------------------------------------------------ 启动权裁决
 
 
@@ -1037,9 +1072,6 @@ async def claim_start(
 
     原子性由单条带条件的 UPDATE 保证（并发只有一个胜出）。
     """
-    digest = await content_digest(
-        graph_id=graph_id, operation_kind=operation_kind, content=content
-    )
     token = str(uuid.uuid4())
     async with _tx(scope) as conn:
         # 所有提交先锁同一个attempt，再锁submission，与确认/恢复写入保持锁顺序。
@@ -1052,6 +1084,7 @@ async def claim_start(
             await conn.execute(
                 "SELECT s.id, s.request_id::text AS request_id, s.attempt_id,"
                 " s.operation_kind AS submission_kind, s.start_claimed_at,"
+                " s.digest_version, cs.selection_digest,"
                 " COALESCE(s.platform_run_id, CASE WHEN s.operation_kind <> 'resume' THEN"
                 " CASE WHEN EXISTS (SELECT 1 FROM agent_run_resumes x WHERE x.attempt_id = a.id"
                 " AND x.tenant_id = a.tenant_id) THEN (SELECT x.original_run_id FROM agent_run_resumes x"
@@ -1067,6 +1100,8 @@ async def claim_start(
                 " JOIN agent_run_attempts a ON a.id = s.attempt_id"
                 "   AND a.tenant_id = s.tenant_id"
                 " JOIN agent_requests r ON r.id = s.request_id AND r.tenant_id = s.tenant_id"
+                " LEFT JOIN agent_capability_selections cs ON cs.id = COALESCE(s.capability_selection_id, a.capability_selection_id)"
+                "   AND cs.tenant_id = s.tenant_id"
                 " WHERE s.id = %(sid)s AND s.tenant_id = %(t)s AND s.user_id = %(u)s FOR UPDATE OF a, s",
                 {"sid": submission_id, "t": scope.tenant_id, "u": scope.user_id},
             )
@@ -1097,8 +1132,28 @@ async def claim_start(
                 "detail": "operation_kind",
                 "reserved_operation_kind": str(base["submission_kind"]),
             }
-        if base["content_digest"] and str(base["content_digest"]) != digest:
-            return {"status": "mismatch", "detail": "content"}
+        if base["content_digest"]:
+            dv = base.get("digest_version")
+            sel_digest = base.get("selection_digest")
+            if dv == 2 and sel_digest:
+                v2_digest = canonical_content_digest_v2(
+                    graph_id=graph_id,
+                    operation_kind=operation_kind,
+                    content=content,
+                    capability_selection_digest=str(sel_digest),
+                )
+                if str(base["content_digest"]) != v2_digest:
+                    v1_digest = canonical_content_digest_v1(
+                        graph_id=graph_id, operation_kind=operation_kind, content=content
+                    )
+                    if str(base["content_digest"]) != v1_digest:
+                        return {"status": "mismatch", "detail": "content"}
+            else:
+                v1_digest = canonical_content_digest_v1(
+                    graph_id=graph_id, operation_kind=operation_kind, content=content
+                )
+                if str(base["content_digest"]) != v1_digest:
+                    return {"status": "mismatch", "detail": "content"}
         if base["submission_run_id"]:
             return {
                 "status": "already_confirmed",
@@ -1404,3 +1459,41 @@ async def content_digest(*, graph_id: str, operation_kind: str, content: Any) ->
         ensure_ascii=False,
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+async def fetch_capability_selection_snapshot(
+    scope: LedgerScope, *, attempt_id: str, submission_id: str | None = None
+) -> dict[str, Any] | None:
+    """从业务数据库读取已受理的不可变能力选择快照（任务 4.1）."""
+    if submission_id:
+        sql = (
+            "SELECT id::text AS id, request_id::text AS request_id,"
+            " attempt_id::text AS attempt_id, submission_id::text AS submission_id,"
+            " graph_id, skill_mode, skill_id, mcp_mode, tool_ids, catalog_version,"
+            " material_version, selection_digest, digest_version, selection_source,"
+            " validation_time, created_at"
+            " FROM agent_capability_selections"
+            " WHERE submission_id = %(sid)s AND tenant_id = %(t)s AND user_id = %(u)s"
+        )
+        params = {"sid": submission_id, "t": scope.tenant_id, "u": scope.user_id}
+    else:
+        sql = (
+            "SELECT id::text AS id, request_id::text AS request_id,"
+            " attempt_id::text AS attempt_id, submission_id::text AS submission_id,"
+            " graph_id, skill_mode, skill_id, mcp_mode, tool_ids, catalog_version,"
+            " material_version, selection_digest, digest_version, selection_source,"
+            " validation_time, created_at"
+            " FROM agent_capability_selections"
+            " WHERE attempt_id = %(aid)s AND tenant_id = %(t)s AND user_id = %(u)s"
+            " ORDER BY created_at DESC LIMIT 1"
+        )
+        params = {"aid": attempt_id, "t": scope.tenant_id, "u": scope.user_id}
+    row = await _run(
+        sql,
+        params,
+        scope.as_guc(),
+        fetch="one",
+    )
+    if row is None:
+        return None
+    return dict(row)

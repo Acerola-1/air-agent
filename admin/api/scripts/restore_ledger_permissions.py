@@ -82,6 +82,10 @@ def main() -> int:
             statements.extend(
                 module_for("0011_feedback.py").feedback_grant_statements(role_checker=role_exists)
             )
+        if "agent_capability_selections" in tables:
+            statements.extend(
+                module_for("0013s_capability_selection.py").selection_grant_statements()
+            )
         if "agent_model_observations" in tables:
             module = module_for("0012_observability.py")
 

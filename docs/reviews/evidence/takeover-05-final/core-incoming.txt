@@ -1,0 +1,887 @@
+F....FFFFFEEEEE.............                                             [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of test_task_4_1_native_hook_metadata_config_consistency[asyncio] _
+
+    @pytest.fixture
+    async def exec_env():
+        """初始化测试租户、用户、会话、线程归属与 MCP 绑定."""
+        thread_id = str(uuid.uuid4())
+        req_id = str(uuid.uuid4())
+        att_id = str(uuid.uuid4())
+        sub_id = str(uuid.uuid4())
+        sel_id = str(uuid.uuid4())
+    
+>       async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_six_graphs_execution_constraints.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+_ ERROR at setup of test_task_4_2_business_graph_explicit_skill_and_menu_determinism[asyncio] _
+
+    @pytest.fixture
+    async def exec_env():
+        """初始化测试租户、用户、会话、线程归属与 MCP 绑定."""
+        thread_id = str(uuid.uuid4())
+        req_id = str(uuid.uuid4())
+        att_id = str(uuid.uuid4())
+        sub_id = str(uuid.uuid4())
+        sel_id = str(uuid.uuid4())
+    
+>       async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_six_graphs_execution_constraints.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+_ ERROR at setup of test_task_4_3_mcp_disclosure_and_real_dispatch_two_layer_rejection[asyncio] _
+
+    @pytest.fixture
+    async def exec_env():
+        """初始化测试租户、用户、会话、线程归属与 MCP 绑定."""
+        thread_id = str(uuid.uuid4())
+        req_id = str(uuid.uuid4())
+        att_id = str(uuid.uuid4())
+        sub_id = str(uuid.uuid4())
+        sel_id = str(uuid.uuid4())
+    
+>       async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_six_graphs_execution_constraints.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+_ ERROR at setup of test_task_4_4_deepagents_skills_and_subtasks_boundary[asyncio] _
+
+    @pytest.fixture
+    async def exec_env():
+        """初始化测试租户、用户、会话、线程归属与 MCP 绑定."""
+        thread_id = str(uuid.uuid4())
+        req_id = str(uuid.uuid4())
+        att_id = str(uuid.uuid4())
+        sub_id = str(uuid.uuid4())
+        sel_id = str(uuid.uuid4())
+    
+>       async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_six_graphs_execution_constraints.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+____ ERROR at setup of test_task_4_5_resume_and_retry_immutability[asyncio] ____
+
+    @pytest.fixture
+    async def exec_env():
+        """初始化测试租户、用户、会话、线程归属与 MCP 绑定."""
+        thread_id = str(uuid.uuid4())
+        req_id = str(uuid.uuid4())
+        att_id = str(uuid.uuid4())
+        sub_id = str(uuid.uuid4())
+        sel_id = str(uuid.uuid4())
+    
+>       async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_six_graphs_execution_constraints.py:97: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+=================================== FAILURES ===================================
+_______ test_gate0_mcp_same_name_disambiguation_and_zero_calls[asyncio] ________
+
+    async def test_gate0_mcp_same_name_disambiguation_and_zero_calls():
+        """Gate 0 探针 1：双MCP服务同名工具 query 调用与零网络调用拒绝反例."""
+>       await setup_gate0_fixtures()
+
+tests/test_gate0_verification.py:178: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_gate0_verification.py:76: in setup_gate0_fixtures
+    async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+_________ test_task_2_2_mcp_catalog_same_name_disambiguation[asyncio] __________
+
+    async def test_task_2_2_mcp_catalog_same_name_disambiguation():
+        """Task 2.2: 当前身份 MCP 授权目录、同名工具消歧与零发现请求验证."""
+>       await setup_test_bindings()
+
+tests/test_capabilities_catalog.py:289: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_capabilities_catalog.py:149: in setup_test_bindings
+    async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+______ test_task_2_3_capabilities_pagination_and_tampered_cursor[asyncio] ______
+
+    async def test_task_2_3_capabilities_pagination_and_tampered_cursor():
+        """Task 2.3: 原生接口鉴权、分页游标校验、版本摘要与防篡改."""
+>       await setup_test_bindings()
+
+tests/test_capabilities_catalog.py:349: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_capabilities_catalog.py:149: in setup_test_bindings
+    async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+__________ test_task_2_3_artifact_http_capabilities_endpoint[asyncio] __________
+
+    async def test_task_2_3_artifact_http_capabilities_endpoint():
+        """Task 2.3: 测试 artifact_http.py 上的 /capabilities 原生端点集成鉴权."""
+>       await setup_test_bindings()
+
+tests/test_capabilities_catalog.py:414: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_capabilities_catalog.py:149: in setup_test_bindings
+    async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+___________ test_task_2_4_metadata_cache_vs_auth_isolation[asyncio] ____________
+
+    async def test_task_2_4_metadata_cache_vs_auth_isolation():
+        """Task 2.4: 元数据与授权隔离，修订与租户上下文隔离 (A->B->A 与实时撤销)."""
+>       await setup_test_bindings()
+
+tests/test_capabilities_catalog.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_capabilities_catalog.py:149: in setup_test_bindings
+    async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+____________ test_task_2_3_mcp_partial_failure_and_timeout[asyncio] ____________
+
+    async def test_task_2_3_mcp_partial_failure_and_timeout():
+        """Task 2.3: 部分服务不可用/超时测试，整体返回 200 且诚实标记 temporarily_unavailable."""
+>       await setup_test_bindings()
+
+tests/test_capabilities_catalog.py:508: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_capabilities_catalog.py:149: in setup_test_bindings
+    async with await psycopg.AsyncConnection.connect(TEST_DB_URI) as aconn:
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'psycopg.AsyncConnection'>
+conninfo = 'user=air_agent password=air_agent_test dbname=air_agent_selection05 host=127.0.0.1 port=15434 hostaddr=127.0.0.1'
+autocommit = False, prepare_threshold = 5, context = None, row_factory = None
+cursor_factory = None, kwargs = {}
+
+    @classmethod
+    async def connect(
+        cls,
+        conninfo: str = "",
+        *,
+        autocommit: bool = False,
+        prepare_threshold: int | None = 5,
+        context: AdaptContext | None = None,
+        row_factory: AsyncRowFactory[Row] | None = None,
+        cursor_factory: type[AsyncCursor[Row]] | None = None,
+        **kwargs: ConnParam,
+    ) -> Self:
+        """
+        Connect to a database server and return a new `AsyncConnection` instance.
+        """
+        if True:  # ASYNC
+            if sys.platform == "win32":
+                loop = asyncio.get_running_loop()
+                if isinstance(loop, asyncio.ProactorEventLoop):
+    
+                    from ._compat import _asyncio_run_snippet
+    
+                    raise e.InterfaceError(
+                        "Psycopg cannot use the 'ProactorEventLoop' to run in async"
+                        " mode. Please use a compatible event loop, for instance by"
+                        + f" {_asyncio_run_snippet}"
+                    )
+    
+        params = await cls._get_connection_params(conninfo, **kwargs)
+        timeout = timeout_from_conninfo(params)
+        rv = None
+        attempts = await conninfo_attempts_async(params)
+        conn_errors: list[tuple[e.Error, str]] = []
+        for attempt in attempts:
+            tdescr = (attempt.get("host"), attempt.get("port"), attempt.get("hostaddr"))
+            descr = "host: %r, port: %r, hostaddr: %r" % tdescr
+            logger.debug("connection attempt: %s", descr)
+            try:
+                conninfo = make_conninfo("", **attempt)
+                gen = cls._connect_gen(conninfo, timeout=timeout)
+                rv = await waiting.wait_conn_async(gen, interval=_WAIT_INTERVAL)
+            except e.Error as ex:
+                logger.debug("connection failed: %s: %s", descr, str(ex))
+                conn_errors.append((ex, descr))
+            except e._NO_TRACEBACK as ex:
+                raise ex.with_traceback(None)
+            else:
+                logger.debug("connection succeeded: %s", descr)
+                break
+    
+        if not rv:
+            last_ex = conn_errors[-1][0]
+            if len(conn_errors) == 1:
+>               raise last_ex.with_traceback(None)
+E               psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15434 failed: Operation not permitted
+E               	Is the server running on that host and accepting TCP/IP connections?
+
+/tmp/aa-takeover35-py313/lib/python3.13/site-packages/psycopg/connection_async.py:138: OperationalError
+=============================== warnings summary ===============================
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/common/business_graph/builder.py:126: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node(
+
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/data_analysis/graph.py:132: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
+
+tests/test_gate0_verification.py::test_gate0_six_graphs_import_no_network
+  /Users/acerola/Dev/Python/air_agent/src/deep_research/graph.py:54: LangChainBetaWarning: The class `CodeInterpreterMiddleware` is in beta. It is actively being worked on, so the API may change.
+    CodeInterpreterMiddleware(ptc=[]),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_gate0_verification.py::test_gate0_mcp_same_name_disambiguation_and_zero_calls[asyncio]
+FAILED tests/test_capabilities_catalog.py::test_task_2_2_mcp_catalog_same_name_disambiguation[asyncio]
+FAILED tests/test_capabilities_catalog.py::test_task_2_3_capabilities_pagination_and_tampered_cursor[asyncio]
+FAILED tests/test_capabilities_catalog.py::test_task_2_3_artifact_http_capabilities_endpoint[asyncio]
+FAILED tests/test_capabilities_catalog.py::test_task_2_4_metadata_cache_vs_auth_isolation[asyncio]
+FAILED tests/test_capabilities_catalog.py::test_task_2_3_mcp_partial_failure_and_timeout[asyncio]
+ERROR tests/test_six_graphs_execution_constraints.py::test_task_4_1_native_hook_metadata_config_consistency[asyncio]
+ERROR tests/test_six_graphs_execution_constraints.py::test_task_4_2_business_graph_explicit_skill_and_menu_determinism[asyncio]
+ERROR tests/test_six_graphs_execution_constraints.py::test_task_4_3_mcp_disclosure_and_real_dispatch_two_layer_rejection[asyncio]
+ERROR tests/test_six_graphs_execution_constraints.py::test_task_4_4_deepagents_skills_and_subtasks_boundary[asyncio]
+ERROR tests/test_six_graphs_execution_constraints.py::test_task_4_5_resume_and_retry_immutability[asyncio]
+6 failed, 17 passed, 4 warnings, 5 errors in 3.91s

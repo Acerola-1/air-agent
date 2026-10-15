@@ -1,0 +1,204 @@
+{
+  "kind": "actual_admin_ASGI_auth_and_nonowner_PostgreSQL_native_gate",
+  "model_network_calls": 0,
+  "ids": {
+    "tenant": "7e70ceb1-f674-40e5-9040-8ad96c5adcb0",
+    "user": "8cecc473-f7e1-44e2-96f5-389725af2768",
+    "member": "686ab67d-66fc-4231-87f9-8cdee1d59dce",
+    "thread": "01cf02c0-8215-424f-89f8-d127ab9caabd"
+  },
+  "actual_frontend_payload": {
+    "status": 200,
+    "errors": {
+      "request_id": "cced69a7-9737-4f51-9901-7fc90cbf1104",
+      "attempt_id": "4782992b-df4a-4aeb-a161-57417db19361",
+      "submission_id": "b2bb9c02-2e71-4142-85ef-e965f37e344a",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "01cf02c0-8215-424f-89f8-d127ab9caabd",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:cced69a7-9737-4f51-9901-7fc90cbf1104:4782992b-df4a-4aeb-a161-57417db19361",
+      "capability_selection": {
+        "id": "a3e51ce9-86ba-4daf-bfd1-55c8e458f796",
+        "selection_id": "a3e51ce9-86ba-4daf-bfd1-55c8e458f796",
+        "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "auto",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "auto",
+        "tool_ids": [],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "automatic",
+        "validation_time": "2026-10-14T23:15:16.812471+00:00"
+      }
+    }
+  },
+  "old_client_omits_selection": {
+    "status": 200
+  },
+  "auto_admission": {
+    "request_id": "b1c7e6d7-956b-41ad-b6aa-b98c9b101a12",
+    "attempt_id": "d853d822-638a-42cd-973d-1229e9b96bb5",
+    "submission_id": "4ce2bf57-3f3a-49ab-9d29-99124b6ca952",
+    "admission_status": "admitting",
+    "operation_kind": "initial",
+    "reused": false,
+    "thread_id": "01cf02c0-8215-424f-89f8-d127ab9caabd",
+    "graph_id": "basic-qa",
+    "ledger_marker": "lr:b1c7e6d7-956b-41ad-b6aa-b98c9b101a12:d853d822-638a-42cd-973d-1229e9b96bb5",
+    "capability_selection": {
+      "id": "d14b45c4-9696-412f-9914-44198ffad10a",
+      "selection_id": "d14b45c4-9696-412f-9914-44198ffad10a",
+      "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "auto",
+        "tool_ids": []
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "auto",
+      "tool_ids": [],
+      "catalog_version": "cat_000000000000000000000000",
+      "material_version": "auto",
+      "selection_source": "automatic",
+      "validation_time": "2026-10-14T23:15:16.903017+00:00"
+    }
+  },
+  "actual_native_claim_after_real_admission": {
+    "status": "claimed",
+    "start_claim_token": "c718630b-1cce-4855-b9bc-7fd1b3bd57fb"
+  },
+  "native_create_run_hook": {
+    "accepted": true
+  },
+  "valid_shape_forged_catalog_unknown_tool_empty_factory": {
+    "status": 422,
+    "body": {
+      "detail": "能力目录为空或工具尚未发现"
+    }
+  },
+  "tool_exists_only_on_another_server": {
+    "status": 422,
+    "body": {
+      "detail": "所选工具 mcp:controlled-one:exists_elsewhere 在服务 controlled-one 上不存在或未发现"
+    }
+  },
+  "unknown_protocol_not_literal_unverified": {
+    "status": 403,
+    "body": {
+      "detail": "MCP 服务 controlled-one 协议未验证或不可用: future-unknown-protocol"
+    }
+  },
+  "replay_explicit_first_status": 200,
+  "same_key_explicit_changed_to_explicit_auto": {
+    "status": 409,
+    "body": {
+      "detail": "同一提交键已用于不同选择"
+    }
+  },
+  "resume_inherit": {
+    "status": 200,
+    "body": {
+      "request_id": "07fbd085-b077-4073-b0c9-a24b640efd15",
+      "attempt_id": "724ca761-a36d-48cd-b860-a38a5de47d3e",
+      "submission_id": "4e26e158-8998-4f67-93d9-52f22fc62a7b",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "01cf02c0-8215-424f-89f8-d127ab9caabd",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:07fbd085-b077-4073-b0c9-a24b640efd15:724ca761-a36d-48cd-b860-a38a5de47d3e",
+      "capability_selection": {
+        "id": "60ebfc98-33fe-467e-bf5a-b80ea117c04a",
+        "selection_id": "60ebfc98-33fe-467e-bf5a-b80ea117c04a",
+        "selection_digest": "e198a7a631977d21c8b9ee02818a6c998dc4b15fae8ea824ff5c2aa881238486",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:exists_elsewhere"
+          ]
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:exists_elsewhere"
+        ],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-14T23:15:17.516273+00:00"
+      }
+    }
+  },
+  "native_resume_with_selected_mcp": {
+    "accepted": true
+  },
+  "forged_catalog_with_valid_skill_and_no_mcp": {
+    "status": 200,
+    "body": {
+      "request_id": "7ae3ac0f-67cd-45fe-91f8-26135bb1e4fb",
+      "attempt_id": "3a72b1b6-ad69-45a3-bfb6-35e8193414fb",
+      "submission_id": "a98b1ad0-17eb-4191-b867-c907ba8a83a3",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "01cf02c0-8215-424f-89f8-d127ab9caabd",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:7ae3ac0f-67cd-45fe-91f8-26135bb1e4fb:3a72b1b6-ad69-45a3-bfb6-35e8193414fb",
+      "capability_selection": {
+        "id": "036e757d-257f-4ed0-a4db-f1beed21c9e2",
+        "selection_id": "036e757d-257f-4ed0-a4db-f1beed21c9e2",
+        "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "explicit",
+          "skill_id": "skill:basic-qa:air-quality-basic-query"
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": []
+        },
+        "skill_mode": "explicit",
+        "skill_id": "skill:basic-qa:air-quality-basic-query",
+        "mcp_mode": "allowlist",
+        "tool_ids": [],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "sha256:2a899b59771c700acb1cb8d143bd225cceb34694c4a7c5c8abff0581b9d06938",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-14T23:15:17.565527+00:00"
+      }
+    }
+  },
+  "flag_disabled_auto_admission": {
+    "status": 200
+  },
+  "flag_disabled_auto_claim": {
+    "status": "claimed",
+    "start_claim_token": "be5f1a87-9148-4679-92b8-8fb3903dc8f2"
+  }
+}

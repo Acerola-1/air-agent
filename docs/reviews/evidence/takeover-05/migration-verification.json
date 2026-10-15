@@ -1,0 +1,37 @@
+{
+  "kind": "fresh_migration_and_old_head_to_new_head_upgrade",
+  "database_target": "aa-sel05-pg (127.0.0.1:15434)",
+  "empty_to_0012o_delivery": {
+    "returncode": 0,
+    "status": "success"
+  },
+  "0012o_delivery_to_head_0013s": {
+    "returncode": 0,
+    "status": "success"
+  },
+  "agent_capability_selections_rls": [
+    [true, true]
+  ],
+  "columns": [
+    "id",
+    "tenant_id",
+    "user_id",
+    "membership_id",
+    "request_id",
+    "attempt_id",
+    "submission_id",
+    "graph_id",
+    "skill_mode",
+    "skill_id",
+    "mcp_mode",
+    "tool_ids",
+    "catalog_version",
+    "material_version",
+    "selection_digest",
+    "digest_version",
+    "selection_source",
+    "validation_time",
+    "created_at"
+  ],
+  "selection_source_present": true
+}

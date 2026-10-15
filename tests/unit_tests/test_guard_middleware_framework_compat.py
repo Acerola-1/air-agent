@@ -68,6 +68,13 @@ def _agent(monkeypatch, state: IdentityState | None):
     import common.identity.runtime as rt
 
     monkeypatch.setattr(rt, "fetch_identity_state", fake_state)
+    # 本用例隔离框架身份传递；目录也走独立的授权接口，不对伪 UUID 查真实 PG。
+    import common.capabilities as capabilities
+
+    async def no_bindings(_tenant_id, _membership_id):
+        return []
+
+    monkeypatch.setattr(capabilities, "fetch_active_mcp_bindings", no_bindings)
     monkeypatch.setenv("TENANT_ENFORCE_RUNTIME_IDENTITY", "true")
     model = GenericFakeChatModel(messages=iter([AIMessage(content="ok")] * 5))
     return create_agent(model, tools=[], middleware=[TenantRuntimeGuardMiddleware()])

@@ -1,0 +1,89 @@
+......F............ssssssssssssssssssssssss........................F.... [ 16%]
+................................................ssssssssssssssssssssssss [ 32%]
+ssssssssssssssssssssss.........sss......FFFF............................ [ 48%]
+........................................................................ [ 65%]
+........................................................................ [ 81%]
+..............................................ss........................ [ 97%]
+..........                                                               [100%]
+=================================== FAILURES ===================================
+__________________ test_pg_failure_never_falls_back[asyncio] ___________________
+
+storage = PosixPath('/private/var/folders/sl/97x01_kj0xvcq_k7zhb7w4dm0000gn/T/pytest-of-acerola/pytest-1294/test_pg_failure_never_falls_ba0/archive.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x116d1cd50>
+
+    @pytest.mark.anyio
+    async def test_pg_failure_never_falls_back(storage, monkeypatch):
+        monkeypatch.setenv(
+            "DATABASE_URI", "postgresql://invalid:invalid@127.0.0.1:1/unavailable"
+        )
+>       with pytest.raises(Exception):
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE Exception
+
+tests/unit_tests/test_artifact_db.py:158: Failed
+___________ test_reset_checkpointer_cache_closes_previous_connection ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x116befe70>
+
+    def test_reset_checkpointer_cache_closes_previous_connection(monkeypatch) -> None:
+        checkpointing.reset_checkpointer_cache()
+        checkpointer = CloseableCheckpointer()
+        monkeypatch.setattr(checkpointing, "_create_checkpointer", lambda: checkpointer)
+    
+        assert checkpointing.get_checkpointer() is checkpointer
+        checkpointing.reset_checkpointer_cache()
+    
+>       assert checkpointer.conn.closed is True
+E       assert False is True
+E        +  where False = <test_checkpointing.CloseableConnection object at 0x116d12270>.closed
+E        +    where <test_checkpointing.CloseableConnection object at 0x116d12270> = <test_checkpointing.CloseableCheckpointer object at 0x116d12120>.conn
+
+tests/unit_tests/test_checkpointing.py:69: AssertionError
+____________________ test_policy_route_fast_path_skips_llm _____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11744b380>
+
+    def test_policy_route_fast_path_skips_llm(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:16: AttributeError
+___________________ test_knowledge_route_fast_path_skips_llm ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11744b8c0>
+
+    def test_knowledge_route_fast_path_skips_llm(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:23: AttributeError
+______________________ test_route_cache_reuses_llm_result ______________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11744ba80>
+
+    def test_route_cache_reuses_llm_result(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:30: AttributeError
+____________________ test_ambiguous_route_uses_llm_fallback ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11744bbd0>
+
+    def test_ambiguous_route_uses_llm_fallback(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:50: AttributeError
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_artifact_db.py::test_pg_failure_never_falls_back[asyncio]
+FAILED tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection
+FAILED tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result
+FAILED tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback
+6 failed, 361 passed, 75 skipped in 35.10s

@@ -1,0 +1,59 @@
+{
+  "kind": "real_Codex_IAB_on_owned_localhost_3104_with_actual_hy3_and_dedicated_PG",
+  "desktop_and_390x844": true,
+  "steps": [
+    {
+      "action": "打开能力弹窗，服务重启期间发现失败，点击重试",
+      "observed": "实际目录恢复，7项业务技能可选；错误不冒充空目录"
+    },
+    {
+      "action": "键盘Space/方向键选择、Escape关闭",
+      "observed": "焦点回触发器，取消未改变已提交Auto草稿"
+    },
+    {
+      "action": "完成S1+MCP空集选择并发送中文问题",
+      "observed": "真实hy3回答，运行中触发器/图/输入锁定；最近已受理来自服务端S1"
+    },
+    {
+      "action": "刷新、从窄屏会话弹窗打开原对话",
+      "observed": "历史S1受理摘要回读；评价异步确认后可操作"
+    },
+    {
+      "action": "点赞",
+      "observed": "实际显示已保存及选中"
+    },
+    {
+      "action": "A切到B再切回A",
+      "observed": "旧会话/accepted/草稿清空，不串企业"
+    },
+    {
+      "action": "中文文本与Shift+Enter",
+      "observed": "实际中文文本保留，换行不发送"
+    },
+    {
+      "action": "运行中停止（最终来源）",
+      "observed": "平台interrupted、停止意图true、同提交映射confirmed；等待权威确认后输入与能力选择解锁",
+      "proof": "browser-stop-final.json"
+    },
+    {
+      "action": "平台尚未完成创建时提前停止",
+      "observed": "结果unknown时继续锁定，不冒充已取消；初始诊断保留"
+    }
+  ],
+  "screenshots": [
+    "browser-desktop.png",
+    "browser-selector-final.png",
+    "browser-final-answer.png",
+    "browser-running.png",
+    "browser-tenant-b.png",
+    "browser-before-stop-final.png",
+    "browser-stop-final.png"
+  ],
+  "physical_OS_IME_candidate_window": {
+    "status": "not_verified",
+    "attempt": "切换输入源后pinyin仍为ASCII，未观察候选窗；已恢复并清空测试文本",
+    "automated_complement": "真实Composer的isComposing/Safari229/compositionStart-End及ShiftEnter通过；不能替代物理测试"
+  },
+  "viewport_override_reset": "see resource-cleanup.json",
+  "user_tab_3107_touched": false
+}

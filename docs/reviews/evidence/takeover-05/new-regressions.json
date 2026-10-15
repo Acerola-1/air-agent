@@ -1,0 +1,25 @@
+{
+  "remaining_alias_collision": {
+    "server_encodings": {
+      "svc_a": "svc_u_a",
+      "svc--a": "svc_h__h_a"
+    },
+    "proxy_names": [
+      "mcp_svc_u_a__query",
+      "mcp_svc_h__h_a__query"
+    ]
+  },
+  "actual_production_middleware_plain_local_tool": {
+    "result": "ok"
+  },
+  "fixture_gate_false_but_database_name_contains_test": {
+    "fixture_mode_enabled": false,
+    "v1_fixture_profile_enabled": false,
+    "v1_profile_enabled": false
+  },
+  "aliased_proxies_recognized_as_mcp": {
+    "mcp_svc_u_a__query": true,
+    "mcp_svc_h__h_a__query": true
+  },
+  "auto_disclosure_from_global_catalog": []
+}

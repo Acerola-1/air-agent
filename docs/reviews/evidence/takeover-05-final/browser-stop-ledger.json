@@ -1,0 +1,125 @@
+[
+  {
+    "id": "3bcb51fd-0d0a-484b-9a69-b423c419aabc",
+    "state": "succeeded",
+    "platform_run_id": "01a13e73-ab1f-7552-9bf7-e934aee78e14",
+    "thread_id": "c0534af5-b5e0-4ee0-9463-1873fee780d4",
+    "events": [
+      {
+        "event_type": "request.accepted",
+        "payload": {
+          "graph_id": "basic-qa",
+          "admitted_at": "2026-10-15T07:25:30.235881+00:00",
+          "operation_kind": "initial",
+          "user_message_id": "01a13e73-a8de-7a3e-bf4d-d7e5c15580ef",
+          "submission_digest_prefix": "47f9a56cb5d55900"
+        }
+      },
+      {
+        "event_type": "capability.selection_accepted",
+        "payload": {
+          "graph_id": "basic-qa",
+          "mcp_mode": "auto",
+          "skill_mode": "auto",
+          "selection_id": "06db0c66-0bd1-4d6e-af7c-025ae607232d",
+          "submission_id": "dcdbe1b7-8e2b-4bd2-9013-2a3d37814221",
+          "material_version": "auto",
+          "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+          "selection_source": "automatic"
+        }
+      },
+      {
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "role": "main",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "attempt_id": "3bcb51fd-0d0a-484b-9a69-b423c419aabc",
+          "submission_id": "dcdbe1b7-8e2b-4bd2-9013-2a3d37814221",
+          "observation_id": "9ffb4457-7b5f-4cdc-9c19-b2cea17b56ae",
+          "state_revision": 1,
+          "logical_call_id": "099c2c2d-bf21-4591-b13f-a514f0ceeaef",
+          "measurement_status": "not_collected"
+        }
+      },
+      {
+        "event_type": "run.admission_confirmed",
+        "payload": {
+          "admitted_at": "2026-10-15T07:25:30.623414+00:00",
+          "submission_id": "dcdbe1b7-8e2b-4bd2-9013-2a3d37814221",
+          "platform_run_id": "01a13e73-ab1f-7552-9bf7-e934aee78e14",
+          "admission_outcome": "confirmed"
+        }
+      },
+      {
+        "event_type": "runtime.model_usage",
+        "payload": {
+          "role": "main",
+          "model": "hy3",
+          "provider": "openai-compatible",
+          "attempt_id": "3bcb51fd-0d0a-484b-9a69-b423c419aabc",
+          "input_tokens": 3815,
+          "total_tokens": 5235,
+          "usage_source": "provider_final",
+          "output_tokens": 1420,
+          "submission_id": "dcdbe1b7-8e2b-4bd2-9013-2a3d37814221",
+          "observation_id": "9ffb4457-7b5f-4cdc-9c19-b2cea17b56ae",
+          "state_revision": 2,
+          "logical_call_id": "099c2c2d-bf21-4591-b13f-a514f0ceeaef",
+          "reasoning_tokens": 1221,
+          "cache_read_tokens": 0,
+          "measurement_status": "measured"
+        }
+      },
+      {
+        "event_type": "runtime.ttft",
+        "payload": {
+          "clock": "monotonic",
+          "ttft_ms": 22562,
+          "attempt_id": "3bcb51fd-0d0a-484b-9a69-b423c419aabc",
+          "observation_id": "9ffb4457-7b5f-4cdc-9c19-b2cea17b56ae",
+          "first_piece_kind": "text",
+          "measurement_status": "measured"
+        }
+      },
+      {
+        "event_type": "answer.confirmed",
+        "payload": {
+          "answer_id": "66f5cfbc-b5fd-4de8-bb34-c0cf77a29bbf",
+          "content_version": 1
+        }
+      },
+      {
+        "event_type": "runtime.cost",
+        "payload": {
+          "attempt_id": "3bcb51fd-0d0a-484b-9a69-b423c419aabc",
+          "observation_id": "9ffb4457-7b5f-4cdc-9c19-b2cea17b56ae",
+          "measurement_status": "price_unknown",
+          "calculation_revision": 1
+        }
+      },
+      {
+        "event_type": "run.state_observed",
+        "payload": {
+          "state": "succeeded",
+          "state_revision": 3,
+          "evidence_source": "runtime_callback",
+          "platform_status": "success",
+          "cancel_requested": false
+        }
+      },
+      {
+        "event_type": "browser.timing",
+        "payload": {
+          "clock": "monotonic",
+          "attempt_id": "3bcb51fd-0d0a-484b-9a69-b423c419aabc",
+          "progress_seen": false,
+          "measurement_id": "m-038eff42-f50b-48f6-a3f4-9f3acd1beef5",
+          "completion_state": "complete",
+          "display_complete_ms": 26056,
+          "first_visible_answer_ms": 26056
+        }
+      }
+    ]
+  }
+]

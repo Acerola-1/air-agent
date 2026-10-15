@@ -1,0 +1,373 @@
+{
+  "start_evidence_freeze_utc": "2026-10-15T06:21:28.658775+00:00",
+  "recorded_at_utc": "2026-10-15T11:58:02.086929+00:00",
+  "duration_sources": {
+    "admin-delivery.txt": [
+      "161 passed, 35 skipped in 146.23s (0:02:26)"
+    ],
+    "tenant-rls-pytest.txt": [
+      "30 passed in 14.38s"
+    ],
+    "restore-final.txt": [
+      "1 passed in 7.42s"
+    ],
+    "core-with-preload.txt": [
+      "20 passed, 4 warnings in 11.91s"
+    ],
+    "explicit-preload-unit.txt": [
+      "7 passed in 4.03s"
+    ],
+    "root-delivery-final.txt": [
+      "6 failed, 365 passed, 75 skipped in 36.27s"
+    ],
+    "integration-final.txt": [
+      "1 failed, 7 passed, 31 skipped in 3.42s"
+    ],
+    "frontend-contracts-stop-final.txt": [
+      "ℹ duration_ms 15681.065166"
+    ],
+    "frontend-build-stop-final.txt": [
+      "✓ Compiled successfully in 715ms",
+      "  Finished TypeScript in 493ms ..."
+    ]
+  },
+  "actual_provider_request_times": [
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "basic-qa",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 38.433
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "basic-qa",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 38.437
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-analysis",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 20.627
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-analysis",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 2.982
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-report",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 3.803
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "data-analysis",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 8.661
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-report",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 2.934
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "data-analysis",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 8.107
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "deep-research",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 3.29
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "deep-research",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 2.752
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 3.839
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 2.65
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "basic-qa",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 20.07
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-analysis",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 20.511
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-report",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 2.76
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "deep-research",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 2.492
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "data-analysis",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 8.452
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 5.191
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 33.658
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 33.753
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 33.933
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 2.868
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 2.806
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 7.248
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 2.581
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 10.078
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 2.691
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 4.487
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "stream",
+      "explicit": false,
+      "elapsed_s": 2.826
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": false,
+      "elapsed_s": 2.825
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 35.211
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "basic-qa",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 35.213
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 2.73
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 2.737
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 2.777
+    },
+    {
+      "proof": "api-matrix-combined.json",
+      "graph": "data-analysis",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 42.811
+    },
+    {
+      "proof": "deep-explicit-fixture.json",
+      "graph": "intelligent-report",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 13.53
+    },
+    {
+      "proof": "deep-explicit-fixture.json",
+      "graph": "deep-research",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 13.546
+    },
+    {
+      "proof": "deep-explicit-fixture.json",
+      "graph": "intelligent-report",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 13.806
+    },
+    {
+      "proof": "deep-explicit-fixture.json",
+      "graph": "intelligent-tracing",
+      "entry": "native",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 9.031
+    },
+    {
+      "proof": "deep-explicit-fixture.json",
+      "graph": "deep-research",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 9.163
+    },
+    {
+      "proof": "deep-explicit-fixture.json",
+      "graph": "intelligent-tracing",
+      "entry": "bff",
+      "mode": "wait",
+      "explicit": true,
+      "elapsed_s": 9.072
+    }
+  ],
+  "note": "上列测试/请求耗时为原始输出实测；跨度包含多次用户续接和检查等待，不当作匿名模型实施时间或纯推理时间；外部等待未全局单独计量，不猜0；Token未采集。"
+}

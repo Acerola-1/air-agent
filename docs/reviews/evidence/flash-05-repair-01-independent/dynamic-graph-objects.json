@@ -1,0 +1,17 @@
+{
+  "kind": "actual_imported_production_graph_objects_no_model_calls",
+  "fixed_graph_mcp_lists_before": {
+    "deep_research.graph": 0,
+    "intelligent_report.graph": 0,
+    "intelligent_tracing.graph": 0
+  },
+  "registry_proxies_after": [
+    "late_query"
+  ],
+  "fixed_graph_mcp_lists_after": {
+    "deep_research.graph": [],
+    "intelligent_report.graph": [],
+    "intelligent_tracing.graph": []
+  },
+  "note": "生产中间件只filter(request.tools)，没有追加新发现工具；此探针是对象装配证据，未冒充实际模型/原生运行"
+}

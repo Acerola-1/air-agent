@@ -1,0 +1,58 @@
+
+> frontend@0.0.0 test:contracts
+> node --test tests/chat-contract.test.cjs tests/agent-events-contract.test.cjs tests/feedback-client.test.cjs tests/capability-store-contract.test.cjs
+
+✔ embedded frontend copy matches canonical contract files (0.718834ms)
+✔ every sample case matches the expected verdict (same set as Python) (0.878541ms)
+✔ browser cannot claim server terminal facts (0.086084ms)
+✔ reserved types are registered but rejected as not enabled (0.073792ms)
+✔ enabled types equal core plus browser and runtime (0.07825ms)
+✔ batch validation returns per-item results and enforces browser limits (0.337167ms)
+✔ forbidden payload key wins over whitelist (0.056333ms)
+✔ 默认草稿为自动模式，toPayload 输出规范标准 agent.capability-selection.v1 (52.424042ms)
+✔ 用户显式选择 Skill 与 MCP 工具列表，toPayload 标注 user_explicit 并按字母序去重 (1.438417ms)
+✔ 选择 MCP allowlist 空集代表禁用 MCP，toggleTool 可添加与移除工具 (0.636875ms)
+✔ 切换图或租户时，旧草稿被清空重置为默认，且目录异步加载有 loading/error 状态 (0.876208ms)
+✔ Epoch 隔离：迟到的旧请求（如 A→B→A 切换时旧请求晚到）被丢弃，不覆盖当前目录 (0.583125ms)
+✔ context meter uses provider input after completion and labels preparation estimates (65.022291ms)
+✔ every intermediate frame excludes tool JSON and internal summaries from body (6.334667ms)
+✔ old run callbacks and completion cannot clear a newer run (2.560542ms)
+✔ stop sends server cancellation and ignores late metadata safely (2.412583ms)
+✔ legacy double answer merges, marked draft hidden, archives require actual stored status (1.970625ms)
+✔ SDK error event becomes failed completion, metadata and custom consumed (1.767541ms)
+✔ proxy: unified identity gates, ticket upstream, v2 scope, tenant checks (1820.410875ms)
+✔ archive scope v2 signing requires configured keys (2.596708ms)
+✔ stopStreaming only confirms after server reaches terminal run status (612.041042ms)
+✔ stopStreaming reports unconfirmed when cancellation and status both fail (5.763375ms)
+✔ stop cancel 409 is context_changed, never a false confirmation (5.246583ms)
+✔ stop after 404 cancel confirms only on observed terminal status (4.881542ms)
+✔ stop treats missing/unknown run status as unconfirmed (5.768792ms)
+✔ stop with empty run list within grace window is unconfirmed unknown (3209.449334ms)
+✔ stop recovers late run id from recent runs and waits terminal (5.400958ms)
+✔ stop before run id arrives recovers the active run from the run list (5.112833ms)
+✔ proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surfaces 409 (7.158666ms)
+✔ stop cannot confirm the previous answer while current run metadata is delayed (3213.534417ms)
+✔ unconfirmed stop keeps the run for late metadata and blocks new submissions (3213.801ms)
+✔ 页面导航离开记录 origin=navigation 的独立停止意图 (3.451458ms)
+✔ 无活动运行时的导航不产生停止事实 (2.038333ms)
+✔ 重新生成声明 regenerate 并复用上一条用户问题（不新增提问） (4.260959ms)
+✔ 重新发送声明 retry (2.589166ms)
+✔ R01 代理：原生入口单点裁决——首笔成功、重放复用/待确认、绝不重复创建平台运行 (7.884084ms)
+✔ 官方 interrupt 的权威状态确认本次已停止执行，不冒充业务已取消 (2.166959ms)
+✔ 采集开关默认关闭，服务端拒绝启用时不产生计时或事件 (56.132917ms)
+✔ 未确认映射不永久负缓存，确认后可再次回读 (1.593916ms)
+✔ A到B到A后旧代次回读不能覆盖当前映射 (1.375917ms)
+✔ 旧企业保存响应不会作为新企业的成功结果 (1.698917ms)
+✔ 旧批次完成不删除新企业队列且新请求绑定新企业 (4.960542ms)
+✔ 队列100条、批次50条和256KiB均有界 (3.948209ms)
+✔ 进度不充当首正文；不完整、完成和离开分别计时 (1.834209ms)
+✔ 旧企业迟到的启用策略不能开启当前企业采集 (1.571875ms)
+✔ DOM完成早于可信attempt确认时仍保留计时，不误用平台run UUID (1.4085ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12338.640833

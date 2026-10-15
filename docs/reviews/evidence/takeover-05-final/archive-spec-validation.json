@@ -1,0 +1,15 @@
+{
+  "failed": [
+    "air-quality-forecast-skill-rules",
+    "chart-data-push",
+    "composite-backend-routing",
+    "forecast-data-bidirectional-rule",
+    "permission-check-subagent",
+    "silent-agent-output",
+    "skill-content-basic",
+    "skill-three-layer-system",
+    "subagent-architecture"
+  ],
+  "same_as_historical_baseline": true,
+  "affected_specs_valid": true
+}

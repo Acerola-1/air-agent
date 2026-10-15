@@ -1,0 +1,30 @@
+{
+  "root_listing": "LsResult(error=None, entries=[{'path': '/s1/', 'is_dir': True, 'size': 0, 'modified_at': '2026-10-15T07:13:40.276873'}])",
+  "glob_sdk_signature": {
+    "result": "GlobResult(error=None, matches=[{'path': '/s1/SKILL.md', 'is_dir': False, 'size': 14, 'modified_at': '2026-10-15T07:13:40.277025'}], truncated=False)"
+  },
+  "glob_author_signature": {
+    "result": "GlobResult(error=None, matches=[{'path': '/s1/SKILL.md', 'is_dir': False, 'size': 14, 'modified_at': '2026-10-15T07:13:40.277025'}], truncated=False)"
+  },
+  "async_glob": "GlobResult(error=None, matches=[{'path': '/s1/SKILL.md', 'is_dir': False, 'size': 14, 'modified_at': '2026-10-15T07:13:40.277025'}], truncated=False)",
+  "colliding_proxy_names": [
+    "mcp_service_a__query",
+    "mcp_service__a__query"
+  ],
+  "skill_span_calls": [
+    {
+      "stage": "loaded",
+      "selection_source": "manual",
+      "selection_id": "selection-id",
+      "selection_digest": "trusted-digest",
+      "submission_id": "sub"
+    },
+    {
+      "stage": "executed",
+      "selection_source": "manual",
+      "selection_id": "selection-id",
+      "selection_digest": "trusted-digest",
+      "submission_id": "sub"
+    }
+  ]
+}

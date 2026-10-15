@@ -36,12 +36,12 @@ from common.business_graph.prompting import (
 )
 from common.business_graph.skill_content import load_skill_rules
 from common.business_graph.state import BusinessGraphState
+from common.capabilities import refresh_authorized_mcp_tools
 from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
 from common.context_guard import prepare_model_context
 from common.conversation_summarizer import update_conversation_summary
 from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
-from common.mcp_client import ensure_mcp_tools
 from common.model_budget import (
     ContextBudgetExceeded,
     enforce_request_budget,
@@ -174,6 +174,36 @@ class BusinessGraphNodes:
         if not question:
             return update
 
+        # 任务 4.2：显式 Skill 单选绕过语义匹配直接加载
+        skill_mode = configurable.get("capability_skill_mode") or "auto"
+        if skill_mode == "explicit":
+            skill_id = configurable.get("capability_skill_id") or ""
+            explicit_slug = skill_id.split(":")[-1] if skill_id else ""
+            if explicit_slug:
+                skill_rules = load_skill_rules(self._router, explicit_slug, mode)
+                from common.observability.skill_adapter import emit_skill_stage
+
+                emit_skill_stage(
+                    config, explicit_slug, "matched", body=skill_rules, source="manual"
+                )
+                emit_skill_stage(
+                    config, explicit_slug, "selected", body=skill_rules, source="manual"
+                )
+                emit_skill_stage(
+                    config,
+                    explicit_slug,
+                    "loaded",
+                    body=skill_rules,
+                    status="succeeded" if skill_rules else "failed",
+                    source="manual",
+                )
+                logger.info(
+                    "业务图显式 Skill 直接加载: graph={}，skill={}",
+                    self._graph_name,
+                    explicit_slug,
+                )
+                return {"skill_rules_content": skill_rules}
+
         # 纯问候/寒暄轮次不进入 Skill 语义匹配，直接降级通用能力，
         # 避免 "你好" 之类被 embedding 相似度误命中业务 Skill（同时省一次 embedding 调用）。
         if is_conversational(question):
@@ -294,7 +324,7 @@ class BusinessGraphNodes:
             from common.identity.runtime import guard_runtime_call
 
             await guard_runtime_call(dict(config or {}))
-            await ensure_mcp_tools()
+            await refresh_authorized_mcp_tools(config)
             system_prompt = build_system_prompt(
                 base_prompt=self._base_system_prompt,
                 graph_name=self._graph_name,
@@ -302,23 +332,28 @@ class BusinessGraphNodes:
                 configurable=configurable,
             )
         updates: dict[str, Any] = {"system_prompt": system_prompt}
+        try:
+            curr_tools = self._available_tools(state, config)
+        except TypeError:
+            curr_tools = self._available_tools(state)
         updates.update(
             await update_conversation_summary(
                 {**state, "system_prompt": system_prompt},
                 config,
-                tools=self._available_tools(state),
+                tools=curr_tools,
             )
         )
         return updates
 
-    def _available_tools(self, state: BusinessGraphState) -> list[Any]:
-        """按意图车道过滤业务工具.
+    def _available_tools(
+        self, state: BusinessGraphState, config: RunnableConfig | None = None
+    ) -> list[Any]:
+        """按意图车道与能力选择过滤业务工具.
 
         - chitchat 车道：零工具（纯对话，不暴露任何工具 schema）；
         - knowledge 车道：仅始终可见的本地工具（时间 + create_artifact）；
-        - data_query 车道：全量业务工具 + load_skill（始终可见），
-          不再按 skill allowed_tools 做交集过滤——模型能力已足够，
-          skill 规则中的工具使用指引足以引导模型选择正确工具。
+        - data_query 车道：业务工具（按已受理 MCP 白名单收窄）+ 可选 load_skill；
+        - 显式单选 Skill 时无需披露 load_skill 工具。
         """
         intent = state.get("intent") or INTENT_DATA_QUERY
         if intent == INTENT_CHITCHAT:
@@ -333,11 +368,16 @@ class BusinessGraphNodes:
                 and name in _ALWAYS_VISIBLE_TOOL_NAMES
             ]
 
-        # data_query 车道：全量业务工具 + load_skill
-        # 不再按 skill allowed_tools 做交集过滤——模型能力已足够，
-        # skill 规则中的工具使用指引足以引导模型选择正确工具。
-        available = list(business)
-        available.append(self._load_skill_tool)
+        # data_query 车道：全量业务工具
+        from common.capabilities import filter_capability_mcp_tools
+
+        available = filter_capability_mcp_tools(list(business), config)
+
+        configurable = config.get("configurable", {}) or {} if config else {}
+        skill_mode = configurable.get("capability_skill_mode") or "auto"
+        # 显式单选时无需披露 load_skill 工具
+        if skill_mode != "explicit":
+            available.append(self._load_skill_tool)
         return available
 
     async def call_model(
@@ -397,7 +437,10 @@ class BusinessGraphNodes:
         _obs_metadata = _obs_scope.runtime_metadata()
         model = ModelRegistry.main_llm
         system_prompt = state.get("system_prompt", "")
-        available = self._available_tools(state)
+        try:
+            available = self._available_tools(state, config)
+        except TypeError:
+            available = self._available_tools(state)
 
         messages = state["messages"]
         # 模型调用前只读上下文修剪 (注入早期历史摘要 + 保护当期轮次与旧工具治理)

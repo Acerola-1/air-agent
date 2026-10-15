@@ -1,0 +1,51 @@
+{
+  "kind": "compiled_actual_chat_store_with_server_authoritative_confirmation",
+  "sent_selection": {
+    "schema_version": "agent.capability-selection.v1",
+    "skill": {
+      "mode": "explicit",
+      "skill_id": "skill:basic-qa:air-quality-basic-query"
+    },
+    "mcp": {
+      "mode": "allowlist",
+      "tool_ids": []
+    },
+    "catalog_version": "cat_000000000000000000000000"
+  },
+  "accepted_after_draft_changed": {
+    "id": "036e757d-257f-4ed0-a4db-f1beed21c9e2",
+    "skill_mode": "explicit",
+    "skill_id": "skill:basic-qa:air-quality-basic-query",
+    "mcp_mode": "allowlist",
+    "tool_ids": [],
+    "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+    "selection_source": "admitted"
+  },
+  "actual_server_selection": {
+    "id": "036e757d-257f-4ed0-a4db-f1beed21c9e2",
+    "selection_id": "036e757d-257f-4ed0-a4db-f1beed21c9e2",
+    "selection_digest": "5128afbd2c2463f5d4e5897fc350f4884d3ac26b220a8f2d8c201237c5410200",
+    "digest_version": 2,
+    "selection_status": "collected",
+    "skill": {
+      "mode": "explicit",
+      "skill_id": "skill:basic-qa:air-quality-basic-query"
+    },
+    "mcp": {
+      "mode": "allowlist",
+      "tool_ids": []
+    },
+    "skill_mode": "explicit",
+    "skill_id": "skill:basic-qa:air-quality-basic-query",
+    "mcp_mode": "allowlist",
+    "tool_ids": [],
+    "catalog_version": "cat_000000000000000000000000",
+    "material_version": "sha256:2a899b59771c700acb1cb8d143bd225cceb34694c4a7c5c8abff0581b9d06938",
+    "selection_source": "user_explicit",
+    "validation_time": "2026-10-14T23:15:17.565527+00:00"
+  },
+  "selection_id_matches": true,
+  "selection_digest_matches": true,
+  "draft_skill_retained_as_s2": true,
+  "accepted_skill_retained_as_s1": true
+}

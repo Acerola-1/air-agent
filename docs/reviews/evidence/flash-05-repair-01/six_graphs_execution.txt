@@ -1,0 +1,31 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.1, pluggy-1.6.0 -- /Users/acerola/Dev/Python/air_agent/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/acerola/Dev/Python/air_agent
+configfile: pyproject.toml
+plugins: timeout-2.4.0, langsmith-0.10.15, anyio-4.14.2
+collecting ... collected 6 items
+
+tests/test_six_graphs_execution_constraints.py::test_task_4_1_native_hook_metadata_config_consistency[asyncio] PASSED [ 16%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_2_business_graph_explicit_skill_and_menu_determinism[asyncio] PASSED [ 33%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_3_mcp_disclosure_and_real_dispatch_two_layer_rejection[asyncio] PASSED [ 50%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_4_deepagents_skills_and_subtasks_boundary[asyncio] PASSED [ 66%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_5_resume_and_retry_immutability[asyncio] PASSED [ 83%]
+tests/test_six_graphs_execution_constraints.py::test_task_4_6_delivery_switch_and_graph_import PASSED [100%]
+
+=============================== warnings summary ===============================
+tests/test_six_graphs_execution_constraints.py::test_task_4_6_delivery_switch_and_graph_import
+tests/test_six_graphs_execution_constraints.py::test_task_4_6_delivery_switch_and_graph_import
+  /Users/acerola/Dev/Python/air_agent/src/common/business_graph/builder.py:126: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node(
+
+tests/test_six_graphs_execution_constraints.py::test_task_4_6_delivery_switch_and_graph_import
+  /Users/acerola/Dev/Python/air_agent/src/data_analysis/graph.py:132: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
+
+tests/test_six_graphs_execution_constraints.py::test_task_4_6_delivery_switch_and_graph_import
+  /Users/acerola/Dev/Python/air_agent/src/deep_research/graph.py:54: LangChainBetaWarning: The class `CodeInterpreterMiddleware` is in beta. It is actively being worked on, so the API may change.
+    CodeInterpreterMiddleware(ptc=[]),
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 6 passed, 4 warnings in 4.40s =========================

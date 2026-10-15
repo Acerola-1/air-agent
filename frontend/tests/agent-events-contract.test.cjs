@@ -77,6 +77,7 @@ test('enabled types equal core plus browser and runtime', () => {
     'browser.copy',
     'browser.feedback',
     'browser.timing',
+    'capability.selection_accepted',
     'request.accepted',
     'resource.deleted',
     'run.admission_confirmed',

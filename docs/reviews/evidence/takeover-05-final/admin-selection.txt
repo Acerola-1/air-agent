@@ -1,0 +1,139 @@
+...FF.F                                                                  [100%]
+=================================== FAILURES ===================================
+________________ test_task_3_3_atomic_transaction_and_rollback _________________
+
+selection_env = {'catalog_version': 'cat_b7a9d5ae7306ecf71b58df6e', 'tenant_a': UUID('4d5622ad-8c01-46ea-85f1-49ecdd511fc5'), 'tenant_b': UUID('dcfa07dd-ef5c-4afc-8116-8edf18e21985'), 'user_a': UUID('bec8b139-d589-4f2d-aa0d-c89b417cb2d6'), ...}
+
+    async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
+        """3.3: 写入故障注入回滚整笔事务，零残留；同键并发唯一胜出."""
+        env = selection_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(env["account_a"], env["tenant_a"])
+    
+        try:
+            # 1. 成功提交：确认选择、事件与 outbox 同事务原子写入
+            res = await client.post(
+                "/agent/requests",
+                json={
+                    "thread_id": thread_id,
+                    "submission_key": "k_atomic_tx_01",
+                    "graph_id": "basic-qa",
+                    "operation_kind": "initial",
+                    "content": "测试原子事务",
+                    "capability_selection": {
+                        "schema_version": "agent.capability-selection.v1",
+                        "skill": {"mode": "auto"},
+                        "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                        "catalog_version": env["catalog_version"],
+                    },
+                },
+            )
+>           assert res.status_code == 200
+E           assert 422 == 200
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_ledger_selection_persistence.py:456: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+2026-10-15 14:31:04 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+2026-10-15 14:31:04 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+----------------------------- Captured stderr call -----------------------------
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+________________ test_task_3_4_idempotency_digest_and_conflict _________________
+
+selection_env = {'catalog_version': 'cat_0a9ab70a846910cfeb7d36c5', 'tenant_a': UUID('c986940f-35f9-46b3-a213-956f717cfbd3'), 'tenant_b': UUID('dc12df92-89fe-464a-8f40-9f06266edbd1'), 'user_a': UUID('f14134a3-dd9d-4cfd-ba81-2b85c95cb2d8'), ...}
+
+    async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
+        """3.4: 键序不同同结果、同键不同选择 409、旧 v1 not_collected 自动重放."""
+        env = selection_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(env["account_a"], env["tenant_a"])
+    
+        try:
+            # 1. 键序不同摘要一致性测试
+            p1 = {"b": 2, "a": 1, "mcp": ["mcp:business:query", "mcp:analytics:stats"]}
+            p2 = {"mcp": ["mcp:business:query", "mcp:analytics:stats"], "a": 1, "b": 2}
+            assert ledger_service.canonical_digest(p1) == ledger_service.canonical_digest(p2)
+    
+            # 2. 初次提交带显式选择 S1 + T1
+            sub_key = "k_idempotency_v2_01"
+            payload_1 = {
+                "thread_id": thread_id,
+                "submission_key": sub_key,
+                "graph_id": "basic-qa",
+                "operation_kind": "initial",
+                "content": "测试幂等",
+                "capability_selection": {
+                    "schema_version": "agent.capability-selection.v1",
+                    "skill": {"mode": "auto"},
+                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                    "catalog_version": env["catalog_version"],
+                },
+            }
+            res1 = await client.post("/agent/requests", json=payload_1)
+>           assert res1.status_code == 200
+E           assert 422 == 200
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_ledger_selection_persistence.py:589: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+----------------------------- Captured stderr call -----------------------------
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+2026-10-15 14:31:05 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+__________________ test_task_3_5_readback_deletion_and_resume __________________
+
+selection_env = {'catalog_version': 'cat_a3e1af1e4105474f5077978d', 'tenant_a': UUID('39c87b3a-5e36-4523-b82e-0d0fa1fd5110'), 'tenant_b': UUID('d3721f61-7f4e-4bd5-b09f-5c338b52cac3'), 'user_a': UUID('cd97004d-8a02-4836-bea1-97aad2a7ba83'), ...}
+
+    async def test_task_3_5_readback_deletion_and_resume(selection_env):
+        """3.5: 回读包含快照事实、越权 404、已删除线程禁读禁写、恢复不可变."""
+        env = selection_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+    
+        client_a = await _login(env["account_a"], env["tenant_a"])
+        client_b = await _login(env["account_b"], env["tenant_b"])
+    
+        try:
+            # 1. 本人正常受理带选择
+            res = await client_a.post(
+                "/agent/requests",
+                json={
+                    "thread_id": thread_id,
+                    "submission_key": "k_readback_probe_01",
+                    "graph_id": "basic-qa",
+                    "operation_kind": "initial",
+                    "content": "测试安全回读",
+                    "capability_selection": {
+                        "schema_version": "agent.capability-selection.v1",
+                        "skill": {"mode": "auto"},
+                        "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                        "catalog_version": env["catalog_version"],
+                    },
+                },
+            )
+>           assert res.status_code == 200
+E           assert 422 == 200
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_ledger_selection_persistence.py:786: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+2026-10-15 14:31:06 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+2026-10-15 14:31:06 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+----------------------------- Captured stderr call -----------------------------
+2026-10-15 14:31:06 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+2026-10-15 14:31:06 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+2026-10-15 14:31:06 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=business, error=McpAuthorizationError
+2026-10-15 14:31:06 +0800 | WARNING  | common.capabilities:_discover_single:375 - MCP 目录发现受阻: server=analytics, error=McpAuthorizationError
+=========================== short test summary info ============================
+FAILED admin/api/tests/test_ledger_selection_persistence.py::test_task_3_3_atomic_transaction_and_rollback
+FAILED admin/api/tests/test_ledger_selection_persistence.py::test_task_3_4_idempotency_digest_and_conflict
+FAILED admin/api/tests/test_ledger_selection_persistence.py::test_task_3_5_readback_deletion_and_resume
+3 failed, 4 passed in 4.92s

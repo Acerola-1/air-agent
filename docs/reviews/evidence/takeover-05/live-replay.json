@@ -1,0 +1,207 @@
+{
+  "kind": "actual_admin_ASGI_auth_and_nonowner_PostgreSQL_native_gate",
+  "model_network_calls": 0,
+  "ids": {
+    "tenant": "641f2b57-0a99-42b3-9345-52fd7dd69df0",
+    "user": "480c7ee4-2c1f-4e2c-b225-a0667908878d",
+    "member": "a8ae23b7-1453-44cd-9e9d-910152eb8050",
+    "thread": "e6392755-e484-4edd-898b-9139c632abd6"
+  },
+  "actual_frontend_payload": {
+    "status": 200,
+    "errors": {
+      "request_id": "ed108813-d5e6-4409-bde4-8d47dc1ca809",
+      "attempt_id": "a7279baa-3d52-4a1b-b4e0-1770d2390004",
+      "submission_id": "d26e13e6-c894-4552-81a4-78293c5301b8",
+      "admission_status": "admitting",
+      "operation_kind": "initial",
+      "reused": false,
+      "thread_id": "e6392755-e484-4edd-898b-9139c632abd6",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:ed108813-d5e6-4409-bde4-8d47dc1ca809:a7279baa-3d52-4a1b-b4e0-1770d2390004",
+      "capability_selection": {
+        "id": "d5e58d62-b0f8-429c-8bc7-4dbd89c5993e",
+        "selection_id": "d5e58d62-b0f8-429c-8bc7-4dbd89c5993e",
+        "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "auto",
+          "tool_ids": []
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "auto",
+        "tool_ids": [],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "automatic",
+        "validation_time": "2026-10-15T00:00:49.677612+00:00"
+      }
+    }
+  },
+  "old_client_omits_selection": {
+    "status": 200
+  },
+  "auto_admission": {
+    "request_id": "3e3b0716-093c-4821-bee8-f1491b6894a6",
+    "attempt_id": "20e0c6a0-820a-4593-b4ff-acf39bf09ddb",
+    "submission_id": "2551daca-d61d-4260-8453-dbcef092578e",
+    "admission_status": "admitting",
+    "operation_kind": "initial",
+    "reused": false,
+    "thread_id": "e6392755-e484-4edd-898b-9139c632abd6",
+    "graph_id": "basic-qa",
+    "ledger_marker": "lr:3e3b0716-093c-4821-bee8-f1491b6894a6:20e0c6a0-820a-4593-b4ff-acf39bf09ddb",
+    "capability_selection": {
+      "id": "1cb374e6-c066-4918-bc37-068620cf7b91",
+      "selection_id": "1cb374e6-c066-4918-bc37-068620cf7b91",
+      "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "auto",
+        "tool_ids": []
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "auto",
+      "tool_ids": [],
+      "catalog_version": "cat_000000000000000000000000",
+      "material_version": "auto",
+      "selection_source": "automatic",
+      "validation_time": "2026-10-15T00:00:49.777917+00:00"
+    }
+  },
+  "actual_native_claim_after_real_admission": {
+    "status": "claimed",
+    "start_claim_token": "9310d7a0-c31c-4601-8325-1d5f1b048e2d"
+  },
+  "native_create_run_hook": {
+    "accepted": true
+  },
+  "valid_shape_forged_catalog_unknown_tool_empty_factory": {
+    "status": 422,
+    "body": {
+      "detail": "能力目录为空或工具尚未发现"
+    }
+  },
+  "tool_exists_only_on_another_server": {
+    "status": 422,
+    "body": {
+      "detail": "所选工具 mcp:controlled-one:exists_elsewhere 在服务 controlled-one 上不存在或未发现"
+    }
+  },
+  "unknown_protocol_not_literal_unverified": {
+    "status": 403,
+    "body": {
+      "detail": "MCP 服务 controlled-one 协议未验证或不可用: future-unknown-protocol"
+    }
+  },
+  "replay_explicit_first_status": 200,
+  "same_key_explicit_changed_to_explicit_auto": {
+    "status": 409,
+    "body": {
+      "detail": "同一提交键已用于不同选择"
+    }
+  },
+  "resume_same_key_omitted_choice_replay": {
+    "first_status": 200,
+    "replay_status": 200,
+    "replay_body": {
+      "request_id": "0989b649-589d-4f8d-b39e-146f18bc020e",
+      "attempt_id": "18fbf549-0469-463e-ad03-bb3155e56b1d",
+      "submission_id": "079705f4-fbe2-4613-a7db-fc5c369c0aa3",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": true,
+      "thread_id": "e6392755-e484-4edd-898b-9139c632abd6",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:0989b649-589d-4f8d-b39e-146f18bc020e:18fbf549-0469-463e-ad03-bb3155e56b1d",
+      "capability_selection": {
+        "selection_id": "7fb78005-8f77-4d67-abc1-dee07e4b5b64",
+        "selection_digest": "e198a7a631977d21c8b9ee02818a6c998dc4b15fae8ea824ff5c2aa881238486",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:exists_elsewhere"
+          ]
+        },
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-15T00:00:52.220505+00:00"
+      }
+    }
+  },
+  "resume_inherit": {
+    "status": 200,
+    "body": {
+      "request_id": "0989b649-589d-4f8d-b39e-146f18bc020e",
+      "attempt_id": "18fbf549-0469-463e-ad03-bb3155e56b1d",
+      "submission_id": "b04dc65b-f29d-4f7a-8003-f78698304ef2",
+      "admission_status": "admitting",
+      "operation_kind": "resume",
+      "reused": false,
+      "thread_id": "e6392755-e484-4edd-898b-9139c632abd6",
+      "graph_id": "basic-qa",
+      "ledger_marker": "lr:0989b649-589d-4f8d-b39e-146f18bc020e:18fbf549-0469-463e-ad03-bb3155e56b1d",
+      "capability_selection": {
+        "id": "08b8736f-7b09-4ec6-941f-8d497f66d3d2",
+        "selection_id": "08b8736f-7b09-4ec6-941f-8d497f66d3d2",
+        "selection_digest": "e198a7a631977d21c8b9ee02818a6c998dc4b15fae8ea824ff5c2aa881238486",
+        "digest_version": 2,
+        "selection_status": "collected",
+        "skill": {
+          "mode": "auto",
+          "skill_id": null
+        },
+        "mcp": {
+          "mode": "allowlist",
+          "tool_ids": [
+            "mcp:controlled-one:exists_elsewhere"
+          ]
+        },
+        "skill_mode": "auto",
+        "skill_id": null,
+        "mcp_mode": "allowlist",
+        "tool_ids": [
+          "mcp:controlled-one:exists_elsewhere"
+        ],
+        "catalog_version": "cat_000000000000000000000000",
+        "material_version": "auto",
+        "selection_source": "user_explicit",
+        "validation_time": "2026-10-15T00:00:52.305689+00:00"
+      }
+    }
+  },
+  "native_resume_with_selected_mcp": {
+    "accepted": true
+  },
+  "forged_catalog_with_valid_skill_and_no_mcp": {
+    "status": 409,
+    "body": {
+      "detail": "能力目录版本已过期，请刷新后重试"
+    }
+  },
+  "flag_disabled_auto_admission": {
+    "status": 200
+  },
+  "flag_disabled_auto_claim": {
+    "status": "claimed",
+    "start_claim_token": "3770de6c-e482-4cdc-9872-a47e8c5c7399"
+  }
+}

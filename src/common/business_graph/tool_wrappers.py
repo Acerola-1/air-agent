@@ -68,11 +68,45 @@ def _bind_tool_instance(request: Any) -> Any:
 
 
 def _is_mcp_tool(request: Any) -> bool:
-    """判断本次请求是否指向已知 MCP 远程工具（不含本地业务工具）."""
-    tool_name_str = request.tool_call.get("name")
+    """判断本次请求是否指向已知 MCP 远程工具（含短名、代理别名及稳定 ID，不含本地业务工具）."""
+    tool = getattr(request, "tool", None)
+    if tool is not None:
+        if (
+            (getattr(tool, "metadata", None) or {}).get("is_mcp")
+            or getattr(tool, "_is_mcp", False)
+            or getattr(tool, "is_mcp", False)
+        ):
+            return True
+
+    tool_call = getattr(request, "tool_call", None)
+    tool_name_str = (
+        tool_call.get("name")
+        if isinstance(tool_call, dict)
+        else getattr(request, "name", None)
+    )
     if not isinstance(tool_name_str, str):
         return False
-    return tool_name_str in set(get_mcp_tool_names())
+
+    if tool_name_str.startswith("mcp_") or tool_name_str.startswith("mcp:"):
+        return True
+
+    if tool_name_str in set(get_mcp_tool_names()):
+        return True
+
+    try:
+        from common.mcp_scoped import get_factory
+
+        factory = get_factory()
+        if factory is not None and (
+            tool_name_str in factory.known_tool_names()
+            or tool_name_str in factory.known_tool_ids()
+            or tool_name_str in getattr(factory, "_aliases", {})
+        ):
+            return True
+    except Exception:
+        pass
+
+    return False
 
 
 async def execute_mcp_tool_request(request: Any) -> ToolMessage:

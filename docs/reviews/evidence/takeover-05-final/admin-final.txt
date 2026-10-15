@@ -1,0 +1,388 @@
+..........................................F............................. [ 37%]
+...FFFFFFFFF..F.........F.............sF....ss.......................... [ 74%]
+....................ssssssssssssssssssssssssssssss                       [100%]
+=================================== FAILURES ===================================
+_______________ test_browser_events_all_reserved_types_rejected ________________
+
+ledger_env = {'tenant_a': UUID('14f7d679-d36b-4f30-9694-5855286ddf81'), 'tenant_b': UUID('a14befc3-41af-4f03-8dac-fb1a55274ada'), 'user_a': UUID('bd766937-7dd2-448c-8291-b735afb506ec'), 'user_b': UUID('6281a2b3-9f37-49e3-9b85-c2f0aa7af883')}
+
+    async def test_browser_events_all_reserved_types_rejected(ledger_env) -> None:
+        env = ledger_env
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            forged = {
+                "schema_version": "1.0",
+                "event_id": str(uuid.uuid4()),
+                "event_type": "run.state_observed",
+                "occurred_at": "2026-10-13T02:00:00.000Z",
+                "source": "browser",
+                "tenant_id": str(env["tenant_a"]),
+                "user_id": str(env["user_a"]),
+                "membership_id": "33333333-3333-4333-8333-333333333333",
+                "payload": {
+                    "state": "succeeded",
+                    "evidence_source": "browser_observed",
+                    "state_revision": 1,
+                },
+            }
+            res = await client.post(
+                "/agent/events/browser",
+                json={"events": [forged]},
+                headers={"origin": "http://localhost:3000"},
+            )
+            assert res.status_code == 200, res.text
+            body = res.json()
+            assert body["accepted"] is False
+>           assert body["items"][0]["reason"] == "source_not_allowed"
+E           AssertionError: assert 'collection_disabled' == 'source_not_allowed'
+E             
+E             - source_not_allowed
+E             + collection_disabled
+
+admin/api/tests/test_event_ledger_api.py:541: AssertionError
+_____________________ test_feedback_positive_then_history ______________________
+
+ledger_env = {'tenant_a': UUID('bcc48c83-247f-4957-8de5-aa5b0ef6df16'), 'tenant_b': UUID('7514dbdf-7a75-4637-aad8-101592ab92d0'), 'user_a': UUID('83d8da9a-b88f-4251-b9da-c2603e9cbe2d'), 'user_b': UUID('73e79701-cfe0-49a0-81d8-b8b0c211908c')}
+
+    async def test_feedback_positive_then_history(ledger_env) -> None:
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            data = await _make_confirmed_answer(client, env, thread_id, "fb-pos-0001")
+            answer_id = data["answer"]["answer_id"]
+            res = await client.put(f"/agent/feedback/answers/{answer_id}", json=_fb_payload("positive"))
+>           assert res.status_code == 200, res.text
+E           AssertionError: {"detail":{"code":"collection_disabled","error":"反馈采集尚未启用"}}
+E           assert 422 == 200
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_feedback_api.py:118: AssertionError
+____________________ test_feedback_partial_answer_rejected _____________________
+
+ledger_env = {'tenant_a': UUID('9ff95077-e6e9-465f-b04a-16499be0556b'), 'tenant_b': UUID('4fbd8f01-c8ba-4467-9883-701e86bd6990'), 'user_a': UUID('b167a3de-04d7-4bd5-a456-92948c6250ce'), 'user_b': UUID('b3cef442-68cf-43e8-a648-19228b6dd8de')}
+
+    async def test_feedback_partial_answer_rejected(ledger_env) -> None:
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            admitted = (
+                await client.post("/agent/requests", json=_admit_body(thread_id, "fb-part-0001"))
+            ).json()
+            partial = await client.post(
+                f"/agent/runs/{admitted['attempt_id']}/answers",
+                headers={"x-internal-token": _internal_token()},
+                json={"message_id": "msg-partial", "content_version": 1, "confirmed": False},
+            )
+            assert partial.status_code == 200
+            res = await client.put(
+                f"/agent/feedback/answers/{partial.json()['answer_id']}",
+                json=_fb_payload("positive"),
+            )
+>           assert res.status_code == 404, res.text
+E           AssertionError: {"detail":{"code":"collection_disabled","error":"反馈采集尚未启用"}}
+E           assert 422 == 404
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_feedback_api.py:171: AssertionError
+_____________________ test_switch_and_cancel_with_history ______________________
+
+ledger_env = {'tenant_a': UUID('e5a14d92-58c7-44fd-be8b-b1883c5039e8'), 'tenant_b': UUID('45112942-7364-4f0d-b0fa-5a4630db26a2'), 'user_a': UUID('41af8d50-2da9-4a6b-a047-47af58b4c050'), 'user_b': UUID('3cab78fa-e474-4a35-964c-4fd70c44158a')}
+
+    async def test_switch_and_cancel_with_history(ledger_env) -> None:
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            data = await _make_confirmed_answer(client, env, thread_id, "fb-sw-0001")
+            answer_id = data["answer"]["answer_id"]
+            r1 = await client.put(
+                f"/agent/feedback/answers/{answer_id}",
+                json=_fb_payload("negative", reason_code="incomplete"),
+            )
+>           assert r1.json()["revision"] == 1
+                   ^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'revision'
+
+admin/api/tests/test_feedback_api.py:196: KeyError
+_____________________ test_idempotent_replay_and_conflict ______________________
+
+ledger_env = {'tenant_a': UUID('bdc634ac-ff33-4c9a-aab0-441e691dda3d'), 'tenant_b': UUID('45b00726-7178-49ac-b88a-6ec739b24f8e'), 'user_a': UUID('1ac19150-a6af-48ce-a939-c82b6a6785a3'), 'user_b': UUID('7b0bf356-8d6b-4fef-9771-2cf409969474')}
+
+    async def test_idempotent_replay_and_conflict(ledger_env) -> None:
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            data = await _make_confirmed_answer(client, env, thread_id, "fb-idem-001")
+            answer_id = data["answer"]["answer_id"]
+            op_id = f"op-{uuid.uuid4().hex[:16]}"
+            first = await client.put(
+                f"/agent/feedback/answers/{answer_id}",
+                json={"rating": "positive", "operation_id": op_id, "expected_revision": 0},
+            )
+>           assert first.json()["replayed"] is False
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+E           KeyError: 'replayed'
+
+admin/api/tests/test_feedback_api.py:240: KeyError
+_______________ test_comment_saved_and_content_permission_split ________________
+
+ledger_env = {'tenant_a': UUID('61bdb75a-25fe-4cf3-a4f6-41ec2313541a'), 'tenant_b': UUID('189f47cc-0e8e-401f-9498-35b4a96ce828'), 'user_a': UUID('25137522-0f76-4a4a-88b8-67101d607382'), 'user_b': UUID('4fcd0c48-f643-4097-8896-bd2545596915')}
+
+    async def test_comment_saved_and_content_permission_split(ledger_env) -> None:
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        ops_client = await _login(await _account_of(env["user_b"]), env["tenant_a"])
+        try:
+            data = await _make_confirmed_answer(client, env, thread_id, "fb-cmt-0001")
+            answer_id = data["answer"]["answer_id"]
+            res = await client.put(
+                f"/agent/feedback/answers/{answer_id}",
+                json=_fb_payload("negative", reason_code="answer_incorrect", comment="数据似乎不对"),
+            )
+>           assert res.status_code == 200, res.text
+E           AssertionError: {"detail":{"code":"collection_disabled","error":"反馈采集尚未启用"}}
+E           assert 422 == 200
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_feedback_api.py:289: AssertionError
+_______________ test_cross_tenant_isolated_and_operations_scoped _______________
+
+ledger_env = {'tenant_a': UUID('ee168d5e-4137-4b50-bf4f-1f4145d2e576'), 'tenant_b': UUID('22839ccf-07a3-4cad-86b0-105be32e5eea'), 'user_a': UUID('7309e2fa-182c-4137-b860-b5d8b1fc43f8'), 'user_b': UUID('d0f4a555-d9c8-422e-acf8-76d8f0fd83a2')}
+
+    async def test_cross_tenant_isolated_and_operations_scoped(ledger_env) -> None:
+        env = ledger_env
+        thread_a = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_a)
+        client_a = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        client_b = await _login(await _account_of(env["user_a"]), env["tenant_b"])
+        try:
+            data = await _make_confirmed_answer(client_a, env, thread_a, "fb-iso-0001")
+            answer_id = data["answer"]["answer_id"]
+            # 同用户企业 B 视角：不能评价/回读 A 的回答（404 不泄露）
+            cross = await client_b.put(
+                f"/agent/feedback/answers/{answer_id}", json=_fb_payload("positive")
+            )
+>           assert cross.status_code == 404, cross.text
+E           AssertionError: {"detail":{"code":"collection_disabled","error":"反馈采集尚未启用"}}
+E           assert 422 == 404
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_feedback_api.py:334: AssertionError
+______________________ test_browser_mixed_batch_per_item _______________________
+
+ledger_env = {'tenant_a': UUID('d1649517-03f8-4442-8b02-048143d09b45'), 'tenant_b': UUID('95781d9e-8ecd-497e-abf3-08ad78d47f26'), 'user_a': UUID('2440fa0c-07e6-4dcb-9c58-cfa390b992d2'), 'user_b': UUID('2eaaf3db-7b3b-4f6c-b6a5-e6de983d74b5')}
+
+    async def test_browser_mixed_batch_per_item(ledger_env) -> None:
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            data = await _make_confirmed_answer(client, env, thread_id, "fb-bev-0001")
+            answer_id = data["answer"]["answer_id"]
+            attempt_id = data["attempt_id"]
+            # 混合批次：合法复制 + 伪终态 + 合法反馈重投构造
+            good_copy = _bev("browser.copy", {"answer_id": answer_id, "copy_scope": "full"})
+            forged = _bev(
+                "run.state_observed",
+                {"state": "succeeded", "evidence_source": "runtime_callback", "state_revision": 1},
+            )
+            feedback_event = _bev(
+                "browser.feedback",
+                {
+                    "answer_id": answer_id,
+                    "rating": "negative",
+                    "expected_revision": 0,
+                    "client_operation_id": f"op-{uuid.uuid4().hex[:16]}",
+                },
+            )
+            replay = dict(feedback_event, event_id=feedback_event["event_id"])
+            res = await client.post(
+                "/agent/events/browser",
+                json={"events": [good_copy, forged, feedback_event, replay]},
+                headers={"origin": "http://localhost:3000"},
+            )
+            assert res.status_code == 200, res.text
+            body = res.json()
+            reasons = [(i["valid"], i.get("reason")) for i in body["items"]]
+>           assert reasons[0] == (True, "ok"), reasons
+E           AssertionError: [(False, 'collection_disabled'), (False, 'collection_disabled'), (False, 'collection_disabled'), (False, 'collection_disabled')]
+E           assert (False, 'collection_disabled') == (True, 'ok')
+E             
+E             At index 0 diff: False != True
+E             Use -v to get more diff
+
+admin/api/tests/test_feedback_api.py:399: AssertionError
+__________________ test_browser_feedback_rating_enum_rejected __________________
+
+ledger_env = {'tenant_a': UUID('8f646eac-b6a9-4f96-a6e3-8997df4da00a'), 'tenant_b': UUID('d07bc4be-9361-4e8b-832a-039a216e1cc9'), 'user_a': UUID('12b813a7-6d9f-462b-a0fe-1a26727e6015'), 'user_b': UUID('0c62002b-07a7-439f-ac1e-708a1dd75ed8')}
+
+    async def test_browser_feedback_rating_enum_rejected(ledger_env) -> None:
+        env = ledger_env
+        thread_id = str(uuid.uuid4())
+        await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            data = await _make_confirmed_answer(client, env, thread_id, "fb-enum-0001")
+            answer_id = data["answer"]["answer_id"]
+            res = await client.post(
+                "/agent/events/browser",
+                json={
+                    "events": [
+                        _bev("browser.feedback", {"answer_id": answer_id, "rating": 1}),
+                    ]
+                },
+                headers={"origin": "http://localhost:3000"},
+            )
+            item = res.json()["items"][0]
+>           assert item["valid"] is False and item["reason"] == "invalid_enum_value"
+E           AssertionError: assert (False is False and 'collection_disabled' == 'invalid_enum_value'
+E             
+E             - invalid_enum_value
+E             + collection_disabled)
+
+admin/api/tests/test_feedback_api.py:501: AssertionError
+________________ test_metrics_fixture_2_of_3_and_copy_distinct _________________
+
+ledger_env = {'tenant_a': UUID('48df6251-7539-4f50-a4ca-3fa54591e478'), 'tenant_b': UUID('b1b982cb-2da7-47bb-be9e-30a7a3f72dde'), 'user_a': UUID('f3e26a03-316b-40bb-bca9-e45cf35943a2'), 'user_b': UUID('ccd6766d-05a0-42d4-9702-38caf96f797e')}
+
+    async def test_metrics_fixture_2_of_3_and_copy_distinct(ledger_env) -> None:
+        env = ledger_env
+        client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+        try:
+            # 4 个可评价回答：2 正面、1 负面、1 未评价 → 满意率 2/3、覆盖率 3/4
+            answer_ids = []
+            for idx in range(4):
+                thread_id = str(uuid.uuid4())
+                await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+                data = await _make_confirmed_answer(client, env, thread_id, f"fb-metrics-00{idx}")
+                answer_ids.append(data["answer"]["answer_id"])
+            ratings = ["positive", "positive", "negative", None]
+            for answer_id, rating in zip(answer_ids, ratings, strict=False):
+                if rating is None:
+                    continue
+                res = await client.put(
+                    f"/agent/feedback/answers/{answer_id}",
+                    json=_fb_payload(rating),
+                )
+>               assert res.status_code == 200, res.text
+E               AssertionError: {"detail":{"code":"collection_disabled","error":"反馈采集尚未启用"}}
+E               assert 422 == 200
+E                +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_feedback_api.py:542: AssertionError
+_____________ test_feedback_business_day_half_open_and_late_rating _____________
+
+ledger_env = {'tenant_a': UUID('6470e152-eac0-46e1-9b6c-957c0f8116f0'), 'tenant_b': UUID('dcb2fdba-9e58-40d4-be62-b054d3f29227'), 'user_a': UUID('aacbab73-6729-422f-91f7-8e893d7c3ddc'), 'user_b': UUID('903929d7-93ac-450a-a434-87a159e52b25')}
+
+    async def test_feedback_business_day_half_open_and_late_rating(ledger_env):
+        """上海业务日与UTC等价；上界不纳入，窗口外评价改变历史回答当前状态。"""
+        client = await _login(await _account_of(ledger_env["user_a"]), ledger_env["tenant_a"])
+        start = dt.datetime.fromisoformat("2026-10-08T00:00:00+08:00")
+        end = start + dt.timedelta(days=1)
+        data = []
+        try:
+            for timestamp in [start, end - dt.timedelta(microseconds=1), end]:
+                thread = str(uuid.uuid4())
+                await _grant_thread(ledger_env["tenant_a"], ledger_env["user_a"], thread)
+                row = await _make_confirmed_answer(client, ledger_env, thread, uuid.uuid4().hex)
+                data.append(row)
+                async with OwnerSessionLocal() as session:
+                    await session.execute(
+                        text("UPDATE agent_answers SET confirmed_at=:at WHERE id=:id"),
+                        {"at": timestamp, "id": row["answer"]["answer_id"]},
+                    )
+                    await session.execute(
+                        text("UPDATE agent_requests SET admitted_at=:at WHERE id=:id"),
+                        {"at": timestamp, "id": row["request_id"]},
+                    )
+                    await session.commit()
+            changed = await client.put(
+                "/agent/feedback/answers/" + data[0]["answer"]["answer_id"],
+                json=_fb_payload("positive"),
+            )
+>           assert changed.status_code == 200, changed.text
+E           AssertionError: {"detail":{"code":"collection_disabled","error":"反馈采集尚未启用"}}
+E           assert 422 == 200
+E            +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+
+admin/api/tests/test_feedback_api.py:660: AssertionError
+_______________________ test_ledger_openapi_has_no_drift _______________________
+
+    def test_ledger_openapi_has_no_drift() -> None:
+        """台账 API 面必须与冻结件逐条一致（路由 + 方法 + 参数/响应模型引用）."""
+        from app.main import app
+    
+        spec = app.openapi()
+        current = {
+            path: item
+            for path, item in sorted(spec.get("paths", {}).items())
+            if path.startswith("/agent/")
+        }
+        frozen = json.loads(FROZEN.read_text())["paths"]
+        assert frozen, "冻结件不得为空"
+        missing = sorted(set(frozen) - set(current))
+        added = sorted(set(current) - set(frozen))
+        assert not missing, f"冻结的台账路由消失：{missing}"
+        assert not added, f"新增台账路由必须先更新冻结件：{added}"
+        drifted = sorted(
+            path for path in frozen if json.dumps(frozen[path], sort_keys=True)
+            != json.dumps(current[path], sort_keys=True)
+        )
+>       assert not drifted, f"台账路由签名漂移，需重新生成并复核：{drifted}"
+E       AssertionError: 台账路由签名漂移，需重新生成并复核：['/agent/feedback/attempts/resolve']
+E       assert not ['/agent/feedback/attempts/resolve']
+
+admin/api/tests/test_ledger_openapi_freeze.py:41: AssertionError
+______________ test_feedback_operation_id_race_across_two_threads ______________
+
+ledger_env = {'tenant_a': UUID('cacf4d4b-5462-4442-81af-9589cc48c466'), 'tenant_b': UUID('ec52415b-f8f1-4778-a5ff-b552dbe26fcb'), 'user_a': UUID('63398c69-85ea-4970-9639-3798b90aed73'), 'user_b': UUID('8abba16c-0ed0-40c1-b299-777bf7d843d1')}
+
+    async def test_feedback_operation_id_race_across_two_threads(ledger_env):
+        """同一操作ID跨线程并发，也只能有一次受理，不返回唯一约束500。"""
+        a, da, ctxa = await fixture(ledger_env)
+        b, db, ctxb = await fixture(ledger_env)
+        try:
+            op = "cross-thread-" + uuid.uuid4().hex
+            results = await asyncio.gather(
+                a.put(
+                    "/agent/feedback/answers/" + da["answer"]["answer_id"],
+                    json={"rating": "positive", "expected_revision": 0, "operation_id": op},
+                ),
+                b.put(
+                    "/agent/feedback/answers/" + db["answer"]["answer_id"],
+                    json={"rating": "negative", "expected_revision": 0, "operation_id": op},
+                ),
+            )
+>           assert sorted(r.status_code for r in results) == [200, 409], [r.text for r in results]
+E           AssertionError: ['{"detail":{"code":"collection_disabled","error":"反馈采集尚未启用"}}', '{"detail":{"code":"collection_disabled","error":"反馈采集尚未启用"}}']
+E           assert [422, 422] == [200, 409]
+E             
+E             At index 0 diff: 422 != 200
+E             Use -v to get more diff
+
+admin/api/tests/test_observability_api.py:471: AssertionError
+=========================== short test summary info ============================
+FAILED admin/api/tests/test_event_ledger_api.py::test_browser_events_all_reserved_types_rejected
+FAILED admin/api/tests/test_feedback_api.py::test_feedback_positive_then_history
+FAILED admin/api/tests/test_feedback_api.py::test_feedback_partial_answer_rejected
+FAILED admin/api/tests/test_feedback_api.py::test_switch_and_cancel_with_history
+FAILED admin/api/tests/test_feedback_api.py::test_idempotent_replay_and_conflict
+FAILED admin/api/tests/test_feedback_api.py::test_comment_saved_and_content_permission_split
+FAILED admin/api/tests/test_feedback_api.py::test_cross_tenant_isolated_and_operations_scoped
+FAILED admin/api/tests/test_feedback_api.py::test_browser_mixed_batch_per_item
+FAILED admin/api/tests/test_feedback_api.py::test_browser_feedback_rating_enum_rejected
+FAILED admin/api/tests/test_feedback_api.py::test_metrics_fixture_2_of_3_and_copy_distinct
+FAILED admin/api/tests/test_feedback_api.py::test_feedback_business_day_half_open_and_late_rating
+FAILED admin/api/tests/test_ledger_openapi_freeze.py::test_ledger_openapi_has_no_drift
+FAILED admin/api/tests/test_observability_api.py::test_feedback_operation_id_race_across_two_threads
+13 failed, 148 passed, 34 skipped in 70.14s (0:01:10)
