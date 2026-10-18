@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
@@ -44,7 +44,22 @@ class UnknownRegionError(FollowedRegionsError):
 
 
 async def _lock_user(session: AsyncSession, user_id: uuid.UUID) -> None:
-    """锁定用户行，序列化同一用户的并发写入。"""
+    """按部署形态锁定用户聚合，序列化同一用户的并发写入。"""
+    from app.services.remote_mode import identity_backend_mode
+
+    if identity_backend_mode() == "remote":
+        exists = await session.scalar(
+            text("SELECT id FROM iam_reference_users WHERE id = :user_id"),
+            {"user_id": user_id},
+        )
+        if exists is None:
+            raise FollowedRegionsError("用户引用不存在")
+        await session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))"),
+            {"key": f"air-agent.followed-user:{user_id}"},
+        )
+        return
+
     locked = await session.scalar(select(User.id).where(User.id == user_id).with_for_update())
     if locked is None:
         raise FollowedRegionsError("用户不存在")
@@ -108,7 +123,28 @@ async def set_followed_regions(
 # --------------------------------------------------------------- 成员作用域（企业上下文）
 
 
-async def _lock_membership(session: AsyncSession, membership_id: uuid.UUID) -> None:
+async def _lock_membership(
+    session: AsyncSession, membership_id: uuid.UUID, tenant_id: uuid.UUID
+) -> None:
+    """remote 锁引用聚合并核对同租户绑定；local 保留旧成员行锁。"""
+    from app.services.remote_mode import identity_backend_mode
+
+    if identity_backend_mode() == "remote":
+        exists = await session.scalar(
+            text(
+                "SELECT id FROM iam_reference_memberships"
+                " WHERE id = :membership_id AND tenant_id = :tenant_id"
+            ),
+            {"membership_id": membership_id, "tenant_id": tenant_id},
+        )
+        if exists is None:
+            raise FollowedRegionsError("成员引用不存在或企业绑定不匹配")
+        await session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))"),
+            {"key": f"air-agent.followed-membership:{membership_id}"},
+        )
+        return
+
     locked = await session.scalar(
         select(TenantMembership.id).where(TenantMembership.id == membership_id).with_for_update()
     )
@@ -141,7 +177,7 @@ async def set_membership_followed_regions(
     if len(unique_codes) > MAX_FOLLOWED_REGIONS:
         raise TooManyRegionsError(f"关注城市最多 {MAX_FOLLOWED_REGIONS} 个")
 
-    await _lock_membership(session, membership_id)
+    await _lock_membership(session, membership_id, tenant_id)
     regions = await _resolve_regions(session, unique_codes)
 
     existing = (

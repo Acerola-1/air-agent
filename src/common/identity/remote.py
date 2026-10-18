@@ -514,6 +514,34 @@ def response_json(response: httpx.Response) -> Any:
         raise RemoteProtocolError("IAM 响应不是合法 JSON") from exc
 
 
+def tenant_is_active(tenant_id: str, *, config: dict[str, str] | None = None) -> bool:
+    """向 IAM 实时查询租户是否可用，不读取业务库引用投影，也不缓存正向结果."""
+    import uuid
+
+    cfg = config or require_remote_config()
+    try:
+        canonical_id = str(uuid.UUID(tenant_id))
+    except (TypeError, ValueError, AttributeError) as exc:
+        raise RemoteProtocolError("租户 UUID 非法") from exc
+    payload = response_json(
+        request_iam(
+            "POST",
+            "/v1/internal/tenants/status",
+            config=cfg,
+            body={"tenant_id": canonical_id},
+        )
+    )
+    if not isinstance(payload, dict):
+        raise RemoteProtocolError("IAM 租户状态响应必须是对象")
+    if (
+        payload.get("schema_version") != "iam.tenant-status.v1"
+        or payload.get("tenant_id") != canonical_id
+        or type(payload.get("active")) is not bool
+    ):
+        raise RemoteProtocolError("IAM 租户状态响应不符合 iam.tenant-status.v1")
+    return payload["active"]
+
+
 def subject_payload(
     subject_token: str,
     *,

@@ -11,10 +11,18 @@
 
 from __future__ import annotations
 
+import asyncio
 import datetime as dt
 import uuid
 from typing import Annotated
 
+from common.identity.db import IdentityBackendUnavailable
+from common.identity.remote import (
+    IdentityBackendConfigError,
+    RemoteProtocolError,
+    identity_backend_mode,
+    tenant_is_active,
+)
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import select
 
@@ -442,7 +450,16 @@ async def issue_reconcile_ticket(
     "原成员被撤销后仍可校准"这一目标就无法成立。
     """
     settings = get_settings()
-    keys = settings.ledger_reconcile_key_pairs
+    try:
+        keys = settings.ledger_reconcile_key_pairs
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "reconcile_credential_unconfigured",
+                "error": "服务校准密钥配置无效，拒绝签发",
+            },
+        ) from None
     if not keys:
         raise HTTPException(
             status_code=503,
@@ -451,15 +468,40 @@ async def issue_reconcile_ticket(
                 "error": "服务校准密钥未配置，拒绝签发",
             },
         )
-    # 内部令牌门控的运维端点：显式开启平台作用域读租户（RLS 仍生效，不绕过）。
-    await apply_tenant_context(session, TenantContext(platform=True))
-    tenant = (
-        await session.execute(select(Tenant).where(Tenant.id == payload.tenant_id))
-    ).scalar_one_or_none()
-    if tenant is None:
-        raise HTTPException(status_code=404, detail={"code": "tenant_not_found"})
-    if str(tenant.status) != "active":
-        raise HTTPException(status_code=403, detail={"code": "tenant_inactive"})
+    try:
+        remote_mode = identity_backend_mode() == "remote"
+    except IdentityBackendConfigError:
+        raise HTTPException(
+            status_code=503,
+            detail={"code": "iam_unavailable", "error": "身份核验配置不可用"},
+        ) from None
+    if remote_mode:
+        try:
+            tenant_active = await asyncio.to_thread(tenant_is_active, str(payload.tenant_id))
+        except (
+            IdentityBackendConfigError,
+            IdentityBackendUnavailable,
+            RemoteProtocolError,
+        ):
+            raise HTTPException(
+                status_code=503,
+                detail={"code": "iam_unavailable", "error": "IAM 租户核验不可用"},
+            ) from None
+        if not tenant_active:
+            raise HTTPException(
+                status_code=403,
+                detail={"code": "tenant_unavailable", "error": "企业不可用"},
+            )
+    else:
+        # Explicit local compatibility; remote mode never reads the removed users/tenants tables.
+        await apply_tenant_context(session, TenantContext(platform=True))
+        tenant = (
+            await session.execute(select(Tenant).where(Tenant.id == payload.tenant_id))
+        ).scalar_one_or_none()
+        if tenant is None:
+            raise HTTPException(status_code=404, detail={"code": "tenant_not_found"})
+        if str(tenant.status) != "active":
+            raise HTTPException(status_code=403, detail={"code": "tenant_inactive"})
     ticket = sign_reconcile_ticket(
         str(payload.tenant_id),
         keys,

@@ -61,6 +61,7 @@ from app.services.followed_regions import (
     set_membership_followed_regions,
 )
 from app.services.identity import resolve_identity
+from app.services.permission_catalog import build_display_tree
 from app.services.permission_tree import build_tree
 from app.services.remote_mode import identity_backend_mode
 from app.services.tenant_context import build_session_context, list_active_tenants
@@ -391,7 +392,11 @@ async def menus(
     identity: IdentityDep,
     session: SessionDep,
 ) -> list[PermissionNode]:
-    """按当前权限码过滤的菜单树。任何人有权看到自己的菜单边界。"""
+    """返回用于导航展示的目录；权限判断仍由各业务端点独立执行。"""
+    if identity_backend_mode() == "remote":
+        # The presentation catalog is static; only trusted, live IAM permission codes
+        # select entries. It never grants access and does not query the removed RBAC table.
+        return build_display_tree(identity.permissions)
     permissions = await load_permissions(session)
     return build_tree(permissions, allowed=set(identity.permissions))
 

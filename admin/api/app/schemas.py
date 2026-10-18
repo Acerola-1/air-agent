@@ -43,7 +43,7 @@ class UserOut(BaseModel):
     display_name: str
     is_active: bool
     last_login_at: dt.datetime | None
-    created_at: dt.datetime
+    created_at: dt.datetime | None
     roles: list[RoleBrief]
     followed_region_codes: list[str]
 

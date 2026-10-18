@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.config import get_settings
-from app.db import engine_dispose_all
+from app.db import engine_dispose_all, runtime_engine
 from app.routers import (
     audit,
     auth,
@@ -41,6 +41,10 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         from common.identity.remote import require_remote_config
 
         require_remote_config()
+    from app.services.physical_separation import verify_database_mode
+
+    async with runtime_engine.connect() as connection:
+        await verify_database_mode(connection, identity_backend_mode())
     # 早失败（任务 2.5/3.3：配置缺失必须失败关闭，绝不回退匿名/JSON 身份）
     if not settings.runtime_database_uri:
         raise RuntimeError(

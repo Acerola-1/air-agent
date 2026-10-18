@@ -201,6 +201,7 @@ async def upsert_reference_projection(
     *,
     user_id: str,
     account: str,
+    display_name: str,
     tenant_id: str | None,
     tenant_code: str | None,
     tenant_name: str | None,
@@ -215,16 +216,27 @@ async def upsert_reference_projection(
     这里以 INSERT .. ON CONFLICT 幂等 upsert。任何失败抛
     IdentityBackendUnavailable（投影不可用 = 业务引用不可用，失败关闭）。
     """
+    from app.db import TenantContext, apply_tenant_context
+
     try:
+        # This helper is also called by the SSO callback before request middleware.
+        # Apply the verified identity before the reference-table RLS policies run.
+        await apply_tenant_context(session, TenantContext(user_id=user_id, tenant_id=tenant_id))
         await session.execute(
             text(
-                "INSERT INTO iam_reference_users (id, account, auth_revision)"
-                " VALUES (:i, :a, :r)"
+                "INSERT INTO iam_reference_users (id, account, display_name, auth_revision)"
+                " VALUES (:i, :a, :d, :r)"
                 " ON CONFLICT (id) DO UPDATE SET"
-                "   account = EXCLUDED.account, auth_revision = EXCLUDED.auth_revision,"
+                "   account = EXCLUDED.account, display_name = EXCLUDED.display_name,"
+                "   auth_revision = EXCLUDED.auth_revision,"
                 "   synced_at = now()"
             ),
-            {"i": uuid.UUID(user_id), "a": account, "r": user_auth_revision},
+            {
+                "i": uuid.UUID(user_id),
+                "a": account,
+                "d": display_name,
+                "r": user_auth_revision,
+            },
         )
         if tenant_id:
             await session.execute(
@@ -243,12 +255,14 @@ async def upsert_reference_projection(
                 },
             )
         if membership_id and tenant_id:
-            await session.execute(
+            result = await session.execute(
                 text(
                     "INSERT INTO iam_reference_memberships (id, tenant_id, user_id, revision)"
                     " VALUES (:i, :t, :u, :r)"
                     " ON CONFLICT (id) DO UPDATE SET"
                     "   revision = EXCLUDED.revision, synced_at = now()"
+                    " WHERE iam_reference_memberships.tenant_id = EXCLUDED.tenant_id"
+                    "   AND iam_reference_memberships.user_id = EXCLUDED.user_id"
                 ),
                 {
                     "i": uuid.UUID(membership_id),
@@ -257,105 +271,10 @@ async def upsert_reference_projection(
                     "r": membership_revision or 1,
                 },
             )
+            if result.rowcount != 1:
+                raise ValueError("IAM 成员引用已绑定到其他企业或用户")
     except Exception as exc:  # noqa: BLE001 - 投影失败按后端不可用关闭
         raise IdentityBackendUnavailable("业务引用投影不可用") from exc
-
-
-async def upsert_business_identity_rows(
-    session: AsyncSession,
-    *,
-    user_id: str,
-    account: str,
-    tenant_id: str | None,
-    tenant_code: str | None,
-    tenant_name: str | None,
-    membership_id: str | None,
-    user_auth_revision: int,
-    tenant_auth_revision: int | None,
-    membership_revision: int | None,
-) -> None:
-    """把 IAM 同 UUID 的**技术行**upsert 进既有业务表（users/tenants/tenant_memberships）.
-
-    contract（I2身份/业务分离前置）：业务 FK（偏好/归属/台账）挂在旧表上，
-    remote 下以与 IAM 相同的 UUID 装载最小投影行——不迁移口令（固定不可登录哨兵）、
-    不建角色行（role_permissions/membership_roles 保持空 = 本地投影不授权）、
-    is_active 仅作展示；授权永远来自 IAM 实时内省。
-    """
-    import re as _re
-
-    from app.db import TenantContext, apply_tenant_context
-
-    # 旧 users.account CHECK（ASCII [a-zA-Z0-9_-]{3,32}）与 IAM 账号命名空间并非同构；
-    # 投影行 account 做确定性规范化（非法字符→_），原始账号保留在 agent_iam_sessions 快照。
-    # 该映射只服务本地展示/FK，不参与授权；同名规范化冲突在同步脚本里另报差异。
-    safe_account = _re.sub(r"[^a-zA-Z0-9_-]", "_", account)[:32] or f"user_{user_id[:8]}"
-    if len(safe_account) < 3:
-        safe_account = f"iam_{uuid.UUID(user_id).hex[:28]}"
-    # 投影同步是服务端技术写（非用户授权操作）：事务本地开 platform GUC 过 RLS；
-    # 写入内容仅限同UUID技术行（口令哨兵/无角色行），不改变任何授权语义。
-    await session.execute(text("SELECT set_config('air_agent.platform', 'on', true)"))
-    try:
-        await session.execute(
-            text(
-                "INSERT INTO users"
-                " (id, account, display_name, password_hash, is_active, auth_revision)"
-                " VALUES (:i, :a, :d, :ph, true, :r)"
-                " ON CONFLICT (id) DO UPDATE SET"
-                "   account = EXCLUDED.account, display_name = EXCLUDED.display_name,"
-                "   is_active = true, auth_revision = EXCLUDED.auth_revision, updated_at = now()"
-            ),
-            {
-                "i": uuid.UUID(user_id),
-                "a": safe_account,
-                "d": account,
-                # 不可登录哨兵：bcrypt 校验永不通过；remote 部署同时关闭 /login 本地路径
-                "ph": "!iam-remote-no-local-login",
-                "r": user_auth_revision,
-            },
-        )
-        if tenant_id:
-            await session.execute(
-                text(
-                    "INSERT INTO tenants (id, code, name, status, auth_revision)"
-                    " VALUES (:i, :c, :n, 'active', :r)"
-                    " ON CONFLICT (id) DO UPDATE SET"
-                    "   code = EXCLUDED.code, name = EXCLUDED.name, status = 'active',"
-                    "   auth_revision = EXCLUDED.auth_revision, updated_at = now()"
-                ),
-                {
-                    "i": uuid.UUID(tenant_id),
-                    "c": tenant_code or "",
-                    "n": tenant_name or "",
-                    "r": tenant_auth_revision or 1,
-                },
-            )
-        if membership_id and tenant_id:
-            await session.execute(
-                text(
-                    "INSERT INTO tenant_memberships (id, tenant_id, user_id, status, revision)"
-                    " VALUES (:i, :t, :u, 'active', :r)"
-                    " ON CONFLICT (id) DO UPDATE SET"
-                    "   status = 'active', revision = EXCLUDED.revision, updated_at = now()"
-                ),
-                {
-                    "i": uuid.UUID(membership_id),
-                    "t": uuid.UUID(tenant_id),
-                    "u": uuid.UUID(user_id),
-                    "r": membership_revision or 1,
-                },
-            )
-    except Exception as exc:  # noqa: BLE001 - 投影失败=业务引用不可用，失败关闭
-        raise IdentityBackendUnavailable("业务身份投影不可用") from exc
-    finally:
-        if session.is_active:
-            await apply_tenant_context(
-                session,
-                TenantContext(
-                    user_id=user_id,
-                    tenant_id=tenant_id,
-                    platform=False,
-                ),
-            )
 
 
 def _load_permissions(raw) -> list[str]:  # noqa: ANN001 - JSONB 列（str/list）
@@ -391,12 +310,12 @@ def _identity_objects(
         account=account,
         display_name=account,
         auth_revision=revisions["user_auth_revision"],
-        # remote 用户没有本地口令：改密走 IAM；占位哨兵不可通过校验
-        password_hash="!iam-remote-no-local-login",
+        # remote 身份不在业务库保存口令或占位口令。
+        password_hash=None,
         is_active=True,
         last_login_at=None,
-        # 展示字段：remote 用户创建时刻以本地投影行 created_at 为准（非授权语义）
-        created_at=dt.datetime.now(dt.UTC),
+        # IAM 当前身份响应不含用户创建时间，不伪造成本地时间。
+        created_at=None,
         followed_regions=[],
     )
     tenant = (
@@ -535,8 +454,11 @@ async def resolve_remote_identity(session: AsyncSession, cookie_value: str | Non
         tenant_auth_revision=revisions["tenant_auth_revision"],
         membership_revision=revisions["membership_revision"],
     )
-    await upsert_business_identity_rows(session, **fields)
-    await upsert_reference_projection(session, **fields)
+    await upsert_reference_projection(
+        session,
+        **fields,
+        display_name=payload["user"].get("display_name") or fields["account"],
+    )
     await apply_tenant_context(
         session,
         TenantContext(
@@ -587,9 +509,6 @@ async def resolve_remote_identity(session: AsyncSession, cookie_value: str | Non
         expires_at=row["expires_at"],
     )
     identity.user.display_name = payload["user"].get("display_name") or identity.user.account
-    identity.user.created_at = await session.scalar(
-        text("SELECT created_at FROM users WHERE id = :u"), {"u": identity.user.id}
-    )
     identity.session.created_at = dt.datetime.fromisoformat(
         payload["session"]["created_at"].replace("Z", "+00:00")
     )

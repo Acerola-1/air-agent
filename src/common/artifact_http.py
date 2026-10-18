@@ -117,6 +117,33 @@ async def deleted_thread_search_barrier(request: Request, call_next):
         return JSONResponse({"detail": "会话目录暂不可用"}, status_code=503)
 
 
+@app.middleware("http")
+async def native_identity_error_response(request: Request, call_next):
+    """Preserve SDK authentication denials across the native ASGI boundary.
+
+    Some official runtime versions only translate SDK 401/403 errors inside
+    their authentication adapter. A dependency 503 or stale-context 409 can
+    otherwise escape as a server 500. Only known authentication statuses are
+    translated here; unexpected exceptions still propagate.
+    """
+    from langgraph_sdk import Auth
+
+    try:
+        return await call_next(request)
+    except Auth.exceptions.HTTPException as exc:
+        messages = {
+            401: "登录已失效",
+            403: "无权访问",
+            409: "企业上下文已变更",
+            503: "身份服务暂不可用",
+        }
+        if exc.status_code not in messages:
+            raise
+        return JSONResponse(
+            {"detail": messages[exc.status_code]}, status_code=exc.status_code
+        )
+
+
 async def _authenticate_custom(request: Request) -> dict[str, Any]:
     """将平台鉴权错误转换为自定义 FastAPI 路由的正常拒绝响应."""
     from langgraph_sdk import Auth

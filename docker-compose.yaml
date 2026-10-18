@@ -65,17 +65,15 @@ services:
         condition: service_healthy
         restart: true
     environment:
-      # --- PostgreSQL ---
-      # Go core-server 用 libpq 解析，不支持 postgresql+psycopg:// 前缀
-      DATABASE_URI:  "postgresql://air_agent:air_agent_dev@postgres:5432/air_agent"
-      POSTGRES_URI:  "postgresql://air_agent:air_agent_dev@postgres:5432/air_agent"
+      # DB URIs come only from the private .env.langgraph file. Hardcoded
+      # environment entries override env_file in Apple Container Compose and
+      # could silently reconnect a migrated deployment to its frozen source.
 
-      # --- Redis（migration lock + broker）---
-      REDIS_URI: "redis://redis:6379"
+      # Redis URI also comes from .env.langgraph; the separated launcher pins
+      # it to the inspected dependency address instead of relying on VM DNS.
 
       # --- Store ---
       LANGGRAPH_STORE_BACKEND: "postgres"
-      LANGGRAPH_STORE: '{"kind":"postgres","uri":"postgresql://air_agent:air_agent_dev@postgres:5432/air_agent"}'
 
       # --- Misc ---
       LANGGRAPH_API_URL: "http://localhost:2024"
@@ -83,8 +81,9 @@ services:
       LANGGRAPH_AUTH_TYPE: "custom"
       LANGGRAPH_AUTH: '{"path":"/deps/air_agent/src/common/identity/langgraph_auth.py:auth","disable_studio_auth":true}'
       # 身份库运行角色连接（RLS 生效；与 admin API 同角色）
-      # RUNTIME_DATABASE_URI 由 env_file .env.langgraph（列表最后、last-wins）提供：
-      # container-compose 不支持 ${} 插值，口令不入库；.env.langgraph 为 gitignored 本地文件
+      # All native-process configuration comes from one complete env_file.
+      # Apple Container Compose reads literal key=value lines (no shell quotes).
+      # Keep host .env separate: its loopback URLs are invalid in the VM.
       RUNTIME_TICKET_AUDIENCE: "langgraph-runtime"
       LANGGRAPH_HTTP: '{"app":"/deps/air_agent/src/common/artifact_http.py:app"}'
       DB_MIGRATION_BY_CORE_API: "false"
@@ -100,14 +99,13 @@ services:
       ARK_API_KEY:          "${ARK_API_KEY}"
       DASHSCOPE_API_KEY:    "${DASHSCOPE_API_KEY}"
     env_file:
-      - .env
       - .env.langgraph
     volumes:
       # 本地代码挂载（镜像内 editable install，Python 直接读 /deps/air_agent/src）：
       # 改本地 src/ 后 `container restart air-agent-langgraph-api` 即生效，无需重建镜像
       - ./src:/deps/air_agent/src
     ports:
-      - "2024:8000"
+      - "127.0.0.1:2024:8000"
     profiles:
       - prod
 

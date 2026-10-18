@@ -40,7 +40,7 @@ from app.services.remote_identity import (
     request_cookie,
     revoke_session,
     save_iam_session,
-    upsert_business_identity_rows,
+    upsert_reference_projection,
 )
 
 router = APIRouter(tags=["iam-remote"], dependencies=[Depends(verify_write_origin)])
@@ -215,19 +215,22 @@ async def _establish_session(session: AsyncSession, token: str, kind: str) -> Re
         verification_ref=str(ec.get("verification_ref") or "") or None,
         expires_at=_expiry_from_payload(payload),
     )
-    # 同UUID业务投影（FK/展示；不授权）
+    # 同UUID最小引用（FK/展示；不授权），只在 IAM 实时回复后建立。
     if current_tenant.get("id") or principal.get("id"):
-        await upsert_business_identity_rows(
+        user = payload.get("user") or {}
+        revisions = payload.get("revisions") or {}
+        await upsert_reference_projection(
             session,
             user_id=str(principal.get("id") or ""),
-            account=str((payload.get("user") or {}).get("account") or ""),
+            account=str(user.get("account") or ""),
+            display_name=str(user.get("display_name") or user.get("account") or ""),
             tenant_id=str(current_tenant.get("id")) if current_tenant.get("id") else None,
             tenant_code=str(current_tenant.get("code")) if current_tenant.get("code") else None,
             tenant_name=str(current_tenant.get("name")) if current_tenant.get("name") else None,
             membership_id=str(membership.get("id")) if membership.get("id") else None,
-            user_auth_revision=int((payload.get("revisions") or {}).get("user_auth_revision") or 0),
-            tenant_auth_revision=(payload.get("revisions") or {}).get("tenant_auth_revision"),
-            membership_revision=(payload.get("revisions") or {}).get("membership_revision"),
+            user_auth_revision=int(revisions.get("user_auth_revision") or 0),
+            tenant_auth_revision=revisions.get("tenant_auth_revision"),
+            membership_revision=revisions.get("membership_revision"),
         )
     await session.commit()
 
