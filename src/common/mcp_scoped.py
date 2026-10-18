@@ -33,6 +33,7 @@ from loguru import logger
 
 from common.config import config
 from common.config.logging_config import LoggingConfigurator
+from common.identity.mcp_outbound import MCPOutboundAuth, mcp_identity_scope
 from common.identity.runtime import RuntimeIdentity, identity_from_config
 from common.mcp_authorization import (
     McpAuthorizationError,
@@ -103,7 +104,8 @@ class ScopedMCPToolFactory:
             membership_id=identity.membership_id,
             server_key=server_key,
         )
-        state = await self._ensure_discovered(binding, force_retry=force_retry)
+        with mcp_identity_scope(identity):
+            state = await self._ensure_discovered(binding, force_retry=force_retry)
         return list(state.tools)
 
     def _gates(self) -> None:  # pragma: no cover - 文档占位
@@ -217,6 +219,7 @@ class ScopedMCPToolFactory:
                     "url": url,
                     "transport": "streamable_http",
                     "headers": DEFAULT_PROVIDER.auth_headers(binding),
+                    "auth": MCPOutboundAuth(binding),
                 }
             },
             tool_interceptors=[_build_interceptor(binding)],
@@ -283,7 +286,8 @@ class ScopedMCPToolFactory:
                 membership_id=identity.membership_id,
                 server_key=server_key,
             )
-            state = await self._ensure_discovered(binding)
+            with mcp_identity_scope(identity):
+                state = await self._ensure_discovered(binding)
             clean_key = server_clean_key(server_key)
             tool = next(
                 (
@@ -328,12 +332,13 @@ class ScopedMCPToolFactory:
         from common.observability.tool_adapter import observed_tool_call
 
         try:
-            result = await observed_tool_call(
-                run_config,
-                tool_name=tool_name,
-                service_key=server_key,
-                invoke=lambda: tool.ainvoke(args),
-            )
+            with mcp_identity_scope(identity):
+                result = await observed_tool_call(
+                    run_config,
+                    tool_name=tool_name,
+                    service_key=server_key,
+                    invoke=lambda: tool.ainvoke(args),
+                )
         except ToolException as exc:
             content = getattr(exc, "tool_content", None)
             if content is None:

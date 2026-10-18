@@ -43,6 +43,9 @@ class RuntimeIdentity:
     user_auth_revision: int | None = None
     tenant_auth_revision: int | None = None
     membership_revision: int | None = None
+    # I2 remote：服务端登记的 IAM 执行引用（非秘密；不能签票/发运行）。
+    # local 模式恒为 None；remote 模式由 native auth 绑定复核后注入。
+    verification_ref: str | None = None
 
     def as_log_dict(self) -> dict[str, str]:
         """脱敏日志形状（仅标识，无凭据）."""
@@ -90,6 +93,7 @@ def identity_from_config(config: dict[str, Any] | None) -> RuntimeIdentity | Non
         user_auth_revision=_rev("user_auth_revision"),
         tenant_auth_revision=_rev("tenant_auth_revision"),
         membership_revision=_rev("membership_revision"),
+        verification_ref=get("verification_ref"),
     )
 
 
@@ -133,6 +137,7 @@ def identity_from_auth_user(user: Any) -> RuntimeIdentity | None:
         user_auth_revision=_rev("user_auth_revision"),
         tenant_auth_revision=_rev("tenant_auth_revision"),
         membership_revision=_rev("membership_revision"),
+        verification_ref=get("verification_ref"),
     )
 
 
@@ -147,15 +152,19 @@ def require_identity(config: dict[str, Any] | None) -> RuntimeIdentity:
 async def revalidate(identity: RuntimeIdentity) -> None:
     """撤销复查：状态失效**或修订快照前进**即抛错（R04）.
 
-    修订比较覆盖"状态仍 active"的授权变化：成员角色/权限撤销递增
-    membership_revision（角色权限替换/删除同事务推进受影响成员）、企业授权
-    调整递增 tenant_auth_revision、改密/平台授权变更递增 user_auth_revision、
-    企业切换（含 A→B→A）递增 session ctx_version。
+    local：查本地身份 PG；remote：经服务端绑定的 IAM 执行引用实时复查
+    （A07：>60s 合法运行继续；撤销/修订前进 → RuntimeIdentityRevoked）。
+    remote 缺 verification_ref 即拒绝（不可从 config/metadata 自报引用建立）。
 
     F02：强制模式下**修订快照缺失或非法一律拒绝**（升级前旧运行上下文必须
     安全停止并由新请求重建可信身份），不得降级为仅查 active。
     """
     _validate_identity_snapshot(identity)
+    if _remote_enabled():
+        import asyncio
+
+        await asyncio.to_thread(_revalidate_remote, identity)
+        return
     try:
         state = await fetch_identity_state(
             identity.session_id,
@@ -213,6 +222,54 @@ def _validate_identity_state(identity, state):
         and identity.membership_revision != state.membership_revision
     ):
         raise RuntimeIdentityRevoked("成员授权已变更（修订前进）")
+
+
+def _revalidate_remote(identity: RuntimeIdentity) -> None:
+    """同步与异步发送共用远程复查；不访问本地身份表."""
+    from common.identity.remote import (
+        IdentityBackendConfigError,
+        RemoteContextMismatch,
+        RemoteIdentityRejected,
+        RemoteProtocolError,
+        recheck_execution_context,
+    )
+
+    if not identity.verification_ref:
+        raise RuntimeIdentityRevoked("remote 运行缺少服务端执行引用")
+    try:
+        recheck_execution_context(
+            identity.verification_ref,
+            {
+                key: getattr(identity, key)
+                for key in (
+                    "user_auth_revision",
+                    "tenant_auth_revision",
+                    "membership_revision",
+                    "session_ctx_version",
+                )
+            },
+            expected_audience=os.environ.get(
+                "RUNTIME_TICKET_AUDIENCE", "langgraph-runtime"
+            ),
+        )
+    except (
+        RemoteContextMismatch,
+        RemoteIdentityRejected,
+        RemoteProtocolError,
+        IdentityBackendUnavailable,
+        IdentityBackendConfigError,
+    ) as exc:
+        raise RuntimeIdentityRevoked("身份复查未通过，停止后续外部调用") from exc
+
+
+def _remote_enabled() -> bool:
+    """运行期 remote 判定（配置非法按失败关闭处理）。."""
+    try:
+        from common.identity.remote import identity_backend_mode
+
+        return identity_backend_mode() == "remote"
+    except Exception:  # noqa: BLE001 - 配置错误同样不回退 local
+        return True
 
 
 def _enforce_enabled() -> bool:
@@ -295,6 +352,9 @@ def guard_runtime_call_sync(config: dict[str, Any] | None) -> RuntimeIdentity | 
             raise RuntimeIdentityError("缺少已认证运行身份，拒绝发起外部调用")
         return None
     _validate_identity_snapshot(identity)
+    if _remote_enabled():
+        _revalidate_remote(identity)
+        return identity
     from common.identity.db import fetch_identity_state_sync
 
     try:

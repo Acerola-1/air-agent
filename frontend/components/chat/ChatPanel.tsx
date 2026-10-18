@@ -502,6 +502,9 @@ function Composer({
   const canSend = text.trim().length > 0 && !disabled;
   const username = useSessionStore((s) => s.username);
   const logout = useSessionStore((s) => s.logout);
+  const logoutPending = useSessionStore((s) => s.logoutPending);
+  const sessionError = useSessionStore((s) => s.error);
+  const refreshSession = useSessionStore((s) => s.refreshSession);
 
   const submit = useCallback(() => {
     const t = text.trim();
@@ -526,6 +529,12 @@ function Composer({
   return (
     <form onSubmit={onFormSubmit} className="mx-auto w-full max-w-3xl">
       <div className="flex flex-col gap-2 rounded-2xl border border-border/70 bg-muted/20 p-2.5 shadow-xs focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/10 transition-all">
+        {sessionError && (
+          <div role="alert" className="flex items-center gap-2 px-1 text-xs text-destructive">
+            <span>{sessionError}</span>
+            <button type="button" className="underline" onClick={() => void (username ? logout() : refreshSession())}>重试</button>
+          </div>
+        )}
         {/* 控制与上下文监控顶栏 */}
         <div className="flex flex-wrap items-center gap-2 px-1 pt-0.5">
           <GraphSwitcher />
@@ -545,10 +554,11 @@ function Composer({
                 </span>
                 <button
                   type="button"
+                  disabled={logoutPending}
                   onClick={() => void logout()}
                   className="text-muted-foreground hover:text-foreground underline underline-offset-2"
                 >
-                  退出
+                  {logoutPending ? "退出中…" : "退出"}
                 </button>
               </>
             ) : null}

@@ -81,11 +81,11 @@ class TenantBrief(BaseModel):
 
 
 class MembershipBrief(BaseModel):
-    id: uuid.UUID
+    id: uuid.UUID | None
     tenant_id: uuid.UUID
     department_id: uuid.UUID | None
     status: str
-    revision: int
+    revision: int | None
     role_codes: list[str] = Field(default_factory=list)
 
 

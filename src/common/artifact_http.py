@@ -10,12 +10,14 @@ from __future__ import annotations
 
 import asyncio
 import hmac
+import json
 import os
 import uuid
 from contextlib import asynccontextmanager, suppress
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
+from starlette.responses import JSONResponse
 
 from common.artifact_scope import verify_scope
 from common.identity.db import IdentityBackendUnavailable
@@ -61,6 +63,58 @@ app = FastAPI(lifespan=lifespan)
 from common.event_ledger.service_read import router as reconcile_router  # noqa: E402
 
 app.include_router(reconcile_router)
+
+
+@app.middleware("http")
+async def deleted_thread_search_barrier(request: Request, call_next):
+    """平台搜索钩子仅过滤metadata；出口再排除已删除会话的values/extracted正文.
+
+    保持平台原有分页顺序，当前页过滤后可能少于limit，不伪造补齐或计数。
+    官方count不能附加墓碑条件时失败关闭；不能用未过滤的数量冒充权威目录。
+    """
+    if request.method != "POST" or request.url.path not in {
+        "/threads/search",
+        "/threads/count",
+    }:
+        return await call_next(request)
+    try:
+        actor = await _authenticate_custom(request)
+        if not actor.get("membership_id"):
+            return JSONResponse({"detail": "缺少有效企业成员身份"}, status_code=403)
+        response = await call_next(request)
+        if response.status_code != 200:
+            return response
+        from common.identity.db import fetch_deleted_thread_ids
+
+        deleted = await fetch_deleted_thread_ids(
+            tenant_id=actor["tenant_id"], user_id=actor["identity"]
+        )
+        if not deleted:
+            return response
+        if request.url.path == "/threads/count":
+            return JSONResponse(
+                {"detail": "会话删除后精确计数暂不可用，请使用会话列表"},
+                status_code=503,
+            )
+        raw = b"".join([chunk async for chunk in response.body_iterator])
+        rows = json.loads(raw)
+        if not isinstance(rows, list) or any(
+            not isinstance(row, dict) or not isinstance(row.get("thread_id"), str)
+            for row in rows
+        ):
+            return JSONResponse({"detail": "会话目录响应无效"}, status_code=503)
+        headers = {
+            key: value
+            for key, value in response.headers.items()
+            if key.lower() not in {"content-length", "content-encoding", "content-type"}
+        }
+        return JSONResponse(
+            [row for row in rows if row["thread_id"] not in deleted], headers=headers
+        )
+    except HTTPException as exc:
+        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+    except (IdentityBackendUnavailable, ValueError):
+        return JSONResponse({"detail": "会话目录暂不可用"}, status_code=503)
 
 
 async def _authenticate_custom(request: Request) -> dict[str, Any]:
@@ -242,14 +296,11 @@ async def get_capabilities(
         raise HTTPException(status_code=403, detail="缺少有效企业成员身份")
 
     from common.capabilities import get_capabilities_catalog
-    from common.identity.runtime import RuntimeIdentity
+    from common.identity.runtime import identity_from_auth_user
 
-    identity = RuntimeIdentity(
-        user_id=actor["identity"],
-        tenant_id=actor["tenant_id"],
-        membership_id=actor["membership_id"],
-        session_id=actor["session_id"],
-    )
+    identity = identity_from_auth_user(actor)
+    if identity is None:
+        raise HTTPException(status_code=401, detail="运行身份无效")
     auth_revisions = {
         "tenant": int(actor.get("tenant_auth_revision") or 1),
         "user": int(actor.get("user_auth_revision") or 1),

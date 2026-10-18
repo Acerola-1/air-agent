@@ -14,6 +14,12 @@ import {
 } from "@/lib/admin-api";
 
 export const SESSION_COOKIE = "air_agent_session";
+/** remote 部署的应用会话 handle cookie（与 admin/api remote 门面一致；名称隔离）. */
+export const IAM_SESSION_COOKIE = "air_agent_iam_handle";
+
+export function sessionCookieName(): string {
+  return process.env.AGENT_IDENTITY_BACKEND === "remote" ? IAM_SESSION_COOKIE : SESSION_COOKIE;
+}
 
 export type LoginResult =
   | { ok: true; ctx: AdminSessionContext; setCookies: string[] }
@@ -40,21 +46,19 @@ export async function loginViaUnified(
 }
 
 export async function logoutViaUnified(cookieHeader: string, origin: string | null) {
-  try {
-    await logoutViaAdmin(cookieHeader, origin);
-  } catch {
-    // 服务端撤销失败时仍清本地 cookie：会话过期后自然失效
-  }
+  await logoutViaAdmin(cookieHeader, origin);
 }
 
 /** 从请求 cookie 解析统一会话上下文；未登录/撤销返回 null。 */
 export async function getSessionContext(): Promise<AdminSessionContext | null> {
+  const name = sessionCookieName();
   const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
+  const token = store.get(name)?.value;
   if (!token) return null;
   try {
-    return await meViaAdmin(`${SESSION_COOKIE}=${token}`);
-  } catch {
-    return null;
+    return await meViaAdmin(`${name}=${token}`);
+  } catch (error) {
+    if (error instanceof AdminApiError && error.status === 401) return null;
+    throw error;
   }
 }

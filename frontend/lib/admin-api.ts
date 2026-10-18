@@ -42,7 +42,9 @@ export async function adminFetch(
   } = {}
 ): Promise<{ status: number; json: unknown; setCookies: string[] }> {
   const headers: Record<string, string> = { "content-type": "application/json" };
-  if (init.cookie) headers.cookie = init.cookie;
+  if (init.cookie) headers.cookie = process.env.AGENT_IDENTITY_BACKEND === "remote"
+    ? init.cookie.split(";").map((part) => part.trim()).filter((part) => part.startsWith("air_agent_iam_handle=")).join("; ")
+    : init.cookie;
   if (init.origin) headers.origin = init.origin;
   if (init.internalToken) headers["x-internal-token"] = init.internalToken;
   if (init.tenantContext) {
@@ -104,7 +106,8 @@ export async function meViaAdmin(cookie: string): Promise<AdminSessionContext | 
 }
 
 export async function logoutViaAdmin(cookie: string, origin: string | null) {
-  return adminFetch("/auth/logout", { method: "POST", cookie, origin });
+  const result = await adminFetch("/auth/logout", { method: "POST", cookie, origin });
+  unwrap<null>(result, [204, 401]);
 }
 
 export async function switchTenantViaAdmin(

@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -34,6 +35,12 @@ settings = get_settings()
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+    from app.services.remote_mode import identity_backend_mode
+
+    if identity_backend_mode() == "remote":
+        from common.identity.remote import require_remote_config
+
+        require_remote_config()
     # 早失败（任务 2.5/3.3：配置缺失必须失败关闭，绝不回退匿名/JSON 身份）
     if not settings.runtime_database_uri:
         raise RuntimeError(
@@ -47,6 +54,12 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
         )
     yield
     await engine_dispose_all()
+    if identity_backend_mode() == "remote":
+        from common.identity.db import close_pool
+        from common.identity.remote import close_shared_client
+
+        await close_pool()
+        close_shared_client()
 
 
 app = FastAPI(
@@ -65,6 +78,59 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# I2 remote：AGENT_IDENTITY_BACKEND=remote 时先挂 IAM SSO/会话门面（同名路由优先命中，
+# /auth/login、/switch-tenant、/me、/logout 由 remote 门面接管；auth.router 其余端点
+# ——/menus、/me/followed-regions、/runtime-ticket（业务与内部）仍可用。local 不注册（零变化）。
+if os.environ.get("AGENT_IDENTITY_BACKEND", "").strip().lower() == "remote":
+    from app.routers import iam_remote as _iam_remote
+
+    app.include_router(_iam_remote.router)
+
+    from common.identity.db import IdentityBackendUnavailable
+    from common.identity.remote import IdentityBackendConfigError, RemoteProtocolError
+    from fastapi.responses import JSONResponse
+    from sqlalchemy.exc import SQLAlchemyError
+
+    async def identity_dependency_unavailable(request, exc):
+        return JSONResponse(status_code=503, content={"detail": "身份依赖暂不可用，请稍后重试"})
+
+    for error_type in (
+        IdentityBackendUnavailable,
+        IdentityBackendConfigError,
+        RemoteProtocolError,
+        SQLAlchemyError,
+    ):
+        app.add_exception_handler(error_type, identity_dependency_unavailable)
+
+    @app.middleware("http")
+    async def remote_identity_routes(request, call_next):
+        from fastapi.responses import JSONResponse
+
+        path = request.url.path
+        if (
+            any(
+                path == prefix or path.startswith(prefix + "/")
+                for prefix in (
+                    "/users",
+                    "/tenants",
+                    "/departments",
+                    "/roles",
+                    "/permissions",
+                    "/audit-logs",
+                )
+            )
+            or path == "/auth/change-password"
+        ):
+            return JSONResponse(
+                status_code=409,
+                content={
+                    "detail": "用户、企业与权限请在统一身份管理后台操作",
+                    "iam_url": os.environ.get("IAM_BASE_URL", "") + "/admin",
+                },
+            )
+        return await call_next(request)
+
 
 app.include_router(auth.router, prefix="/auth")
 app.include_router(tenants.router, prefix="/tenants")

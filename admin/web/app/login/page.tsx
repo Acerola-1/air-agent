@@ -92,6 +92,26 @@ export default function LoginPage() {
                 {submitting && <LoaderCircle className="size-4 animate-spin" />}
                 {submitting ? "登录中…" : "登录"}
               </Button>
+              <Button
+                type="button"
+                disabled={submitting}
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  // I2 remote：SSO 发起（admin API 门面 303 中央授权）；state 由门面 HttpOnly cookie 绑定
+                setError(null);
+                setSubmitting(true);
+                fetch("/api/auth/iam/start", { method: "POST" })
+                  .then(async (res) => {
+                    const data = await res.json();
+                    if (!res.ok || typeof data.url !== "string") throw new Error(data.error ?? "统一登录暂不可用");
+                    window.location.assign(data.url);
+                  })
+                  .catch((err) => { setError(err instanceof Error ? err.message : "统一登录暂不可用"); setSubmitting(false); });
+              }}
+              >
+                使用统一身份登录
+              </Button>
             </form>
           </CardContent>
         </Card>

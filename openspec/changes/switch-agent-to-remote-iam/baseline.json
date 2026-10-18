@@ -1,0 +1,181 @@
+{
+  "recorded_at": "2026-10-16T14:27:10.922049+00:00",
+  "scope": "planning-and-handoff-only; no product implementation or live cutover",
+  "project_head": "319dab499585e640d0d216699cd767a3a1c567e1",
+  "branch": "dev",
+  "preserve_preexisting_dirty_paths": [
+    "docs/reviews/anonymous-model-scorecard.md"
+  ],
+  "baseline_tests": {
+    "status": "not_run_planning_only",
+    "instruction": "Run applicable tests at implementation start; record exact failure nodeids and skips."
+  },
+  "iam": {
+    "source_locator": "/Users/acerola/Dev/Java/air_agent_iam",
+    "commit": "8da8ba1127b7ea7aa9c0a9f7289d90cbcc96a368",
+    "access": "read-only original repository; owned exported test copy only",
+    "files": [
+      {
+        "path": "contracts/openapi/iam-identity-v1.openapi.yaml",
+        "sha256": "479bc0c6dd5dc13ea198ea0bfa3a58d953a4194b89efc30942e7909c76eed884",
+        "bytes": 83586
+      },
+      {
+        "path": "contracts/schemas/identity.schema.json",
+        "sha256": "4c3172f40cb4c2dcdc7955207e9f9f321be7915c2e318f63fa775c39f788ee1d",
+        "bytes": 5690
+      },
+      {
+        "path": "contracts/schemas/introspection-inactive.schema.json",
+        "sha256": "3ed63b94e9747cb0f4864522074b9ffd01c483ad657ad917f5fe52a1b3c2a8c4",
+        "bytes": 864
+      },
+      {
+        "path": "contracts/schemas/requests.schema.json",
+        "sha256": "6eafd6b623a4c99f4e6465cc2e52ef3dba9887e86215ee35a524355481ae846b",
+        "bytes": 10614
+      },
+      {
+        "path": "contracts/schemas/error.schema.json",
+        "sha256": "8146041e3dce891edda0245e137e43f9f961d70d4566e6f203909ab1ddeeadca",
+        "bytes": 852
+      },
+      {
+        "path": "server/src/main/java/com/airagent/iam/internal/vo/ServiceIdentityVO.java",
+        "sha256": "7f17a98a7febd244c66eb46d3144b2d90de7ae967075ad8c172e6268f1f609f8",
+        "bytes": 7321
+      },
+      {
+        "path": "server/src/main/java/com/airagent/iam/internal/service/impl/RuntimeTicketServiceImpl.java",
+        "sha256": "dc12041dc32c40c1c007b9c958f39dedbe353dfeaa98eeb6a863fd05357b3e3c",
+        "bytes": 13159
+      },
+      {
+        "path": "server/src/main/java/com/airagent/iam/webapi/sso/dto/SsoExchangeDTO.java",
+        "sha256": "4c0ba8aaeb8d55828c22ed800310c1e17ccb5d7a53ce33c25385a68bddb8c02a",
+        "bytes": 3631
+      },
+      {
+        "path": "server/src/main/java/com/airagent/iam/webapi/sso/controller/SsoController.java",
+        "sha256": "36f7120cca6f836c51fc1251f6401a2f181a443dc83c9662fd4d9f4b106a65f5",
+        "bytes": 7841
+      },
+      {
+        "path": "server/src/main/java/com/airagent/iam/internal/service/impl/IntrospectionServiceImpl.java",
+        "sha256": "fc728bb7eafd84f43f4ecebcd051a832cca271476c46c068a4728b38e7cd6959",
+        "bytes": 32361
+      }
+    ]
+  },
+  "product_sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "75a49dbc42f88190d9c954b17d1cb15807ac436bb80c72014505aaf7e9adcd2b",
+      "bytes": 9083
+    },
+    {
+      "path": "langgraph.json",
+      "sha256": "8db48bfcb383f9c102dc5d26f92a0d06882c53e234269db0c7fad0603754eddf",
+      "bytes": 645
+    },
+    {
+      "path": "src/common/identity/runtime.py",
+      "sha256": "8af11aff7a2caf40fa7b09dd4a5b598364a502acd7e03d42c7aab0999dad961e",
+      "bytes": 12416
+    },
+    {
+      "path": "src/common/identity/db.py",
+      "sha256": "88b939dc24a761a5c511f91ff69ad47cd9732ca7fb0d551522701c84baf9f13d",
+      "bytes": 15316
+    },
+    {
+      "path": "src/common/identity/langgraph_auth.py",
+      "sha256": "42bfdf9af5fa6548fedb6201c923350450814f833eb771101bfefd3ca80e6f69",
+      "bytes": 45635
+    },
+    {
+      "path": "src/common/identity/ticket.py",
+      "sha256": "4a344bbf2aade5f2a459865712fb534d95497ea5a8a53ace71843efa17c9b225",
+      "bytes": 13172
+    },
+    {
+      "path": "src/common/identity/outbound.py",
+      "sha256": "9a4a4273561b1fefd102f0ead07058e4c49e7fd11d7881002c5d5651436df70a",
+      "bytes": 1207
+    },
+    {
+      "path": "admin/api/app/services/identity.py",
+      "sha256": "c724e59e0c2e8fea57d4a9d64b63f12988735ee90518c6b478ae0adbcc339ffb",
+      "bytes": 10666
+    },
+    {
+      "path": "admin/api/app/deps.py",
+      "sha256": "091a9cccb124cb8f5c15b3d6747705dc9249937f131a96b84822d3708736c3f7",
+      "bytes": 7170
+    },
+    {
+      "path": "admin/api/app/models.py",
+      "sha256": "95d9a37c54cf784826f331e7399204623b3adcc61344b8b85f0f9a9790d2ce7a",
+      "bytes": 29011
+    },
+    {
+      "path": "frontend/lib/admin-api.ts",
+      "sha256": "e3da5faee015e9459ad818c81e058b83d379ad1cf25a6a0abcd8edd816279468",
+      "bytes": 5601
+    },
+    {
+      "path": "frontend/lib/session-client.ts",
+      "sha256": "27e5c4c1164b0a917153c2981e5e0a318c6be18ebc27da85ba5903f08c536575",
+      "bytes": 5474
+    },
+    {
+      "path": "admin/web/lib/session.tsx",
+      "sha256": "f44dbf930e13d2fb912572d576ab20d6e3bf55b4414a3cbc0da967338fd77c70",
+      "bytes": 4801
+    }
+  ],
+  "handoff_files": [
+    {
+      "path": "openspec/changes/switch-agent-to-remote-iam/.openspec.yaml",
+      "sha256": "5e6f0d1072064583f2815cc09d56f9bd224b8bee9b1829898c19e88d650e1e21",
+      "bytes": 41
+    },
+    {
+      "path": "openspec/changes/switch-agent-to-remote-iam/acceptance.md",
+      "sha256": "c52a1bac65dda19bc7077240f48ec3554513316a49b9666502371bb157c267aa",
+      "bytes": 4303
+    },
+    {
+      "path": "openspec/changes/switch-agent-to-remote-iam/contract.md",
+      "sha256": "18faf2d90dbaf38c684940d15017361cfb9acdb4715d04c87207709de5a48eb3",
+      "bytes": 10442
+    },
+    {
+      "path": "openspec/changes/switch-agent-to-remote-iam/design.md",
+      "sha256": "660e0a7247ca6a7ea2420db25b95c925666f880dfd47edc366398f9f32376647",
+      "bytes": 6621
+    },
+    {
+      "path": "openspec/changes/switch-agent-to-remote-iam/proposal.md",
+      "sha256": "a5aa0818446999b672be3c0735bd4abfe93376395717cedc09fb9bfe639e9194",
+      "bytes": 2267
+    },
+    {
+      "path": "openspec/changes/switch-agent-to-remote-iam/specs/agent-remote-iam/spec.md",
+      "sha256": "f77613cc0b5bfd8af91263b79e1410a43e9c750bed3e38539ae867f328919da3",
+      "bytes": 3562
+    },
+    {
+      "path": "openspec/changes/switch-agent-to-remote-iam/tasks.md",
+      "sha256": "b8ae78e327b1c8a8bfce35a5b9907ec0704c58671f1fe0d16bbaa6b0a43a7ce0",
+      "bytes": 2681
+    },
+    {
+      "path": "docs/handoffs/agent-remote-iam-apply.md",
+      "sha256": "c048c95294f44c47cc9348ff9a47fb0fffd72791a3ab89181729a27129f34abc",
+      "bytes": 4472
+    }
+  ],
+  "planned_shared_contract_sha256": "18faf2d90dbaf38c684940d15017361cfb9acdb4715d04c87207709de5a48eb3",
+  "workflow": "standard OpenSpec apply; tasks.md is the progress source; no goal mode"
+}

@@ -8,7 +8,13 @@ export const dynamic = "force-dynamic";
  * 验证会话/当前企业/成员有效性，换取 60s 运行票据并向原生 LangGraph API /capabilities 转发。
  */
 export async function GET(req: NextRequest) {
-  const ctx = await getSessionContext();
+  let ctx;
+  try {
+    ctx = await getSessionContext();
+  } catch (error) {
+    const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : 503;
+    return NextResponse.json({ error: "身份服务暂不可用，请稍后重试" }, { status });
+  }
   if (!ctx) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }

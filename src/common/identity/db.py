@@ -117,9 +117,7 @@ ORDER BY b.server_key ASC
 """
 
 
-async def fetch_active_mcp_bindings(
-    tenant_id: str, membership_id: str
-) -> list[dict]:
+async def fetch_active_mcp_bindings(tenant_id: str, membership_id: str) -> list[dict]:
     """获取企业对当前成员生效的所有 active 绑定（成员覆盖优先于企业默认）."""
     return await _fetch_all(
         _ACTIVE_BINDINGS_SQL,
@@ -182,8 +180,6 @@ async def close_pool() -> None:
             pass
         finally:
             _POOL = None
-
-
 
 
 async def _execute(sql: str, params: dict[str, Any], guc: dict[str, str]) -> None:
@@ -316,11 +312,18 @@ async def fetch_thread_in_tenant(thread_id: str, *, tenant_id: str) -> dict | No
 
 
 async def fetch_thread_owner(
-    thread_id: str, *, tenant_id: str, user_id: str
+    thread_id: str, *, tenant_id: str, user_id: str, allow_deleted: bool = False
 ) -> dict | None:
-    """线程归属；仅当归属行在当前企业+用户作用域内才返回（RLS + WHERE 双限）."""
+    """线程归属；删除墓碑优先，只有物理删除的窄入口可显式读取旧归属."""
     row = await _fetch_row(
-        _OWNERSHIP_FETCH,
+        _OWNERSHIP_FETCH
+        + (
+            ""
+            if allow_deleted
+            else " AND NOT EXISTS (SELECT 1 FROM agent_thread_deletions d"
+            " WHERE d.tenant_id = thread_ownership.tenant_id"
+            " AND d.thread_id = thread_ownership.thread_id)"
+        ),
         {"thread_id": thread_id},
         {"air_agent.tenant_id": tenant_id, "air_agent.user_id": user_id},
     )
@@ -420,3 +423,14 @@ def fetch_identity_state_sync(
         return _identity_state_from_row(row)
     except psycopg.Error as exc:
         raise IdentityBackendUnavailable("identity sync lookup unavailable") from exc
+
+
+async def fetch_deleted_thread_ids(*, tenant_id: str, user_id: str) -> set[str]:
+    """读当前用户永久删除墓碑；搜索结果出口使用，不读取平台私有表."""
+    rows = await _fetch_all(
+        "SELECT thread_id FROM agent_thread_deletions"
+        " WHERE tenant_id = %(tenant_id)s AND user_id = %(user_id)s",
+        {"tenant_id": tenant_id, "user_id": user_id},
+        {"air_agent.tenant_id": tenant_id, "air_agent.user_id": user_id},
+    )
+    return {str(row["thread_id"]) for row in rows}

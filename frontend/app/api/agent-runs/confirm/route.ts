@@ -14,7 +14,13 @@ export const dynamic = "force-dynamic";
  * 客户端伪造 run_id 或错配一律返回 confirmed=false（保持"受理中"，交校准处理）。
  */
 export async function POST(req: NextRequest) {
-  const ctx = await getSessionContext();
+  let ctx;
+  try {
+    ctx = await getSessionContext();
+  } catch (error) {
+    const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : 503;
+    return NextResponse.json({ error: "身份服务暂不可用，请稍后重试" }, { status });
+  }
   if (!ctx) return NextResponse.json({ error: "请先登录" }, { status: 401 });
   if (ctx.membership?.status !== "active" || ctx.current_tenant?.status !== "active") {
     return NextResponse.json({ error: "当前企业成员身份无效" }, { status: 403 });
@@ -118,7 +124,13 @@ export async function POST(req: NextRequest) {
 
 /** 历史会话的已确认计划：只读本人台账，不从浏览器草稿或 checkpoint 推断。 */
 export async function GET(req: NextRequest) {
-  const ctx = await getSessionContext();
+  let ctx;
+  try {
+    ctx = await getSessionContext();
+  } catch (error) {
+    const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : 503;
+    return NextResponse.json({ error: "身份服务暂不可用，请稍后重试" }, { status });
+  }
   if (!ctx) return NextResponse.json({ error: "请先登录" }, { status: 401 });
   const threadId = req.nextUrl.searchParams.get("thread_id") ?? "";
   if (!/^[a-zA-Z0-9_-]+$/.test(threadId)) return NextResponse.json({ error: "会话参数无效" }, { status: 400 });

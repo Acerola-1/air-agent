@@ -25,14 +25,43 @@ from app.config import get_settings
 from app.db import get_session
 from app.security import SESSION_COOKIE
 from app.services.identity import Identity, resolve_identity
+from app.services.remote_mode import identity_backend_mode
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
 
 async def get_identity(request: Request, session: SessionDep) -> Identity:
-    """从统一会话 cookie 解析实时身份与权限（含当前企业上下文）。"""
-    cookie = request.cookies.get(SESSION_COOKIE)
-    identity = await resolve_identity(session, cookie)
+    """从统一会话 cookie 解析实时身份与权限（含当前企业上下文）。
+
+    I2：按启动时显式选择的后端分派——local 走既有 PG 会话解析（原语义不变）；
+    remote 走 agent_iam_sessions 桥接 + IAM 实时内省（不解析本地 auth_sessions/角色，
+    权限完全来自 IAM），失败关闭不回退 local（A01/A05）。
+    """
+    if identity_backend_mode() == "remote":
+        from app.services.remote_identity import (
+            request_cookie,
+            resolve_remote_identity,
+        )
+
+        cookie = request_cookie(request)
+        identity = await resolve_remote_identity(session, cookie)
+        claimed_tenant = request.headers.get("x-tenant-id")
+        claimed_version = request.headers.get("x-tenant-context-version")
+        if claimed_tenant is not None or claimed_version is not None:
+            if not claimed_tenant or not claimed_version:
+                raise HTTPException(status_code=403, detail="页面企业上下文缺失")
+            try:
+                version = int(claimed_version)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail="上下文版本非法") from exc
+            if (
+                claimed_tenant != (str(identity.tenant_id) if identity.tenant_id else "none")
+                or version != identity.context_version
+            ):
+                raise HTTPException(status_code=409, detail="企业上下文已变更，请刷新后重试")
+    else:
+        cookie = request.cookies.get(SESSION_COOKIE)
+        identity = await resolve_identity(session, cookie)
     # 挂到 request.state 供错误处理/审计引用
     request.state.identity = identity
     return identity

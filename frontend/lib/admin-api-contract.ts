@@ -3,11 +3,11 @@
  */
 export type AdminTenant = { id: string; code: string; name: string; status: string };
 export type AdminMembership = {
-  id: string;
+  id: string | null;
   tenant_id: string;
   department_id: string | null;
   status: string;
-  revision: number;
+  revision: number | null;
   role_codes: string[];
 };
 export type AdminTenantListItem = { tenant: AdminTenant; membership: AdminMembership };

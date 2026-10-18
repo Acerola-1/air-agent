@@ -31,18 +31,18 @@ export function TenantSwitcher() {
 
   if (ctx.tenants.length === 0 && ctx.platform_admin) {
     return (
-      <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
+      <div className="text-muted-foreground flex min-w-0 max-w-full items-center gap-1.5 text-xs">
         <Building2 className="size-3.5" /> 平台域（无企业上下文）
       </div>
     );
   }
 
   return (
-    <label className="text-muted-foreground flex items-center gap-1.5 text-xs">
+    <label className="text-muted-foreground flex min-w-0 max-w-full items-center gap-1.5 text-xs">
       <Building2 className="size-3.5" />
       <span className="sr-only">切换企业</span>
       <select
-        className="bg-background text-foreground rounded border px-2 py-1 text-xs disabled:opacity-60"
+        className="bg-background text-foreground min-w-0 max-w-full rounded border px-2 py-1 text-xs disabled:opacity-60"
         value={current?.id ?? ""}
         disabled={busy || tenants.length === 0}
         onChange={(event) => {

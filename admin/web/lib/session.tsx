@@ -13,6 +13,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -38,16 +39,22 @@ type SessionValue = {
 const SessionStateContext = createContext<SessionValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
+  const generation = useRef(0);
   const [ctx, setCtx] = useState<SessionContext | null>(null);
   const [menus, setMenus] = useState<PermissionNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    const epoch = ++generation.current;
     setLoading(true);
     setError(null);
     try {
-      const [meData, menuTree] = await Promise.all([authApi.me(), authApi.menus()]);
+      const meData = await authApi.me();
+      if (epoch !== generation.current) return;
+      setTenantRequestClaim({tenantId: meData.current_tenant?.id ?? "none", version: meData.context_version});
+      const menuTree = await authApi.menus();
+      if (epoch !== generation.current) return;
       setCtx(meData);
       setMenus(menuTree);
       // R02：登记页面感知企业上下文，后续业务请求携带声明
@@ -57,6 +64,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           : null
       );
     } catch (err) {
+      if (epoch !== generation.current) return;
       // 401/403 是"未登录/会话撤销"的正常状态，不是错误；其它才是真的出问题
       if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
         setCtx(null);
@@ -65,7 +73,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         setError(err instanceof Error ? err.message : "加载会话失败");
       }
     } finally {
-      setLoading(false);
+      if (epoch === generation.current) setLoading(false);
     }
   }, []);
 
@@ -85,25 +93,28 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const logout = useCallback(async () => {
-    try {
-      await authApi.logout();
-    } finally {
-      setCtx(null);
-      setMenus([]);
-    }
+    await authApi.logout();
+    ++generation.current;
+    setTenantRequestClaim(null);
+    setCtx(null);
+    setMenus([]);
   }, []);
 
   const switchTenant = useCallback(
     async (tenantId: string) => {
       if (!ctx) return { ok: false, message: "未登录" };
+      const epoch = ++generation.current;
       try {
         const next = await authApi.switchTenant(tenantId, ctx.context_version);
-        setCtx(next);
-        setMenus(await authApi.menus());
+        if (epoch !== generation.current) return { ok: false, message: "企业上下文已变更" };
         setTenantRequestClaim({
           tenantId: next.current_tenant?.id ?? "none",
           version: next.context_version,
         });
+        const menuTree = await authApi.menus();
+        if (epoch !== generation.current) return { ok: false, message: "企业上下文已变更" };
+        setCtx(next);
+        setMenus(menuTree);
         return { ok: true };
       } catch (err) {
         if (err instanceof ApiError && err.status === 409) {

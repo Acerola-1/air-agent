@@ -395,6 +395,16 @@ def _claims_from_ctx(ctx: Auth.types.AuthContext) -> dict[str, str]:
     }
 
 
+def _remote_auth_enabled() -> bool:
+    """Native 入站 remote 判定；配置非法一律按 remote 失败关闭。."""
+    try:
+        from common.identity.remote import identity_backend_mode
+
+        return identity_backend_mode() == "remote"
+    except Exception:  # noqa: BLE001
+        return True
+
+
 @auth.authenticate
 async def authenticate(request):  # noqa: ANN001 - 平台注入 starlette Request
     """校验运行票据并核对实时身份状态；返回可信用户上下文."""
@@ -464,6 +474,66 @@ async def authenticate(request):  # noqa: ANN001 - 平台注入 starlette Reques
             actor["service_actor"] = rclaims.actor
             return actor
         return _migration_ctx(mclaims)
+
+    # I2 remote：票据摘要 → 服务端绑定 → IAM 执行引用实时复核（A06）。
+    # 不读身份 PG、不凭有效签名自造引用；绑定行与票据身份/四修订逐一比对，
+    # 复查通过才把非秘密引用注入可信上下文（运行中逐发送继续用它复查）。
+    if _remote_auth_enabled():
+        from common.identity.db import IdentityBackendUnavailable as _IBU
+        from common.identity.remote import (  # noqa: PLC0415
+            RemoteContextMismatch,
+            RemoteIdentityRejected,
+            RemoteProtocolError,
+        )
+        from common.identity.remote import (
+            require_remote_config as _require_cfg,
+        )
+        from common.identity.ticket_binding import TicketBindingError
+        from common.identity.ticket_binding import (
+            resolve_binding_for_ticket as _resolve_binding,
+        )
+
+        try:
+            cfg = _require_cfg()
+        except Exception as exc:  # noqa: BLE001 - 配置缺失=服务故障
+            raise Auth.exceptions.HTTPException(
+                status_code=503, detail="身份服务配置不可用"
+            ) from exc
+        try:
+            binding = await __import__("asyncio").to_thread(
+                _resolve_binding, claims, token, config=cfg
+            )
+        except RemoteIdentityRejected as exc:
+            raise Auth.exceptions.HTTPException(
+                status_code=401, detail="登录已失效"
+            ) from exc
+        except RemoteContextMismatch as exc:
+            raise Auth.exceptions.HTTPException(
+                status_code=409, detail="企业上下文已变更"
+            ) from exc
+        except TicketBindingError as exc:
+            raise Auth.exceptions.HTTPException(
+                status_code=401, detail="运行凭据没有服务端绑定"
+            ) from exc
+        except (_IBU, RemoteProtocolError) as exc:
+            raise Auth.exceptions.HTTPException(
+                status_code=503, detail="身份服务暂不可用"
+            ) from exc
+        return {
+            "identity": claims.user_id,
+            "display_name": "",
+            "is_authenticated": True,
+            "permissions": [],
+            "tenant_id": claims.tenant_id,
+            "membership_id": claims.membership_id,
+            "session_id": claims.session_id,
+            "session_ctx_version": claims.session_ctx_version,
+            "user_auth_revision": claims.user_auth_revision,
+            "tenant_auth_revision": claims.tenant_auth_revision,
+            "membership_revision": claims.membership_revision,
+            # 非秘密执行引用：逐发送复查凭据（不能签票/发运行）
+            "verification_ref": binding.verification_ref,
+        }
 
     try:
         state = await fetch_identity_state(
@@ -674,7 +744,7 @@ async def on_thread_delete(
     _deny_migration(ctx)
     ids = _claims_from_ctx(ctx)
     thread_id = str(value.get("thread_id") or "")
-    owner = await _owner_or_deny(thread_id, ids)
+    owner = await _owner_or_deny(thread_id, ids, allow_deleted=True)
     if owner["user_id"] != ids["user_id"] or owner["tenant_id"] != ids["tenant_id"]:
         raise Auth.exceptions.HTTPException(status_code=403, detail="无权删除此会话")
     from common.identity.db import delete_thread_ownership
@@ -1022,10 +1092,13 @@ def _eq_filter(mapping: dict[str, str]) -> dict[str, dict[str, str]]:
     return {key: {"$eq": value} for key, value in mapping.items()}
 
 
-async def _owner_or_deny(thread_id: str, ids: dict[str, str]) -> dict[str, str]:
+async def _owner_or_deny(
+    thread_id: str, ids: dict[str, str], *, allow_deleted: bool = False
+) -> dict[str, str]:
     try:
+        kwargs = {"allow_deleted": True} if allow_deleted else {}
         owner = await fetch_thread_owner(
-            thread_id, tenant_id=ids["tenant_id"], user_id=ids["user_id"]
+            thread_id, tenant_id=ids["tenant_id"], user_id=ids["user_id"], **kwargs
         )
     except IdentityBackendUnavailable as exc:
         raise Auth.exceptions.HTTPException(

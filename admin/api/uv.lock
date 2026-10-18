@@ -10,6 +10,7 @@ dependencies = [
     { name = "alembic" },
     { name = "bcrypt" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pydantic" },
     { name = "pydantic-settings" },
@@ -19,7 +20,6 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
-    { name = "httpx" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
@@ -30,7 +30,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.14,<2.0" },
     { name = "bcrypt", specifier = ">=4.2,<6.0" },
     { name = "fastapi", specifier = ">=0.135,<1.0" },
-    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.1,<1.0" },
+    { name = "httpx", specifier = ">=0.28.1,<1.0" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2,<4.0" },
     { name = "pydantic", specifier = ">=2.13,<3.0" },
     { name = "pydantic-settings", specifier = ">=2.7,<3.0" },

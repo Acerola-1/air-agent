@@ -42,7 +42,7 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="bg-sidebar text-sidebar-foreground flex w-60 shrink-0 flex-col border-r">
+    <aside className="bg-sidebar text-sidebar-foreground flex w-full shrink-0 flex-col border-b md:w-60 md:border-r md:border-b-0">
       <div className="flex h-14 items-center gap-2 border-b px-4">
         <div className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md text-xs font-bold">
           AA
@@ -52,7 +52,7 @@ export function AppSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-4 overflow-y-auto p-3">
+      <nav aria-label="后台导航" className="flex max-h-48 flex-wrap items-start gap-2 overflow-y-auto p-3 md:block md:max-h-none md:flex-1 md:space-y-4">
         <Link
           href="/"
           className={cn(

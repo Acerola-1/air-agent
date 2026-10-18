@@ -10,7 +10,13 @@ export const dynamic = "force-dynamic";
  * 服务端按 attempt/thread 关联并在 run_id 确认后继续追踪。
  */
 export async function POST(req: NextRequest) {
-  const ctx = await getSessionContext();
+  let ctx;
+  try {
+    ctx = await getSessionContext();
+  } catch (error) {
+    const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : 503;
+    return NextResponse.json({ error: "身份服务暂不可用，请稍后重试" }, { status });
+  }
   if (!ctx) return NextResponse.json({ error: "请先登录" }, { status: 401 });
   if (ctx.membership?.status !== "active" || ctx.current_tenant?.status !== "active") {
     return NextResponse.json({ error: "当前企业成员身份无效" }, { status: 403 });

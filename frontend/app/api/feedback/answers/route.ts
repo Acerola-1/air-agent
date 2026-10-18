@@ -12,7 +12,13 @@ export const dynamic = "force-dynamic";
  * 跨企业/未确认对象不出现（不泄露存在性）。
  */
 export async function GET(req: NextRequest) {
-  const ctx = await getSessionContext();
+  let ctx;
+  try {
+    ctx = await getSessionContext();
+  } catch (error) {
+    const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : 503;
+    return NextResponse.json({ error: "身份服务暂不可用，请稍后重试" }, { status });
+  }
   if (!ctx) return NextResponse.json({ error: "请先登录" }, { status: 401 });
   if (!feedbackScopeMatches(req.headers, ctx)) return NextResponse.json({error: "企业上下文已变化，请刷新", code: "context_changed"}, {status: 409});
   if (ctx.membership?.status !== "active" || ctx.current_tenant?.status !== "active") {

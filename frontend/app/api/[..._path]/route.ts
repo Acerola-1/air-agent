@@ -23,7 +23,13 @@ export const maxDuration = 300;
  *  - 归档 scope 升级为 v2（租户维度），客户端无法伪造。
  */
 async function handleRequest(req: NextRequest, method: string) {
-  const ctx = await getSessionContext();
+  let ctx;
+  try {
+    ctx = await getSessionContext();
+  } catch (error) {
+    const status = typeof (error as { status?: unknown })?.status === "number" ? (error as { status: number }).status : 503;
+    return NextResponse.json({ error: "身份服务暂不可用，请稍后重试" }, { status });
+  }
   if (!ctx) {
     return NextResponse.json({ error: "请先登录" }, { status: 401 });
   }

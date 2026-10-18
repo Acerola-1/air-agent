@@ -8,11 +8,11 @@ import { Building2, LoaderCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ApiError, authApi } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 import { useSession } from "@/lib/session";
 
 export default function SelectTenantPage() {
-  const { ctx, refresh } = useSession();
+  const { ctx, switchTenant } = useSession();
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -24,8 +24,8 @@ export default function SelectTenantPage() {
     setBusy(tenantId);
     setMessage(null);
     try {
-      await authApi.switchTenant(tenantId, ctx!.context_version);
-      await refresh();
+      const result = await switchTenant(tenantId);
+      if (!result.ok) throw new Error(result.message ?? "进入企业失败");
       router.replace("/");
     } catch (err) {
       setMessage(err instanceof ApiError ? err.message : "进入企业失败");

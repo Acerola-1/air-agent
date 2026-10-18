@@ -44,13 +44,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!user) return null;
 
   return (
-    <div className="flex min-h-dvh">
+    <div className="flex min-h-dvh flex-col md:flex-row">
       <AppSidebar />
       <main className="min-w-0 flex-1 overflow-x-hidden">
-        <div className="border-border flex justify-end border-b px-6 py-2">
+        <div className="border-border flex justify-end border-b px-4 py-2 md:px-6">
           <TenantSwitcher />
         </div>
-        <div className="mx-auto max-w-6xl px-6 py-6">{children}</div>
+        <div className="mx-auto max-w-6xl px-4 py-6 md:px-6">{children}</div>
       </main>
     </div>
   );

@@ -359,3 +359,10 @@ db/*.db-wal
 
 # 本地验收备份与私有运行配置（不提交）
 .local/
+
+# 本轮I2实施：证据运行目录（docs/reviews/evidence/run/）不入库
+docs/reviews/evidence/run/
+
+# 本轮I2实施：remote 容器栈覆盖与本地凭据（不提交）
+.env.langgraph.remote
+docker-compose.remote-override.yaml

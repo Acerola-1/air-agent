@@ -45,6 +45,9 @@ class Identity:
     tenant_status: str | None = None
     membership_status: str | None = None
 
+    remote_tenants: tuple[dict, ...] | None = None
+    remote_verification_ref: str | None = None
+
     @property
     def tenant_id(self) -> uuid.UUID | None:
         return self.tenant.id if self.tenant else None

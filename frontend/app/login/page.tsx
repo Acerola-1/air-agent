@@ -125,6 +125,24 @@ export default function LoginPage() {
             >
               {submitting ? "登录中…" : "登录"}
             </button>
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={() => {
+                setError(null);
+                setSubmitting(true);
+                fetch("/api/auth/iam/start", { method: "POST" })
+                  .then(async (res) => {
+                    const data = await res.json();
+                    if (!res.ok || typeof data.url !== "string") throw new Error(data.error ?? "统一登录暂不可用");
+                    window.location.assign(data.url);
+                  })
+                  .catch((err) => { setError(err instanceof Error ? err.message : "统一登录暂不可用"); setSubmitting(false); });
+              }}
+              className="hover:bg-accent w-full rounded-md border border-border py-2 text-sm"
+            >
+              使用统一身份登录
+            </button>
             <p className="text-muted-foreground text-center text-xs">
               公开注册已停止；如需账号请联系平台管理员开通。
             </p>

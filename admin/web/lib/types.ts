@@ -103,11 +103,11 @@ export type TenantBrief = {
 };
 
 export type MembershipBrief = {
-  id: string;
+  id: string | null;
   tenant_id: string;
   department_id: string | null;
   status: string;
-  revision: number;
+  revision: number | null;
   role_codes: string[];
 };
 

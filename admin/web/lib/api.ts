@@ -68,7 +68,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (init.body !== undefined && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
-  if (tenantClaim && !headers.has("x-tenant-id")) {
+  if (tenantClaim && !["/auth/me", "/auth/tenants", "/auth/login", "/auth/logout"].includes(path) && !headers.has("x-tenant-id")) {
     headers.set("x-tenant-id", tenantClaim.tenantId || "none");
     headers.set("x-tenant-context-version", String(tenantClaim.version));
   }

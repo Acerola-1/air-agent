@@ -7,9 +7,9 @@ import { NextRequest, NextResponse } from "next/server";
  * 强制走登录页重新获取统一会话。
  */
 export function middleware(req: NextRequest) {
-  const value = req.cookies.get("air_agent_session")?.value ?? "";
+  const value = req.cookies.get(process.env.AGENT_IDENTITY_BACKEND === "remote" ? "air_agent_iam_handle" : "air_agent_session")?.value ?? "";
   const uuidLike = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\..+/i;
-  if (uuidLike.test(value)) return NextResponse.next();
+  if (process.env.AGENT_IDENTITY_BACKEND === "remote" ? /^[0-9a-f]{32}\.[0-9a-f]{8}$/.test(value) : uuidLike.test(value)) return NextResponse.next();
 
   if (req.nextUrl.pathname.startsWith("/api")) {
     return NextResponse.json({ error: "未登录" }, { status: 401 });

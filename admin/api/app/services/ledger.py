@@ -1081,6 +1081,11 @@ async def admit_request(
                 tenant_id=str(tenant_id),
                 membership_id=str(membership_id),
                 session_id=str(identity.session.id if identity.session else ""),
+                session_ctx_version=identity.context_version,
+                user_auth_revision=identity.user.auth_revision,
+                tenant_auth_revision=identity.tenant.auth_revision,
+                membership_revision=identity.membership.revision,
+                verification_ref=getattr(identity, "remote_verification_ref", None),
             )
             auth_revs = {
                 "tenant": int(getattr(identity.tenant, "auth_revision", 1) or 1),

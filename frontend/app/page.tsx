@@ -27,7 +27,9 @@ export default function Home() {
 
   // 首次挂载：同步登录会话（账号 id 写入 localStorage，隔离历史）+ 加载默认 graph 线程列表
   useEffect(() => {
-    void refreshSession().then(() => void switchGraph("basic-qa"));
+    void refreshSession().then(() => {
+      if (useSessionStore.getState().ctx) void switchGraph("basic-qa");
+    });
   }, [refreshSession, switchGraph]);
 
   return (

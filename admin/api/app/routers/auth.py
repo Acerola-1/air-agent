@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import os
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -61,6 +62,7 @@ from app.services.followed_regions import (
 )
 from app.services.identity import resolve_identity
 from app.services.permission_tree import build_tree
+from app.services.remote_mode import identity_backend_mode
 from app.services.tenant_context import build_session_context, list_active_tenants
 
 router = APIRouter(tags=["auth"], dependencies=[Depends(verify_write_origin)])
@@ -94,6 +96,15 @@ async def login(
     response: Response,
     session: SessionDep,
 ) -> SessionContextOut:
+    # I2 remote：本地身份写入口关闭（投影 users 行的口令哨兵不可登录只是第一道；
+    # 显式拒绝确保 remote 部署绝不建立本地会话——改走 /auth/iam/start SSO）。
+    from app.services.remote_mode import identity_backend_mode
+
+    if identity_backend_mode() == "remote":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="当前部署使用统一身份服务登录，请经 SSO 入口认证",
+        )
     # 登录查询需要 users 读旁路：login GUC 仅在本事务内开放 users 可见性
     await apply_tenant_context(session, TenantContext(login=True))
     user = await session.scalar(select(User).where(User.account == payload.account))
@@ -201,6 +212,10 @@ async def my_tenants(
     identity: IdentityDep,
     session: SessionDep,
 ) -> list[TenantListItem]:
+    if identity.remote_tenants is not None:
+        from app.services.tenant_context import remote_tenant_items
+
+        return remote_tenant_items(identity)
     return await list_active_tenants(session, identity.user.id)
 
 
@@ -393,6 +408,8 @@ async def menus(
 async def runtime_ticket(
     payload: RuntimeTicketIn,
     identity: IdentityDep,
+    request: Request,
+    session: SessionDep,
 ) -> RuntimeTicketOut:
     """基于有效会话与**当前企业上下文**签发短时票据。
 
@@ -422,6 +439,53 @@ async def runtime_ticket(
         )
     if identity.tenant_status != "active" or identity.membership_status != "active":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="企业或成员已停用")
+
+    if identity_backend_mode() == "remote":
+        import asyncio
+
+        from common.identity.ticket_binding import (
+            TicketBindingError,
+            facade_issue_and_bind,
+            register_binding,
+        )
+
+        from app.services.remote_identity import (
+            load_session_token,
+            parse_handle_cookie,
+            raise_remote_error,
+            request_cookie,
+        )
+
+        row = await load_session_token(
+            session,
+            parse_handle_cookie(request_cookie(request)),
+        )
+        if row is None or not row.get("subject_token"):
+            raise HTTPException(status_code=401, detail="应用会话无效")
+        try:
+            ticket, ttl, binding = await asyncio.to_thread(
+                facade_issue_and_bind,
+                row["subject_token"],
+                target_tenant_id=str(identity.tenant_id),
+                expected_ctx_version=identity.context_version,
+            )
+            await register_binding(binding, ticket, ttl)
+        except TicketBindingError as exc:
+            raise HTTPException(status_code=409, detail="签票上下文已变更") from exc
+        except Exception as exc:
+            raise_remote_error(exc)
+        from common.identity.ticket import parse_keys, verify_ticket
+
+        claims = verify_ticket(
+            ticket,
+            parse_keys(os.environ["RUNTIME_TICKET_KEYS"]),
+            expected_audience=binding.audience,
+        )
+        return RuntimeTicketOut(
+            ticket=ticket,
+            expires_at=dt.datetime.fromtimestamp(claims.expires_at, dt.UTC),
+            audience=binding.audience,
+        )
 
     settings = get_settings()
     keys = settings.runtime_ticket_key_pairs

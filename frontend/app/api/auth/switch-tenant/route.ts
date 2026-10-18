@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { switchTenantViaAdmin } from "@/lib/admin-api";
-import { SESSION_COOKIE } from "@/lib/auth";
+import { sessionCookieName } from "@/lib/auth";
 
 /** 企业切换：转发浏览器 cookie 与 Origin（admin 侧做 CSRF/context_version 校验）。 */
 export async function POST(req: NextRequest) {
@@ -14,11 +14,12 @@ export async function POST(req: NextRequest) {
   if (typeof body.tenant_id !== "string" || typeof body.expected_ctx_version !== "number") {
     return NextResponse.json({ error: "缺少 tenant_id 或 expected_ctx_version" }, { status: 400 });
   }
+  const cookieName = sessionCookieName();
   const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
+  const token = store.get(cookieName)?.value;
   if (!token) return NextResponse.json({ error: "未登录" }, { status: 401 });
   const result = await switchTenantViaAdmin(
-    `${SESSION_COOKIE}=${token}`,
+    `${cookieName}=${token}`,
     req.headers.get("origin"),
     body.tenant_id,
     body.expected_ctx_version

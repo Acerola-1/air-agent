@@ -104,9 +104,21 @@ async def build_session_context(
             department_id=identity.membership.department_id,
             status=identity.membership.status,
             revision=identity.membership.revision,
-            role_codes=await _membership_role_codes(session, identity.membership),
+            role_codes=(
+                sorted(identity.membership_role_codes)
+                if identity.remote_tenants is not None
+                else await _membership_role_codes(session, identity.membership)
+            ),
         )
-    tenants = await list_active_tenants(session, identity.user.id) if include_tenants else []
+    tenants = (
+        (
+            remote_tenant_items(identity)
+            if identity.remote_tenants is not None
+            else await list_active_tenants(session, identity.user.id)
+        )
+        if include_tenants
+        else []
+    )
     needs_selection = identity.tenant is None and len(tenants) > 1 and not identity.platform_admin
     return SessionContextOut(
         user=user,
@@ -125,3 +137,27 @@ async def build_session_context(
         tenants=tenants,
         needs_tenant_selection=needs_selection,
     )
+
+
+def remote_tenant_items(identity: Identity) -> list[TenantListItem]:
+    """只展示 IAM 本人可切换企业；未选企业成员 ID/修订保持未知。"""
+    items = []
+    for row in identity.remote_tenants or ():
+        tenant_id = uuid.UUID(row["tenant_id"])
+        selected = identity.membership if identity.tenant_id == tenant_id else None
+        items.append(
+            TenantListItem(
+                tenant=TenantBrief(
+                    id=tenant_id, code=row["code"], name=row["name"], status=row["status"]
+                ),
+                membership=MembershipBrief(
+                    id=selected.id if selected else None,
+                    tenant_id=tenant_id,
+                    department_id=selected.department_id if selected else None,
+                    status=row["member_status"],
+                    revision=selected.revision if selected else None,
+                    role_codes=["tenant_admin"] if row.get("is_owner") is True else [],
+                ),
+            )
+        )
+    return items

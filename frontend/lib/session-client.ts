@@ -20,15 +20,21 @@ type SessionState = {
   userId: string | null;
   loaded: boolean;
   conflict: string | null;
+  error: string | null;
+  logoutPending: boolean;
   refreshSession: () => Promise<void>;
   logout: () => Promise<void>;
   /** 切换企业：先由调用方停止活动 run；成功后清空旧企业的线程/归档缓存。 */
   switchTenant: (tenantId: string) => Promise<{ ok: boolean; conflict?: boolean; error?: string }>;
 };
 
+/** 每次异步会话操作递增，连 A→B→A 也不接受旧响应。 */
+let sessionEpoch = 0;
+
 async function fetchMe(): Promise<AdminSessionContext | null> {
   const res = await fetch("/api/auth/me", { cache: "no-store" });
-  if (!res.ok) return null;
+  if (res.status === 401) return null;
+  if (!res.ok) throw new Error("身份服务暂不可用，请重试");
   return (await res.json()) as AdminSessionContext;
 }
 
@@ -44,6 +50,8 @@ function applyCtx(ctx: AdminSessionContext | null) {
     } catch {
       /* ignore */
     }
+  } else {
+    try { localStorage.removeItem("air_agent_user_id"); } catch { /* ignore */ }
   }
   // R02：页面感知的企业上下文同步给 API 层，之后每个业务请求携带，
   // 由服务端与实时会话比对；刷新后重新登记（版本前进自动覆盖旧值）。
@@ -78,33 +86,49 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   userId: null,
   loaded: false,
   conflict: null,
+  error: null,
+  logoutPending: false,
 
   refreshSession: async () => {
+    if (get().logoutPending) return;
+    const epoch = ++sessionEpoch;
     try {
       const ctx = await fetchMe();
+      if (epoch !== sessionEpoch) return;
       applyCtx(ctx);
-      set({ loaded: true, conflict: null });
+      set({ loaded: true, conflict: null, error: null });
+      if (!ctx) window.location.href = "/login?relogin=1";
     } catch {
+      if (epoch !== sessionEpoch) return;
       applyCtx(null);
-      set({ loaded: true });
+      set({ loaded: true, error: "身份服务暂不可用，请重试" });
     }
   },
 
   logout: async () => {
+    if (get().logoutPending) return;
+    const epoch = ++sessionEpoch;
+    set({ logoutPending: true, error: null });
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (!res.ok && res.status !== 401) throw new Error("logout unconfirmed");
+      if (epoch !== sessionEpoch) return;
+      applyCtx(null);
+      set({ loaded: true, logoutPending: false, error: null });
+      window.location.href = "/login";
     } catch {
-      /* ignore */
+      if (epoch !== sessionEpoch) return;
+      set({ logoutPending: false, error: "退出尚未完成，请重试" });
     }
-    applyCtx(null);
-    set({ loaded: true });
-    window.location.href = "/login";
   },
 
   switchTenant: async (tenantId) => {
     const current = get().ctx;
+    if (get().logoutPending) return { ok: false, error: "正在退出，请稍后重试" };
     if (!current) return { ok: false, error: "未登录" };
     if (current.current_tenant?.id === tenantId) return { ok: true };
+    const epoch = ++sessionEpoch;
+    set({ error: null });
     try {
       const res = await fetch("/api/auth/switch-tenant", {
         method: "POST",
@@ -115,8 +139,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         }),
         cache: "no-store",
       });
+      if (epoch !== sessionEpoch) return { ok: false, conflict: true };
       if (res.status === 409) {
         const fresh = await fetchMe();
+        if (epoch !== sessionEpoch) return { ok: false, conflict: true };
         applyCtx(fresh);
         // 冲突刷新也必须丢弃旧企业的线程/归档缓存并重载当前企业列表
         useChatStore.getState().clearForTenant();
@@ -129,6 +155,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         return { ok: false, error: data.error ?? "企业切换失败" };
       }
       const ctx = (await res.json()) as AdminSessionContext;
+      if (epoch !== sessionEpoch) return { ok: false, conflict: true };
       applyCtx(ctx);
       // 切换成功：清空旧企业的线程/归档/偏好缓存（spec：不得展示旧企业数据）
       useChatStore.getState().clearForTenant();
