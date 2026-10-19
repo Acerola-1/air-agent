@@ -549,62 +549,6 @@ class AuthSession(Base):
     revoked_at: Mapped[dt.datetime | None] = mapped_column(DateTime(timezone=True))
 
 
-class McpIdentityBinding(Base):
-    """企业/成员 → 统一业务平台外部授权主体的绑定。凭据只存引用名，不落真值。"""
-
-    __tablename__ = "mcp_identity_bindings"
-    __table_args__ = (
-        # 成员覆盖绑定必须同企业（复合 FK；企业默认绑定 membership_id NULL 时约束自动放行）
-        ForeignKeyConstraint(
-            ["membership_id", "tenant_id"],
-            ["tenant_memberships.id", "tenant_memberships.tenant_id"],
-            ondelete="CASCADE",
-            name="fk_bindings_membership_same_tenant",
-        ),
-        CheckConstraint("status IN ('active', 'disabled')", name="bindings_status_valid"),
-        Index("idx_bindings_tenant", "tenant_id", "server_key"),
-        # 同一企业同一服务至多一条默认绑定；成员覆盖按 (tenant, server, member) 唯一
-        Index(
-            "ux_bindings_tenant_server_default",
-            "tenant_id",
-            "server_key",
-            unique=True,
-            postgresql_where=text("membership_id IS NULL"),
-        ),
-        Index(
-            "ux_bindings_tenant_server_member",
-            "tenant_id",
-            "server_key",
-            "membership_id",
-            unique=True,
-            postgresql_where=text("membership_id IS NOT NULL"),
-        ),
-    )
-
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUIDColumn, primary_key=True, server_default=func.gen_random_uuid()
-    )
-    tenant_id: Mapped[uuid.UUID] = mapped_column(
-        UUIDColumn, ForeignKey("tenants.id", ondelete="CASCADE"), nullable=False
-    )
-    # NULL=企业默认绑定；非 NULL=成员覆盖绑定（必须同企业）
-    membership_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
-    server_key: Mapped[str] = mapped_column(Text, nullable=False)
-    external_subject: Mapped[str] = mapped_column(Text, nullable=False)
-    # 凭据引用（例如环境变量名 / 受保护存储键），真实凭据仅在发送边界解析
-    credential_ref: Mapped[str] = mapped_column(Text, nullable=False)
-    protocol_version: Mapped[str] = mapped_column(Text, nullable=False, server_default="unverified")
-    # 授权修订号：轮换/变更递增；缓存与进行中调用比对
-    auth_revision: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
-    status: Mapped[str] = mapped_column(Text, nullable=False, server_default="active")
-    created_at: Mapped[dt.datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
-    updated_at: Mapped[dt.datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
-    )
-
-
 class ThreadOwnership(Base):
     """线程可信归属。与 LangGraph 原生 metadata 一致，作为自有归档/历史核对索引。"""
 

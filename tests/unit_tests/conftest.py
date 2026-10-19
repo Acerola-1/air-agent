@@ -28,10 +28,16 @@ for key in (
 
 # 单元测试默认关闭企业运行守卫强制（guard 专项测试自行开启并注入身份）
 os.environ.setdefault("TENANT_ENFORCE_RUNTIME_IDENTITY", "false")
+os.environ.setdefault("TENANT_BUSINESS_SNAPSHOT_ENFORCED", "false")
+# 单元/集成测试固定本地身份后端：第三方库（litellm）导入时会加载仓库 .env，
+# 生产配置里的 remote 不应改变测试语义；remote 专项用例自行 monkeypatch.setenv。
+os.environ["AGENT_IDENTITY_BACKEND"] = "local"
+# 测试默认不读取生产 MCP 连接配置，避免误发起真实外部请求。
+os.environ.setdefault(
+    "AGENT_MCP_CONNECTIONS_JSON",
+    '{"schema_version":"agent.mcp-connections.v1","revision":1,"servers":[]}',
+)
 
-# R07：本地测试允许受控 fixture 协议（v1-fixture）。生产 compose/Dockerfile
-# 不设置该变量 → 登记表即使含 fixture 条目也在门禁处禁用，企业 MCP 保持安全禁用。
-os.environ.setdefault("TENANT_MCP_FIXTURE_MODE", "true")
 
 
 @pytest.fixture(autouse=True)

@@ -1,8 +1,8 @@
 # Agent 业务 API 与 IAM 消费门面
 
-当前身份唯一权威为独立 Java IAM（19100，PG19132/iam_identity）；本服务运行于8100，通过HTTP内省核验身份，并管理15432/air_agent_business中的台账、归属、偏好、MCP绑定和观测数据。
+当前身份唯一权威为独立 Java IAM（19100，PG19132/iam_identity）；本服务运行于8100，通过HTTP内省核验身份，并管理15432/air_agent_business中的台账、归属、偏好和观测数据；MCP 连接由 Agent 部署配置维护，不再保存成员绑定。
 
-旧public.users/tenants/roles等九张身份表已从正式业务库移除。`iam_reference_*`只是同UUID技术引用，不提供授权。旧身份管理路由返回409，账号、企业、成员与角色均在IAM19101维护；不得在业务库重新seed本地root。
+旧 public.users/tenants/roles 等身份表与 `mcp_identity_bindings` 已从正式业务库移除。`iam_reference_*`只是同UUID技术引用，不提供授权。旧身份管理路由返回409，账号、企业、成员与角色均在IAM19101维护；不得在业务库重新seed本地root。
 
 ## 启动与配置
 

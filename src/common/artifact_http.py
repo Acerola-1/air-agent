@@ -323,6 +323,7 @@ async def get_capabilities(
         raise HTTPException(status_code=403, detail="缺少有效企业成员身份")
 
     from common.capabilities import get_capabilities_catalog
+    from common.identity.business_access import BusinessAccessError
     from common.identity.runtime import identity_from_auth_user
 
     identity = identity_from_auth_user(actor)
@@ -334,11 +335,16 @@ async def get_capabilities(
         "membership": int(actor.get("membership_revision") or 1),
     }
 
-    return await get_capabilities_catalog(
-        graph_id=graph_id,
-        identity=identity,
-        auth_revisions=auth_revisions,
-        limit=limit,
-        cursor=cursor,
-        menu_name=menu_name,
-    )
+    try:
+        return await get_capabilities_catalog(
+            graph_id=graph_id,
+            identity=identity,
+            auth_revisions=auth_revisions,
+            limit=limit,
+            cursor=cursor,
+            menu_name=menu_name,
+        )
+    except BusinessAccessError as exc:
+        raise HTTPException(
+            status_code=exc.status_code, detail={"code": exc.code, "error": exc.message}
+        ) from exc

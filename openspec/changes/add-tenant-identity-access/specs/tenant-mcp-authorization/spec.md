@@ -1,5 +1,7 @@
 # 企业 MCP 业务平台授权
 
+> 历史规格，已由 `simplify-agent-business-authorization` 的 `agent-business-access` 与 `agent-service-connections` 替代（2026-10-19）。以下保留原设计及验收溯源，不再作为当前人员授权规则；原任务7.6未取得真实企业数据权限证据的事实不因退役变为通过。
+
 ## Purpose
 
 让多个企业共用同一 MCP 业务平台时，每次工具发现与执行均使用已验证的企业或成员授权身份，明确凭据和外部主体的来源，并在并发、重试、轮换或权限失效时保持数据与身份隔离。

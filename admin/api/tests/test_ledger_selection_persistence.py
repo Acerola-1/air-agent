@@ -98,6 +98,42 @@ async def _login(account: str, tenant_id: uuid.UUID) -> ContextClient:
     return client
 
 
+async def _grant_business(tenant_id: uuid.UUID, membership_id: uuid.UUID) -> None:
+    """本地测试库补齐 IAM 业务使用权限（正式环境由 IAM 授予）。"""
+    async with OwnerSessionLocal() as session:
+        permission_id = await session.scalar(
+            text(
+                "INSERT INTO permissions(code,name,type,grantable_to_tenants,is_active)"
+                " VALUES ('agent:business:basic-qa:use','使用基础问答',3,true,true)"
+                " ON CONFLICT (code) DO UPDATE SET is_active=true RETURNING id"
+            )
+        )
+        role_id = await session.scalar(
+            text(
+                "INSERT INTO roles(code,name,scope,is_system,tenant_id)"
+                " VALUES ('selection_business','选择测试业务角色','tenant',false,:t)"
+                " ON CONFLICT (tenant_id,code) WHERE scope = 'tenant'"
+                " DO UPDATE SET name=EXCLUDED.name RETURNING id"
+            ),
+            {"t": str(tenant_id)},
+        )
+        await session.execute(
+            text(
+                "INSERT INTO role_permissions(role_id,permission_id)"
+                " VALUES (:r,:p) ON CONFLICT DO NOTHING"
+            ),
+            {"r": str(role_id), "p": str(permission_id)},
+        )
+        await session.execute(
+            text(
+                "INSERT INTO membership_roles(membership_id,role_id,tenant_id)"
+                " VALUES (:m,:r,:t) ON CONFLICT DO NOTHING"
+            ),
+            {"m": str(membership_id), "r": str(role_id), "t": str(tenant_id)},
+        )
+        await session.commit()
+
+
 @pytest.fixture
 async def selection_env(monkeypatch):
     monkeypatch.setenv("REF", "controlled-fixture-only")
@@ -108,31 +144,63 @@ async def selection_env(monkeypatch):
     user_b = await _make_user(f"{PREFIX}ub_{suffix}")
     mem_a1 = await _make_membership(tenant_a, user_a)
     mem_b1 = await _make_membership(tenant_b, user_b)
-    _ = mem_b1
+    await _grant_business(tenant_a, mem_a1)
+    await _grant_business(tenant_b, mem_b1)
 
-    # 插入受控 MCP 绑定
-    async with OwnerSessionLocal() as session:
-        await session.execute(
-            text(
-                "INSERT INTO mcp_identity_bindings ("
-                " tenant_id, membership_id, server_key, external_subject,"
-                " credential_ref, protocol_version, status)"
-                " VALUES (:t, :m, 'business', 'sub_a', 'env:REF', 'v1', 'active')"
-                " ON CONFLICT DO NOTHING"
+    # 新模型：连接是平台部署配置；测试用受控工厂替代网络发现。
+    import json
+
+    monkeypatch.setenv(
+        "AGENT_MCP_CONNECTIONS_JSON",
+        json.dumps(
+            {
+                "schema_version": "agent.mcp-connections.v1",
+                "revision": 1,
+                "servers": [
+                    {
+                        "server_key": "ipp",
+                        "url": "https://controlled.invalid/mcp",
+                        "scope": "tenant",
+                        "tenant_id": str(tenant_a),
+                        "auth_mode": "bearer_env",
+                        "credential_ref": "env:REF",
+                        "enabled": True,
+                        "approved_query_tools": ["query", "stats"],
+                    },
+                    {
+                        "server_key": "ipp",
+                        "url": "https://controlled.invalid/mcp",
+                        "scope": "tenant",
+                        "tenant_id": str(tenant_b),
+                        "auth_mode": "bearer_env",
+                        "credential_ref": "env:REF",
+                        "enabled": True,
+                        "approved_query_tools": ["query", "stats"],
+                    },
+                ],
+            }
+        ),
+    )
+    from common import business_registry as registry
+
+    monkeypatch.setitem(
+        registry.BUSINESSES,
+        "basic-qa",
+        type(registry.BUSINESSES["basic-qa"])(
+            code="basic-qa",
+            name_zh="基础问答",
+            permission="agent:business:basic-qa:use",
+            graph="basic-qa",
+            connections=(
+                registry.BusinessConnection(
+                    server_key="ipp", allowed_tools=frozenset({"query", "stats"})
+                ),
             ),
-            {"t": str(tenant_a), "m": str(mem_a1)},
-        )
-        await session.execute(
-            text(
-                "INSERT INTO mcp_identity_bindings ("
-                " tenant_id, membership_id, server_key, external_subject,"
-                " credential_ref, protocol_version, status)"
-                " VALUES (:t, :m, 'analytics', 'sub_a2', 'env:REF', 'v1', 'active')"
-                " ON CONFLICT DO NOTHING"
-            ),
-            {"t": str(tenant_a), "m": str(mem_a1)},
-        )
-        await session.commit()
+        ),
+    )
+    from common.mcp_connections import reset_connections_cache
+
+    reset_connections_cache()
 
     # 启用功能开关
     get_settings().agent_capability_selection_enabled = True
@@ -150,7 +218,7 @@ async def selection_env(monkeypatch):
         """Stats air data."""
         return "ok"
 
-    # 作用域工厂测试替身只替代网络发现；真实绑定与成员授权仍查 PG。
+    # 作用域工厂测试替身只替代网络发现；业务/连接校验仍走真实实现。
     from common.capabilities import (
         compute_catalog_version,
         discover_authorized_mcp_catalog,
@@ -162,13 +230,23 @@ async def selection_env(monkeypatch):
     previous_factory = get_factory()
 
     class ControlledFactory(ScopedMCPToolFactory):
-        async def _discover(self, binding):
-            return [query] if binding.server_key == "business" else [stats]
+        async def _discover(self, resolved):
+            return [query, stats]
 
-    factory = ControlledFactory({"business": "http://controlled", "analytics": "http://controlled"})
+    factory = ControlledFactory({"ipp": "http://controlled"})
     set_factory(factory)
-    ident = RuntimeIdentity(str(user_a), str(tenant_a), str(mem_a1), "")
-    services, tools = await discover_authorized_mcp_catalog(ident)
+    ident = RuntimeIdentity(
+        str(user_a),
+        str(tenant_a),
+        str(mem_a1),
+        "",
+        permissions=frozenset({"agent:business:basic-qa:use"}),
+        business_code="basic-qa",
+        business_policy_version="2026-10-19.1",
+        business_permission="agent:business:basic-qa:use",
+        business_graph="basic-qa",
+    )
+    services, tools = await discover_authorized_mcp_catalog(ident, business_code="basic-qa")
     catalog_version = compute_catalog_version(
         "basic-qa",
         ident,
@@ -214,10 +292,6 @@ async def selection_env(monkeypatch):
                     {"t": str(tid)},
                 )
                 await session.execute(
-                    text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"),
-                    {"t": str(tid)},
-                )
-                await session.execute(
                     text("DELETE FROM thread_ownership WHERE tenant_id = :t"),
                     {"t": str(tid)},
                 )
@@ -255,7 +329,7 @@ async def test_task_3_1_schema_validation(selection_env):
         )
 
     # 2. 超限 20 个工具被拒绝
-    too_many_tools = [f"mcp:business:tool_{i}" for i in range(21)]
+    too_many_tools = [f"mcp:ipp:tool_{i}" for i in range(21)]
     with pytest.raises(ValidationError):
         CapabilitySelectionIn.model_validate(
             {
@@ -296,7 +370,7 @@ async def test_task_3_1_schema_validation(selection_env):
         ledger_service.normalize_capability_selection(
             {
                 "schema_version": "agent.capability-selection.v1",
-                "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:../evil"]},
+                "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:../evil"]},
             }
         )
 
@@ -322,8 +396,15 @@ async def test_task_3_1_allowed_tools_non_mandatory_and_required_tools_conflict(
             tenant_id=str(env["tenant_a"]),
             membership_id=str(env["mem_a1"]),
             session_id="",
+            permissions=frozenset({"agent:business:basic-qa:use"}),
+            business_code="basic-qa",
+            business_policy_version="2026-10-19.1",
+            business_permission="agent:business:basic-qa:use",
+            business_graph="basic-qa",
         )
-        curr_mcp_services, curr_mcp_tools = await discover_authorized_mcp_catalog(r_id)
+        curr_mcp_services, curr_mcp_tools = await discover_authorized_mcp_catalog(
+            r_id, business_code="basic-qa"
+        )
         cat_ver = compute_catalog_version(
             graph_id="basic-qa",
             identity=r_id,
@@ -449,7 +530,7 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
                 "capability_selection": {
                     "schema_version": "agent.capability-selection.v1",
                     "skill": {"mode": "auto"},
-                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
             },
@@ -472,7 +553,7 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
             assert sel_row is not None
             assert sel_row[0] == "auto"
             assert sel_row[1] == "allowlist"
-            assert sel_row[2] == ["mcp:business:query"]
+            assert sel_row[2] == ["mcp:ipp:query"]
 
             # 验证 capability.selection_accepted 事实已落库
             event_row = (
@@ -488,7 +569,7 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
             assert event_row[0] == "capability.selection_accepted"
             assert event_row[1] == "server"
             assert event_row[2]["mcp_mode"] == "allowlist"
-            assert event_row[2]["tool_ids"] == ["mcp:business:query"]
+            assert event_row[2]["tool_ids"] == ["mcp:ipp:query"]
 
         # 2. 模拟事务回滚：若在 commit 之前抛异常，所有表均不残留
         async with OwnerSessionLocal() as session:
@@ -516,7 +597,7 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
                 tenant=tenant_obj,
                 membership=mem_obj,
                 platform_admin=False,
-                permissions=frozenset({"agent:access"}),
+                permissions=frozenset({"agent:business:basic-qa:use"}),
             )
             # 写入后故意执行 rollback 模拟失败
             _ = await ledger_service.admit_request(
@@ -530,7 +611,7 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
                 capability_selection={
                     "schema_version": "agent.capability-selection.v1",
                     "skill": {"mode": "auto"},
-                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
             )
@@ -567,8 +648,8 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
 
     try:
         # 1. 键序不同摘要一致性测试
-        p1 = {"b": 2, "a": 1, "mcp": ["mcp:business:query", "mcp:analytics:stats"]}
-        p2 = {"mcp": ["mcp:business:query", "mcp:analytics:stats"], "a": 1, "b": 2}
+        p1 = {"b": 2, "a": 1, "mcp": ["mcp:ipp:query", "mcp:ipp:stats"]}
+        p2 = {"mcp": ["mcp:ipp:query", "mcp:ipp:stats"], "a": 1, "b": 2}
         assert ledger_service.canonical_digest(p1) == ledger_service.canonical_digest(p2)
 
         # 2. 初次提交带显式选择 S1 + T1
@@ -582,7 +663,7 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
             "capability_selection": {
                 "schema_version": "agent.capability-selection.v1",
                 "skill": {"mode": "auto"},
-                "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                 "catalog_version": env["catalog_version"],
             },
         }
@@ -603,7 +684,7 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
         payload_diff["capability_selection"] = {
             "schema_version": "agent.capability-selection.v1",
             "skill": {"mode": "auto"},
-            "mcp": {"mode": "allowlist", "tool_ids": ["mcp:analytics:stats"]},
+            "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:stats"]},
             "catalog_version": env["catalog_version"],
         }
         res_conflict = await client.post("/agent/requests", json=payload_diff)
@@ -626,6 +707,8 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
                 membership_id=env["mem_a1"],
                 thread_id=thread_id,
                 graph_id="basic-qa",
+                business_code="basic-qa",
+                business_policy_version="2026-10-19.1",
                 operation_kind="initial",
                 admitted_at=dt.datetime.now(dt.UTC),
                 created_at=dt.datetime.now(dt.UTC),
@@ -638,6 +721,8 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
                 request_id=v1_req_id,
                 attempt_index=1,
                 graph_id="basic-qa",
+                business_code="basic-qa",
+                business_policy_version="2026-10-19.1",
                 state="admitting",
                 state_revision=1,
                 operation_kind="initial",
@@ -693,7 +778,7 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
                 "content": "旧历史问题",
                 "capability_selection": {
                     "schema_version": "agent.capability-selection.v1",
-                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
             },
@@ -726,7 +811,7 @@ async def test_task_3_4_delivery_switch_fallback(selection_env):
                 "content": "测试开关关闭显式请求",
                 "capability_selection": {
                     "schema_version": "agent.capability-selection.v1",
-                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
             },
@@ -779,7 +864,7 @@ async def test_task_3_5_readback_deletion_and_resume(selection_env):
                 "capability_selection": {
                     "schema_version": "agent.capability-selection.v1",
                     "skill": {"mode": "auto"},
-                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
             },
@@ -793,7 +878,7 @@ async def test_task_3_5_readback_deletion_and_resume(selection_env):
         assert detail_res.status_code == 200
         detail = detail_res.json()
         assert detail["capability_selection"]["selection_status"] == "collected"
-        assert detail["capability_selection"]["mcp"]["tool_ids"] == ["mcp:business:query"]
+        assert detail["capability_selection"]["mcp"]["tool_ids"] == ["mcp:ipp:query"]
 
         # 3. 租户 B 用户尝试回读该 request -> 404（隔离保护）
         cross_res = await client_b.get(f"/agent/requests/{req_id}")
@@ -820,7 +905,7 @@ async def test_task_3_5_readback_deletion_and_resume(selection_env):
                 "content": "用户补充输入",
                 "capability_selection": {
                     "schema_version": "agent.capability-selection.v1",
-                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:analytics:stats"]},  # 试图篡改
+                    "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:stats"]},  # 试图篡改
                     "catalog_version": env["catalog_version"],
                 },
             },
@@ -876,7 +961,7 @@ async def test_catalog_scope_and_operation_inheritance(selection_env):
     selection = {
         "schema_version": "agent.capability-selection.v1",
         "skill": {"mode": "auto"},
-        "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
+        "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
         "catalog_version": env["catalog_version"],
     }
 
@@ -912,7 +997,7 @@ async def test_catalog_scope_and_operation_inheritance(selection_env):
         ).status_code == 409
         retried = await submit("retry-inherit", "retry", None, first["attempt_id"])
         assert retried.status_code == 200, retried.text
-        assert retried.json()["capability_selection"]["mcp"]["tool_ids"] == ["mcp:business:query"]
+        assert retried.json()["capability_selection"]["mcp"]["tool_ids"] == ["mcp:ipp:query"]
         replay = await submit("retry-inherit", "retry", None, first["attempt_id"])
         assert replay.status_code == 200 and replay.json()["reused"]
         regenerated = await submit("regenerate-auto", "regenerate", automatic, first["attempt_id"])

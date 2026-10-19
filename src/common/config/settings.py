@@ -78,13 +78,18 @@ class Config:
     REDIS_PASSWORD: str | None = os.getenv("REDIS_PASSWORD")
     REDIS_DB: int = _get_env_int("REDIS_DB", 0)
 
-    # ==================== MCP 服务器配置(凭据必需)====================
-    MCP_SERVER_URL: str = _get_env_required(
-        "MCP_SERVER_URL",
-        "IPP Air 服务的 MCP 服务器 URL。",
-    )
-    # 绑定/授权作用域使用的服务键（docs/mcp-auth-contract.md 登记的 server_key）
+    # ==================== MCP 连接配置 ====================
+    # 旧环境变量：仅为兼容历史配置保留属性，**不再是任何授权/发现来源**。
+    # 生产连接由 `AGENT_MCP_CONNECTIONS_JSON` 或
+    # `AGENT_MCP_CONNECTIONS_FILE` 的受保护部署配置提供。
+    MCP_SERVER_URL: str = _get_env_optional("MCP_SERVER_URL", "")
     MCP_SERVER_NAME: str = _get_env_optional("MCP_SERVER_NAME", "ipp")
+    AGENT_MCP_CONNECTIONS_JSON: str = _get_env_optional(
+        "AGENT_MCP_CONNECTIONS_JSON", ""
+    )
+    AGENT_MCP_CONNECTIONS_FILE: str = _get_env_optional(
+        "AGENT_MCP_CONNECTIONS_FILE", ""
+    )
 
     # ==================== 元数据 API 配置 ====================
     METADATA_API_URL: str = _get_env_optional(

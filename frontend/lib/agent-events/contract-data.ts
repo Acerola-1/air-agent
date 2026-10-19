@@ -97,6 +97,8 @@ export const EVENT_REGISTRY: EventRegistry = {
       "family": "request",
       "payload_fields": [
         "graph_id",
+        "business_code",
+        "business_policy_version",
         "operation_kind",
         "submission_digest_prefix",
         "user_message_id",
@@ -106,7 +108,7 @@ export const EVENT_REGISTRY: EventRegistry = {
         "graph_id",
         "operation_kind"
       ],
-      "summary": "可信受理：逻辑提问被接受并建立尝试（不含正文）"
+      "summary": "可信受理：逻辑提问被接受并建立尝试（固定业务/策略快照；不含正文）"
     },
     "browser.copy": {
       "enabled": true,

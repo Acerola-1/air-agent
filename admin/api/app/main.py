@@ -19,7 +19,6 @@ from app.db import engine_dispose_all, runtime_engine
 from app.routers import (
     audit,
     auth,
-    bindings,
     departments,
     feedback,
     ledger,
@@ -69,7 +68,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title="air_agent admin API",
     description=(
-        "统一身份后台：企业/成员/角色 RBAC、可撤销会话、运行票据、MCP 绑定、行政区划关注城市"
+        "统一身份后台：可撤销会话、运行票据、运行台账与业务能力目录；身份与授权以 IAM 为准"
     ),
     version=__version__,
     lifespan=lifespan,
@@ -147,7 +146,6 @@ app.include_router(roles.router, prefix="/roles")
 app.include_router(permissions.router, prefix="/permissions")
 app.include_router(regions.router, prefix="/regions")
 app.include_router(audit.router, prefix="/audit-logs")
-app.include_router(bindings.router, prefix="/mcp-bindings")
 app.include_router(ledger.router, prefix="/agent")
 app.include_router(feedback.router, prefix="/agent")
 # change complete-agent-observability：观测查询/价格管理（本域新增；不改既有 19 路径）

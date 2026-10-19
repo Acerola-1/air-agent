@@ -344,6 +344,33 @@ async def _record_platform_mapping(
     return bool(result.get("attached") or result.get("reason") == "already_attached")
 
 
+_AUTHORIZATION_STOP_MARKERS = (
+    "本次运行已停止",
+    "工具调用被拒绝",
+    "本次工具调用被拒绝",
+)
+
+
+def authorization_stop_from_messages(messages: Any) -> bool:
+    """判断图是否因业务/身份撤权守卫而停止（不得记成成功回答）."""
+    if not isinstance(messages, list):
+        return False
+    contents: list[str] = []
+    for message in messages:
+        content = _message_field(message, "content")
+        if isinstance(content, list):
+            content = "".join(
+                str(part.get("text", "")) if isinstance(part, dict) else str(part)
+                for part in content
+            )
+        if isinstance(content, str):
+            contents.append(content)
+    joined = "\n".join(contents)
+    return "授权状态已变化" in joined and any(
+        marker in joined for marker in _AUTHORIZATION_STOP_MARKERS
+    )
+
+
 async def _on_graph_end(
     config: dict[str, Any] | None, state: Any, *, graph_name: str = ""
 ) -> None:
@@ -403,6 +430,16 @@ async def _on_graph_end(
                 return  # 晚到旧操作只保留自身映射，不覆盖当前尝试的答案/状态。
 
         messages = state.get("messages") if isinstance(state, dict) else None
+        if authorization_stop_from_messages(messages):
+            # 撤权/身份失效后的可读停止不是业务成功；不登记确认回答，只落失败证据。
+            await observe_state(
+                scope,
+                attempt_id=attempt_id,
+                state="failed",
+                evidence_source="runtime_callback",
+                platform_status="authorization_revoked",
+            )
+            return
         visible = _visible_final_message(messages)
         if visible is not None:
             await record_answer(

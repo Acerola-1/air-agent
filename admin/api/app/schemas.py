@@ -374,27 +374,3 @@ class DepartmentOut(BaseModel):
 
 
 # --------------------------------------------------------------------------- MCP 绑定
-
-
-class BindingUpsert(BaseModel):
-    tenant_id: uuid.UUID
-    membership_id: uuid.UUID | None = None
-    server_key: str = Field(min_length=1, max_length=64)
-    external_subject: str = Field(min_length=1, max_length=128)
-    credential_ref: str = Field(min_length=1, max_length=128)
-    protocol_version: str = Field(min_length=1, max_length=32)
-    status: str = Field(default="active", pattern=r"^(active|disabled)$")
-
-
-class BindingOut(BaseModel):
-    """脱敏输出：credential_ref 永不返回，只返回是否已配置。"""
-
-    id: uuid.UUID
-    tenant_id: uuid.UUID
-    membership_id: uuid.UUID | None
-    server_key: str
-    external_subject: str
-    protocol_version: str
-    auth_revision: int
-    status: str
-    credential_configured: bool

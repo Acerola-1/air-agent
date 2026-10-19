@@ -165,15 +165,3 @@ export type Department = {
   parent_id: string | null;
   created_at: string;
 };
-
-export type McpBinding = {
-  id: string;
-  tenant_id: string;
-  membership_id: string | null;
-  server_key: string;
-  external_subject: string;
-  protocol_version: string;
-  auth_revision: number;
-  status: string;
-  credential_configured: boolean;
-};

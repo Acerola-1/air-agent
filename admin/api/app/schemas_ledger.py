@@ -70,6 +70,8 @@ class AdmissionResultOut(BaseModel):
     reused: bool
     thread_id: str
     graph_id: str
+    business_code: str | None = None
+    business_policy_version: str | None = None
     ledger_marker: str
     capability_selection: dict[str, Any] | None = None
 

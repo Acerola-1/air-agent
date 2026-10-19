@@ -64,7 +64,7 @@ components:
 
 ## Components
 
-按钮、说明和字体分别由 shared Button、Tooltip、全局样式拥有。ProcessingNotice 为历史整理／资料处理共用状态组件；ArchiveReader 为归档资料分页读取组件；CapabilitySelector 为技能与 MCP 工具选择配置组件。详情切换必须使用原生按钮，显示焦点并可用键盘操作。状态使用 polite live region，失败提供重试入口；动画尊重 reduced-motion。
+按钮、说明和字体分别由 shared Button、Tooltip、全局样式拥有。ProcessingNotice 为历史整理／资料处理共用状态组件；ArchiveReader 为归档资料分页读取组件；GraphSwitcher 为按 IAM 实时业务权限生成的业务入口（无可用业务时显示禁用空态）；CapabilitySelector 为已获准业务内的技能与 MCP 工具选择配置组件。详情切换必须使用原生按钮，显示焦点并可用键盘操作。状态使用 polite live region，失败提供重试入口；动画尊重 reduced-motion。
 
 ## Do's and Don'ts
 

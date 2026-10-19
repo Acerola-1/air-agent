@@ -1,0 +1,210 @@
+{
+  "date": "2026-10-20",
+  "timezone": "Asia/Shanghai",
+  "conclusion": "两仓业务授权联合验收通过，主规格已同步，变更已归档；保留未提交工作区",
+  "owner": "Codex 独立验收与补修；AGY/原实施者成绩不追溯加分",
+  "authorization": "企业开通与本企业角色授权求交；普通 Skill/MCP 不再单独人员授权；root 走明确企业角色",
+  "archives": {
+    "agent": "openspec/changes/archive/2026-10-20-simplify-agent-business-authorization",
+    "iam": "openspec/changes/archive/2026-10-20-add-agent-business-entitlements"
+  },
+  "tasks": {
+    "agent": {
+      "completed": 29,
+      "total": 29
+    },
+    "iam": {
+      "completed": 23,
+      "total": 23
+    }
+  },
+  "verification": {
+    "agent_targeted_tests": {
+      "passed": 89,
+      "components": [
+        42,
+        47
+      ],
+      "new_native_payload_cases": 22
+    },
+    "mcp_execution_subset": {
+      "passed": 11,
+      "included_in_42": true,
+      "revoked_retry_protocol_request_delta": 0
+    },
+    "official_api": {
+      "version": "0.15.1",
+      "controlled_iam_and_llm": true,
+      "checks": [
+        {
+          "name": "real_interrupt",
+          "next": [
+            "call_model"
+          ],
+          "model_calls": 0
+        },
+        {
+          "name": "admission_selection_tamper",
+          "status": 409
+        },
+        {
+          "name": "admission_graph_tamper_both_permitted",
+          "status": 409
+        },
+        {
+          "name": "native_graph_tamper_both_permitted",
+          "status": 409,
+          "model_delta": 0
+        },
+        {
+          "name": "native_selection_tamper",
+          "status": 409,
+          "model_delta": 0
+        },
+        {
+          "name": "native_business_tamper",
+          "status": 409,
+          "model_delta": 0
+        },
+        {
+          "name": "business_revoked",
+          "status": 403,
+          "model_delta": 0
+        },
+        {
+          "name": "session_revoked",
+          "status": 401,
+          "model_delta": 0
+        },
+        {
+          "name": "legal_resume",
+          "run_status": "success",
+          "model_delta": 1
+        }
+      ],
+      "ledger_counts": {
+        "agent_requests": 1,
+        "agent_run_attempts": 1,
+        "agent_submissions": 2,
+        "agent_run_resumes": 1
+      },
+      "runtime_role": [
+        "air_agent_runtime",
+        false,
+        false
+      ]
+    },
+    "iam_full_maven": {
+      "tests": 99,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "iam_full_test_seconds": 88.056895,
+    "iam_vue_tests": 28,
+    "iam_vue_build": "passed; existing chunk size advisory",
+    "root_live": {
+      "normal_iam_login": 200,
+      "normal_agent_login": 200,
+      "tenant_switch_and_identity": {
+        "passed": 4,
+        "total": 4
+      },
+      "run_and_metrics_reads": {
+        "passed": 4,
+        "total": 4
+      },
+      "own_content_read": {
+        "passed_with_sample": 2,
+        "no_sample": 2
+      },
+      "uses_explicit_roles": true,
+      "no_password_in_evidence": true
+    },
+    "main_specs": {
+      "changed_passed": 7,
+      "agent_existing_failures_unchanged": true,
+      "agent_existing_failure_ids": [
+        "agent-runtime-performance",
+        "air-quality-forecast-skill-rules",
+        "chart-data-push",
+        "composite-backend-routing",
+        "forecast-data-bidirectional-rule",
+        "permission-autofill-correction-context",
+        "permission-check-subagent",
+        "permission-multi-region-guard",
+        "permission-region-list-slots",
+        "silent-agent-output",
+        "skill-content-basic",
+        "skill-three-layer-system",
+        "subagent-architecture"
+      ],
+      "iam_all_passed": true
+    }
+  },
+  "cleanup": {
+    "all_owned_test_containers_removed": true,
+    "historical_artifacts_entries": 35,
+    "historical_artifacts_bytes": 14877217,
+    "final_disposable_entries": 3,
+    "final_disposable_bytes": 826493,
+    "formal_resources_untouched": true,
+    "old_mcp_binding_table_absent": true,
+    "three_legacy_permission_definitions_count": 0
+  },
+  "limits": [
+    "外部 MCP 服务端数据权限不在此次交付范围",
+    "未重启共享正式服务；最新补丁已在隔离官方 API 验证，归档不等于部署",
+    "真实三业务矩阵首次9项有回答、3项数据分析整理失败后重试成功，保留原始结论",
+    "本轮没有重跑 Agent 全仓历史套件，不将定向回归冒充全量通过"
+  ],
+  "git": {
+    "commit": false,
+    "push": false,
+    "branches": {
+      "agent": "dev",
+      "iam": "dev"
+    }
+  },
+  "local_raw_evidence": {
+    "agent": "docs/reviews/evidence/run/codex-business-final-20261019/",
+    "closeout": "docs/reviews/evidence/run/codex-business-closeout-20261020/"
+  },
+  "token_usage": "未采集",
+  "commit_readiness": {
+    "agent": {
+      "branch": "dev",
+      "head": "6ff95dd872300f8dfdb8dfcf4a4ab99e63cf5706",
+      "diff_check_passed": true,
+      "archive_present": true,
+      "absent_from_active_changes": true,
+      "tracked_changed_paths": 65,
+      "untracked_delivery_paths": 32,
+      "private_evidence_not_in_unignored_additions": true,
+      "contract_sha256": "d0801cd88f13e6159f7206f9f8cf4aafaa1900e1ee82f251ab7a20db18076bca"
+    },
+    "iam": {
+      "branch": "dev",
+      "head": "630b865ebf325eacd57735d172efdd51b34f3e54",
+      "diff_check_passed": true,
+      "archive_present": true,
+      "absent_from_active_changes": true,
+      "tracked_changed_paths": 14,
+      "untracked_delivery_paths": 39,
+      "private_evidence_not_in_unignored_additions": true,
+      "contract_sha256": "d0801cd88f13e6159f7206f9f8cf4aafaa1900e1ee82f251ab7a20db18076bca"
+    },
+    "secret_scans": {
+      "agent": {
+        "passed": true,
+        "secret_values_compared": 18,
+        "files_scanned": 1603
+      },
+      "iam": {
+        "passed": true,
+        "secret_values_compared": 18,
+        "delivery_paths": 775
+      }
+    }
+  }
+}

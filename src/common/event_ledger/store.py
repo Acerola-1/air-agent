@@ -1008,7 +1008,9 @@ async def attach_platform_run(
     }
 
 
-def canonical_content_digest_v1(*, graph_id: str, operation_kind: str, content: Any) -> str:  # noqa: ANN401
+def canonical_content_digest_v1(
+    *, graph_id: str, operation_kind: str, content: Any
+) -> str:  # noqa: ANN401
     """与 admin 侧一致的 v1 提交内容摘要（规范化 json）."""
     normalized = content.strip() if isinstance(content, str) else content
     canonical = json.dumps(
@@ -1144,7 +1146,9 @@ async def claim_start(
                 )
                 if str(base["content_digest"]) != v2_digest:
                     v1_digest = canonical_content_digest_v1(
-                        graph_id=graph_id, operation_kind=operation_kind, content=content
+                        graph_id=graph_id,
+                        operation_kind=operation_kind,
+                        content=content,
                     )
                     if str(base["content_digest"]) != v1_digest:
                         return {"status": "mismatch", "detail": "content"}
@@ -1428,7 +1432,7 @@ async def attempt_reservation(
     """
     row = await _run(
         "SELECT a.id::text AS attempt_id, a.state, a.request_id::text AS request_id,"
-        " a.platform_run_id, r.thread_id"
+        " a.platform_run_id, a.business_code, a.business_policy_version, r.thread_id"
         " FROM agent_run_attempts a"
         " JOIN agent_requests r ON r.id = a.request_id AND r.tenant_id = a.tenant_id"
         " WHERE a.id = %(aid)s AND a.tenant_id = %(t)s AND a.user_id = %(u)s"

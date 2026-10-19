@@ -76,6 +76,9 @@ class AgentRequest(Base):
     thread_id: Mapped[str] = mapped_column(Text, nullable=False)
     user_message_id: Mapped[str | None] = mapped_column(Text)
     graph_id: Mapped[str] = mapped_column(Text, nullable=False)
+    # 受理时由服务端按实际 Graph 解析并冻结；历史 NULL 表示旧模型，不伪造。
+    business_code: Mapped[str | None] = mapped_column(Text)
+    business_policy_version: Mapped[str | None] = mapped_column(Text)
     operation_kind: Mapped[str] = mapped_column(Text, nullable=False, server_default="initial")
     department_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
     department_snapshot: Mapped[str | None] = mapped_column(Text)
@@ -172,6 +175,8 @@ class AgentRunAttempt(Base):
     source_attempt_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
     capability_selection_id: Mapped[uuid.UUID | None] = mapped_column(UUIDColumn)
     graph_id: Mapped[str] = mapped_column(Text, nullable=False)
+    business_code: Mapped[str | None] = mapped_column(Text)
+    business_policy_version: Mapped[str | None] = mapped_column(Text)
     # R01：预留比对依据（真实图在 graph_id；规范内容摘要 + 操作类型在此）
     operation_kind: Mapped[str] = mapped_column(Text, nullable=False, server_default="initial")
     content_digest: Mapped[str | None] = mapped_column(Text)

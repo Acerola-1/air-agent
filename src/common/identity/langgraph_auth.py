@@ -219,6 +219,50 @@ def _payload_values(value: Any, key: str) -> list[str]:  # noqa: ANN401
     return found
 
 
+def assert_capability_payload_matches(value: dict, snapshot: dict) -> None:
+    """在消耗启动权之前拒绝显式声明与受理快照冲突，不能仅靠覆盖载荷纠正."""
+    expected = {
+        "capability_selection_id": str(snapshot["id"]),
+        "capability_selection_digest": str(snapshot["selection_digest"]),
+        "capability_skill_mode": snapshot.get("skill_mode") or "auto",
+        "capability_skill_id": snapshot.get("skill_id"),
+        "capability_mcp_mode": snapshot.get("mcp_mode") or "auto",
+        "capability_tool_ids": list(snapshot.get("tool_ids") or []),
+        "capability_catalog_version": snapshot.get("catalog_version"),
+        "capability_material_version": snapshot.get("material_version"),
+        "capability_selection_source": snapshot.get("selection_source") or "automatic",
+    }
+    candidates = [value.get("metadata")]
+    kwargs = value.get("kwargs")
+    for config in (
+        kwargs.get("config") if isinstance(kwargs, dict) else None,
+        value.get("config"),
+    ):
+        if isinstance(config, dict):
+            candidates.append(config.get("configurable"))
+    for fields in candidates:
+        if not isinstance(fields, dict):
+            continue
+        for key, accepted in expected.items():
+            if key not in fields:
+                continue
+            submitted = fields[key]
+            if key == "capability_tool_ids":
+                matches = (
+                    isinstance(submitted, list)
+                    and all(isinstance(item, str) for item in submitted)
+                    and len(submitted) == len(set(submitted))
+                    and sorted(submitted) == sorted(accepted)
+                )
+            else:
+                matches = type(submitted) is type(accepted) and submitted == accepted
+            if not matches:
+                raise Auth.exceptions.HTTPException(
+                    status_code=409,
+                    detail=f"运行声明的 {key} 与已受理选择不一致，拒绝创建",
+                )
+
+
 def _ledger_attempt_id(value: Any) -> str:
     """从运行创建载荷提取台账尝试 ID.
 
@@ -295,6 +339,7 @@ def _pin_ledger_ids(
     operation_kind: str,
     graph_id: str,
     capability_snapshot: dict[str, Any] | None = None,
+    business_snapshot: Any = None,
 ) -> None:
     """把服务端裁决过的关联写入 metadata 与 config.configurable（覆盖客户端自报值）.
 
@@ -309,6 +354,8 @@ def _pin_ledger_ids(
         "ledger_operation_kind": operation_kind,
         "ledger_graph_id": graph_id,
     }
+    if business_snapshot is not None:
+        pinned.update(business_snapshot.pinned_config())
     if capability_snapshot:
         pinned["capability_selection_id"] = str(capability_snapshot["id"])
         pinned["capability_selection_digest"] = str(
@@ -523,7 +570,8 @@ async def authenticate(request):  # noqa: ANN001 - 平台注入 starlette Reques
             "identity": claims.user_id,
             "display_name": "",
             "is_authenticated": True,
-            "permissions": [],
+            # 入站内省冻结的 IAM 精确权限；create_run 用它求交业务使用权。
+            "permissions": sorted(binding.permissions),
             "tenant_id": claims.tenant_id,
             "membership_id": claims.membership_id,
             "session_id": claims.session_id,
@@ -868,6 +916,28 @@ async def on_thread_create_run(
                 ),
             )
     graph_id = actual_graph
+    # 业务准入：实际执行图 → 稳定业务 → 当前身份精确权限求交。
+    from common.identity.business_access import (
+        BusinessAccessError,
+        grant_for_graph,
+    )
+
+    try:
+        business_grant = grant_for_graph(graph_id=actual_graph, identity=ctx.user)
+    except BusinessAccessError as exc:
+        raise Auth.exceptions.HTTPException(
+            status_code=exc.status_code,
+            detail={"code": exc.code, "error": exc.message},
+        ) from exc
+    for declared_business in _payload_values(value, "ledger_business_code"):
+        if declared_business != business_grant.business_code:
+            raise Auth.exceptions.HTTPException(
+                status_code=409,
+                detail={
+                    "code": "business_mismatch",
+                    "error": "运行请求声明的业务与实际执行图不一致，拒绝创建",
+                },
+            )
     declared_kind = _ledger_operation_kind(value)
     content = _run_input_content(value)
 
@@ -903,6 +973,7 @@ async def on_thread_create_run(
         ) from exc
 
     if snapshot is not None:
+        assert_capability_payload_matches(value, snapshot)
         if str(snapshot.get("graph_id") or "") != actual_graph:
             raise Auth.exceptions.HTTPException(
                 status_code=409,
@@ -946,21 +1017,37 @@ async def on_thread_create_run(
                         detail="恢复执行失败：所选技能的规则材料版本已发生变更，请重新发起请求",
                     )
             if snapshot.get("mcp_mode") == "allowlist" and snapshot.get("tool_ids"):
-                from common.identity.db import fetch_active_mcp_bindings
-
-                active_bindings = await fetch_active_mcp_bindings(
-                    scope.tenant_id, scope.membership_id
+                from common.mcp_authorization import (
+                    McpAuthorizationError,
+                    resolve_connection,
                 )
-                active_servers = {
-                    (b["server_key"] if isinstance(b, dict) else b.server_key)
-                    for b in active_bindings
-                }
+
                 for tid in snapshot["tool_ids"]:
                     parts = tid.split(":")
-                    if len(parts) >= 2 and parts[1] not in active_servers:
+                    if len(parts) < 3:
                         raise Auth.exceptions.HTTPException(
                             status_code=403,
-                            detail=f"恢复执行失败：所选 MCP 服务 {parts[1]} 授权已被撤销或失效",
+                            detail=f"恢复执行失败：非法 MCP 工具标识 {tid}",
+                        )
+                    try:
+                        resolved = resolve_connection(
+                            business_code=business_grant.business_code,
+                            tenant_id=scope.tenant_id,
+                            server_key=parts[1],
+                        )
+                    except McpAuthorizationError as exc:
+                        raise Auth.exceptions.HTTPException(
+                            status_code=403,
+                            detail=(
+                                f"恢复执行失败：MCP 服务 {parts[1]} 连接已失效或未配置"
+                            ),
+                        ) from exc
+                    if not resolved.business_scope.allows(
+                        parts[2]
+                    ) or not resolved.connection.allows_tool(parts[2]):
+                        raise Auth.exceptions.HTTPException(
+                            status_code=403,
+                            detail=(f"恢复执行失败：工具 {tid} 不在当前业务审核范围内"),
                         )
 
     try:
@@ -973,6 +1060,18 @@ async def on_thread_create_run(
                 detail={
                     "code": "run_reservation_missing",
                     "error": "台账受理预留无效或不属于当前会话（可能已终态）",
+                },
+            )
+        if (
+            str(reservation.get("business_code") or "") != business_grant.business_code
+            or str(reservation.get("business_policy_version") or "")
+            != business_grant.policy_version
+        ):
+            raise Auth.exceptions.HTTPException(
+                status_code=409,
+                detail={
+                    "code": "business_snapshot_mismatch",
+                    "error": "台账预留的业务/策略快照与当前执行不一致，拒绝创建",
                 },
             )
         decision = await claim_start(
@@ -1057,6 +1156,7 @@ async def on_thread_create_run(
         operation_kind=declared_kind or "initial",
         graph_id=actual_graph,
         capability_snapshot=snapshot,
+        business_snapshot=business_grant,
     )
     # 元数据缺失也必须注入可信身份；否则平台运行列表过滤会隐藏合法的
     # metadata-only 运行，补偿无法定位。客户端同名声明在这里无条件覆盖。
@@ -1070,7 +1170,7 @@ async def on_thread_create_run(
 
 @auth.on.assistants.read
 async def allow_assistant_read(ctx: Auth.types.AuthContext, value: Any):
-    """助手定义（图清单）可读；第一版全部企业可用六个公开图.
+    """助手定义（图清单）可读；当前公开三图的执行仍须逐业务授权.
 
     写入路径（create/update/delete）落入全局 default-deny.
     """

@@ -46,6 +46,13 @@ class RuntimeIdentity:
     # I2 remote：服务端登记的 IAM 执行引用（非秘密；不能签票/发运行）。
     # local 模式恒为 None；remote 模式由 native auth 绑定复核后注入。
     verification_ref: str | None = None
+    # IAM 有效权限集合：入站/受理时冻结，运行时只用于校验已冻结的精确业务权限。
+    permissions: frozenset[str] = frozenset()
+    # 受理时冻结的业务策略（create_run 服务端注入；旧运行缺快照即拒绝）。
+    business_code: str | None = None
+    business_policy_version: str | None = None
+    business_permission: str | None = None
+    business_graph: str | None = None
 
     def as_log_dict(self) -> dict[str, str]:
         """脱敏日志形状（仅标识，无凭据）."""
@@ -94,6 +101,13 @@ def identity_from_config(config: dict[str, Any] | None) -> RuntimeIdentity | Non
         tenant_auth_revision=_rev("tenant_auth_revision"),
         membership_revision=_rev("membership_revision"),
         verification_ref=get("verification_ref"),
+        permissions=_permissions(get("permissions")),
+        business_code=_text(configurable.get("ledger_business_code")),
+        business_policy_version=_text(
+            configurable.get("ledger_business_policy_version")
+        ),
+        business_permission=_text(configurable.get("ledger_business_permission")),
+        business_graph=_text(configurable.get("ledger_graph_id")),
     )
 
 
@@ -138,7 +152,52 @@ def identity_from_auth_user(user: Any) -> RuntimeIdentity | None:
         tenant_auth_revision=_rev("tenant_auth_revision"),
         membership_revision=_rev("membership_revision"),
         verification_ref=get("verification_ref"),
+        permissions=_permissions(get("permissions")),
     )
+
+
+def _text(value: Any) -> str | None:
+    text = str(value).strip() if value not in (None, "") else ""
+    return text or None
+
+
+def _permissions(value: Any) -> frozenset[str]:
+    if value is None:
+        return frozenset()
+    try:
+        return frozenset(str(code) for code in value if code)
+    except TypeError:
+        return frozenset()
+
+
+def _validate_business_snapshot(identity: RuntimeIdentity) -> None:
+    """逐发送校验受理时冻结的业务许可（策略版本/精确权限/实际图）.
+
+    旧运行或客户端自造 config 缺少这些服务端字段时一律停止；不按图名猜权限，
+    也不放行"仅平台身份"。
+    """
+    if not (_enforce_enabled() and _business_enforce_enabled()):
+        return
+    if not (
+        identity.business_code
+        and identity.business_policy_version
+        and identity.business_permission
+        and identity.business_graph
+    ):
+        raise RuntimeIdentityRevoked(
+            "可信运行缺少受理时冻结的业务许可快照：停止后续调用，请重新发起请求"
+        )
+    from common.business_registry import BUSINESS_POLICY_VERSION, business_for_code
+
+    definition = business_for_code(identity.business_code)
+    if definition is None or definition.graph != identity.business_graph:
+        raise RuntimeIdentityRevoked("运行业务与执行图映射不一致，停止后续调用")
+    if identity.business_policy_version != BUSINESS_POLICY_VERSION:
+        raise RuntimeIdentityRevoked("业务授权策略已升级，请重新发起请求")
+    if identity.business_permission != definition.permission:
+        raise RuntimeIdentityRevoked("运行业务许可与策略不一致，停止后续调用")
+    if definition.permission not in identity.permissions:
+        raise RuntimeIdentityRevoked("业务使用权限已撤销，停止后续调用")
 
 
 def require_identity(config: dict[str, Any] | None) -> RuntimeIdentity:
@@ -160,6 +219,7 @@ async def revalidate(identity: RuntimeIdentity) -> None:
     安全停止并由新请求重建可信身份），不得降级为仅查 active。
     """
     _validate_identity_snapshot(identity)
+    _validate_business_snapshot(identity)
     if _remote_enabled():
         import asyncio
 
@@ -281,6 +341,17 @@ def _enforce_enabled() -> bool:
     return os.environ.get("TENANT_ENFORCE_RUNTIME_IDENTITY", "true").lower() != "false"
 
 
+def _business_enforce_enabled() -> bool:
+    """业务许可快照强制开关（生产缺省 true；仅供离线单元测试显式关闭）.
+
+    生产 compose/Dockerfile 不设置该变量，因此旧运行缺快照一律停止。单独拆开关
+    是为了让"纯身份修订"单元测试聚焦身份语义，业务专项测试再显式开启。
+    """
+    return (
+        os.environ.get("TENANT_BUSINESS_SNAPSHOT_ENFORCED", "true").lower() != "false"
+    )
+
+
 def identity_from_request(request: Any) -> RuntimeIdentity | None:
     """从中间件请求对象提取可信身份（R04，按框架支持的来源逐级尝试）.
 
@@ -352,6 +423,7 @@ def guard_runtime_call_sync(config: dict[str, Any] | None) -> RuntimeIdentity | 
             raise RuntimeIdentityError("缺少已认证运行身份，拒绝发起外部调用")
         return None
     _validate_identity_snapshot(identity)
+    _validate_business_snapshot(identity)
     if _remote_enabled():
         _revalidate_remote(identity)
         return identity

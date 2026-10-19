@@ -26,10 +26,8 @@ from deepagents.backends import FilesystemBackend
 from fastapi import HTTPException
 from loguru import logger
 
-from common.identity.db import fetch_active_mcp_bindings
 from common.identity.runtime import RuntimeIdentity
 from common.identity.ticket import parse_keys
-from common.mcp_authorization import resolve_protocol_profile
 
 VALID_GRAPHS: set[str] = {
     "basic-qa",
@@ -289,96 +287,113 @@ def validate_skill_selection(
 async def discover_authorized_mcp_catalog(
     identity: RuntimeIdentity,
     *,
+    business_code: str | None = None,
     timeout_per_server: float = 2.0,
     total_timeout: float = 5.0,
     max_concurrency: int = 3,
 ) -> tuple[list[MCPServiceCatalogItem], list[MCPToolCatalogItem]]:
-    """按当前成员身份实时发现已授权 MCP 服务与工具.
+    """按当前企业业务/连接配置实时发现 MCP 服务与工具.
 
-    单服务超时 2 秒，总限时 5 秒，最多 3 并发；部分服务失败返回 200 并诚实标
-    temporarily_unavailable；无权服务零网络发现请求且不泄露存在性。
+    连接来自受保护部署配置，不查询旧成员绑定；业务注册表与连接的
+    已审核工具白名单取交集。单服务超时与总限时保留，部分失败如实标记；
+    无权业务零发现请求且不泄露服务存在性。
     """
+    from common.business_registry import business_for_code
+    from common.mcp_authorization import DEFAULT_PROVIDER
+    from common.mcp_connections import load_connections
     from common.mcp_scoped import get_factory
 
-    factory = get_factory()
-    active_bindings = await fetch_active_mcp_bindings(
-        identity.tenant_id, identity.membership_id
-    )
-    if not active_bindings:
+    code = str(business_code or identity.business_code or "")
+    definition = business_for_code(code)
+    if definition is None:
         return [], []
+    from dataclasses import replace
 
+    scoped_identity = replace(identity, business_code=code)
+
+    factory = get_factory()
+    connections = load_connections().available_for_tenant(identity.tenant_id)
+    by_key = {conn.server_key: conn for conn in connections}
     services: list[MCPServiceCatalogItem] = []
     tools: list[MCPToolCatalogItem] = []
+    to_discover: list[tuple[Any, Any]] = []
 
-    # 过滤出需要网络发现的服务
-    to_discover: list[dict[str, Any]] = []
-
-    for binding in active_bindings:
-        server_key = binding["server_key"]
-        p_version = binding.get("protocol_version", "")
-        profile = resolve_protocol_profile(p_version)
-
-        if profile is None:
-            status = "unverified" if p_version == "unverified" else "unavailable"
+    for scope in definition.connections:
+        conn = by_key.get(scope.server_key)
+        if conn is None:
             services.append(
                 MCPServiceCatalogItem(
-                    server_key=server_key,
-                    display_name=server_key,
-                    status=status,
-                )
-            )
-            continue
-
-        # 检查 server URL
-        url = factory._urls.get(server_key)
-        if not url:
-            env_url = os.environ.get(
-                f"MCP_SERVER_URL_{server_key.upper().replace('-', '_')}"
-            )
-            if env_url:
-                factory.register_server(server_key, env_url)
-                url = env_url
-        if not url:
-            services.append(
-                MCPServiceCatalogItem(
-                    server_key=server_key,
-                    display_name=server_key,
+                    server_key=scope.server_key,
+                    display_name=scope.server_key,
                     status="not_configured",
                 )
             )
             continue
-
-        to_discover.append(binding)
+        if not conn.enabled:
+            services.append(
+                MCPServiceCatalogItem(
+                    server_key=conn.server_key,
+                    display_name=conn.display_name,
+                    status="disabled",
+                )
+            )
+            continue
+        if not scope.allowed_tools:
+            services.append(
+                MCPServiceCatalogItem(
+                    server_key=conn.server_key,
+                    display_name=conn.display_name,
+                    status="not_configured",
+                )
+            )
+            continue
+        if not DEFAULT_PROVIDER.credential_available(conn):
+            services.append(
+                MCPServiceCatalogItem(
+                    server_key=conn.server_key,
+                    display_name=conn.display_name,
+                    status="auth_unavailable",
+                )
+            )
+            continue
+        to_discover.append((conn, scope))
 
     if not to_discover:
+        services.sort(key=lambda item: item.server_key)
         return services, tools
 
     semaphore = asyncio.Semaphore(max_concurrency)
 
     async def _discover_single(
-        binding: dict[str, Any],
+        pair: tuple[Any, Any],
     ) -> tuple[MCPServiceCatalogItem, list[MCPToolCatalogItem]]:
-        server_key = binding["server_key"]
+        conn, scope = pair
         async with semaphore:
             try:
                 discovered_tools = await asyncio.wait_for(
-                    factory.tools_for(identity, server_key),
+                    factory.tools_for(scoped_identity, conn.server_key),
                     timeout=timeout_per_server,
                 )
                 svc = MCPServiceCatalogItem(
-                    server_key=server_key,
-                    display_name=server_key,
+                    server_key=conn.server_key,
+                    display_name=conn.display_name,
                     status="available",
                 )
                 tool_items: list[MCPToolCatalogItem] = []
-                for t in discovered_tools:
+                for tool in discovered_tools:
+                    # 双白名单交集：业务显式登记 ∩ 连接已审核查询工具。
+                    if not scope.allows(tool.name) or not conn.allows_tool(tool.name):
+                        continue
                     tool_items.append(
                         MCPToolCatalogItem(
-                            id=f"mcp:{server_key}:{t.name}",
-                            server_key=server_key,
-                            name=t.name,
-                            display_name=getattr(t, "display_name", t.name) or t.name,
-                            description=(getattr(t, "description", "") or t.name)[:500],
+                            id=f"mcp:{conn.server_key}:{tool.name}",
+                            server_key=conn.server_key,
+                            name=tool.name,
+                            display_name=getattr(tool, "display_name", tool.name)
+                            or tool.name,
+                            description=(getattr(tool, "description", "") or tool.name)[
+                                :500
+                            ],
                             status="available",
                         )
                     )
@@ -386,52 +401,49 @@ async def discover_authorized_mcp_catalog(
             except Exception as exc:
                 logger.warning(
                     "MCP 目录发现受阻: server={}, error={}",
-                    server_key,
+                    conn.server_key,
                     type(exc).__name__,
                 )
-                svc = MCPServiceCatalogItem(
-                    server_key=server_key,
-                    display_name=server_key,
-                    status="temporarily_unavailable",
+                return (
+                    MCPServiceCatalogItem(
+                        server_key=conn.server_key,
+                        display_name=conn.display_name,
+                        status="temporarily_unavailable",
+                    ),
+                    [],
                 )
-                return svc, []
 
-    # 总限时 total_timeout
-    task_map = {asyncio.create_task(_discover_single(b)): b for b in to_discover}
+    task_map = {
+        asyncio.create_task(_discover_single(pair)): pair for pair in to_discover
+    }
     done, pending = await asyncio.wait(task_map.keys(), timeout=total_timeout)
-
-    for t in pending:
-        t.cancel()
-        binding = task_map[t]
-        server_key = binding["server_key"]
+    for task in pending:
+        task.cancel()
+        conn, _scope = task_map[task]
         services.append(
             MCPServiceCatalogItem(
-                server_key=server_key,
-                display_name=server_key,
+                server_key=conn.server_key,
+                display_name=conn.display_name,
                 status="temporarily_unavailable",
             )
         )
-
-    for t in done:
-        binding = task_map[t]
-        server_key = binding["server_key"]
+    for task in done:
+        conn, _scope = task_map[task]
         try:
-            res = t.result()
-            svc, tool_items = res
+            svc, tool_items = task.result()
             services.append(svc)
             tools.extend(tool_items)
         except Exception:
             services.append(
                 MCPServiceCatalogItem(
-                    server_key=server_key,
-                    display_name=server_key,
+                    server_key=conn.server_key,
+                    display_name=conn.display_name,
                     status="temporarily_unavailable",
                 )
             )
 
-    # 排序保持输出稳定
-    services.sort(key=lambda s: s.server_key)
-    tools.sort(key=lambda t: t.id)
+    services.sort(key=lambda item: item.server_key)
+    tools.sort(key=lambda item: item.id)
     return services, tools
 
 
@@ -452,8 +464,17 @@ def compute_catalog_version(
 
     包含材料指纹、授权修订、图与稳定ID，不含秘密、参数或内部路径.
     """
+    from common.business_registry import BUSINESS_POLICY_VERSION
+    from common.mcp_connections import load_connections
+
     hasher = hashlib.sha256()
     hasher.update(f"graph:{graph_id}\n".encode())
+    hasher.update(f"business_policy:{BUSINESS_POLICY_VERSION}\n".encode())
+    try:
+        conn_revision = load_connections().revision
+    except Exception:
+        conn_revision = 0
+    hasher.update(f"connections:{conn_revision}\n".encode())
     hasher.update(
         f"tenant:{identity.tenant_id}:{auth_revisions.get('tenant', 1)}\n".encode()
     )
@@ -571,11 +592,18 @@ async def get_capabilities_catalog(
 
     auth_revs = auth_revisions or {"tenant": 1, "user": 1, "membership": 1}
 
+    # 0. 业务准入：目录也必须按实际图/业务精确权限拒绝（403 语义由调用方映射）。
+    from common.identity.business_access import grant_for_graph
+
+    grant = grant_for_graph(graph_id=graph_id, identity=identity)
+
     # 1. 本地读取 Skills
     skills = list_graph_skills(graph_id, menu_name=menu_name)
 
-    # 2. 授权发现 MCP
-    services, tools = await discover_authorized_mcp_catalog(identity)
+    # 2. 授权发现 MCP（业务 + 企业连接，不查旧成员绑定）
+    services, tools = await discover_authorized_mcp_catalog(
+        identity, business_code=grant.business_code
+    )
 
     # 3. 计算版本
     cat_ver = compute_catalog_version(
@@ -695,10 +723,18 @@ async def refresh_authorized_mcp_tools(config: Any) -> None:
 
     identity = identity_from_config(config)
     ids: list[str] = []
-    if identity is not None:
-        _, tools = await discover_authorized_mcp_catalog(identity)
+    servers: list[str] = []
+    if identity is not None and identity.business_code:
+        _, tools = await discover_authorized_mcp_catalog(
+            identity, business_code=identity.business_code
+        )
         ids = [tool.id for tool in tools if tool.status == "available"]
-    config.setdefault("configurable", {})["capability_authorized_tool_ids"] = ids
+        servers = sorted(
+            {tool.server_key for tool in tools if tool.status == "available"}
+        )
+    configurable = config.setdefault("configurable", {})
+    configurable["capability_authorized_tool_ids"] = ids
+    configurable["capability_authorized_servers"] = servers
 
 
 class BoundedSkillsBackend(FilesystemBackend):
@@ -1085,15 +1121,13 @@ def filter_capability_mcp_tools(
                     if isinstance(auth_user, dict)
                     else getattr(auth_user, "tenant_id", None)
                 )
-                membership_id = (
-                    auth_user.get("membership_id")
-                    if isinstance(auth_user, dict)
-                    else getattr(auth_user, "membership_id", None)
-                )
+                business_code = configurable.get(
+                    "ledger_business_code"
+                ) or metadata.get("ledger_business_code")
                 if factory is not None and tenant_id:
                     auth_servers = factory.authorized_servers_for_scope(
                         str(tenant_id),
-                        str(membership_id) if membership_id else None,
+                        str(business_code) if business_code else None,
                     )
                 else:
                     auth_servers = set()

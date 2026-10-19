@@ -20,6 +20,8 @@ export type AdmissionResult = {
   reused: boolean;
   thread_id: string;
   graph_id: string;
+  business_code?: string | null;
+  business_policy_version?: string | null;
   ledger_marker: string;
   capability_selection?: Record<string, unknown> | null;
 };

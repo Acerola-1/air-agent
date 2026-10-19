@@ -4,7 +4,7 @@
 按企业实例化：code 同为 `tenant_admin`，作用域唯一性按 (tenant_id, code)。
 
 授予范围严格限定在 `grantable_to_tenants=true` 的权限码子集：企业管理员拿不到
-任何平台专属能力（user:*/tenant:*/member:link/mcp:binding:manage/permission:read
+任何平台专属能力（user:*/tenant:*/member:link/permission:read
 都不在其中）——“内置模板不构成授权旁路”。
 """
 
@@ -34,7 +34,6 @@ TENANT_ADMIN_GRANTS: list[str] = [
     "audit:read",
     "followed:read",
     "followed:manage",
-    "mcp:binding:read",
     "region:read",
     # 运行台账：企业管理员获得运营明细与统计；**不含** agent:content:read
     # （原文读取需单独授予）与 agent:replay:manage（平台专属运维）。

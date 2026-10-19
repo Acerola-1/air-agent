@@ -97,6 +97,15 @@ chat-store 的 stopPending 独立于本地流结束：未知状态保留运行�
 - **重试与恢复**：`retry` 继承当前尝试的选择计划；`regenerate` 默认继承或使用显式新草稿；`resume` 严禁更改选择。
 - **响应式与无障碍**：弹窗限高 `85vh` 并自带滚动；390×844 窄屏与桌面自适应；完整键盘焦点导航（Tab/Shift+Tab）、Escape 关闭、明确的 aria-label 以及中文输入法组合键保护。
 
+## 业务入口与授权（2026-10-19）
+
+业务来源：`openspec/changes/simplify-agent-business-authorization/specs/agent-business-access/spec.md`。入口所有者为 `components/chat/GraphSwitcher.tsx`，过滤依据是 `/api/auth/me` 返回的 IAM 实时权限，不在前端推断或特判 root。
+
+- **按实时可用业务生成**：只展示当前企业已开通且本人已获授的业务；不可用业务不出现在列表。无任何可用业务时显示禁用的“无可用业务”，并说明原因，不展示可启动入口。
+- **两类失败分开表达**：业务无权（IAM 403/未授权）与外部连接故障（目录中的 `not_configured`/`auth_unavailable`/`temporarily_unavailable`）使用不同文案；不把连接故障写成业务未授权。
+- **切换与隔离**：切换业务清空当前会话并按 user/tenant/context_version/epoch 丢弃迟到响应；A→B→A 同样隔离。运行中与 stopPending 时锁定切换。
+- **旧授权页面退役**：企业“MCP 授权”页面与 `/mcp-bindings` 接口已删除，返回 404/405；连接状态如需要只作为平台部署说明展示，不接受浏览器写入地址或凭据。
+
 ## Change4协调者复验补充（2026-10-15）
 
 弹窗内修改先保存在局部草稿，只有“完成”才提交；Escape、关闭和取消均丢弃本次编辑并恢复触发器焦点。单选支持方向键/Home/End，工具最多20项；目录分页须保持同一图、scope、epoch与目录版本，加载/错误期间不能提交。身份的用户、企业或context_version变化均清空视图与能力草稿，停止待确认期间选择器仍锁定。

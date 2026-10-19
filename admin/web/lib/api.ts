@@ -7,7 +7,6 @@
 import type {
   AuditLog,
   Department,
-  McpBinding,
   Member,
   Page,
   Permission,
@@ -283,18 +282,4 @@ export const departmentsApi = {
   update: (id: string, data: { name?: string; parent_id?: string | null }) =>
     patch<Department>(`/departments/${id}`, data),
   remove: (id: string) => del<void>(`/departments/${id}`),
-};
-
-export const bindingsApi = {
-  list: () => get<McpBinding[]>("/mcp-bindings"),
-  upsert: (data: {
-    tenant_id: string;
-    membership_id?: string | null;
-    server_key: string;
-    external_subject: string;
-    credential_ref: string;
-    protocol_version: string;
-    status?: "active" | "disabled";
-  }) => put<McpBinding>("/mcp-bindings", data),
-  remove: (id: string) => del<void>(`/mcp-bindings/${id}`),
 };

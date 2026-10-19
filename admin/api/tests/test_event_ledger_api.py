@@ -143,11 +143,28 @@ async def ledger_env():
     await _make_membership(
         tenant_a,
         user_a,
-        ["agent:operations:read", "agent:metrics:read", "agent:content:read"],
+        [
+            "agent:business:basic-qa:use",
+            "agent:operations:read",
+            "agent:metrics:read",
+            "agent:content:read",
+        ],
     )
-    await _make_membership(tenant_b, user_a, ["agent:operations:read", "agent:metrics:read"])
+    await _make_membership(
+        tenant_b,
+        user_a,
+        [
+            "agent:business:basic-qa:use",
+            "agent:operations:read",
+            "agent:metrics:read",
+        ],
+    )
     # 仅运营元数据（无原文）成员，用于验证原文独立权限
-    await _make_membership(tenant_a, user_b, ["agent:operations:read"])
+    await _make_membership(
+        tenant_a,
+        user_b,
+        ["agent:business:basic-qa:use", "agent:operations:read"],
+    )
     try:
         yield {
             "tenant_a": tenant_a,

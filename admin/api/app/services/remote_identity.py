@@ -430,7 +430,14 @@ async def resolve_remote_identity(session: AsyncSession, cookie_value: str | Non
     if not token or not hmac.compare_digest(hash_token(token), row["token_hash"]):
         raise HTTPException(status_code=401, detail="应用会话凭据无效")
     try:
-        payload = await asyncio.to_thread(subject_payload, token, expected_audience=row["audience"])
+        # 每次请求都取执行引用：业务准入/逐发送复查需要它；不再按"是否存在旧
+        # MCP 绑定"决定是否申请，避免把旧授权表当成运行前置条件。
+        payload = await asyncio.to_thread(
+            subject_payload,
+            token,
+            expected_audience=row["audience"],
+            include_execution_context=True,
+        )
         if payload["principal"]["id"] != str(row["user_id"]) or payload["session"]["id"] != str(
             row["iam_session_id"]
         ):
@@ -470,38 +477,15 @@ async def resolve_remote_identity(session: AsyncSession, cookie_value: str | Non
         ),
     )
     verification_ref = None
-    has_mcp = fields["tenant_id"] and await session.scalar(
-        text(
-            "SELECT EXISTS (SELECT 1 FROM mcp_identity_bindings WHERE tenant_id=:t"
-            " AND status='active' AND (membership_id IS NULL OR membership_id=:m))"
-        ),
-        {"t": uuid.UUID(fields["tenant_id"]), "m": uuid.UUID(fields["membership_id"])},
-    )
-    if has_mcp:
-        try:
-            with_ref = await asyncio.to_thread(
-                subject_payload,
-                token,
-                expected_audience=row["audience"],
-                include_execution_context=True,
-            )
-            if any(
-                with_ref[key] != payload[key]
-                for key in ("principal", "session", "current_tenant", "membership", "revisions")
-            ):
-                from common.identity.remote import RemoteContextMismatch
-
-                raise RemoteContextMismatch("目录核验期间身份上下文已变化")
-            ec = with_ref.get("execution_context") or {}
-            verification_ref = ec.get("verification_ref")
-            if (
-                not isinstance(verification_ref, str)
-                or not verification_ref
-                or ec.get("revisions") != revisions
-            ):
-                raise IdentityBackendUnavailable("IAM执行引用协议异常")
-        except Exception as exc:
-            raise_remote_error(exc)
+    if fields["tenant_id"]:
+        ec = payload.get("execution_context") or {}
+        verification_ref = ec.get("verification_ref")
+        if (
+            not isinstance(verification_ref, str)
+            or not verification_ref
+            or ec.get("revisions") != revisions
+        ):
+            raise IdentityBackendUnavailable("IAM执行引用协议异常")
     identity = _identity_objects(
         **{key: value for key, value in fields.items() if not key.endswith("revision")},
         session_id=payload["session"]["id"],

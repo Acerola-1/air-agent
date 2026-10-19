@@ -58,6 +58,9 @@ class TicketBinding:
     tenant_auth_revision: int
     membership_revision: int
     session_ctx_version: int
+    # 入站内省时冻结的 IAM 精确权限集合（非秘密）；native create_run 用它求交
+    # 业务使用权限。逐发送仍以执行引用复查修订，不缓存正向授权到业务存储。
+    permissions: frozenset[str] = frozenset()
 
 
 def _audience() -> str:
@@ -183,6 +186,7 @@ def facade_issue_and_bind(
         tenant_auth_revision=claims.tenant_auth_revision,
         membership_revision=claims.membership_revision,
         session_ctx_version=claims.session_ctx_version,
+        permissions=ident.permissions,
     )
     return ticket, expires_in, binding
 
@@ -239,8 +243,8 @@ async def register_binding(
                 " (ticket_hash, verification_ref, user_id, tenant_id, membership_id,"
                 "  session_id, audience, iam_issuer, user_auth_revision,"
                 "  tenant_auth_revision, membership_revision, session_ctx_version,"
-                "  entry_expires_at, ref_revisions)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                "  entry_expires_at, ref_revisions, permissions)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                 " ON CONFLICT (ticket_hash) DO NOTHING",
                 (
                     ticket_digest(ticket),
@@ -270,6 +274,7 @@ async def register_binding(
                         },
                         separators=(",", ":"),
                     ),
+                    json.dumps(sorted(binding.permissions), separators=(",", ":")),
                 ),
             )
 
@@ -390,7 +395,20 @@ def _binding_from_record(record: dict) -> TicketBinding:
         tenant_auth_revision=int(record["tenant_auth_revision"]),
         membership_revision=int(record["membership_revision"]),
         session_ctx_version=int(record["session_ctx_version"]),
+        permissions=_record_permissions(record.get("permissions")),
     )
+
+
+def _record_permissions(raw) -> frozenset[str]:  # noqa: ANN001 - JSONB 列
+    """绑定行 permissions（psycopg 可能给 str 或 list）→ 权限集合."""
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except ValueError:
+            return frozenset()
+    if not isinstance(raw, list):
+        return frozenset()
+    return frozenset(str(code) for code in raw if code)
 
 
 def _load_binding_sync(ticket_hash: str) -> dict | None:

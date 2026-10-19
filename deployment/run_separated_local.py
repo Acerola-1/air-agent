@@ -674,7 +674,14 @@ def _write_native_environment(
                 return target
         except OSError as exc:
             raise LaunchError("既有原生环境文件无法读取。") from exc
-        _backup_native_env(target)
+        # 用户明确要求本次维护发布不留配置备份；只有显式发布开关才跳过，
+        # 日常启动仍保留原有可追溯备份行为。
+        if os.environ.get("AGENT_RELEASE_NO_BACKUP", "").strip().lower() not in {
+            "1",
+            "true",
+            "yes",
+        }:
+            _backup_native_env(target)
     _atomic_private_bytes(target, payload)
     return target
 

@@ -64,7 +64,7 @@ async def seeded(owner_factory):
     async with owner_factory() as session:
         await session.execute(
             text(
-                "TRUNCATE membership_roles, membership_followed_regions, mcp_identity_bindings,"
+                "TRUNCATE membership_roles, membership_followed_regions,"
                 " tenant_memberships, departments, roles, tenants CASCADE"
             )
         )
@@ -271,30 +271,12 @@ async def test_self_parent_rejected(runtime_factory, seeded):
             )
 
 
-async def test_binding_uniqueness(runtime_factory, seeded):
-    """企业默认绑定每 (tenant, server) 至多一条。"""
+async def test_retired_binding_table_is_absent(runtime_factory, seeded):
+    """旧人员绑定表已被清理迁移物理删除；不允许重新创建或读取。"""
     async with runtime_factory() as session:
         await _guc(session, platform="on")
-        await session.execute(
-            text(
-                "INSERT INTO mcp_identity_bindings"
-                " (id, tenant_id, server_key, external_subject, credential_ref)"
-                " VALUES (:id, :t, 'ipp', 'subj_a', 'env:X')"
-            ),
-            {"id": str(uuid.uuid4()), "t": seeded["tenant_a"]},
-        )
-        await session.commit()
-    async with runtime_factory() as session:
-        await _guc(session, platform="on")
-        with pytest.raises(IntegrityError):
-            await session.execute(
-                text(
-                    "INSERT INTO mcp_identity_bindings"
-                    " (id, tenant_id, server_key, external_subject, credential_ref)"
-                    " VALUES (:id, :t, 'ipp', 'subj_a2', 'env:Y')"
-                ),
-                {"id": str(uuid.uuid4()), "t": seeded["tenant_a"]},
-            )
+        remaining = await session.scalar(text("SELECT to_regclass('public.mcp_identity_bindings')"))
+        assert remaining is None
 
 
 async def test_thread_ownership_rls_blocks_cross_read(runtime_factory, seeded):

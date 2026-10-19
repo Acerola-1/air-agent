@@ -19,7 +19,6 @@ from __future__ import annotations
 import datetime as dt
 import hashlib
 import re
-import sys
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -115,6 +114,26 @@ class AdmissionRejected(LedgerError):
     status_code = 403
 
 
+class BusinessDenied(LedgerError):
+    """业务准入拒绝（保留 401/403/409/503 语义，不伪装成其他错误）。"""
+
+    def __init__(
+        self, message: str, *, status_code: int = 403, code: str = "business_denied"
+    ) -> None:
+        super().__init__(message, code=code)
+        self.status_code = status_code
+
+
+def _business_grant(identity: Identity, graph_id: str):
+    """服务端按实际业务求交；任何失败转为台账域错误（携带原状态码）."""
+    from common.identity.business_access import BusinessAccessError, grant_for_graph
+
+    try:
+        return grant_for_graph(graph_id=graph_id, identity=identity)
+    except BusinessAccessError as exc:
+        raise BusinessDenied(exc.message, status_code=exc.status_code, code=exc.code) from exc
+
+
 class NotFound(LedgerError):
     status_code = 404
 
@@ -129,6 +148,8 @@ class AdmissionResult:
     reused: bool
     thread_id: str
     graph_id: str
+    business_code: str | None = None
+    business_policy_version: str | None = None
     capability_selection: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
@@ -141,6 +162,8 @@ class AdmissionResult:
             "reused": self.reused,
             "thread_id": self.thread_id,
             "graph_id": self.graph_id,
+            "business_code": self.business_code,
+            "business_policy_version": self.business_policy_version,
             "ledger_marker": ledger_marker(self.request_id, self.attempt_id),
             "capability_selection": self.capability_selection,
         }
@@ -297,95 +320,49 @@ def normalize_capability_selection(
     }
 
 
-async def _validate_mcp_tool_authorization(
-    session: AsyncSession,
+def _validate_mcp_tool_authorization(
     *,
+    business_code: str,
     tenant_id: uuid.UUID,
-    membership_id: uuid.UUID,
     tool_ids: list[str],
-    user_id: uuid.UUID | str | None = None,
 ) -> None:
-    """验证 allowlist 中的每个工具对应的 server_key 在当前租户/成员下具有 active 绑定.
+    """按业务注册表 + 受保护连接白名单校验 allowlist（不查旧绑定表）.
 
-    越权或撤销抛 403 (CapabilityUnauthorized).
+    静态校验足够在受理阶段拒绝越权/未分类工具：连接配置的
+    `approved_query_tools` 是服务侧审核过的可执行清单，业务注册表再显式声明
+    本业务允许的服务与工具。未登记的新工具不会被自动开放。
     """
     if not tool_ids:
         return
-    server_keys: set[str] = set()
+    from common.business_registry import business_for_code
+    from common.mcp_authorization import McpAuthorizationError, resolve_connection
+
+    definition = business_for_code(business_code)
+    if definition is None:
+        raise CapabilityUnauthorized("业务未登记，拒绝能力选择", code="business_unregistered")
     for tid in tool_ids:
         parts = tid.split(":")
         if len(parts) < 3 or parts[0] != "mcp":
             raise CapabilityValidationError(
                 f"非法的 MCP 工具标识格式: {tid}", code="invalid_tool_id"
             )
-        server_keys.add(parts[1])
-
-    stmt = text(
-        """
-        SELECT b.server_key, b.protocol_version
-        FROM mcp_identity_bindings b
-        WHERE b.tenant_id = :tenant_id
-          AND b.status = 'active'
-          AND (b.membership_id = :membership_id
-               OR (b.membership_id IS NULL AND NOT EXISTS (
-                     SELECT 1 FROM mcp_identity_bindings o
-                     WHERE o.tenant_id = b.tenant_id AND o.server_key = b.server_key
-                       AND o.membership_id = :membership_id)))
-        """
-    )
-    rows = (
-        (
-            await session.execute(
-                stmt, {"tenant_id": str(tenant_id), "membership_id": str(membership_id)}
-            )
-        )
-        .mappings()
-        .all()
-    )
-    binding_by_key = {r["server_key"]: r for r in rows}
-
-    for s_key in server_keys:
-        if s_key not in binding_by_key:
-            raise CapabilityUnauthorized(
-                f"未授权或已撤销的 MCP 服务: {s_key}", code="mcp_unauthorized"
-            )
-        b = binding_by_key[s_key]
-        p_ver = str(b.get("protocol_version") or "")
+        server_key, tool_name = parts[1], parts[2]
         try:
-            from common.mcp_authorization import resolve_protocol_profile
-        except ImportError:
-            repo_src = Path(__file__).resolve().parents[4] / "src"
-            if repo_src.exists() and str(repo_src) not in sys.path:
-                sys.path.insert(0, str(repo_src))
-            from common.mcp_authorization import resolve_protocol_profile
-
-        profile = resolve_protocol_profile(p_ver)
-        if profile is None:
-            raise CapabilityUnauthorized(
-                f"MCP 服务 {s_key} 协议未验证或不可用: {p_ver}", code="mcp_unverified"
+            resolved = resolve_connection(
+                business_code=business_code,
+                tenant_id=str(tenant_id),
+                server_key=server_key,
             )
-
-    # 全局 schema 缓存可能来自另一成员，不能作为当前成员的工具许可。
-    from common.capabilities import discover_authorized_mcp_catalog
-    from common.identity.runtime import RuntimeIdentity
-
-    scoped_identity = RuntimeIdentity(
-        user_id=str(user_id or ""),
-        tenant_id=str(tenant_id),
-        membership_id=str(membership_id),
-        session_id="",
-    )
-    try:
-        _, scoped_tools = await discover_authorized_mcp_catalog(scoped_identity)
-    except Exception as exc:
-        raise CapabilityValidationError(
-            "无法核验当前成员的工具目录", code="tool_not_found"
-        ) from exc
-    available_ids = {tool.id for tool in scoped_tools if tool.status == "available"}
-    if not set(tool_ids).issubset(available_ids):
-        raise CapabilityValidationError(
-            "所选工具在当前成员的服务目录中不存在或不可用", code="tool_not_found"
-        )
+        except McpAuthorizationError as exc:
+            raise CapabilityUnauthorized(
+                f"未授权或不可用的 MCP 服务: {server_key}", code="mcp_unauthorized"
+            ) from exc
+        if not resolved.business_scope.allows(tool_name) or not resolved.connection.allows_tool(
+            tool_name
+        ):
+            raise CapabilityUnauthorized(
+                f"工具 {tid} 不在已审核的业务查询范围内", code="mcp_tool_unauthorized"
+            )
 
 
 _SKILL_ID_PATTERN = re.compile(r"^skill:([a-zA-Z0-9_-]+):([a-zA-Z0-9_-]+)$")
@@ -645,6 +622,22 @@ async def _assert_thread_owned(
 # ---------------------------------------------------------------------- 受理
 
 
+def _assert_source_business(attempt: AgentRunAttempt, grant) -> None:
+    """重试/恢复不得换业务；旧运行没有新快照时要求重新受理."""
+    if attempt.business_code is None or attempt.business_policy_version is None:
+        raise CapabilityConflict(
+            "原运行缺少业务许可快照，请重新发起请求", code="business_snapshot_missing"
+        )
+    if (
+        attempt.business_code != grant.business_code
+        or attempt.business_policy_version != grant.policy_version
+    ):
+        raise CapabilityConflict(
+            "重试或恢复不允许更换业务或业务授权策略",
+            code="business_snapshot_changed",
+        )
+
+
 async def admit_request(
     session: AsyncSession,
     identity: Identity,
@@ -672,6 +665,7 @@ async def admit_request(
     tenant_id = identity.tenant.id
     user_id = identity.user.id
     membership_id = identity.membership.id
+    grant = _business_grant(identity, graph_id)
 
     norm_sel = normalize_capability_selection(capability_selection)
     settings = get_settings()
@@ -718,6 +712,9 @@ async def admit_request(
                 .limit(1)
             )
         ).scalar_one_or_none()
+
+    if source_attempt is not None:
+        _assert_source_business(source_attempt, grant)
 
     if (
         (capability_selection is None or operation_kind in ("retry", "resume"))
@@ -886,6 +883,7 @@ async def admit_request(
         attempt = await session.get(AgentRunAttempt, bound_attempt_id)
         if attempt is None or attempt.tenant_id != tenant_id:
             raise LedgerError("提交记录缺少关联尝试", code="inconsistent_submission")
+        _assert_source_business(attempt, grant)
         if normalized_fallback:
             attempt.content_digest = (
                 canonical_content_digest_v1(
@@ -908,6 +906,8 @@ async def admit_request(
             reused=True,
             thread_id=thread_id,
             graph_id=graph_id,
+            business_code=grant.business_code,
+            business_policy_version=grant.policy_version,
             capability_selection=sel_out,
         )
 
@@ -952,6 +952,7 @@ async def admit_request(
             raise NotFound("原尝试不存在或不属于当前用户", code="source_attempt_not_found")
 
     if source_attempt is not None:
+        _assert_source_business(source_attempt, grant)
         source_thread = await session.scalar(
             select(AgentRequest.thread_id).where(
                 AgentRequest.id == source_attempt.request_id, AgentRequest.tenant_id == tenant_id
@@ -1005,17 +1006,15 @@ async def admit_request(
                     ) from exc
             if source_selection.tool_ids:
                 try:
-                    await _validate_mcp_tool_authorization(
-                        session,
+                    _validate_mcp_tool_authorization(
+                        business_code=grant.business_code,
                         tenant_id=tenant_id,
-                        membership_id=membership_id,
                         tool_ids=source_selection.tool_ids,
-                        user_id=user_id,
                     )
                 except Exception as exc:
                     raise CapabilityConflict(
                         "原 MCP 服务授权已失效或撤销，无法恢复原运行",
-                        code="mcp_binding_invalidated",
+                        code="mcp_connection_invalidated",
                     ) from exc
             norm_sel["skill"]["mode"] = source_selection.skill_mode
             norm_sel["skill"]["skill_id"] = source_selection.skill_id
@@ -1033,17 +1032,15 @@ async def admit_request(
             if source_selection is not None:
                 if source_selection.tool_ids and source_selection.mcp_mode == "allowlist":
                     try:
-                        await _validate_mcp_tool_authorization(
-                            session,
+                        _validate_mcp_tool_authorization(
+                            business_code=grant.business_code,
                             tenant_id=tenant_id,
-                            membership_id=membership_id,
                             tool_ids=source_selection.tool_ids,
-                            user_id=user_id,
                         )
                     except Exception as exc:
                         raise CapabilityConflict(
                             "原 MCP 服务授权已失效或撤销，无法重试",
-                            code="mcp_binding_invalidated",
+                            code="mcp_connection_invalidated",
                         ) from exc
                 norm_sel["skill"]["mode"] = source_selection.skill_mode
                 norm_sel["skill"]["skill_id"] = source_selection.skill_id
@@ -1083,6 +1080,11 @@ async def admit_request(
                 tenant_auth_revision=identity.tenant.auth_revision,
                 membership_revision=identity.membership.revision,
                 verification_ref=getattr(identity, "remote_verification_ref", None),
+                permissions=frozenset(identity.permissions),
+                business_code=grant.business_code,
+                business_policy_version=grant.policy_version,
+                business_permission=grant.permission,
+                business_graph=grant.graph_id,
             )
             auth_revs = {
                 "tenant": int(getattr(identity.tenant, "auth_revision", 1) or 1),
@@ -1090,7 +1092,9 @@ async def admit_request(
                 "membership": int(getattr(identity.membership, "revision", 1) or 1),
             }
             curr_skills = list_graph_skills(graph_id, menu_name=menu_name)
-            curr_mcp_services, curr_mcp_tools = await discover_authorized_mcp_catalog(runtime_ident)
+            curr_mcp_services, curr_mcp_tools = await discover_authorized_mcp_catalog(
+                runtime_ident, business_code=grant.business_code
+            )
             expected_cat_ver = compute_catalog_version(
                 graph_id=graph_id,
                 identity=runtime_ident,
@@ -1126,12 +1130,10 @@ async def admit_request(
                 raise CapabilityValidationError(msg, code="required_tool_missing")
 
     if norm_sel["mcp"]["mode"] == "allowlist" and norm_sel["mcp"]["tool_ids"]:
-        await _validate_mcp_tool_authorization(
-            session,
+        _validate_mcp_tool_authorization(
+            business_code=grant.business_code,
             tenant_id=tenant_id,
-            membership_id=membership_id,
             tool_ids=norm_sel["mcp"]["tool_ids"],
-            user_id=user_id,
         )
 
     if norm_sel["selection_source"] == "user_explicit":
@@ -1195,6 +1197,8 @@ async def admit_request(
             thread_id=thread_id,
             user_message_id=user_message_id,
             graph_id=graph_id,
+            business_code=grant.business_code,
+            business_policy_version=grant.policy_version,
             operation_kind=operation_kind,
             department_id=identity.membership.department_id,
             role_snapshot=list(identity.membership_role_codes),
@@ -1257,6 +1261,8 @@ async def admit_request(
                 attempt_index=attempt_index,
                 source_attempt_id=source_attempt.id if source_attempt else source_attempt_id,
                 graph_id=graph_id,
+                business_code=grant.business_code,
+                business_policy_version=grant.policy_version,
                 state="admitting",
                 state_revision=1,
                 operation_kind=operation_kind,
@@ -1326,6 +1332,8 @@ async def admit_request(
             source="server",
             payload={
                 "graph_id": graph_id,
+                "business_code": grant.business_code,
+                "business_policy_version": grant.policy_version,
                 "operation_kind": operation_kind,
                 "submission_digest_prefix": v2_digest[:16],
                 "user_message_id": user_message_id,
@@ -1395,6 +1403,8 @@ async def admit_request(
         reused=False,
         thread_id=thread_id,
         graph_id=graph_id,
+        business_code=grant.business_code,
+        business_policy_version=grant.policy_version,
         capability_selection=sel_dict,
     )
 

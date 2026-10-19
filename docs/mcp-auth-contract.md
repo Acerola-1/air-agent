@@ -1,5 +1,10 @@
 # 统一业务平台 MCP 授权契约核验（任务 1.3）
 
+> **已被替代（2026-10-19）**：人员/成员 `mcp_identity_bindings` 与 fixture 协议门禁已物理退役。
+> 当前生产按 [业务授权与 MCP 连接](developer/business-authorization.md) 的受保护连接配置使用
+> `shared_readonly`（匿名真实 MCP）；下方“真实企业认证/数据隔离未完成”的历史事实仍然有效，
+> 不得把共享只读查询写成企业数据隔离已完成。
+
 日期：2026-10-12。探针：`tests/mcp_probe/probe_mcp.py`（只读协议层，无凭据、无业务调用）。被测服务：根 `.env` `MCP_SERVER_URL` 指向的 streamable_http MCP（scheme=https，server name `ipp-air-mcp-server`，URL 主机脱敏不记录）。
 
 ## 已核验的非秘密契约（实测）

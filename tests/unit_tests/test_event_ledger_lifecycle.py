@@ -10,6 +10,7 @@ from common.event_ledger.lifecycle import (
     PUBLIC_GRAPHS,
     LedgerContextMissing,
     LedgerLifecycleMiddleware,
+    authorization_stop_from_messages,
     business_state_from_native,
     ledger_ids_from_config,
     ledger_scope_from_config,
@@ -190,3 +191,20 @@ def test_ledger_scope_requires_full_trusted_identity() -> None:
     full = {"tenant_id": "t", "user_id": "u", "membership_id": "m"}
     scope = _ledger_scope(full)
     assert scope is not None and scope.tenant_id == "t"
+
+
+def test_authorization_stop_is_not_a_success_answer() -> None:
+    assert authorization_stop_from_messages(
+        [
+            {"type": "ai", "content": "授权状态已变化，本次运行已停止：业务使用权限已撤销"},
+        ]
+    )
+    assert authorization_stop_from_messages(
+        [
+            {"type": "tool", "content": "授权状态已变化，工具调用被拒绝"},
+            {"type": "ai", "content": "本次运行已停止"},
+        ]
+    )
+    assert not authorization_stop_from_messages(
+        [{"type": "ai", "content": "杭州市今天 AQI 为 84，等级良。"}]
+    )

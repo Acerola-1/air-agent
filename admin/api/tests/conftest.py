@@ -27,7 +27,13 @@ for key in (
     os.environ.setdefault(key, "test")
 
 os.environ.setdefault("TENANT_ENFORCE_RUNTIME_IDENTITY", "false")
-os.environ.setdefault("TENANT_MCP_FIXTURE_MODE", "true")
+# 测试固定本地身份后端与空连接配置：第三方库导入会加载仓库 .env，生产
+# remote/真实 MCP 配置不得改变测试语义；remote 专项用例自行 monkeypatch。
+os.environ["AGENT_IDENTITY_BACKEND"] = "local"
+os.environ.setdefault(
+    "AGENT_MCP_CONNECTIONS_JSON",
+    '{"schema_version":"agent.mcp-connections.v1","revision":1,"servers":[]}',
+)
 
 import pytest
 from sqlalchemy import text
@@ -89,6 +95,20 @@ async def _seed(session) -> None:  # noqa: ANN001
                     "s": entry[4],
                 },
             )
+    # Agent 业务使用权限（正式环境由 IAM 登记；本地测试库补齐以供受理/目录用例）。
+    for code, name, sort in (
+        ("agent:business:basic-qa:use", "使用基础问答", 501),
+        ("agent:business:data-analysis:use", "使用数据分析", 502),
+        ("agent:business:intelligent-tracing:use", "使用智能溯源", 503),
+    ):
+        await session.execute(
+            text(
+                "INSERT INTO permissions(code,name,type,grantable_to_tenants,is_active,sort)"
+                " VALUES (:c,:n,3,true,true,:s)"
+                " ON CONFLICT (code) DO UPDATE SET is_active=true"
+            ),
+            {"c": code, "n": name, "s": sort},
+        )
     await session.commit()
 
 

@@ -10,6 +10,7 @@ import { TenantGate } from "@/components/chat/TenantGate";
 import { ArtifactProvider } from "@/components/artifact/ArtifactProvider";
 import { CanvasWindow } from "@/components/artifact/CanvasWindow";
 import { useChatStore } from "@/lib/chat-store";
+import { availableGraphOptions } from "@/lib/graph-options";
 import { useSessionStore } from "@/lib/session-client";
 
 /** 首页：顶栏 + 左侧线程列表 + 右侧对话区 + 画布悬浮窗.
@@ -27,11 +28,15 @@ export default function Home() {
   // 画布按会话隔离：每个活动线程一个 Artifact store（persist key 带 threadId）
   const activeThreadId = useChatStore((s) => s.activeThreadId);
 
-  // 首次挂载：同步登录会话（账号 id 写入 localStorage，隔离历史）+ 加载默认 graph 线程列表
+  // 首次挂载：同步登录会话（账号 id 写入 localStorage，隔离历史）+
+  // 按 IAM 实时业务权限加载第一个可用业务的线程列表。
   useEffect(() => {
     void refreshSession().then(() => {
+      const ctx = useSessionStore.getState().ctx;
       // 未选择企业时不加载线程：BFF 会统一拒绝，界面应先走企业选择门禁。
-      if (useSessionStore.getState().ctx?.current_tenant) void switchGraph("basic-qa");
+      if (!ctx?.current_tenant) return;
+      const available = availableGraphOptions(ctx.permissions);
+      if (available.length > 0) void switchGraph(available[0].id);
     });
   }, [refreshSession, switchGraph]);
 

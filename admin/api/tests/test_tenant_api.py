@@ -531,65 +531,27 @@ async def test_audit_scoped_to_tenant(client: AsyncClient, world):
     assert b_logs.status_code == 403
 
 
-async def test_binding_management_platform_only(client: AsyncClient, world):
-    ctx = await _login(client, world["both_account"])
-    await client.post(
-        "/auth/switch-tenant",
-        json={"tenant_id": world["tenant_a"], "expected_ctx_version": ctx["context_version"]},
-    )
-    denied = await client.put(
-        "/mcp-bindings",
-        json={
-            "tenant_id": world["tenant_a"],
-            "server_key": "ipp",
-            "external_subject": "evil",
-            "credential_ref": "env:EVIL",
-            "protocol_version": "v1",
-        },
-    )
-    assert denied.status_code == 403
-
-    plat = ContextClient(transport=ASGITransport(app=app), base_url="http://test")
-    await _login(plat, world["platform_account"])
-    ok = await plat.put(
-        "/mcp-bindings",
-        json={
-            "tenant_id": world["tenant_a"],
-            "server_key": "ipp",
-            "external_subject": "subject-a",
-            "credential_ref": "env:MCP_A_TEST",
-            "protocol_version": "unverified",
-        },
-    )
-    assert ok.status_code == 200, ok.text
-    body = ok.json()
-    assert body["credential_configured"] is True
-    assert "credential_ref" not in str(body)
-    # 轮换递增 auth_revision
-    again = await plat.put(
-        "/mcp-bindings",
-        json={
-            "tenant_id": world["tenant_a"],
-            "server_key": "ipp",
-            "external_subject": "subject-a",
-            "credential_ref": "env:MCP_A_TEST2",
-            "protocol_version": "unverified",
-        },
-    )
-    assert again.json()["auth_revision"] == body["auth_revision"] + 1
-    # A 企业管理员可看本企业脱敏状态
-    visible = await client.get("/mcp-bindings")
-    assert visible.status_code == 200
-    assert all(b["tenant_id"] == world["tenant_a"] for b in visible.json())
-    await plat.aclose()
-    async with OwnerSessionLocal() as session:
-        await session.execute(
-            text("DELETE FROM mcp_identity_bindings WHERE tenant_id IN :ids").bindparams(
-                bindparam("ids", expanding=True)
-            ),
-            {"ids": [world["tenant_a"], world["tenant_b"]]},
-        )
-        await session.commit()
+async def test_retired_binding_api_is_gone(client: AsyncClient, world) -> None:
+    """旧成员 MCP 绑定接口已退役：读/写都不可用，不能再用旧配置扩权。"""
+    for method, path in (
+        ("get", "/mcp-bindings"),
+        ("put", "/mcp-bindings"),
+        ("delete", f"/mcp-bindings/{world['tenant_a']}"),
+    ):
+        if method == "put":
+            response = await client.put(
+                path,
+                json={
+                    "tenant_id": world["tenant_a"],
+                    "server_key": "ipp",
+                    "external_subject": "legacy",
+                    "credential_ref": "env:LEGACY",
+                    "protocol_version": "unverified",
+                },
+            )
+        else:
+            response = await getattr(client, method)(path)
+        assert response.status_code in (404, 405, 410), response.text
 
 
 # --------------------------------------------------------------------- 4.4 审计一致性
@@ -728,47 +690,6 @@ async def test_suspended_tenant_blocks_department_write(client: AsyncClient, wor
         assert "停用" in res.json()["detail"] or "尚未选择企业" in res.json()["detail"]
     finally:
         await plat.patch(f"/tenants/{world['tenant_a']}", json={"status": "active"})
-        await plat.aclose()
-
-
-async def test_binding_unknown_protocol_rejected(client: AsyncClient, world) -> None:
-    """R07 管理入口门禁：未登记协议不能落为绑定（Agent 白名单的第一道防线）。"""
-    plat = ContextClient(transport=ASGITransport(app=app), base_url="http://test")
-    try:
-        await _login(plat, world["platform_account"])
-        res = await plat.put(
-            "/mcp-bindings",
-            json={
-                "tenant_id": world["tenant_a"],
-                "server_key": "ipp",
-                "external_subject": "synthetic-subject",
-                "credential_ref": "env:SYNTHETIC_UNUSED",
-                "protocol_version": "never-verified-protocol",
-            },
-        )
-        assert res.status_code == 400
-        assert "未登记" in res.json()["detail"]
-        # 待核验默认值仍可保存（安全禁用状态）
-        ok = await plat.put(
-            "/mcp-bindings",
-            json={
-                "tenant_id": world["tenant_a"],
-                "server_key": "ipp",
-                "external_subject": "synthetic-subject",
-                "credential_ref": "env:SYNTHETIC_UNUSED",
-                "protocol_version": "unverified",
-            },
-        )
-        assert ok.status_code in (200, 201)
-    finally:
-        async with OwnerSessionLocal() as session:
-            await session.execute(
-                text(
-                    "DELETE FROM mcp_identity_bindings WHERE tenant_id = :t AND server_key = 'ipp'"
-                ),
-                {"t": world["tenant_a"]},
-            )
-            await session.commit()
         await plat.aclose()
 
 

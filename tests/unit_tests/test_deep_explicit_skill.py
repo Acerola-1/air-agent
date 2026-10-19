@@ -44,11 +44,6 @@ def explicit_agent(tmp_path, monkeypatch):
         "common.middleware.tenant_runtime_guard_middleware.guard_request_call",
         AsyncMock(),
     )
-
-    async def no_bindings(*args):
-        return []
-
-    monkeypatch.setattr(capabilities, "fetch_active_mcp_bindings", no_bindings)
     model = CapturingModel(responses=[AIMessage(content="ok")])
     agent = create_agent(model, tools=[], middleware=[TenantRuntimeGuardMiddleware()])
     config = {

@@ -30,7 +30,9 @@
         "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
         "payload": {
           "graph_id": "basic-qa",
-          "operation_kind": "initial"
+          "operation_kind": "initial",
+          "business_code": "basic-qa",
+          "business_policy_version": "2026-10-19.1"
         }
       }
     },
@@ -1104,7 +1106,9 @@
           "skill_mode": "explicit",
           "skill_id": "air-quality-basic-query",
           "mcp_mode": "allowlist",
-          "tool_ids": ["ipp_query_aqi"],
+          "tool_ids": [
+            "ipp_query_aqi"
+          ],
           "material_version": "v1",
           "selection_source": "user_explicit"
         }
