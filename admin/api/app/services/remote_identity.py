@@ -303,6 +303,7 @@ def _identity_objects(
     revisions: dict[str, int],
     permissions: frozenset[str],
     expires_at: dt.datetime,
+    needs_tenant_selection: bool = False,
 ):
     """构造与 Identity 消费面对齐的轻量对象（remote 不查询本地 ORM 行）。"""
     user = SimpleNamespace(
@@ -360,6 +361,7 @@ def _identity_objects(
         platform_roles=(),
         tenant_status="active" if tenant_id else None,
         membership_status="active" if membership_id else None,
+        needs_tenant_selection=needs_tenant_selection,
     )
 
 
@@ -507,6 +509,7 @@ async def resolve_remote_identity(session: AsyncSession, cookie_value: str | Non
         revisions=revisions,
         permissions=frozenset(payload["permissions"]),
         expires_at=row["expires_at"],
+        needs_tenant_selection=payload["needs_tenant_selection"],
     )
     identity.user.display_name = payload["user"].get("display_name") or identity.user.account
     identity.session.created_at = dt.datetime.fromisoformat(

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ThreadSidebar } from "@/components/chat/ThreadSidebar";
 import { ChatPanel } from "@/components/chat/ChatPanel";
+import { TenantGate } from "@/components/chat/TenantGate";
 import { ArtifactProvider } from "@/components/artifact/ArtifactProvider";
 import { CanvasWindow } from "@/components/artifact/CanvasWindow";
 import { useChatStore } from "@/lib/chat-store";
@@ -22,13 +23,15 @@ export default function Home() {
   const [threadListOpen, setThreadListOpen] = useState(false);
   const switchGraph = useChatStore((s) => s.switchGraph);
   const refreshSession = useSessionStore((s) => s.refreshSession);
+  const sessionCtx = useSessionStore((s) => s.ctx);
   // 画布按会话隔离：每个活动线程一个 Artifact store（persist key 带 threadId）
   const activeThreadId = useChatStore((s) => s.activeThreadId);
 
   // 首次挂载：同步登录会话（账号 id 写入 localStorage，隔离历史）+ 加载默认 graph 线程列表
   useEffect(() => {
     void refreshSession().then(() => {
-      if (useSessionStore.getState().ctx) void switchGraph("basic-qa");
+      // 未选择企业时不加载线程：BFF 会统一拒绝，界面应先走企业选择门禁。
+      if (useSessionStore.getState().ctx?.current_tenant) void switchGraph("basic-qa");
     });
   }, [refreshSession, switchGraph]);
 
@@ -69,7 +72,7 @@ export default function Home() {
             <ThreadSidebar />
           </aside>
           <main className="flex min-w-0 flex-1 flex-col">
-            <ChatPanel />
+            {sessionCtx && !sessionCtx.current_tenant ? <TenantGate /> : <ChatPanel />}
           </main>
         </div>
       </div>

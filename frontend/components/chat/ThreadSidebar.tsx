@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PlusIcon, SearchIcon, Trash2Icon } from "lucide-react";
 import { useChatStore } from "@/lib/chat-store";
+import { useSessionStore } from "@/lib/session-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -18,13 +19,15 @@ export function ThreadSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const newThread = useChatStore((s) => s.newThread);
   const removeThread = useChatStore((s) => s.removeThread);
   const loadThreads = useChatStore((s) => s.loadThreads);
+  // 未选择企业时列表请求必然被 BFF 拒绝；等当前企业就绪后再加载。
+  const currentTenantId = useSessionStore((s) => s.ctx?.current_tenant?.id);
 
   const [search, setSearch] = useState("");
 
   // 切换 graph 后自动重新加载（store.switchGraph 已触发；此处兜底首次挂载）
   useEffect(() => {
-    void loadThreads();
-  }, [graphId, loadThreads]);
+    if (currentTenantId) void loadThreads();
+  }, [graphId, currentTenantId, loadThreads]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();

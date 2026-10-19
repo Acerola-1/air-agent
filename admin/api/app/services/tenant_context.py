@@ -119,7 +119,11 @@ async def build_session_context(
         if include_tenants
         else []
     )
-    needs_selection = identity.tenant is None and len(tenants) > 1 and not identity.platform_admin
+    # remote 以 IAM 的 needs_tenant_selection 为准：只要未选企业且存在成员关系
+    # 就需要引导选择（单企业也不例外，IAM 登录不会自动落到某个企业）。
+    needs_selection = identity.needs_tenant_selection or (
+        identity.tenant is None and len(tenants) > 1 and not identity.platform_admin
+    )
     return SessionContextOut(
         user=user,
         session=SessionOut(

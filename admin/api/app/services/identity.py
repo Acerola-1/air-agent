@@ -47,6 +47,9 @@ class Identity:
 
     remote_tenants: tuple[dict, ...] | None = None
     remote_verification_ref: str | None = None
+    # IAM 权威的"尚未选择企业但存在企业成员关系"标志；remote 下直接透传，
+    # 不能按企业数量自行推断（单企业同样需要先选择）。
+    needs_tenant_selection: bool = False
 
     @property
     def tenant_id(self) -> uuid.UUID | None:
