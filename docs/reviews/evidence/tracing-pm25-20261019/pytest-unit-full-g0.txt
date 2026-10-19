@@ -1,0 +1,98 @@
+...................ssssssssssssssssssssssss........................F.... [ 12%]
+....................................................ssssssssssssssssssss [ 24%]
+ssssssssssssssssssssssssss.........sss......FFFF........................ [ 36%]
+........................................................................ [ 48%]
+........................................................................ [ 60%]
+................................................................F....... [ 72%]
+........................................................................ [ 85%]
+........................................................................ [ 97%]
+................                                                         [100%]
+=================================== FAILURES ===================================
+___________ test_reset_checkpointer_cache_closes_previous_connection ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11547e120>
+
+    def test_reset_checkpointer_cache_closes_previous_connection(monkeypatch) -> None:
+        checkpointing.reset_checkpointer_cache()
+        checkpointer = CloseableCheckpointer()
+        monkeypatch.setattr(checkpointing, "_create_checkpointer", lambda: checkpointer)
+    
+        assert checkpointing.get_checkpointer() is checkpointer
+        checkpointing.reset_checkpointer_cache()
+    
+>       assert checkpointer.conn.closed is True
+E       assert False is True
+E        +  where False = <test_checkpointing.CloseableConnection object at 0x115937770>.closed
+E        +    where <test_checkpointing.CloseableConnection object at 0x115937770> = <test_checkpointing.CloseableCheckpointer object at 0x1159370e0>.conn
+
+tests/unit_tests/test_checkpointing.py:69: AssertionError
+____________________ test_policy_route_fast_path_skips_llm _____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1154d96a0>
+
+    def test_policy_route_fast_path_skips_llm(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:16: AttributeError
+___________________ test_knowledge_route_fast_path_skips_llm ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x112905010>
+
+    def test_knowledge_route_fast_path_skips_llm(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:23: AttributeError
+______________________ test_route_cache_reuses_llm_result ______________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11554d8d0>
+
+    def test_route_cache_reuses_llm_result(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:30: AttributeError
+____________________ test_ambiguous_route_uses_llm_fallback ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1155a1630>
+
+    def test_ambiguous_route_uses_llm_fallback(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:50: AttributeError
+__________________ test_total_deadline_discards_late_success ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11571b7e0>
+
+    def test_total_deadline_discards_late_success(monkeypatch):
+        class SlowClient:
+            def request(self, *a, **kw):
+                time.sleep(0.15)
+                return httpx.Response(200, json={"active": True})
+    
+        monkeypatch.setattr(remote, "_deadline", lambda: 0.03)
+        monkeypatch.setattr(remote, "_shared_client", lambda cfg: SlowClient())
+        started = time.monotonic()
+        with pytest.raises(IdentityBackendUnavailable):
+            remote.request_iam("POST", "/introspect", config={})
+>       assert time.monotonic() - started < 0.10
+E       assert (1464649.162833916 - 1464649.058370041) < 0.1
+E        +  where 1464649.162833916 = <built-in function monotonic>()
+E        +    where <built-in function monotonic> = time.monotonic
+
+tests/unit_tests/test_remote_iam_regressions.py:138: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection
+FAILED tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result
+FAILED tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback
+FAILED tests/unit_tests/test_remote_iam_regressions.py::test_total_deadline_discards_late_success
+6 failed, 513 passed, 73 skipped in 41.58s
+pytest_exit=1

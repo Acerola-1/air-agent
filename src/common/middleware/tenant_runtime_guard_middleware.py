@@ -30,6 +30,11 @@ class TenantRuntimeGuardMiddleware(AgentMiddleware):
 
     tools: Sequence[BaseTool] = ()
 
+    def __init__(self, *, inject_mcp_tools: bool = True) -> None:
+        """Preserve the default MCP disclosure; tracing can opt out explicitly."""
+        super().__init__()
+        self.inject_mcp_tools = inject_mcp_tools
+
     @override
     async def awrap_model_call(
         self,
@@ -37,6 +42,10 @@ class TenantRuntimeGuardMiddleware(AgentMiddleware):
         handler: Callable[[ModelRequest], Awaitable[ModelResponse]],
     ) -> ModelResponse:
         await guard_request_call(request)
+        if not self.inject_mcp_tools:
+            # Tracing lead/reviewer must not receive MCP data tools even when
+            # the current capability selection contains them.
+            return await handler(request)
         # 任务 4.3: 检查 MCP 工具披露白名单与动态代理注入（F03）
         from common.capabilities import (
             filter_capability_mcp_tools,

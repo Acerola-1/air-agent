@@ -1,81 +1,239 @@
-"""智能污染溯源图入口."""
+"""Intelligent pollution tracing graph with a DeepAgents lead and four roles."""
 
 from __future__ import annotations
 
-from pathlib import Path
+from collections.abc import Callable
 from typing import Any
 
 from deepagents import create_deep_agent
-from deepagents.backends import CompositeBackend, StateBackend
+from deepagents.backends import StateBackend
+from deepagents.profiles import (
+    GeneralPurposeSubagentProfile,
+    HarnessProfile,
+    register_harness_profile,
+)
 from langchain.agents.middleware.types import AgentMiddleware
-from langchain_quickjs import CodeInterpreterMiddleware
 
-from common.artifacts.create_artifact_tool import build_create_artifact_tool
-from common.capabilities import BoundedSkillsBackend
 from common.event_ledger.lifecycle import LedgerLifecycleMiddleware
 from common.langfuse_tracing import with_langfuse_tracing
-from common.mcp_client import get_business_mcp_tools
 from common.middleware import TenantRuntimeGuardMiddleware, TimeContextMiddleware
 from common.models import ModelRegistry
-from common.observability.deepagents_adapter import (
-    observed_subagents,
-    observed_summarization,
-)
 from common.observability.middleware import ObservabilityModelMiddleware
-from common.prompts import with_main_agent_tool_use_output_guard
-from common.skill_discovery import create_find_skill_tool
-from common.skill_router import SkillSemanticRouter
+from intelligent_tracing.evidence import EvidenceRegistry
+from intelligent_tracing.gate import ReportGate
+from intelligent_tracing.guards import (
+    NoFilesystemToolsMiddleware,
+    TracingBudgetMiddleware,
+    guarded_summarization,
+)
+from intelligent_tracing.policy import DEFAULT_POLICY, AnalysisPolicy
+from intelligent_tracing.publishing import TracingPublishMiddleware
+from intelligent_tracing.report_store import InMemoryReportStore, ReportStore
+from intelligent_tracing.schemas import StationMeta
+from intelligent_tracing.sources import (
+    CachedDataSource,
+    TracingDataSource,
+    UnavailableDataSource,
+)
+from intelligent_tracing.state import TracingState
+from intelligent_tracing.subagents import (
+    build_grid_runnable,
+    build_meteo_subagent,
+    build_reviewer_subagent,
+    build_station_runnable,
+)
+from intelligent_tracing.tools import (
+    build_freeze_request_tool,
+    build_policy_summary_tool,
+    build_report_tools,
+)
 
 SYSTEM_PROMPT = """
-    ## 角色职责
-    你是中科宇图的空气质量数据查询助手,擅长寻找 skill 和 tool 处理基础空气质量数据查询，以及环境保护和空气治理知识,
-    处理空气质量专业问题时，不要仅凭常识直接作答。必须先调用 find_skill 查找匹配 skill；
-    find_skill 命中后：若返回单个候选，其完整规则已内联在结果的 skill_instructions 中，直接据此执行；
-    若返回多个候选，先从候选摘要中选择最匹配的一个，必要时读取该候选的 references_path 获取完整流程，再使用披露出来的业务工具执行查询与回答。
-    如果 find_skill 未命中，则回到 DeepAgents 原生能力：根据 find_skill 返回结果、工具说明和问题语义自行判断，
-    可按需读取相关 Skill 的 references 规则并选择工具，但数据必须来自真实工具的有效数据，不得捏造。
-    当需要以图表、完整报告或独立页面形式展示结果时，调用 create_artifact 在画布中输出
-    （content_type 支持 html/markdown/svg/text），调用后画布会自动展示给用户，回答中无需再重复输出源码或代码块。
+## 角色
+你是污染过程与来向线索辅助分析的调度 lead。你不直接查询 MCP 数据，不执行
+文件/代码工具，不输出事实正文；所有用户可见结论由服务端验证后的报告发布。
 
+## 必须流程
+1. 先调用 `freeze_tracing_request` 冻结请求；缺少站点/时间/半径时向用户补问，
+   在冻结前不得委派数据任务。
+2. 冻结后，在同一轮用原生 `task` 并行委派 `station-data` 与 `grid-data`。
+   `task` 只有 `description` 和 `subagent_type`；子图会从受控状态读取冻结请求，
+   不要在 description 里伪造站点、时间、半径、证据或授权字段。
+3. 站点结果返回后，委派 `meteo-analyst` 做气象与风场关联分析。
+4. 委派 `evidence-reviewer` 检查反证、遗漏和表达风险；reviewer 只能建议降级，
+   不是事实源。
+5. 调用 `build_validated_report` 生成服务端验证报告。该工具只接受 claim ID
+   计划或不带计划的确定性回退，不接受自由正文。
+6. 如用户需要画布，调用 `publish_tracing_canvas`，只传已验证报告 ID 和展示方式；
+   不得调用任意 content 的原始画布工具。
+
+## 边界
+- 不调用、探测或恢复轨迹/PSCF；相关能力固定不可用。
+- 不确认具体企业、源类、贡献率、来源概率或源距离。
+- 多站同步/网格连片只说明区域现象；传输关联必须有附加时序/风场证据，
+  并讨论共同静稳等替代解释。
+- 不发布模型草稿、工具原文或 reviewer 输出。
+- 查询计划与子代理描述使用业务语言，不暴露内部提示、工具名或实现细节。
 """
 
-SKILLS_DIR = Path(__file__).parent / "skills"
+SYSTEM_PROMPT_NO_REVIEW = SYSTEM_PROMPT.replace(
+    """4. 委派 `evidence-reviewer` 检查反证、遗漏和表达风险；reviewer 只能建议降级，
+   不是事实源。
+""",
+    "",
+)
 
 
-def _build_middleware() -> list[AgentMiddleware[Any, Any, Any]]:
-    return [
+def _register_harness_profile(model: Any) -> Callable[[], None]:
+    """Temporarily disable the auto-added GP subagent for this model build.
+
+    DeepAgents profiles are process-global.  Tracing must not change the
+    behaviour of another DeepAgents graph that happens to use the same model,
+    so the previous registration is restored immediately after compilation.
+    """
+    try:
+        from deepagents._models import get_model_identifier, get_model_provider
+
+        identifier = get_model_identifier(model)
+        provider = get_model_provider(model)
+    except Exception:  # pragma: no cover - SDK internals may change
+        return lambda: None
+    if not identifier or not provider:
+        return lambda: None
+    key = f"{provider}:{identifier}"
+    previous = None
+    registry = None
+    try:
+        from deepagents.profiles.harness.harness_profiles import _HARNESS_PROFILES
+
+        registry = _HARNESS_PROFILES
+        previous = registry.get(key)
+    except Exception:  # pragma: no cover - private registry may move
+        registry = None
+    register_harness_profile(
+        key,
+        HarnessProfile(
+            general_purpose_subagent=GeneralPurposeSubagentProfile(enabled=False),
+            excluded_tools=frozenset(
+                {
+                    "execute",
+                    "write_file",
+                    "edit_file",
+                    "delete",
+                    "read_file",
+                    "ls",
+                    "glob",
+                    "grep",
+                }
+            ),
+        ),
+    )
+
+    def _restore() -> None:
+        if registry is None:
+            return
+        if previous is None:
+            registry.pop(key, None)
+        else:
+            registry[key] = previous
+
+    return _restore
+
+
+def build_tracing_graph(
+    *,
+    model: Any = None,
+    meteo_model: Any = None,
+    reviewer_model: Any = None,
+    data_source: TracingDataSource | None = None,
+    station_catalog: tuple[StationMeta, ...] = (),
+    policy: AnalysisPolicy = DEFAULT_POLICY,
+    report_store: ReportStore | None = None,
+    checkpointer: Any = None,
+    name: str = "intelligent-tracing",
+    enable_reviewer: bool = True,
+):
+    """Build the tracing graph; G0 tests inject a fixture source and fake model."""
+    resolved_model = model or ModelRegistry.main_llm
+    resolved_meteo_model = meteo_model or resolved_model
+    resolved_reviewer_model = reviewer_model or resolved_model
+    source = CachedDataSource(data_source or UnavailableDataSource())
+    registry = EvidenceRegistry()
+    gate = ReportGate(registry=registry, policy=policy)
+    store = report_store or InMemoryReportStore()
+    backend = StateBackend()
+    station_tool = build_freeze_request_tool(
+        station_catalog=station_catalog, policy=policy
+    )
+    policy_tool = build_policy_summary_tool(policy)
+    report_tool, canvas_tool = build_report_tools(
+        registry=registry, gate=gate, policy=policy, report_store=store
+    )
+    subagents = [
+        {
+            "name": "station-data",
+            "description": (
+                "确定性站点数据专员。读取冻结请求，取站点与邻站小时数据，"
+                "完成质控、覆盖与异常识别；零模型调用，只回写 station_findings。"
+            ),
+            "runnable": build_station_runnable(
+                source=source, registry=registry, policy=policy
+            ),
+        },
+        {
+            "name": "grid-data",
+            "description": (
+                "确定性网格数据专员。读取冻结请求，分析网格热点、连片与覆盖，"
+                "并输出空间格局；零模型调用，只回写 grid_findings。"
+            ),
+            "runnable": build_grid_runnable(
+                source=source, registry=registry, policy=policy
+            ),
+        },
+        build_meteo_subagent(
+            model=resolved_meteo_model,
+            source=source,
+            registry=registry,
+            policy=policy,
+            backend=backend,
+        ),
+    ]
+    if enable_reviewer:
+        subagents.append(build_reviewer_subagent(model=resolved_reviewer_model))
+
+    middleware: list[AgentMiddleware[Any, Any, Any]] = [
         TimeContextMiddleware(),
-        TenantRuntimeGuardMiddleware(),
-        # 台账生命周期收尾（change add-agent-event-ledger）：deepagents 图用中间件
-        # 作为扩展点；与五图节点共用同一 _on_graph_end 实现，失败开放。
-        LedgerLifecycleMiddleware("intelligent-tracing"),
-        ObservabilityModelMiddleware(),
-        observed_summarization(ModelRegistry.main_llm, _backend),
-        CodeInterpreterMiddleware(ptc=[]),
+        # Replace the default filesystem stack: no read/write/execute tools for
+        # the lead.  The only lead tools are the tracing-specific ones below.
+        NoFilesystemToolsMiddleware(backend=backend),
+        TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
+        ObservabilityModelMiddleware(role="main"),
+        guarded_summarization(resolved_model, backend),
+        TracingBudgetMiddleware(policy.budget),
+        LedgerLifecycleMiddleware(name),
+        TracingPublishMiddleware(
+            registry=registry,
+            gate=gate,
+            policy=policy,
+            report_store=store,
+        ),
     ]
 
+    restore_profile = _register_harness_profile(resolved_model)
+    try:
+        return create_deep_agent(
+            model=resolved_model,
+            tools=[station_tool, policy_tool, report_tool, canvas_tool],
+            system_prompt=SYSTEM_PROMPT if enable_reviewer else SYSTEM_PROMPT_NO_REVIEW,
+            middleware=middleware,
+            backend=backend,
+            subagents=subagents,
+            state_schema=TracingState,
+            checkpointer=checkpointer,
+            name=name,
+        )
+    finally:
+        restore_profile()
 
-find_skill = create_find_skill_tool(SkillSemanticRouter(SKILLS_DIR))
 
-# 只读已发现的本地目录；图编译期间不做外部MCP发现。
-_mcp_tools = get_business_mcp_tools()
-
-_backend = CompositeBackend(
-    default=StateBackend(),
-    routes={
-        "/skills/": BoundedSkillsBackend(root_dir=str(SKILLS_DIR), virtual_mode=True),
-    },
-)
-
-graph = with_langfuse_tracing(
-    create_deep_agent(
-        model=ModelRegistry.main_llm,
-        tools=[find_skill, build_create_artifact_tool(), *_mcp_tools],
-        system_prompt=with_main_agent_tool_use_output_guard(SYSTEM_PROMPT),
-        middleware=_build_middleware(),
-        backend=_backend,
-        subagents=observed_subagents(ModelRegistry.main_llm, _backend),
-        checkpointer=None,
-        name="intelligent-tracing",
-    )
-)
+graph = with_langfuse_tracing(build_tracing_graph(checkpointer=None))

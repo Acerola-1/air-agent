@@ -1,0 +1,2 @@
+Change 'upgrade-deepagents-0.7.28' is valid
+exit=0
