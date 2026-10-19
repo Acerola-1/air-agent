@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Database,
+  ExternalLink,
   History,
   KeyRound,
   LayoutDashboard,
@@ -17,9 +19,26 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { getBackendConfig, type BackendConfig } from "@/lib/config";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { PERMISSION_MENU, type PermissionNode } from "@/lib/types";
+
+/** remote 模式下这些路径的管理功能已迁到 IAM 管理台。 */
+const RETIRED_PREFIXES = [
+  "/system/users",
+  "/system/roles",
+  "/system/permissions",
+  "/system/audit",
+  "/platform/tenants",
+  "/enterprise/",
+];
+
+function isRetired(path: string): boolean {
+  return RETIRED_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(prefix)
+  );
+}
 
 /** 权限表里的 `icon` 字段是字符串，这里映射到具体图标。 */
 const ICONS: Record<string, LucideIcon> = {
@@ -40,6 +59,14 @@ function iconFor(name: string | null): LucideIcon {
 export function AppSidebar() {
   const { menus, user, logout } = useSession();
   const pathname = usePathname();
+  const [config, setConfig] = useState<BackendConfig | null>(null);
+
+  useEffect(() => {
+    void getBackendConfig().then(setConfig);
+  }, []);
+
+  const remote = config?.identityBackend === "remote";
+  const iamAdminUrl = config?.iamAdminUrl ?? null;
 
   return (
     <aside className="bg-sidebar text-sidebar-foreground flex w-full shrink-0 flex-col border-b md:w-60 md:border-r md:border-b-0">
@@ -64,9 +91,24 @@ export function AppSidebar() {
           概览
         </Link>
 
+        {remote && iamAdminUrl && (
+          <a
+            href={iamAdminUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
+          >
+            <ExternalLink className="size-4" />
+            统一身份管理
+          </a>
+        )}
+
         {menus.map((group) => {
           const items = (group.children ?? []).filter(
-            (child) => child.type === PERMISSION_MENU && child.path
+            (child) =>
+              child.type === PERMISSION_MENU &&
+              child.path &&
+              !(remote && isRetired(child.path))
           );
           if (!items.length) return null;
           return (

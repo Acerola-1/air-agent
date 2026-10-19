@@ -127,8 +127,11 @@ if os.environ.get("AGENT_IDENTITY_BACKEND", "").strip().lower() == "remote":
             or path == "/auth/change-password"
         ):
             return JSONResponse(
-                status_code=409,
+                # 410：功能已迁出本服务。不能复用 409——前端把 409 视为
+                # context_changed，会误报"企业上下文已被其他标签页变更"。
+                status_code=410,
                 content={
+                    "code": "management_moved",
                     "detail": "用户、企业与权限请在统一身份管理后台操作",
                     "iam_url": os.environ.get("IAM_BASE_URL", "") + "/admin",
                 },

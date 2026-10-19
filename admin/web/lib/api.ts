@@ -35,13 +35,28 @@ export function onTenantContextConflict(fn: (() => void) | null): void {
   conflictListener = fn;
 }
 
+/** 管理功能已迁出本服务（用户/企业/部门/角色/权限/审计）。 */
+export type ManagementMoved = { url: string; message: string };
+let managementMovedListener: ((moved: ManagementMoved) => void) | null = null;
+export function onManagementMoved(fn: ((moved: ManagementMoved) => void) | null): void {
+  managementMovedListener = fn;
+}
+
 export class ApiError extends Error {
   status: number;
+  code?: string;
+  iamUrl?: string;
 
-  constructor(status: number, message: string) {
+  constructor(
+    status: number,
+    message: string,
+    options: { code?: string; iamUrl?: string } = {}
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.code = options.code;
+    this.iamUrl = options.iamUrl;
   }
 }
 
@@ -93,8 +108,25 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   if (!res.ok) {
-    if (res.status === 409 && !path.startsWith("/auth/")) conflictListener?.();
-    throw new ApiError(res.status, extractMessage(body, res.status));
+    const message = extractMessage(body, res.status);
+    const payload = body as { code?: unknown; iam_url?: unknown } | null;
+    const code = typeof payload?.code === "string" ? payload.code : undefined;
+    const iamUrl = typeof payload?.iam_url === "string" ? payload.iam_url : undefined;
+
+    // 只有真正的会话企业上下文冲突才刷新会话；功能迁移（410/management_moved）
+    // 与普通业务冲突（409 conflict）不得触发"其他标签页变更"提示。
+    if (
+      res.status === 409 &&
+      !path.startsWith("/auth/") &&
+      code !== "management_moved" &&
+      !iamUrl
+    ) {
+      conflictListener?.();
+    }
+    if (iamUrl && code === "management_moved") {
+      managementMovedListener?.({ url: iamUrl, message });
+    }
+    throw new ApiError(res.status, message, { code, iamUrl });
   }
   return body as T;
 }

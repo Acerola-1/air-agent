@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Activity, MapPin, ShieldCheck, Users } from "lucide-react";
+import { Activity, ExternalLink, MapPin, ShieldCheck, Users } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auditApi, regionsApi, rolesApi, usersApi } from "@/lib/api";
+import { getBackendConfig, type BackendConfig } from "@/lib/config";
 import { useSession } from "@/lib/session";
 
 type Stat = {
@@ -18,6 +19,7 @@ type Stat = {
 
 export default function OverviewPage() {
   const { user, ctx, can } = useSession();
+  const [config, setConfig] = useState<BackendConfig | null>(null);
   const [stats, setStats] = useState<Stat[]>([
     { label: "用户", value: null, hint: "账号总数", href: "/system/users", icon: Users },
     { label: "角色", value: null, hint: "含内置角色", href: "/system/roles", icon: ShieldCheck },
@@ -26,14 +28,27 @@ export default function OverviewPage() {
   ]);
 
   useEffect(() => {
+    void getBackendConfig().then(setConfig);
+  }, []);
+
+  const remote = config?.identityBackend === "remote";
+  const iamAdminUrl = config?.iamAdminUrl ?? null;
+
+  useEffect(() => {
+    // 配置未就绪时不发请求，避免 remote 模式下先打已退役接口再弹迁移提示。
+    if (!config) return;
     let cancelled = false;
 
     async function load() {
       const results = await Promise.allSettled([
-        can("user:read") ? usersApi.list({ page: 1, size: 1 }) : Promise.resolve(null),
-        can("role:read") ? rolesApi.list() : Promise.resolve(null),
+        !remote && can("user:read")
+          ? usersApi.list({ page: 1, size: 1 })
+          : Promise.resolve(null),
+        !remote && can("role:read") ? rolesApi.list() : Promise.resolve(null),
         regionsApi.children(),
-        can("audit:read") ? auditApi.list({ page: 1, size: 1 }) : Promise.resolve(null),
+        !remote && can("audit:read")
+          ? auditApi.list({ page: 1, size: 1 })
+          : Promise.resolve(null),
       ]);
       if (cancelled) return;
 
@@ -56,7 +71,7 @@ export default function OverviewPage() {
     return () => {
       cancelled = true;
     };
-  }, [can]);
+  }, [can, config, remote]);
 
   return (
     <div className="space-y-6">
@@ -71,26 +86,61 @@ export default function OverviewPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
-          return (
-            <Link key={stat.label} href={stat.href} className="group">
-              <Card className="group-hover:border-ring/60 gap-3 py-4 transition-colors">
-                <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle className="text-muted-foreground text-sm font-medium">
-                    {stat.label}
-                  </CardTitle>
+          // remote 模式下用户/角色/审计由 IAM 管理台负责；行政区划仍在本服务。
+          const migrated = remote && !!iamAdminUrl && stat.label !== "行政区划";
+          const card = (
+            <Card className="group-hover:border-ring/60 gap-3 py-4 transition-colors">
+              <CardHeader className="flex-row items-center justify-between">
+                <CardTitle className="text-muted-foreground text-sm font-medium">
+                  {stat.label}
+                </CardTitle>
+                {migrated ? (
+                  <ExternalLink className="text-muted-foreground size-4" />
+                ) : (
                   <Icon className="text-muted-foreground size-4" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-semibold tabular-nums">
-                    {stat.value ?? "—"}
-                  </div>
-                  <div className="text-muted-foreground mt-0.5 text-xs">{stat.hint}</div>
-                </CardContent>
-              </Card>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-semibold tabular-nums">
+                  {stat.value ?? "—"}
+                </div>
+                <div className="text-muted-foreground mt-0.5 text-xs">
+                  {migrated ? "统一身份管理后台" : stat.hint}
+                </div>
+              </CardContent>
+            </Card>
+          );
+          return migrated ? (
+            <a
+              key={stat.label}
+              href={iamAdminUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="group"
+            >
+              {card}
+            </a>
+          ) : (
+            <Link key={stat.label} href={stat.href} className="group">
+              {card}
             </Link>
           );
         })}
       </div>
+
+      {remote && iamAdminUrl && (
+        <p className="text-muted-foreground text-xs">
+          用户、角色、审计已迁移到统一身份管理后台。
+          <a
+            className="text-primary ml-1 underline"
+            href={iamAdminUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            打开管理后台
+          </a>
+        </p>
+      )}
 
       <Card>
         <CardHeader>

@@ -18,7 +18,14 @@ import {
   type ReactNode,
 } from "react";
 
-import { ApiError, authApi, onTenantContextConflict, setTenantRequestClaim } from "./api";
+import {
+  ApiError,
+  authApi,
+  onManagementMoved,
+  onTenantContextConflict,
+  setTenantRequestClaim,
+  type ManagementMoved,
+} from "./api";
 import type { PermissionNode, SessionContext, User } from "./types";
 
 type SessionValue = {
@@ -28,6 +35,9 @@ type SessionValue = {
   menus: PermissionNode[];
   loading: boolean;
   error: string | null;
+  /** 当前页面访问了已迁移到 IAM 管理台的功能。 */
+  moved: ManagementMoved | null;
+  dismissMoved: () => void;
   can: (...codes: string[]) => boolean;
   refresh: () => Promise<void>;
   logout: () => Promise<void>;
@@ -44,6 +54,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [menus, setMenus] = useState<PermissionNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [moved, setMoved] = useState<ManagementMoved | null>(null);
+
+  const dismissMoved = useCallback(() => setMoved(null), []);
 
   const refresh = useCallback(async () => {
     const epoch = ++generation.current;
@@ -92,12 +105,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => onTenantContextConflict(null);
   }, [refresh]);
 
+  // 用户/企业/角色/权限/审计已迁到 IAM 管理台：收到 410 后展示明确入口，
+  // 不再复用"企业上下文已被其他标签页变更"的提示。
+  useEffect(() => {
+    onManagementMoved(setMoved);
+    return () => onManagementMoved(null);
+  }, []);
+
   const logout = useCallback(async () => {
     await authApi.logout();
     ++generation.current;
     setTenantRequestClaim(null);
     setCtx(null);
     setMenus([]);
+    setMoved(null);
   }, []);
 
   const switchTenant = useCallback(
@@ -146,12 +167,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       menus,
       loading,
       error,
+      moved,
+      dismissMoved,
       can,
       refresh,
       logout,
       switchTenant,
     }),
-    [ctx, menus, loading, error, can, refresh, logout, switchTenant]
+    [ctx, menus, loading, error, moved, dismissMoved, can, refresh, logout, switchTenant]
   );
 
   return (
