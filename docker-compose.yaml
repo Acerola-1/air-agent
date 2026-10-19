@@ -5,6 +5,11 @@
 # `container-compose` (https://github.com/Mcrich23/Container-Compose).
 # This project does NOT use Docker Desktop or docker compose.
 #
+# After the I4 database cutover, restart the separated local stack with:
+#   .venv/bin/python deployment/run_separated_local.py start
+# See deployment/SEPARATED_LOCAL.md. The launcher generates an application-only
+# descriptor and pins inspected dependency addresses; it keeps PG/Redis intact.
+#
 # Day-to-day workflow (local development, recommended):
 #   $ container-compose up -d        # starts ONLY postgres (langgraph-api is
 #                                    # gated behind `profiles: [prod]`).
