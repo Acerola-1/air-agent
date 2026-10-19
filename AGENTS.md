@@ -2,6 +2,12 @@
 
 本文件约束整个仓库的 AI/自动化开发。面向使用者的介绍与启动步骤放在 [README.md](README.md)，交互规范放在 [UX-CONTRACT.md](UX-CONTRACT.md) 和 [DESIGN.md](DESIGN.md)；子目录有更具体指南时同时读取。
 
+## 正式运行态（始终适用）
+
+- 当前已完成独立IAM与业务分库；唯一权威清单见[正式环境](docs/CURRENT-RUNTIME.md)。正式业务库为15432/air_agent_business，身份只来自19100 Java IAM；旧air_agent源与多轮评测环境已删除，不重建、不回退local鉴权。
+- 唯一启动入口为`deployment/run_separated_local.py start/status`，`run-local.sh`仅作同入口包装；不要用全量compose重建依赖或在正式库seed root。
+- 测试只用自建空临时资源，结束后回收。历史报告、评分、归档和私有证据用于溯源，不能当成现用DSN/容器/账号来源。
+
 ## 开始工作
 
 - 先检查分支、HEAD、工作区 diff、相关 OpenSpec 和实际服务配置，区分已实现、规划和未验证事实。不要覆盖、重置或顺手删除其他任务的未提交改动。
@@ -21,7 +27,7 @@
 | `src/common/event_ledger/`、`observability/` | 运行事实台账和模型/工具/Skill观测 |
 | `frontend/` | Next.js聊天、反馈、能力选择、画布和同源BFF |
 | `admin/api/` | FastAPI身份/企业/业务API、迁移、种子、恢复与管理测试 |
-| `admin/web/` | 当前Next.js管理页面；独立IAM的Vue计划不改变此事实 |
+| `admin/web/` | 当前Next.js管理页面；独立IAM已为Vue，Agent管理页仍为Next.js |
 | `docs/contracts/agent-events-v1/` | 事件契约源文件与接口快照 |
 | `openspec/specs/` | 主规格；`changes/`存活动计划，`changes/archive/`存已关闭阶段 |
 
@@ -78,7 +84,7 @@ container ls
 container image ls
 container logs -n 100 <自有容器>
 container exec <自有容器> <命令> <参数>
-container-compose up -d --profile prod --profile observability
+.venv/bin/python deployment/run_separated_local.py start
 ```
 
 - `container exec`在容器名后**不加 `--`**；非交互不用`-it`。`container-compose`不支持logs/ps/exec/restart；避免用手动stop/start打断受管栈网络。

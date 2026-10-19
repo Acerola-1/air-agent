@@ -10,14 +10,10 @@
 # See deployment/SEPARATED_LOCAL.md. The launcher generates an application-only
 # descriptor and pins inspected dependency addresses; it keeps PG/Redis intact.
 #
-# Day-to-day workflow (local development, recommended):
-#   $ container-compose up -d        # starts ONLY postgres (langgraph-api is
-#                                    # gated behind `profiles: [prod]`).
-#   $ ./run-local.sh                 # API + Langfuse containers + Next :3000
-#   $ container-compose down         # stops postgres (named volumes kept).
-#
-# Full-container staging / packaging:
-#   $ container-compose up -d --build --profile prod
+# This descriptor supplies the launcher with the application definition.
+# Full-stack compose commands are not the canonical local startup procedure;
+# they can recreate dependencies without the current separated configuration.
+# Use ./run-local.sh (the same launcher) for day-to-day startup.
 # ---------------------------------------------------------------------------
 
 name: air-agent
@@ -28,8 +24,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: air_agent
-      POSTGRES_PASSWORD: air_agent_dev
-      POSTGRES_DB: air_agent
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a private owner password for explicit provisioning}
+      POSTGRES_DB: air_agent_business
       # PGDATA 必须在 volume 挂载点的子目录下，否则 initdb 因 lost+found 报错
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
@@ -37,7 +33,7 @@ services:
     ports:
       - "15432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U air_agent -d air_agent"]
+      test: ["CMD-SHELL", "pg_isready -U air_agent -d air_agent_business"]
       interval: 3s
       timeout: 2s
       retries: 10

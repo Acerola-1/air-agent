@@ -1,6 +1,6 @@
 # Air Agent
 
-面向空气质量业务的多租户 Agent 应用，提供问答、分析、报告与研究能力。Python 服务使用 LangGraph API，聊天前端使用 Next.js；当前管理 API 提供统一身份、企业权限及 Agent 业务数据接口，管理页面位于 `admin/web/`。
+面向空气质量业务的多租户 Agent 应用，提供问答、分析、报告与研究能力。Python 服务使用 LangGraph API，聊天前端使用 Next.js；当前管理 API 通过独立 Java IAM 提供身份门面，并管理 Agent 业务数据，管理页面位于 `admin/web/`。
 
 本仓库正在分阶段建设企业运营后台。已经落地的运行台账、反馈、观测和能力选择，是后续运营分析的数据基础；热门问题分析、质量工作台和完整运营看板仍按 [企业化路线图](docs/enterprise-agent-roadmap.md)推进。
 
@@ -32,9 +32,9 @@ LangGraph API：custom auth + 资源归属 + 实时身份复查
        └── Langfuse：AI 链路观测与评测
 ```
 
-浏览器使用 HttpOnly 不透明会话，Next 服务端换取运行票据后调用 Agent。授权同时在服务端与数据库落实，历史搜索的 metadata 过滤不构成安全边界。当前身份源仍在本仓库的 `admin/api/`，并未切换到独立 Java IAM。
+浏览器使用 HttpOnly 不透明会话，Next 服务端换取运行票据后调用 Agent。授权同时在服务端与数据库落实，历史搜索的 metadata 过滤不构成安全边界。身份唯一权威已切换至独立 Java IAM（19100、`iam_identity`），本仓 `admin/api/` 只保留消费门面和业务数据（`air_agent_business`）。
 
-独立 IAM 项目计划使用 **Spring Boot + Sa-Token + Vue 管理后台**，消费者通过 HTTP introspection 接入。该项目另行实施；本仓库两个前端目前仍为 Next.js，详见 [IAM 抽取方案](openspec/changes/extract-shared-iam-service/proposal.md)。
+独立 IAM 已采用 **Spring Boot + Sa-Token + MyBatis + Vue**；本仓两个前端仍为 Next.js。当前运行清单见 [正式环境](docs/CURRENT-RUNTIME.md)，历史抽取计划不再是启动说明。
 
 ## 目录导航
 
@@ -80,64 +80,24 @@ npm --prefix admin/web ci
 | `MAIN_LLM_*`、Embedding/检索配置 | 模型网关与能力所需服务；地址须能从实际运行环境访问 |
 | MCP 地址与企业绑定 | 服务端连接配置加企业/成员授权身份，不能只填一个全局地址就视为企业授权完成 |
 
-`run-local.sh` 会用shell读取根环境文件；JSON值应整体用单引号包住，确保读取后仍为合法JSON。
+宿主`.env`由dotenv读取；原生`.env.langgraph`使用完整literal key=value（不带shell外层引号），不要混用两套文件。
 
 `AUTH_SECRET` 仅保留旧会话迁移用途；当前登录不再使用旧 HMAC cookie 或 `data/users.json`。Next 服务端的 `ADMIN_API_URL`、`LANGGRAPH_API_URL`、内部令牌和归档密钥需要在进程环境或私有 `.env.local` 中配置；`admin/web` 的 `ADMIN_API_URL` 默认指向本机8100。
 
 ## 启动顺序
 
-先启动数据库，再引导角色和迁移，随后运行管理 API，最后启动 Agent 与聊天前端。以下以默认开发端口为例；已有数据环境先确认库、角色与迁移状态。
+已有正式数据已完成I4切换和旧环境清理。唯一启动入口：
 
 ```bash
-container system start
-container-compose up -d postgres redis
+.venv/bin/python deployment/run_separated_local.py start
+.venv/bin/python deployment/run_separated_local.py status
+# 兼容旧命令，但只转交同一个启动器：
+./run-local.sh
 ```
 
-将与运行角色 URI 一致的 `TENANT_RUNTIME_DB_PASSWORD` 导出到当前终端，配置非默认 `ADMIN_BOOTSTRAP_ACCOUNT` / `ADMIN_BOOTSTRAP_PASSWORD`，然后在管理 API 目录执行：
+不要重新seed本地root、连接已删除的`air_agent`库，或为日常重启执行全量compose。启动器复用正式PG/Redis，只按需重建原生应用并刷新受限桥IP。旧评测端口501xx–505xx已退役。账号/成员/角色在IAM 19101维护；数据库恢复、初始化与隔离测试须另行明确指定资源。
 
-```bash
-cd admin/api
-../../.venv/bin/python scripts/bootstrap_tenant_db.py
-../../.venv/bin/alembic upgrade head
-../../.venv/bin/python scripts/seed.py
-# 需要行政区划/关注城市时首次导入：
-../../.venv/bin/python scripts/import_regions.py
-../../.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8100
-```
-
-引导脚本直接读取进程环境中的角色密码；应用配置会读取私有 `.env`。平台账号创建后，按管理权限建立企业、成员和角色；平台角色不会自动获得所有企业的成员权限。
-
-另开终端，回到仓库根目录：
-
-```bash
-# 首次、依赖变化或镜像缺失时构建：
-container build -t air-agent/langgraph-api:latest .
-# run-local.sh 要求 .env、.env.langgraph 和 .env.langfuse 已配置。
-NEXT_HOST=127.0.0.1 ./run-local.sh
-# 可选：管理页面
-npm --prefix admin/web run dev -- --hostname 127.0.0.1
-```
-
-`run-local.sh` 启动 prod/observability profile 和聊天前端，**不会启动管理 API、执行业务迁移或初始化账号**。其最终提示不能代替逐服务检查。
-
-| 默认入口 | 地址 |
-|---|---|
-| 聊天页 | `http://localhost:3000` |
-| 管理页 | `http://localhost:3100` |
-| 管理 API 文档 | `http://127.0.0.1:8100/docs` |
-| LangGraph API | `http://localhost:2024`，容器内8000；需要认证 |
-| Langfuse | `http://localhost:3001`，访问权限独立管理 |
-
-自选端口要同时调整代理地址、CSRF/CORS允许来源及实际容器端口映射。脚本的 `LANGGRAPH_PORT` 变量不会自动改写 compose 映射。
-
-改 `src/` 后通过受管 compose 流程重新加载；改依赖或镜像构建配置需重建镜像。管理 API 与两个前端分别管理进程。
-
-```bash
-container logs -f air-agent-langgraph-api
-container-compose down
-```
-
-`down` 不负责停止宿主机前端/API，需分别停止自己的进程；不要用全局清理命令删除共享数据。容器、命名卷和测试环境的操作约束见 [开发指南](AGENTS.md)。
+详情与官方数据/容器白名单见 [正式环境](docs/CURRENT-RUNTIME.md) 及 [启动器说明](deployment/SEPARATED_LOCAL.md)。
 
 ## 检查与验收
 

@@ -162,6 +162,9 @@ async def get_pool() -> AsyncConnectionPool:
             conninfo=_uri(),
             min_size=1,
             max_size=8,
+            # Validate on checkout so a PostgreSQL restart cannot hand the next
+            # runtime-ticket request a stale connection from the idle pool.
+            check=AsyncConnectionPool.check_connection,
             open=False,
             timeout=10,
             kwargs={"row_factory": psycopg.rows.dict_row, "autocommit": False},
