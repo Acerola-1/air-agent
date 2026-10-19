@@ -3,7 +3,7 @@
   "sources": {
     "runtime": {
       "trust": "server",
-      "description": "Agent 运行进程（含六图 lifecycle 适配与补偿 worker）的可信服务端事实",
+      "description": "Agent 运行进程（含公开图 lifecycle 适配与补偿 worker）的可信服务端事实",
       "authentication": "运行票据/内部凭据，浏览器不可获得",
       "may_claim_terminal_facts": true
     },

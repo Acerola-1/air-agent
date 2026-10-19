@@ -39,7 +39,7 @@ def explicit_agent(tmp_path, monkeypatch):
         (folder / "SKILL.md").write_text(
             f"---\nname: {slug}\ndescription: 受控技能\n---\nRULE_{slug}"
         )
-    monkeypatch.setitem(capabilities.GRAPH_SKILLS_DIRS, "deep-research", tmp_path)
+    monkeypatch.setitem(capabilities.GRAPH_SKILLS_DIRS, "intelligent-tracing", tmp_path)
     monkeypatch.setattr(
         "common.middleware.tenant_runtime_guard_middleware.guard_request_call",
         AsyncMock(),
@@ -60,7 +60,7 @@ def explicit_agent(tmp_path, monkeypatch):
                 "session_id": "s",
             },
             "capability_skill_mode": "explicit",
-            "capability_skill_id": "skill:deep-research:s1",
+            "capability_skill_id": "skill:intelligent-tracing:s1",
             "capability_mcp_mode": "allowlist",
             "capability_tool_ids": [],
         }

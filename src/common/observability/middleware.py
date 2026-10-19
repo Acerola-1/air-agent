@@ -1,4 +1,4 @@
-"""观测采集中间件：deepagents 三图（intelligent-report / deep-research / intelligent-tracing）.
+"""观测采集中间件：deepagents 图（intelligent-tracing）.
 
 wrap_model_call 在每次真实模型调用前把观测回调**原地**放进执行期 runtime
 config（平台后台运行的 config 由库重建，auth 期注入的 Python 对象不跨进程

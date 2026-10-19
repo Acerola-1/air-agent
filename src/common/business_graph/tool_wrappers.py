@@ -2,7 +2,7 @@
 
 将原来分散在多个 DeepAgents 中间件中的工具调用逻辑，
 组合为一个 awrap_tool_call 函数，供 ToolNode 使用。
-data_analysis 与 basic_qa / intelligent_analysis 节点流共用。
+data_analysis 与 basic_qa 节点流共用。
 
 等效中间件:
 - SkillToolRegistryMiddleware → 动态绑定工具实例

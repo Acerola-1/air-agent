@@ -507,7 +507,7 @@ def test_live_mcp_parameter_error_is_readable(account):
     )
 
 
-@pytest.mark.parametrize("graph", ["intelligent-analysis", "data-analysis"])
+@pytest.mark.parametrize("graph", ["basic-qa", "data-analysis"])
 def test_live_other_explicit_graphs_unique_answer(account, graph):
     thread = new_thread(account, graph + " 单一终答", graph)
     values, _ = run(

@@ -213,10 +213,10 @@ async def test_f01_same_submission_replay_never_creates_second_run() -> None:
 
 
 async def test_f03_graph_swap_rejected_before_execution() -> None:
-    """F03：合法 basic-qa 预留 + 实际 intelligent-analysis 必须在执行前拒绝.
+    """F03：合法 basic-qa 预留 + 实际 data-analysis 必须在执行前拒绝.
 
     修复前：准入只看客户端自报 `ledger_graph_id` → 200 受理并创建运行
-    （真实执行的却是 intelligent-analysis），结束检测不能阻止副作用。
+    （真实执行的却是 data-analysis），结束检测不能阻止副作用。
     """
     _require_live()
     a, ca, ticket, tid = await _thread_ctx()
@@ -243,7 +243,7 @@ async def test_f03_graph_swap_rejected_before_execution() -> None:
             "ledger_request_id": ad["request_id"],
             "ledger_attempt_id": ad["attempt_id"],
             "ledger_submission_id": ad["submission_id"],
-            # 客户端谎报：声明 basic-qa，实际让平台跑 intelligent-analysis
+            # 客户端谎报：声明 basic-qa，实际让平台跑 data-analysis
             "ledger_graph_id": "basic-qa",
             "ledger_operation_kind": "initial",
         }
@@ -252,7 +252,7 @@ async def test_f03_graph_swap_rejected_before_execution() -> None:
                 f"/threads/{tid}/runs",
                 headers=_native_headers(ticket),
                 json={
-                    "assistant_id": "intelligent-analysis",
+                    "assistant_id": "data-analysis",
                     "input": {"messages": [{"role": "user", "content": "F03 换图"}]},
                     "metadata": meta,
                     "interrupt_before": ["*"],

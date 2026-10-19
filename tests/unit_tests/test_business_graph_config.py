@@ -2,8 +2,6 @@ from pathlib import Path
 
 # 使用 create_deep_agent 的 DeepAgent 图
 DEEP_AGENT_GRAPHS = {
-    "intelligent-report": Path("src/intelligent_report/graph.py"),
-    "deep-research": Path("src/deep_research/graph.py"),
     "intelligent-tracing": Path("src/intelligent_tracing/graph.py"),
 }
 
@@ -11,10 +9,9 @@ DEEP_AGENT_GRAPHS = {
 STATE_GRAPHS = {
     "data-analysis": Path("src/data_analysis/graph.py"),
     "basic-qa": Path("src/basic_qa/graph.py"),
-    "intelligent-analysis": Path("src/intelligent_analysis/graph.py"),
 }
 
-# basic_qa / intelligent_analysis 共享的业务图节点流模块
+# 业务图节点流共享模块
 BUSINESS_GRAPH_BUILDER = Path("src/common/business_graph/builder.py")
 BUSINESS_GRAPH_NODES = Path("src/common/business_graph/nodes.py")
 BUSINESS_GRAPH_PROMPTING = Path("src/common/business_graph/prompting.py")
@@ -23,21 +20,16 @@ BUSINESS_GRAPH_TOOL_WRAPPERS = Path("src/common/business_graph/tool_wrappers.py"
 BUSINESS_GRAPH_FILES = {**DEEP_AGENT_GRAPHS, **STATE_GRAPHS}
 
 
-def test_business_graph_registry_contains_six_public_graphs() -> None:
+def test_business_graph_registry_contains_public_graphs() -> None:
     assert set(BUSINESS_GRAPH_FILES) == {
         "basic-qa",
-        "intelligent-analysis",
         "data-analysis",
-        "intelligent-report",
-        "deep-research",
         "intelligent-tracing",
     }
 
 
 def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
-    # 3 个 DeepAgents 图（intelligent_report / deep_research / intelligent_tracing）
-    # 是空业务占位, 未来各自独立演化. 每个图保留自己的 create_deep_agent 调用,
-    # 不抽离共享工厂. 此处仍按"每图自包含"的方式断言源码结构.
+    # DeepAgents 图（intelligent_tracing）按"每图自包含"的方式断言源码结构.
     for graph_name, graph_file in DEEP_AGENT_GRAPHS.items():
         source = graph_file.read_text(encoding="utf-8")
         assert 'SKILLS_DIR = Path(__file__).parent / "skills"' in source
@@ -89,7 +81,6 @@ def test_business_graph_configs_keep_local_graph_names() -> None:
     named_graphs = {
         **DEEP_AGENT_GRAPHS,
         "basic-qa": STATE_GRAPHS["basic-qa"],
-        "intelligent-analysis": STATE_GRAPHS["intelligent-analysis"],
     }
     for graph_name, graph_file in named_graphs.items():
         source = graph_file.read_text(encoding="utf-8")
@@ -127,7 +118,7 @@ def test_business_graphs_node_flow_finalize_output() -> None:
 
 
 def test_mcp_backed_graphs_do_not_initialize_mcp_at_import() -> None:
-    for graph_name in ("basic-qa", "intelligent-analysis"):
+    for graph_name in ("basic-qa",):
         source = STATE_GRAPHS[graph_name].read_text(encoding="utf-8")
 
         assert "_business_tools = _resolve_tools()" not in source

@@ -44,10 +44,7 @@ def privacy_mask(*, data: Any) -> Any:
             safe[key] = value
     if data.get("graph_id") in {
         "basic-qa",
-        "intelligent-analysis",
         "data-analysis",
-        "intelligent-report",
-        "deep-research",
         "intelligent-tracing",
     }:
         safe["graph_id"] = data["graph_id"]
@@ -97,10 +94,7 @@ def privacy_otel_mask(*, params):
                         pass
                 elif canonical == "graph_id" and value in {
                     "basic-qa",
-                    "intelligent-analysis",
                     "data-analysis",
-                    "intelligent-report",
-                    "deep-research",
                     "intelligent-tracing",
                 }:
                     keep[key] = value

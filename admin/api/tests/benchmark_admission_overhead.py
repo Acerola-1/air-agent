@@ -253,7 +253,7 @@ async def run_benchmark():
                 "schema_version": "agent.capability-selection.v1",
                 "skill": {
                     "mode": "explicit",
-                    "skill_id": "skill:intelligent-analysis:air-quality-basic-query",
+                    "skill_id": "skill:basic-qa:air-quality-basic-query",
                 },
                 "mcp": {"mode": "allowlist", "tool_ids": []},
                 "catalog_version": "v1",

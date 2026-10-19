@@ -1,4 +1,4 @@
-"""业务图（basic_qa / intelligent_analysis）节点流状态定义."""
+"""业务图（basic_qa）节点流状态定义."""
 
 from __future__ import annotations
 

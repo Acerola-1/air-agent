@@ -839,7 +839,7 @@ async def on_thread_create_run(
         )
     # F03：实际执行图必须由**平台可信映射**解析，且在任何业务节点执行前判定。
     # 早先实现只信任客户端自报的 `ledger_graph_id`，导致"预留 basic-qa + 自报
-    # basic-qa + assistant_id 实为 intelligent-analysis"被 200 受理并创建运行，
+    # basic-qa + assistant_id 实为 data-analysis"被 200 受理并创建运行，
     # 结束时的图名比对无法阻止已经发生的模型/工具副作用。现在：
     #   1) `actual` 由 assistant_id 经平台图注册表解析（客户端不可写入）；
     #   2) 预留图必须是 `actual`，否则 409；

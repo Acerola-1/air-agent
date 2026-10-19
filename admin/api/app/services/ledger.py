@@ -392,10 +392,7 @@ _SKILL_ID_PATTERN = re.compile(r"^skill:([a-zA-Z0-9_-]+):([a-zA-Z0-9_-]+)$")
 _SLUG_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+$")
 _GRAPH_DIR_MAP: dict[str, str] = {
     "basic-qa": "basic_qa",
-    "intelligent-analysis": "intelligent_analysis",
     "data-analysis": "data_analysis",
-    "intelligent-report": "intelligent_report",
-    "deep-research": "deep_research",
     "intelligent-tracing": "intelligent_tracing",
 }
 

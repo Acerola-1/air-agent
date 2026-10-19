@@ -1,4 +1,4 @@
-"""业务图（basic_qa / intelligent_analysis）节点流的所有节点函数.
+"""业务图（basic_qa）节点流的所有节点函数.
 
 用显式节点替代 create_deep_agent 的中间件链：
 - classify_intent: 入口意图分类（chitchat / knowledge / data_query）

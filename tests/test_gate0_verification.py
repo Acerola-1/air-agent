@@ -6,7 +6,7 @@
 3. 真实网络零调用反例（未授权服务零外呼、撤销后零外呼）
 4. DeepAgents /skills 边界与子任务继承探针
 5. 编译后动态工具发现与 ToolNode 调度探针
-6. 六图 Graph 导入无远端外呼验证
+6. 公开图 Graph 导入无远端外呼验证
 """
 
 # ruff: noqa: E402
@@ -354,19 +354,12 @@ async def test_gate0_compiled_graph_dynamic_dispatch():
     assert "permission_denied" in tool_msg_forbid.content
 
 
-def test_gate0_six_graphs_import_no_network():
-    """Gate 0 探针 4：六图导入无远端外呼与 GraphLoadError 验证."""
-    # 验证六图均能正常导入，类型为 Graph
+def test_gate0_public_graphs_import_no_network():
+    """Gate 0 探针 4：公开图导入无远端外呼与 GraphLoadError 验证."""
     import basic_qa.graph
     import data_analysis.graph
-    import deep_research.graph
-    import intelligent_analysis.graph
-    import intelligent_report.graph
     import intelligent_tracing.graph
 
     assert hasattr(basic_qa.graph, "graph")
     assert hasattr(data_analysis.graph, "graph")
-    assert hasattr(deep_research.graph, "graph")
-    assert hasattr(intelligent_analysis.graph, "graph")
-    assert hasattr(intelligent_report.graph, "graph")
     assert hasattr(intelligent_tracing.graph, "graph")

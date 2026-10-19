@@ -1,12 +1,12 @@
-"""Change 4 任务 4.1 - 4.6：六图运行时装配、单显式约束与受控真实调度测试.
+"""Change 4 任务 4.1 - 4.6：公开图运行时装配、单显式约束与受控真实调度测试.
 
 覆盖验收要求：
 - 4.1: 原生hook核对 metadata、kwargs.config 与顶层 config 所有副本；各层伪造、错graph/attempt拦截；可信快照注入
 - 4.2: 业务图显式加载指定 Skill 并保留预算/授权，data-analysis 保留菜单确定性（S1一致执行，S2冲突422/拒绝）
 - 4.3: MCP 披露与真实 dispatch 双层限制；空集合、未披露直接调用、两服务同名准确路由及撤销后网络零调用
-- 4.4: 三张 DeepAgents 图落实 Skill 文件访问 (BoundedSkillsBackend) / 动态工具 / 子任务继承
+- 4.4: DeepAgents 图落实 Skill 文件访问 (BoundedSkillsBackend) / 动态工具 / 子任务继承
 - 4.5: 重试、重新生成与恢复；resume 不准换选择/材料、撤销实时阻断
-- 4.6: 交付开关 AGENT_CAPABILITY_SELECTION_ENABLED 及回退保护；六图导入无远端调用
+- 4.6: 交付开关 AGENT_CAPABILITY_SELECTION_ENABLED 及回退保护；公开图导入无远端调用
 """
 
 from __future__ import annotations
@@ -57,10 +57,7 @@ from common.mcp_scoped import ScopedMCPToolFactory, set_factory  # noqa: E402
 # 注册可信图映射缓存，使得单元测试环境内 assistant_id 正常解析
 lgauth._GRAPH_NAMES_CACHE = (
     "basic-qa",
-    "intelligent-analysis",
     "data-analysis",
-    "intelligent-report",
-    "deep-research",
     "intelligent-tracing",
 )
 
@@ -377,10 +374,10 @@ async def test_task_4_1_native_hook_metadata_config_consistency(exec_env):
     assert exc_info.value.status_code == 409
     assert "不一致" in str(exc_info.value.detail)
 
-    # 4. 负例：执行图与快照绑定的图不一致（例如快照为 basic-qa，assistant_id 为 intelligent-analysis），抛 409
+    # 4. 负例：执行图与快照绑定的图不一致（例如快照为 basic-qa，assistant_id 为 data-analysis），抛 409
     wrong_graph_value = {
         "thread_id": env["thread_id"],
-        "assistant_id": "intelligent-analysis",
+        "assistant_id": "data-analysis",
         "metadata": {
             "ledger_attempt_id": env["attempt_id"],
             "ledger_submission_id": env["submission_id"],
@@ -466,37 +463,6 @@ async def test_task_4_2_business_graph_explicit_skill_and_menu_determinism(exec_
         await da_nodes.resolve_skill(state, da_config_conflict, writer=writer_mock)  # type: ignore[arg-type]
     assert "冲突" in str(exc_info.value)
 
-    # 4. intelligent-analysis 显式加载 broadcast-hour 成功且禁止切换
-    ia_skills_dir = (
-        Path(__file__).resolve().parents[1]
-        / "src"
-        / "intelligent_analysis"
-        / "skills"
-    )
-    ia_router = SkillSemanticRouter(ia_skills_dir)
-    ia_load_tool = create_load_skill_tool(ia_router)
-    ia_nodes = BusinessGraphNodes(
-        router=ia_router,
-        base_system_prompt="base-ia",
-        load_skill_tool=ia_load_tool,
-        graph_name="intelligent-analysis",
-    )
-    ia_config_explicit: dict[str, Any] = {
-        "configurable": {
-            "capability_skill_mode": "explicit",
-            "capability_skill_id": "skill:intelligent-analysis:broadcast-hour",
-            "mode": "fast",
-        }
-    }
-    ia_update = await ia_nodes.resolve_skill(state, ia_config_explicit)  # type: ignore[arg-type]
-    assert "skill_rules_content" in ia_update
-    assert len(ia_update["skill_rules_content"]) > 0
-    ia_res = await ia_load_tool.ainvoke(
-        {"skill_name": "integrated-index-ratio"},
-        config=ia_config_explicit,  # type: ignore[arg-type]
-    )
-    assert "拒绝加载技能" in ia_res
-    assert "禁止切换" in ia_res
 
 
 # ---------------------------------------------------------------------------
@@ -617,12 +583,12 @@ async def test_task_4_3_mcp_disclosure_and_real_dispatch_two_layer_rejection(exe
 
 
 # ---------------------------------------------------------------------------
-# Task 4.4: 三张 DeepAgents 图文件边界与子任务继承
+# Task 4.4: DeepAgents 图文件边界与子任务继承
 # ---------------------------------------------------------------------------
 
 
 async def test_task_4_4_deepagents_skills_and_subtasks_boundary(exec_env):
-    """4.4: 三张 DeepAgents 图落实 Skill 文件访问 / 动态工具 / 子任务继承."""
+    """4.4: DeepAgents 图落实 Skill 文件访问 / 动态工具 / 子任务继承."""
     skills_dir = Path(__file__).resolve().parents[1] / "src" / "basic_qa" / "skills"
     backend = BoundedSkillsBackend(root_dir=str(skills_dir), virtual_mode=True)
 
@@ -706,23 +672,16 @@ async def test_task_4_5_resume_and_retry_immutability(exec_env):
 
 
 # ---------------------------------------------------------------------------
-# Task 4.6: 交付开关与六图导入干净性
+# Task 4.6: 交付开关与公开图导入干净性
 # ---------------------------------------------------------------------------
 
 
 def test_task_4_6_delivery_switch_and_graph_import():
-    """4.6: 开关关闭明确拒绝显式选择；六图导入无远端调用."""
-    # 验证六图均能正常导入，无报错
+    """4.6: 开关关闭明确拒绝显式选择；公开图导入无远端调用."""
     import basic_qa.graph
     import data_analysis.graph
-    import deep_research.graph
-    import intelligent_analysis.graph
-    import intelligent_report.graph
     import intelligent_tracing.graph
 
     assert hasattr(basic_qa.graph, "graph")
     assert hasattr(data_analysis.graph, "graph")
-    assert hasattr(deep_research.graph, "graph")
-    assert hasattr(intelligent_analysis.graph, "graph")
-    assert hasattr(intelligent_report.graph, "graph")
     assert hasattr(intelligent_tracing.graph, "graph")

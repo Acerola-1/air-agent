@@ -3,7 +3,7 @@
 - `contract`：v1 契约加载/校验（单一事实源在 docs/contracts/agent-events-v1.
 - `store`：业务 PG 直连最小写入/查询，复用运行角色 + 事务本地 GUC，不导入后台 app。
 - `identity`：台账受理用的可信身份（来自 configurable.langgraph_auth_user）。
-- `lifecycle`：六图运行生命周期入账与状态校准。
+- `lifecycle`：公开图运行生命周期入账与状态校准。
 - `reconcile`：受理/终态补偿校准。
 - `worker`：outbox 投递（租约/退避/死信）。
 

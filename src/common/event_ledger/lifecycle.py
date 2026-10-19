@@ -1,4 +1,4 @@
-"""六图运行生命周期适配：从可信运行上下文生成台账事实.
+"""公开图运行生命周期适配：从可信运行上下文生成台账事实.
 
 接入点（始终共用入口，覆盖流式与非流式）：.
 - 运行开始/受理回填：`run.admission_confirmed`
@@ -33,13 +33,10 @@ from common.event_ledger.store import (
 )
 from common.identity.runtime import identity_from_config
 
-# 六图公开标识（langgraph.json）
-SIX_GRAPHS = (
+# 公开图标识（langgraph.json）
+PUBLIC_GRAPHS = (
     "basic-qa",
-    "intelligent-analysis",
     "data-analysis",
-    "intelligent-report",
-    "deep-research",
     "intelligent-tracing",
 )
 
@@ -433,7 +430,7 @@ async def _on_graph_end(
 
 
 def make_ledger_finalize_node(graph_name: str) -> Any:
-    """构造六图共用的台账收尾节点（保持编译结果为 Graph 类型）.
+    """构造公开图共用的台账收尾节点（保持编译结果为 Graph 类型）.
 
     平台加载器按 "Graph or Graph factory" 校验导出对象；`with_listeners` 会
     把编译结果变成 RunnableBinding 而被拒绝，因此改用**图内节点**落账：
@@ -456,13 +453,13 @@ def make_ledger_finalize_node(graph_name: str) -> Any:
 
 
 class LedgerLifecycleMiddleware(AgentMiddleware):  # type: ignore[misc]
-    """deepagents 图（intelligent-report / deep-research / intelligent-tracing）的台账收尾.
+    """deepagents 图（intelligent-tracing）的台账收尾.
 
-    这三个图用 `create_deep_agent` 构建，没有可插节点的 StateGraph 拓扑；中间件是
-    它们支持的扩展点。`aafter_agent` 在代理终止后触发，落终态证据与可见回答版本。
+    该图用 `create_deep_agent` 构建，没有可插节点的 StateGraph 拓扑；中间件是
+    它支持的扩展点。`aafter_agent` 在代理终止后触发，落终态证据与可见回答版本。
 
-    与五图共用的 `make_ledger_finalize_node` 共用同一个 `_on_graph_end` 实现，避免
-    两套语义漂移；同样只读 state、不注入内容、失败开放。
+    与节点流图共用的 `make_ledger_finalize_node` 共用同一个 `_on_graph_end` 实现，
+    避免两套语义漂移；同样只读 state、不注入内容、失败开放。
     """
 
     def __init__(self, graph_name: str) -> None:

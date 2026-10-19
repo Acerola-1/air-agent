@@ -33,23 +33,13 @@ from common.mcp_authorization import resolve_protocol_profile
 
 VALID_GRAPHS: set[str] = {
     "basic-qa",
-    "intelligent-analysis",
     "data-analysis",
-    "intelligent-report",
-    "deep-research",
     "intelligent-tracing",
 }
 
 GRAPH_SKILLS_DIRS: dict[str, Path] = {
     "basic-qa": Path(__file__).resolve().parents[1] / "basic_qa" / "skills",
-    "intelligent-analysis": Path(__file__).resolve().parents[1]
-    / "intelligent_analysis"
-    / "skills",
     "data-analysis": Path(__file__).resolve().parents[1] / "data_analysis" / "skills",
-    "intelligent-report": Path(__file__).resolve().parents[1]
-    / "intelligent_report"
-    / "skills",
-    "deep-research": Path(__file__).resolve().parents[1] / "deep_research" / "skills",
     "intelligent-tracing": Path(__file__).resolve().parents[1]
     / "intelligent_tracing"
     / "skills",

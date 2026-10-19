@@ -1,4 +1,4 @@
-"""业务图构建器：basic_qa / intelligent_analysis 共享的显式节点流.
+"""业务图构建器：basic_qa 的显式节点流.
 
 图结构:
     START

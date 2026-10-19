@@ -1,4 +1,4 @@
-"""六图生命周期适配测试（无需 PG；纯逻辑与导入安全）。
+"""公开图生命周期适配测试（无需 PG；纯逻辑与导入安全）。
 
 覆盖 spec `agent-run-lifecycle` 的浏览器流/内部文本/终态映射场景，以及
 "缺台账上下文时不产生事实"（未登记入口不造假）。
@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from common.event_ledger.lifecycle import (
-    SIX_GRAPHS,
+    PUBLIC_GRAPHS,
     LedgerContextMissing,
     LedgerLifecycleMiddleware,
     business_state_from_native,
@@ -30,13 +30,10 @@ def _config(**extra: object) -> dict:
     return {"configurable": configurable}
 
 
-def test_six_graphs_declared() -> None:
-    assert set(SIX_GRAPHS) == {
+def test_public_graphs_declared() -> None:
+    assert set(PUBLIC_GRAPHS) == {
         "basic-qa",
-        "intelligent-analysis",
         "data-analysis",
-        "intelligent-report",
-        "deep-research",
         "intelligent-tracing",
     }
 
@@ -104,12 +101,12 @@ def test_finalize_node_noop_without_context() -> None:
 
 
 def test_deepagent_middleware_wired_and_fail_open() -> None:
-    """deepagents 三图用的中间件：可作为 AgentMiddleware，且无上下文时失败开放。"""
+    """deepagents 图用的中间件：可作为 AgentMiddleware，且无上下文时失败开放。"""
     import asyncio
 
     from langchain.agents.middleware.types import AgentMiddleware
 
-    middleware = LedgerLifecycleMiddleware("intelligent-report")
+    middleware = LedgerLifecycleMiddleware("intelligent-tracing")
     assert isinstance(middleware, AgentMiddleware)
     # 无受理上下文：不抛错、不改变输出（失败开放）
     result = asyncio.new_event_loop().run_until_complete(

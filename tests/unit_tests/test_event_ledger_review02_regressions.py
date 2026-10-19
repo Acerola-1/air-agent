@@ -314,7 +314,7 @@ async def test_r01_graph_content_and_operation_mismatch_rejected() -> None:
         submission_id=submission_id,
         attempt_id=attempt_id,
         thread_id=thread_id,
-        graph_id="intelligent-analysis",
+        graph_id="data-analysis",
         operation_kind="initial",
         content="问题",
         source="native",

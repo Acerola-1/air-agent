@@ -4,10 +4,7 @@ from pathlib import Path
 # langgraph.json 的 graphs 路径直接指向各图模块, 无中间包装层
 EXPECTED_GRAPHS = {
     "basic-qa": "./src/basic_qa/graph.py:graph",
-    "intelligent-analysis": "./src/intelligent_analysis/graph.py:graph",
     "data-analysis": "./src/data_analysis/graph.py:graph",
-    "intelligent-report": "./src/intelligent_report/graph.py:graph",
-    "deep-research": "./src/deep_research/graph.py:graph",
     "intelligent-tracing": "./src/intelligent_tracing/graph.py:graph",
 }
 

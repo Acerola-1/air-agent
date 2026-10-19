@@ -657,18 +657,15 @@ async def test_live_migration_ticket_native_api() -> None:
         await a.aclose()
 
 
-SIX_GRAPHS = [
+PUBLIC_GRAPHS = [
     "basic-qa",
-    "intelligent-analysis",
     "data-analysis",
-    "intelligent-report",
-    "deep-research",
     "intelligent-tracing",
 ]
 
 
-async def test_live_six_graphs_run_acceptance() -> None:
-    """六图真实服务联调（F02/5.4 部分闭环）：每图运行在可信身份下被受理，
+async def test_live_public_graphs_run_acceptance() -> None:
+    """公开图真实服务联调（F02/5.4 部分闭环）：每图运行在可信身份下被受理，
     跨企业线程拒绝，并验证撤权后取消可用。**不**等同于完整长运行验收。"""
     _require_live()
     a, ca = await _login("acc_alice")
@@ -728,7 +725,7 @@ async def test_live_six_graphs_run_acceptance() -> None:
             )
 
             accepted = {}
-            for graph in SIX_GRAPHS:
+            for graph in PUBLIC_GRAPHS:
                 admitted = await _admit(a, ca, ta, tid, graph)
                 rr = await lg.post(
                     f"/threads/{tid}/runs",
@@ -752,7 +749,7 @@ async def test_live_six_graphs_run_acceptance() -> None:
                 if rr.status_code in (200, 201):
                     runs.append((tid, rr.json()["run_id"]))
             assert all(code in (200, 201) for code in accepted.values()), (
-                f"六图带台账预留的运行受理失败: {accepted}"
+                f"公开图带台账预留的运行受理失败: {accepted}"
             )
             # 跨企业：Bob 在 Alice 线程上创建 run 必须被拒
             cross = await lg.post(

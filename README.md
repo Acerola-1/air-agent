@@ -40,9 +40,9 @@ LangGraph API：custom auth + 资源归属 + 实时身份复查
 
 | 路径 | 职责 |
 |---|---|
-| `src/basic_qa/`、`src/intelligent_analysis/` | 显式业务节点流与语义 Skill 路由 |
+| `src/basic_qa/` | 显式业务节点流与语义 Skill 路由 |
 | `src/data_analysis/` | 菜单映射驱动的确定性分析 |
-| `src/intelligent_report/`、`src/deep_research/`、`src/intelligent_tracing/` | DeepAgents 图；本地 Skill 材料按目录实际内容提供 |
+| `src/intelligent_tracing/` | DeepAgents 图；本地 Skill 材料按目录实际内容提供 |
 | `src/common/` | 身份、能力、模型、MCP、台账、观测、中间件与归档 |
 | `frontend/` | 聊天、能力选择、反馈、画布及 Agent BFF |
 | `admin/api/` | FastAPI 管理与业务 API、Alembic 迁移、引导和恢复脚本 |
@@ -51,7 +51,7 @@ LangGraph API：custom auth + 资源归属 + 实时身份复查
 | `openspec/specs/` | 已同步主规格；活动计划与归档分别在 `changes/`、`changes/archive/` |
 | `docs/reviews/` | 独立验收、失败基线、原始证据与模型评价 |
 
-公开 Graph ID 以 [`langgraph.json`](langgraph.json) 为准：`basic-qa`、`intelligent-analysis`、`data-analysis`、`intelligent-report`、`deep-research`、`intelligent-tracing`。
+公开 Graph ID 以 [`langgraph.json`](langgraph.json) 为准：`basic-qa`、`data-analysis`、`intelligent-tracing`。
 
 ## 本地准备
 

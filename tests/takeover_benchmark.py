@@ -322,16 +322,16 @@ async def main():
     ModelRegistry.main_llm = ControlledModel(
         responses=[AIMessage(content="controlled bench response")] * 1000
     )
-    dr_module = importlib.import_module("deep_research.graph")
-    importlib.reload(dr_module)
-    dr_graph = dr_module.graph
+    tracing_module = importlib.import_module("intelligent_tracing.graph")
+    importlib.reload(tracing_module)
+    tracing_graph = tracing_module.graph
 
     async def run_graph_controlled():
         with patch(
             "common.middleware.tenant_runtime_guard_middleware.guard_request_call",
             new=AsyncMock(),
         ):
-            await dr_graph.ainvoke(
+            await tracing_graph.ainvoke(
                 {"messages": [HumanMessage(content="受控基准问候")]},
                 {
                     "configurable": {
@@ -438,7 +438,7 @@ async def main():
                     "schema_version": "agent.capability-selection.v1",
                     "skill": {
                         "mode": "explicit",
-                        "skill_id": "skill:deep-research:deep-research",
+                        "skill_id": "skill:data-analysis:monitoring-data",
                     },
                     "mcp": {"mode": "auto"},
                     "catalog_version": cat_ver,

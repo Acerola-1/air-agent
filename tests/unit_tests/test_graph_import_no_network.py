@@ -1,4 +1,4 @@
-"""冷进程六图导入护栏：网络调用尝试即失败，不靠缓存/服务可用冒充零I/O。"""
+"""冷进程公开图导入护栏：网络调用尝试即失败，避免以缓存或服务可用代替零 I/O 证明。"""
 
 import json
 import os
@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 
-def test_six_graphs_import_without_any_network_attempt():
+def test_public_graphs_import_without_any_network_attempt():
     root = Path(__file__).resolve().parents[2]
     script = r"""
 import importlib,json,socket,time,traceback
@@ -18,7 +18,7 @@ def deny(*args,**kwargs):
 socket.socket.connect=deny
 socket.socket.connect_ex=deny
 socket.getaddrinfo=deny
-modules=['basic_qa','intelligent_analysis','data_analysis','intelligent_report','deep_research','intelligent_tracing']
+modules=['basic_qa','data_analysis','intelligent_tracing']
 loaded=[]
 for name in modules:
     graph=importlib.import_module(name+'.graph').graph
@@ -58,7 +58,7 @@ print('IMPORT_PROOF='+json.dumps({'graphs':loaded,'network_attempts':len(attempt
         if line.startswith("IMPORT_PROOF=")
     )
     parsed = json.loads(proof)
-    assert len(parsed["graphs"]) == 6 and parsed["network_attempts"] == 0
+    assert len(parsed["graphs"]) == 3 and parsed["network_attempts"] == 0
     (
         root / "docs/reviews/evidence/takeover-03-05/import-network-guard.json"
     ).write_text(json.dumps(parsed, indent=2) + "\n")
