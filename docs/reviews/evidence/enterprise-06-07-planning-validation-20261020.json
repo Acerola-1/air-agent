@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-20",
+  "baseline": "baa1b243eb6ff32f7db0536f954bceb03cb53479",
+  "planning_only": true,
+  "changes": {
+    "add-agent-admin-console": {
+      "strict_passed": true,
+      "planning_complete": true,
+      "pending_tasks": 30,
+      "completed_tasks": 0
+    },
+    "add-question-demand-insights": {
+      "strict_passed": true,
+      "planning_complete": true,
+      "pending_tasks": 29,
+      "completed_tasks": 0
+    }
+  },
+  "tracing_plan_strict_passed": true,
+  "main_spec_baseline": {
+    "failed_ids": [
+      "agent-runtime-performance",
+      "air-quality-forecast-skill-rules",
+      "chart-data-push",
+      "composite-backend-routing",
+      "forecast-data-bidirectional-rule",
+      "permission-autofill-correction-context",
+      "permission-check-subagent",
+      "permission-multi-region-guard",
+      "permission-region-list-slots",
+      "silent-agent-output",
+      "skill-content-basic",
+      "skill-three-layer-system",
+      "subagent-architecture"
+    ],
+    "unchanged": true
+  },
+  "tracing_plan_unchanged": true,
+  "changed_tracked_paths": [
+    "docs/enterprise-agent-roadmap.md"
+  ],
+  "internal_links_passed": true
+}

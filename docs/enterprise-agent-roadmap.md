@@ -223,4 +223,17 @@ Change4允许沿**现有可信身份/绑定接口**实施，能力选择只依�
 
 ## 2026-10-15阶段收尾
 
+## 2026-10-20：Change 6/7规划与溯源并行
+
+本节更新前文的历史顺序和权限描述；旧阶段记录保留溯源，不当作当前状态。当前三业务以`langgraph.json`为准，独立IAM/分库及业务授权改造已有联合验收与提交；不恢复普通Skill/MCP人员逐项授权。
+
+- Change 6完整计划：[add-agent-admin-console](../openspec/changes/add-agent-admin-console/proposal.md)，30项待实施。沿用Agent现有Next后台，增加真实运营页面、读模型、终答受控快照和轻量反馈处理；IAM账号/企业CRUD不重复建设。提示词见[启动目标](handoffs/agent-admin-console-goal.md)。
+- Change 7完整计划：[add-question-demand-insights](../openspec/changes/add-question-demand-insights/proposal.md)，29项待实施。按受理的原问题做增量标准化/向量归类、稳定问题簇、主题/热度/增长、人工纠错和来源删除。提示词见[启动目标](handoffs/question-demand-insights-goal.md)。
+- `integrate-intelligent-tracing-into-dev`不阻塞6/7计划。可在独立工作区并行开发，依赖锁由溯源负责人维护，6的终答采集接线/迁移/公共文档和7的router/nav/删除接线须串行集成；详见[责任与门禁](handoffs/parallel-tracing-console-insights.md)。
+- 6公共DTO/壳先冻结，7后端可先开发，7页面最终集成等待6；最终依赖升级与三图组合回归不能省略。
+- 本轮不创建独立Change 8评测平台：评测集、评分、实验/版本比较复用Langfuse。6承接基本反馈处理，9后续承担告警/预算/改进闭环，10仍为最终交付加固；编号不重排。
+- 新的后台写功能分别使用`agent:feedback:manage`和`agent:insights:manage`精确权限；既有业务使用权/运营只读/root名称不自动获得新写权。IAM配置交接见6目录内permission-handoff。
+
+本轮只完成规划和严格文档校验，未实现代码、执行迁移、外发用户问题、启动服务、归档或Git提交。是否可实施以完整计划和所列真实验收门禁为准，不以strict代替实现验收。
+
 Change4主规格已同步，归档路径为`openspec/changes/archive/2026-10-15-add-skill-tool-selection/`。当前事实与保留项见[最终验收](reviews/skill-tool-selection-final-acceptance.md)，模型归属见[评分记录](reviews/anonymous-model-scorecard.md)。表中早期基线与旧派发安排为历史记录；当前身份仍在admin/api，Java IAM尚未接管消费者，两个现有前端仍为Next.js。用户本次关闭此阶段，尚未授权实施6–10。
