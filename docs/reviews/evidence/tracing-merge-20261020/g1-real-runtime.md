@@ -104,3 +104,16 @@ LangGraph 容器；host 服务用 `deployment/run_separated_local.py start` 恢�
   运行外推。
 - 授权 MCP 的拒绝/撤销、真实浏览器 G2、六因子成本汇总尚未完成。
 - 本证据只说明 PM2.5 单条真实链路可用，不证明全部污染物或全部 G2 场景通过。
+
+## 7. 合并与运行时状态
+
+- 用户于 2026-10-20 明确接受 G2 与其余五种污染物延期，选择先合并到 `dev`。
+- 合并前 `dev`：`baa1b24`；feature tip：`acc57d2`；
+  merge commit：`a1184c6`；任务状态记录：`3abffa3`。
+- 回滚方式：在 `dev` 上 `git revert -m 1 a1184c6`，并按 `fd545a9` 之前的锁/
+  镜像重建；不能仅回退容器 tag 而继续使用 0.7.28 锁。
+- 当前 `dev` 工作区仍有其他任务的 11 项未提交/未跟踪改动（handoff、其他
+  OpenSpec、测试脚本），未清理、未覆盖；`docs/enterprise-agent-roadmap.md`
+  的修改也来自其他任务，未纳入本次提交。
+- 运行容器：`air-agent/langgraph-api:tracing-merge-20261020`，`/ok=200`，
+  `basic-qa` / `data-analysis` / `intelligent-tracing` 三图注册；旧图未保留。
