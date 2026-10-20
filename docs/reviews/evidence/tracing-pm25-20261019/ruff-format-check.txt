@@ -1,0 +1,2 @@
+40 files already formatted
+ruff_format_exit=0

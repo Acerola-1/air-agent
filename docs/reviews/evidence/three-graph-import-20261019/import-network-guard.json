@@ -1,0 +1,9 @@
+{
+  "graphs": [
+    "basic_qa",
+    "data_analysis",
+    "intelligent_tracing"
+  ],
+  "network_attempts": 0,
+  "langfuse_enabled": true
+}

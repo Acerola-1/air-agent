@@ -20,6 +20,13 @@ BUSINESS_GRAPH_TOOL_WRAPPERS = Path("src/common/business_graph/tool_wrappers.py"
 BUSINESS_GRAPH_FILES = {**DEEP_AGENT_GRAPHS, **STATE_GRAPHS}
 
 
+def name_marker(graph_name: str) -> str:
+    """Return the structural graph-name marker used by each graph type."""
+    if graph_name == "intelligent-tracing":
+        return f'name: str = "{graph_name}"'
+    return f'name="{graph_name}"'
+
+
 def test_business_graph_registry_contains_public_graphs() -> None:
     assert set(BUSINESS_GRAPH_FILES) == {
         "basic-qa",
@@ -29,26 +36,26 @@ def test_business_graph_registry_contains_public_graphs() -> None:
 
 
 def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
-    # DeepAgents 图（intelligent_tracing）按"每图自包含"的方式断言源码结构.
-    for graph_name, graph_file in DEEP_AGENT_GRAPHS.items():
-        source = graph_file.read_text(encoding="utf-8")
-        assert 'SKILLS_DIR = Path(__file__).parent / "skills"' in source
-        # MCP 工具注入后 find_skill 仍保留在工具列表首位
-        assert "find_skill" in source
-        assert "_mcp_tools" in source
-        assert "with_main_agent_tool_use_output_guard" in source
-        assert "你是中科宇图的空气质量数据查询助手" in source
-        assert f'name="{graph_name}"' in source
-        # langgraph-api 兼容: 编译时 checkpointer 必须为 None, 不能用 get_checkpointer()
-        assert "checkpointer=None" in source
-        assert "get_checkpointer" not in source
-        assert "rendered_text" not in source
-        assert "subagent_type" not in source
-        # 方案 A：关闭 deepagents 原生全量 skill 目录注入, 路由统一交给 find_skill
-        assert 'skills=["/skills/"]' not in source
-        # 中间件已精简：仅保留 TimeContextMiddleware + 第三方 CodeInterpreterMiddleware
-        assert "TimeContextMiddleware" in source
-        assert "CodeInterpreterMiddleware" in source
+    # intelligent-tracing 已改为四专员溯源图：lead 不持有 MCP/文件/执行工具。
+    tracing_graph = DEEP_AGENT_GRAPHS["intelligent-tracing"]
+    source = tracing_graph.read_text(encoding="utf-8")
+    assert "build_tracing_graph" in source
+    assert "create_deep_agent" in source
+    assert name_marker("intelligent-tracing") in source
+    # langgraph-api 兼容: 编译时 checkpointer 必须为 None, 不能用 get_checkpointer()
+    assert "checkpointer=None" in source
+    assert "get_checkpointer" not in source
+    assert "CodeInterpreterMiddleware" not in source
+    assert "get_business_mcp_tools" not in source
+    assert "build_create_artifact_tool" not in source
+    assert "find_skill" not in source
+    assert "TenantRuntimeGuardMiddleware(inject_mcp_tools=False)" in source
+    assert "NoFilesystemToolsMiddleware" in source
+    for role in ("station-data", "grid-data", "meteo-analyst", "evidence-reviewer"):
+        assert role in source
+    assert "mcp_station_analysis_trajectory" not in source
+    assert "mcp_station_analysis_single_pscf" not in source
+    assert "trajectory-analyst" not in source
 
     bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
     bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
@@ -84,7 +91,7 @@ def test_business_graph_configs_keep_local_graph_names() -> None:
     }
     for graph_name, graph_file in named_graphs.items():
         source = graph_file.read_text(encoding="utf-8")
-        assert f'name="{graph_name}"' in source
+        assert name_marker(graph_name) in source
 
 
 def test_basic_qa_uses_rich_output_pipeline() -> None:
