@@ -58,6 +58,8 @@ LangGraph API：custom auth + 资源归属 + 实时身份复查
 
 需要 Python 3.13、uv、Node.js/npm，以及 macOS 上的 [Apple Container](https://github.com/apple/container) 和 [container-compose](https://github.com/Mcrich23/Container-Compose)。项目不使用 Docker Desktop。当前 compose 是本地开发栈，部分端口映射未限制为回环；对外部署应单独配置网络、密钥和暴露面。
 
+运行时基线由 `pyproject.toml`/`uv.lock` 固定：deepagents 0.7.28、langchain 1.4.6、langchain-core 1.6.12、langgraph 1.2.16、checkpoint 4.3.0、langchain-quickjs 0.3.9。容器镜像基础层固定 digest，`docker-compose.yaml` 使用显式 tag；升级依赖需同步重生成锁、核对镜像 `/api/constraints.txt` 并重建镜像。智能溯源当前支持 PM2.5、PM10、O3、NO2、SO2、CO 六项，轨迹/PSCF 能力不可用。
+
 根项目依赖由 `pyproject.toml` / `uv.lock` 管理；管理 API 有自己的依赖声明。一个环境联调两个 Python 项目时：
 
 ```bash

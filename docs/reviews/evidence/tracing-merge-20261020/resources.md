@@ -25,6 +25,10 @@
 
 ## 回收状态
 
-- 2026-10-20 12:00：`tracing-upgrade-old`、`tracing-upgrade-old2` 已停止，待本轮结束删除。
-- `tracing-merge-pg`、`tracing-merge-redis` 保留到 G1 持久化/迁移任务（8.6）完成后回收。
+- 2026-10-20 12:20：`tracing-upgrade-old`、`tracing-upgrade-old2`、`tracing-upgrade-new` 已删除。
+- 2026-10-20 12:30：`tracing-merge-api`、`tracing-merge-pg`、`tracing-merge-redis` 已删除；
+  临时数据库（`tracing_migration`、`tracing_upgrade`）随容器销毁，不保留 dump。
+- `/tmp/tracing_merge_*.env` 等私密环境文件已删除；临时 worktree
+  `/tmp/air-agent-155214a-0728` 已移除。
 - 新镜像 `air-agent/langgraph-api:tracing-merge-20261020` 保留（最终替换使用）。
+- 共享栈复核：`deployment/run_separated_local.py status` 全部就绪；未停止或重建共享容器。

@@ -32,8 +32,8 @@
 - [x] 3.3 实现 `StationCatalogProvider`：经 `execute_mcp_tool` 获取授权站点目录，按企业/业务/区域作用域缓存并支持同名消歧；验证无业务快照、无权限、无连接时零 MCP 请求失败关闭
 - [x] 3.4 实现 `BusinessMCPDataSource`：所有取数走 `execute_mcp_tool`/`resolve_connection`/`ScopedMCPToolFactory`，不接受裸 HTTP 或通用 executor；验证业务子集、连接 `approved_query_tools`、本次选择三者交集生效
 - [x] 3.5 保留并改造请求级共享快照缓存：key 增加 business_code/业务策略版本，命中前仍复查身份和业务；验证撤权后命中缓存也失败关闭，A/B 并发缓存不串用
-- [ ] 3.6 在 `business_registry` 为 `intelligent-tracing` 增加窄工具子集，排除 `mcp_station_analysis_trajectory`、`mcp_station_analysis_single_pscf`、`mcp_station_analysis_history_pscf`；验证 registry 测试、目录不披露、实际外呼为 0，其他业务不受影响
-- [ ] 3.7 实现真实 MCP 的错误/超时/分页/上限/重试归一化：只重试瞬时错误，权限/参数错误不重试；验证失败返回显式数据不可用而不是空数组或成功
+- [x] 3.6 在 `business_registry` 为 `intelligent-tracing` 增加窄工具子集，排除 `mcp_station_analysis_trajectory`、`mcp_station_analysis_single_pscf`、`mcp_station_analysis_history_pscf`；验证 registry 测试、目录不披露、实际外呼为 0，其他业务不受影响
+- [x] 3.7 实现真实 MCP 的错误/超时/分页/上限/重试归一化：只重试瞬时错误，权限/参数错误不重试；验证失败返回显式数据不可用而不是空数组或成功
 
 ## 4. 四专员、状态与预算
 
@@ -78,7 +78,7 @@
 - [ ] 8.3 G1 MCP：用真实只读连接验证站点目录、目标站/邻站、网格、历史气象、NWP 的成功/拒绝/超时/撤权；验证业务白名单与 `approved_query_tools` 交集、轨迹/PSCF 外呼为 0
 - [ ] 8.4 G1 模型：用真实配置模型跑一次 PM2.5 完整链路；验证报告数值/证据/限制可复核，模型自由文本不进入正文
 - [ ] 8.5 G1 六项：六项污染物各跑一次真实数据闭环；验证 O3 8h/跨日、CO 单位、PM2.5 24h 补充、PM10/NO2/SO2 缺失/边界；无数据项记未执行
-- [ ] 8.6 G1 持久化/迁移：真实 Postgres 保存报告、回读、删除和 checkpoint 迁移；验证同一摘要、scope 隔离、`dirty=false` 和回滚限制
+- [x] 8.6 G1 持久化/迁移：真实 Postgres 保存报告、回读、删除和 checkpoint 迁移；验证同一摘要、scope 隔离、`dirty=false` 和回滚限制
 - [ ] 8.7 G2 浏览器：真实页面验证补问、冻结、PM2.5 和至少一项其他污染物报告、画布、同线程改半径、切企业/线程、停止/删除、重开；保留键盘/窄屏证据
 - [ ] 8.8 汇总析因/成本/失败：记录 A0/A1/B0/B1 fixture 与真实调查差异、Token/工具/重试/时延、未执行项；验证不以 2/3 通过代替确定性正确性
 - [ ] 8.9 证据与资源：把本轮测试、真实服务、容器、浏览器、迁移证据写入新目录，扫描秘密/大文件；验证只回收本任务资源，不覆盖旧报告/共享卷
@@ -86,9 +86,9 @@
 
 ## 9. 交付与归档条件
 
-- [ ] 9.1 更新 `AGENTS.md`、README/运行说明和 tracing SKILL/限制说明，明确三图、0.7.28、六项污染物与轨迹/PSCF 不可用；验证文档命令与 `langgraph.json`/Dockerfile 一致
+- [x] 9.1 更新 `AGENTS.md`、README/运行说明和 tracing SKILL/限制说明，明确三图、0.7.28、六项污染物与轨迹/PSCF 不可用；验证文档命令与 `langgraph.json`/Dockerfile 一致
 - [ ] 9.2 分开记录升级提交、tracing 集成提交和最终 merge；验证提交中不含凭据、缓存、构建物或未授权的外部仓库改动
-- [ ] 9.3 输出交付说明：改了什么、为何、0.7.5/0.7.28 基线、真实/未执行证据、G1/G2 状态、回滚方式和剩余风险；验证未把 fixture 或计划写成上线通过
+- [x] 9.3 输出交付说明：改了什么、为何、0.7.5/0.7.28 基线、真实/未执行证据、G1/G2 状态、回滚方式和剩余风险；验证未把 fixture 或计划写成上线通过
 - [ ] 9.4 只有全部必需项完成或用户明确接受延期后才申请归档/同步主规格；验证未完成项有记录，不提前把 change 标为完成
 
 ## Workflow follow-up
