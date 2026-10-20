@@ -1,0 +1,193 @@
+......F............ssssssssssssssssssssssss............................. [ 13%]
+..............F......................................................... [ 26%]
+ssssssssssssssssssssssssssssssssssssssssssssss.........sss...F..FFFF.... [ 39%]
+........................................................................ [ 52%]
+........................................................................ [ 66%]
+........................................................................ [ 79%]
+........................................................................ [ 92%]
+.........................................                                [100%]
+=================================== FAILURES ===================================
+__________________ test_pg_failure_never_falls_back[asyncio] ___________________
+
+storage = PosixPath('/private/var/folders/sl/97x01_kj0xvcq_k7zhb7w4dm0000gn/T/pytest-of-acerola/pytest-1423/test_pg_failure_never_falls_ba0/archive.db')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1152cb650>
+
+    @pytest.mark.anyio
+    async def test_pg_failure_never_falls_back(storage, monkeypatch):
+        monkeypatch.setenv(
+            "DATABASE_URI", "postgresql://invalid:invalid@127.0.0.1:1/unavailable"
+        )
+>       with pytest.raises(Exception):
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE Exception
+
+tests/unit_tests/test_artifact_db.py:158: Failed
+___________ test_reset_checkpointer_cache_closes_previous_connection ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1150341a0>
+
+    def test_reset_checkpointer_cache_closes_previous_connection(monkeypatch) -> None:
+        checkpointing.reset_checkpointer_cache()
+        checkpointer = CloseableCheckpointer()
+        monkeypatch.setattr(checkpointing, "_create_checkpointer", lambda: checkpointer)
+    
+        assert checkpointing.get_checkpointer() is checkpointer
+        checkpointing.reset_checkpointer_cache()
+    
+>       assert checkpointer.conn.closed is True
+E       assert False is True
+E        +  where False = <test_checkpointing.CloseableConnection object at 0x1159178c0>.closed
+E        +    where <test_checkpointing.CloseableConnection object at 0x1159178c0> = <test_checkpointing.CloseableCheckpointer object at 0x115917a10>.conn
+
+tests/unit_tests/test_checkpointing.py:69: AssertionError
+_____________ test_real_model_call_sees_platform_identity[asyncio] _____________
+
+    def wrapper() -> T:
+        try:
+>           return func(*args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+.venv/lib/python3.13/site-packages/langchain_core/runnables/config.py:698: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = GenericFakeChatModel(metadata={'lc_versions': {'langchain-core': '1.5.4', 'langchain': '1.3.15'}}, messages=<list_iterator object at 0x1157731f0>)
+messages = [HumanMessage(content='hi', additional_kwargs={}, response_metadata={}, id='085a7465-7108-460b-bd24-77d161bfd658')]
+stop = None
+run_manager = <langchain_core.callbacks.manager.CallbackManagerForLLMRun object at 0x115519950>
+kwargs = {}
+
+    @override
+    def _generate(
+        self,
+        messages: list[BaseMessage],
+        stop: list[str] | None = None,
+        run_manager: CallbackManagerForLLMRun | None = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+>       message = next(self.messages)
+                  ^^^^^^^^^^^^^^^^^^^
+E       StopIteration
+
+.venv/lib/python3.13/site-packages/langchain_core/language_models/fake_chat_models.py:261: StopIteration
+
+The above exception was the direct cause of the following exception:
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1155fa890>
+
+    async def test_real_model_call_sees_platform_identity(monkeypatch) -> None:
+        """合法身份 + active 状态：真实框架调用必须通过守卫并完成模型调用。"""
+        agent = _agent(monkeypatch, _state())
+>       result = await agent.ainvoke(
+            {"messages": [("user", "hi")]},
+            config={"configurable": {"langgraph_auth_user": dict(_USER)}},
+        )
+
+tests/unit_tests/test_guard_middleware_framework_compat.py:80: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv/lib/python3.13/site-packages/langgraph/pregel/main.py:4090: in ainvoke
+    async for chunk in self.astream(
+.venv/lib/python3.13/site-packages/langgraph/pregel/main.py:3440: in astream
+    async for _ in runner.atick(
+.venv/lib/python3.13/site-packages/langgraph/pregel/_runner.py:396: in atick
+    await arun_with_retry(
+.venv/lib/python3.13/site-packages/langgraph/pregel/_retry.py:744: in arun_with_retry
+    return await task.proc.ainvoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langgraph/_internal/_runnable.py:756: in ainvoke
+    input = await asyncio.create_task(
+.venv/lib/python3.13/site-packages/langgraph/_internal/_runnable.py:522: in ainvoke
+    ret = await self.afunc(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langchain/agents/factory.py:1533: in amodel_node
+    result = await awrap_model_call_handler(request, _execute_model_async)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langchain/agents/factory.py:400: in normalized_single
+    return _to_composed_result(await single_handler(request, handler))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/common/middleware/tenant_runtime_guard_middleware.py:131: in awrap_model_call
+    return await handler(request)
+           ^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langchain/agents/factory.py:1501: in _execute_model_async
+    output = await model_.ainvoke(messages)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.venv/lib/python3.13/site-packages/langchain_core/runnables/base.py:6015: in ainvoke
+    return await self.bound.ainvoke(
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:499: in ainvoke
+    llm_result = await self.agenerate_prompt(
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:1876: in agenerate_prompt
+    return await self.agenerate(
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:1834: in agenerate
+    raise exceptions[0]
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:2167: in _agenerate_with_cache
+    result = await self._agenerate(
+.venv/lib/python3.13/site-packages/langchain_core/language_models/chat_models.py:2234: in _agenerate
+    return await run_in_executor(
+.venv/lib/python3.13/site-packages/langchain_core/runnables/config.py:707: in run_in_executor
+    return await asyncio.get_running_loop().run_in_executor(
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/concurrent/futures/thread.py:59: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def wrapper() -> T:
+        try:
+            return func(*args, **kwargs)
+        except StopIteration as exc:
+            # StopIteration can't be set on an asyncio.Future
+            # it raises a TypeError and leaves the Future pending forever
+            # so we need to convert it to a RuntimeError
+>           raise RuntimeError from exc
+E           RuntimeError
+E           During task with name 'model' and id '69e20b7f-5666-62f2-43b2-7e0a8c0fd453'
+
+.venv/lib/python3.13/site-packages/langchain_core/runnables/config.py:703: RuntimeError
+____________________ test_policy_route_fast_path_skips_llm _____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x115a22ba0>
+
+    def test_policy_route_fast_path_skips_llm(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:16: AttributeError
+___________________ test_knowledge_route_fast_path_skips_llm ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x115a22b30>
+
+    def test_knowledge_route_fast_path_skips_llm(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:23: AttributeError
+______________________ test_route_cache_reuses_llm_result ______________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x115a22a50>
+
+    def test_route_cache_reuses_llm_result(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:30: AttributeError
+____________________ test_ambiguous_route_uses_llm_fallback ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x115a233f0>
+
+    def test_ambiguous_route_uses_llm_fallback(monkeypatch) -> None:
+>       tools.clear_knowledge_route_cache()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+
+tests/unit_tests/test_knowledge_route.py:50: AttributeError
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_artifact_db.py::test_pg_failure_never_falls_back[asyncio]
+FAILED tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection
+FAILED tests/unit_tests/test_guard_middleware_framework_compat.py::test_real_model_call_sees_platform_identity[asyncio]
+FAILED tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result
+FAILED tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback
+7 failed, 465 passed, 73 skipped in 38.38s
+EXIT=1

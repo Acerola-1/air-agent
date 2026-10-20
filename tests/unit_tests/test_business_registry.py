@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
 from common.business_registry import (  # noqa: E402
     BUSINESS_POLICY_VERSION,
     BUSINESSES,
+    TRACING_EXCLUDED_TOOLS,
     available_businesses,
     business_allows_tool,
     business_for_graph,
@@ -67,8 +68,19 @@ def test_tool_scope_is_business_specific() -> None:
     assert not business_allows_tool(
         "basic-qa", "ipp", "mcp_station_analysis_trajectory"
     )
+    # 溯源使用更窄的子集：轨迹/PSCF 在业务注册表就被排除。
+    for tool in TRACING_EXCLUDED_TOOLS:
+        assert not business_allows_tool("intelligent-tracing", "ipp", tool)
+    # 其他业务仍按各自子集工作（data-analysis 保留完整已审核清单）。
     assert business_allows_tool(
-        "intelligent-tracing", "ipp", "mcp_station_analysis_trajectory"
+        "data-analysis", "ipp", "mcp_station_analysis_trajectory"
+    )
+    # 溯源仍可使用站点/网格/气象等已审核查询工具。
+    assert business_allows_tool(
+        "intelligent-tracing", "ipp", "mcp_station_common_air_data"
+    )
+    assert business_allows_tool(
+        "intelligent-tracing", "ipp", "mcp_grid_common_air_data"
     )
     assert not business_allows_tool("basic-qa", "unknown", "query")
     assert not business_allows_tool("unknown", "ipp", "query")

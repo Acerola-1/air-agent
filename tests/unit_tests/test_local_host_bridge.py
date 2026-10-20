@@ -282,3 +282,14 @@ def test_sse_chunks_arrive_before_upstream_finishes(bridge_harness) -> None:
         assert state.stream_finished.wait(1)
     finally:
         state.release_stream.set()
+
+
+def test_bridge_bind_host_accepts_private_gateway_and_rejects_unspecified():
+    from deployment import local_host_bridge as bridge
+
+    assert bridge._allowed_bind_host("127.0.0.1")
+    assert bridge._allowed_bind_host("192.168.64.1")
+    assert bridge._allowed_bind_host("192.168.65.1")
+    assert not bridge._allowed_bind_host("0.0.0.0")
+    assert not bridge._allowed_bind_host("8.8.8.8")
+    assert not bridge._allowed_bind_host("not-an-ip")

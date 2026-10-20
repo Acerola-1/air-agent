@@ -59,6 +59,8 @@ print('IMPORT_PROOF='+json.dumps({'graphs':loaded,'network_attempts':len(attempt
     )
     parsed = json.loads(proof)
     assert len(parsed["graphs"]) == 3 and parsed["network_attempts"] == 0
-    (
-        root / "docs/reviews/evidence/takeover-03-05/import-network-guard.json"
-    ).write_text(json.dumps(parsed, indent=2) + "\n")
+    evidence_dir = root / "docs/reviews/evidence/three-graph-import-20261019"
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    (evidence_dir / "import-network-guard.json").write_text(
+        json.dumps(parsed, indent=2) + "\n"
+    )

@@ -1453,6 +1453,35 @@ async def attempt_reservation(
     return dict(row)
 
 
+async def fetch_attempt_lifecycle(
+    scope: LedgerScope, *, attempt_id: str, thread_id: str
+) -> dict[str, Any] | None:
+    """只读尝试生命周期事实：状态、修订、取消意图/确认与结束时间.
+
+    发布前使用：不新增事件或表，复用既有 `agent_run_attempts` 列；归属不一致
+    返回 None，调用方必须失败关闭。
+    """
+    row = await _run(
+        "SELECT a.id::text AS attempt_id, a.state, a.state_revision,"
+        " a.cancel_requested, a.cancel_confirmed, a.ended_at,"
+        " a.business_code, a.business_policy_version, a.platform_run_id,"
+        " a.request_id::text AS request_id, r.thread_id"
+        " FROM agent_run_attempts a"
+        " JOIN agent_requests r ON r.id = a.request_id AND r.tenant_id = a.tenant_id"
+        " WHERE a.id = %(aid)s AND a.tenant_id = %(t)s AND a.user_id = %(u)s"
+        "   AND r.thread_id = %(th)s",
+        {
+            "aid": attempt_id,
+            "t": scope.tenant_id,
+            "u": scope.user_id,
+            "th": thread_id,
+        },
+        scope.as_guc(),
+        fetch="one",
+    )
+    return dict(row) if row else None
+
+
 async def content_digest(*, graph_id: str, operation_kind: str, content: Any) -> str:  # noqa: ANN401
     """与 admin 侧一致的提交内容摘要."""
     normalized = content.strip() if isinstance(content, str) else content

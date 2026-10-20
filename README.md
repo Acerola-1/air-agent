@@ -6,7 +6,7 @@
 
 ## 当前能力
 
-- **六张业务图**：基础问答、智能分析、菜单驱动的数据分析，以及基于 DeepAgents 的报告、深度研究和污染溯源。
+- **三张业务图**：基础问答、菜单驱动的数据分析，以及受控的四专员污染溯源（冻结请求 + 确定性证据/门禁 + 统一发布）。
 - **企业与访问控制**：账号、企业、部门、成员、角色、权限和审计；服务端会话可撤销，企业切换带上下文版本校验。
 - **可信运行台账**：关联逻辑提问、提交、尝试、平台运行和回答；支持幂等、重新生成、恢复及独立的停止意图。
 - **反馈与体验采集**：按回答版本点赞/点踩、意见、成功复制事件及可见正文计时。采集由部署开关控制。
@@ -27,7 +27,7 @@
        │           内部签发短期运行票据
        ▼
 LangGraph API：custom auth + 资源归属 + 实时身份复查
-       ├── 六张业务图 → 模型 / 按企业身份授权的 MCP
+       ├── 三张业务图 → 模型 / 按企业身份授权的 MCP
        ├── PostgreSQL：线程、归档、业务台账与观测
        ├── Redis：官方运行时所需的协调与队列
        └── Langfuse：AI 链路观测与评测
@@ -43,7 +43,7 @@ LangGraph API：custom auth + 资源归属 + 实时身份复查
 |---|---|
 | `src/basic_qa/` | 显式业务节点流与语义 Skill 路由 |
 | `src/data_analysis/` | 菜单映射驱动的确定性分析 |
-| `src/intelligent_tracing/` | DeepAgents 图；本地 Skill 材料按目录实际内容提供 |
+| `src/intelligent_tracing/` | 受控溯源 DeepAgents 调度图：四专员、真实业务 MCP 数据源、证据门禁；Skill 材料仅内部参考，不进入在线可选目录 |
 | `src/common/` | 身份、能力、模型、MCP、台账、观测、中间件与归档 |
 | `frontend/` | 聊天、能力选择、反馈、画布及 Agent BFF |
 | `admin/api/` | FastAPI 管理与业务 API、Alembic 迁移、引导和恢复脚本 |
@@ -57,6 +57,8 @@ LangGraph API：custom auth + 资源归属 + 实时身份复查
 ## 本地准备
 
 需要 Python 3.13、uv、Node.js/npm，以及 macOS 上的 [Apple Container](https://github.com/apple/container) 和 [container-compose](https://github.com/Mcrich23/Container-Compose)。项目不使用 Docker Desktop。当前 compose 是本地开发栈，部分端口映射未限制为回环；对外部署应单独配置网络、密钥和暴露面。
+
+运行时基线由 `pyproject.toml`/`uv.lock` 固定：deepagents 0.7.28、langchain 1.4.6、langchain-core 1.6.12、langgraph 1.2.16、checkpoint 4.3.0、langchain-quickjs 0.3.9。容器镜像基础层固定 digest，`docker-compose.yaml` 使用显式 tag；升级依赖需同步重生成锁、核对镜像 `/api/constraints.txt` 并重建镜像。智能溯源当前支持 PM2.5、PM10、O3、NO2、SO2、CO 六项，轨迹/PSCF 能力不可用。
 
 根项目依赖由 `pyproject.toml` / `uv.lock` 管理；管理 API 有自己的依赖声明。一个环境联调两个 Python 项目时：
 

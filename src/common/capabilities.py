@@ -35,12 +35,11 @@ VALID_GRAPHS: set[str] = {
     "intelligent-tracing",
 }
 
+# 溯源图不再以“可选中 Skill”改变授权或取数范围：其 SKILL.md 仅作内部参考，
+# 不登记到在线可选目录（D11）。basic-qa / data-analysis 行为不变。
 GRAPH_SKILLS_DIRS: dict[str, Path] = {
     "basic-qa": Path(__file__).resolve().parents[1] / "basic_qa" / "skills",
     "data-analysis": Path(__file__).resolve().parents[1] / "data_analysis" / "skills",
-    "intelligent-tracing": Path(__file__).resolve().parents[1]
-    / "intelligent_tracing"
-    / "skills",
 }
 
 _SLUG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")

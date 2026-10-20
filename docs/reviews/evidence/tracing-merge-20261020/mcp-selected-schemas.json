@@ -1,0 +1,603 @@
+{
+ "total": 109,
+ "selected": {
+  "mcp_station_base_air_station_list": {
+   "description": "根据行政区名称和站点类型，查询对应区域内的空气监测站点列表，返回站点基本信息、经纬度、行政区信息。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| stationKey | string | 站点编号（UUID） |\n| name | string | 站点名称 |\n| stationType | string | 站点类型（系统字典管理） |\n| regionKey | string | 行政区编号 |\n| region | string | 行政区编码 |\n| regionName | string | 行政区名称 |",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区划名称，必填"
+     },
+     "stationType": {
+      "type": "string",
+      "description": "必填，站点类型，多个值以英文逗号拼接；对应编码：标准站 S-100、国控站 S-10、省控站 S-11、市控站 S-12、对比站 S-13、乡镇站 S-14、微站 S-15、TVOC 站位 S-16、粉尘站位 S-17、高密度站位 S-18、交通站位 S-19、港口站位 S-20"
+     }
+    },
+    "required": [
+     "region",
+     "stationType"
+    ]
+   }
+  },
+  "mcp_station_common_air_quality_forecast": {
+   "description": "站点空气质量预测，支持行政区/站点类型/站点编码多条件查询，返回污染物、AQI、气象、等级全维度数据\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| provinceName | string | 省级名称 |\n| cityName | string | 市级名称 |\n| districtName | string | 区级名称 |\n| stationName | string | 站点名称 |\n| stationClassificat | string | 站点类型 |\n| updateTime | string | 数",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称，支持多个逗号分隔"
+     },
+     "stationType": {
+      "type": "string",
+      "description": "站点类型，支持多个逗号分隔;对应编码：标准站 S-100、国控站 S-10、省控站 S-11、市控站 S-12、对比站 S-13、乡镇站 S-14、微站 S-15、TVOC 站位 S-16、粉尘站位 S-17、高密度站位 S-18、交通站位 S-19、港口站位 S-20"
+     },
+     "station": {
+      "type": "string",
+      "description": "站点编码，支持多个逗号分隔"
+     },
+     "type": {
+      "type": "string",
+      "description": "时间类型，必传；hourly:小时, daily:日"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间。格式：airStationH为yyyy-MM-dd HH:00:00，airStationD为yyyy-MM-dd。必传"
+     },
+     "force": {
+      "type": "string",
+      "description": "预测时长只能填数字，与结束时间二选一"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间，与预测时长二选一。若为模糊时间词请先调用 helper_getLatestTime2，格式同 sTime"
+     },
+     "forceType": {
+      "type": "string",
+      "description": "预测模型：0:xgboost,1:wrf-chem,2:wrf-cmaq,3:xgboost_v1,-1:自动查询(默认)"
+     }
+    },
+    "required": [
+     "type",
+     "sTime"
+    ]
+   }
+  },
+  "mcp_station_base_lng_lat_near_national_province_station": {
+   "description": "根据经纬度定位最近的国省控站信息，返回站点基本信息、经纬度、行政区信息。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| stationKey | string | 站点编号（UUID） |\n| name | string | 站点名称 |\n| stationType | string | 站点类型（系统字典管理） |\n| regionKey | string | 行政区编号 |\n| region | string | 行政区编码 |\n| regionName | string | 行政区名称 |\n| longitude ",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "longitude": {
+      "type": "string",
+      "description": "经度，必填，范围：-180.0 ~ +180.0），支持整数 / 小数，小数最多 8 位"
+     },
+     "latitude": {
+      "type": "string",
+      "description": "纬度，必填，范围：-180.0 ~ +180.0），支持整数 / 小数，小数最多 8 位"
+     }
+    },
+    "required": [
+     "longitude",
+     "latitude"
+    ]
+   }
+  },
+  "mcp_station_base_range_site_list": {
+   "description": "获取指定位置，指定距离，指定条数的站点信息，返回站点基本信息、经纬度、行政区信息。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| stationKey | string | 站点编号（UUID） |\n| name | string | 站点名称 |\n| stationType | string | 站点类型（系统字典管理） |\n| regionKey | string | 行政区编号 |\n| region | string | 行政区编码 |\n| regionName | string | 行政区名称 |\n| longi",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "lon": {
+      "type": "string",
+      "description": "经度，必填，范围：-180.0 ~ +180.0），支持整数 / 小数，小数最多 8 位"
+     },
+     "lat": {
+      "type": "string",
+      "description": "纬度，必填，范围：-180.0 ~ +180.0），支持整数 / 小数，小数最多 8 位"
+     },
+     "distance": {
+      "type": "string",
+      "description": "距离，必填，只能输入数字，不能小于0"
+     },
+     "number": {
+      "type": "string",
+      "description": "条数，必填，只能输入数字，不能小于0，不能大于10000"
+     }
+    },
+    "required": [
+     "lon",
+     "lat",
+     "distance",
+     "number"
+    ]
+   }
+  },
+  "mcp_station_common_air_data": {
+   "description": "查询站点实时/历史空气监测数据，支持行政区/站点类型/站点编码多条件筛选，返回污染物浓度、AQI、排名、同比、环比、天气状态全维度数据。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| ranking | string | 排名 |\n| regionKey | string | 区域键 |\n| regionName | string | 区域名称 |\n| parentRegionName | string | 所属父区域名称 |\n| stationKey | string | 站点键 |\n| stationName | s",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "必填，行政区名称，支持多个逗号分隔"
+     },
+     "stationType": {
+      "type": "string",
+      "description": "站点类型，支持多个逗号分隔;对应编码：标准站 S-100、国控站 S-10、省控站 S-11、市控站 S-12、对比站 S-13、乡镇站 S-14、微站 S-15、TVOC 站位 S-16、粉尘站位 S-17、高密度站位 S-18、交通站位 S-19、港口站位 S-20"
+     },
+     "station": {
+      "type": "string",
+      "description": "站点编码，支持多个逗号分隔"
+     },
+     "type": {
+      "type": "string",
+      "description": "时间类型，必传；hourly(小时)、daily(日)、daily_count(日累计)、month(月)、year(年)"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间。格式：H/Dt字段yyyy-MM-dd HH:00:00，其余yyyy-MM-dd。必填"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间。格式同 sTime"
+     }
+    },
+    "required": [
+     "region",
+     "type",
+     "sTime"
+    ]
+   }
+  },
+  "mcp_station_base_get_info_by_code_name": {
+   "description": "根据行政区编码和站点名称获取站点基础信息，返回站点基本信息、经纬度、行政区信息。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| stationKey | string | 站点编号（UUID） |\n| name | string | 站点名称 |\n| stationType | string | 站点类型（系统字典管理） |\n| regionKey | string | 行政区编号 |\n| region | string | 行政区编码 |\n| regionName | string | 行政区名称 |\n| longit",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区划名称，必填"
+     },
+     "station": {
+      "type": "string",
+      "description": "必填，站点名称，单个"
+     }
+    },
+    "required": [
+     "region",
+     "station"
+    ]
+   }
+  },
+  "mcp_weather_forecast_daily": {
+   "description": "日级天气预报接口，返回指定地区未来N天的气象数据。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| updateTime | string | 预报时间 |\n| regionName | string | 行政区名称 |\n| parentRegionName | string | 父区划名称 |\n| temperatureMax | string | 最高温度，单位：摄氏度(℃) |\n| temperatureMin | string | 最低温度，单位：摄氏度(℃) |\n| humidity | string | 相对湿",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称（单选），例如：郑州市。注意：必须传中文名称，不能传数字编码。必填"
+     },
+     "force": {
+      "type": "string",
+      "description": "需要预测未来的天的数量，预测时间范围为「当前日期～当前日期 + force 小时」，必填"
+     }
+    },
+    "required": [
+     "region",
+     "force"
+    ]
+   }
+  },
+  "mcp_weather_forecast_hourly": {
+   "description": "小时级天气预报接口，返回指定地区未来N小时的气象数据。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| forecastTime | string | 预报时间(后期要删除) |\n| updateTime | string | 预报时间 |\n| regionName | string | 行政区名称 |\n| parentRegionName | string | 父区划名称 |\n| stationType | string | 站点类型 |\n| stationName | string | 站点名称 |\n| tempera",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称（单选），例如：郑州市。注意：必须传中文名称，不能传数字编码。必填"
+     },
+     "force": {
+      "type": "string",
+      "description": "需要预测未来的小时数量，预测时间范围为「当前小时～当前小时 + force 小时」，必填"
+     }
+    },
+    "required": [
+     "region",
+     "force"
+    ]
+   }
+  },
+  "mcp_weather_forecast_daily_history": {
+   "description": "日级历史天气预报接口，返回指定地区、指定日期范围内的历史日气象数据。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| updateTime | string | 预报时间 |\n| regionName | string | 行政区名称 |\n| parentRegionName | string | 父区划名称 |\n| temperatureMax | string | 最高温度，单位：摄氏度(℃) |\n| temperatureMin | string | 最低温度，单位：摄氏度(℃) |\n| humidity | str",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称（单选），例如：郑州市。注意：必须传中文名称，不能传数字编码。必填"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间（格式为:yyyy-MM-dd）。必填"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间（格式为:yyyy-MM-dd）。若为模糊时间词则请先调用 helper_getLatestTime2 获取城市级基准时间，否则直接传入明确时间值。必填"
+     }
+    },
+    "required": [
+     "region",
+     "sTime",
+     "eTime"
+    ]
+   }
+  },
+  "mcp_weather_forecast_hourly_history": {
+   "description": "小时级历史天气预报接口，返回指定地区、指定时间段内的历史气象数据。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| forecastTime | string | 预报时间(后期要删除) |\n| updateTime | string | 预报时间 |\n| regionName | string | 行政区名称 |\n| parentRegionName | string | 父区划名称 |\n| stationType | string | 站点类型 |\n| stationName | string | 站点名称 |\n| t",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称（单选），例如：郑州市。注意：必须传中文名称，不能传数字编码。必填"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间（格式为:yyyy-MM-dd HH:00）。。必填"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间（格式为:yyyy-MM-dd HH:00）。若为模糊时间词则请先调用 helper_getLatestTime2 获取城市级基准时间，否则直接传入明确时间值。必填"
+     }
+    },
+    "required": [
+     "region",
+     "sTime",
+     "eTime"
+    ]
+   }
+  },
+  "helper_get_latest_time": {
+   "description": "查询系统中各类空气质量数据的最新可用时间。\n在调用其他空气质量查询工具之前，应先调用此工具确认数据的可用时间范围，避免传入超出数据范围的时间参数。\n返回每种数据类型的最新可用时间，包括城市和站点的日、小时、月、年等维度的空气质量数据截止时间。",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+   }
+  },
+  "helper_getLatestTime2": {
+   "description": "获取系统中数据的最新时间：返回结果中,type 是类型,updateTime是对应的时间;",
+   "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "required": []
+   }
+  },
+  "mcp_station_analysis_history_pscf": {
+   "description": "潜在源历史分析-原始轨迹，查询指定站点在历史时段的气团后向/前向轨迹原始数据。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| 返回数据 | String | GeoJSON格式的潜在源轨迹数据字符串 |",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "station": {
+      "type": "string",
+      "description": "站点编码，必填"
+     },
+     "type": {
+      "type": "string",
+      "description": "时间类型，必填；hourly(小时)、daily(日)、month(月)、other(其他)"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间，必填，格式yyyy-MM-dd HH:00:00"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间"
+     },
+     "expansion1": {
+      "type": "string",
+      "description": "轨迹方向，必填；back=后向轨迹，forward=前向轨迹"
+     },
+     "expansion2": {
+      "type": "string",
+      "description": "轨迹时长（小时），必填；可选值：6、12、24、36"
+     },
+     "expansion3": {
+      "type": "string",
+      "description": "高度层级，必填；可选值：1、2"
+     }
+    },
+    "required": [
+     "station",
+     "type",
+     "sTime",
+     "expansion1",
+     "expansion2",
+     "expansion3"
+    ]
+   }
+  },
+  "mcp_station_analysis_single_pscf": {
+   "description": "潜在源单次分析，根据站点、时间、污染因子、轨迹参数进行单次潜在源贡献因子分析。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| 返回数据 | String | 潜在源分析结果图片/数据字符串 |",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "station": {
+      "type": "string",
+      "description": "站点编码，必填"
+     },
+     "type": {
+      "type": "string",
+      "description": "时间类型，必填；hourly(小时)、daily(日)、month(月)、other(其他)"
+     },
+     "index": {
+      "type": "string",
+      "description": "污染因子，必填，如pm25、pm10等"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间，必填，格式yyyy-MM-dd HH:00:00"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间"
+     },
+     "expansion1": {
+      "type": "string",
+      "description": "轨迹方向，必填；back=后向轨迹，forward=前向轨迹"
+     },
+     "expansion2": {
+      "type": "string",
+      "description": "轨迹时长（小时），必填；可选值：6、12、24、36"
+     },
+     "expansion3": {
+      "type": "string",
+      "description": "高度层级，必填；可选值：1、2"
+     }
+    },
+    "required": [
+     "station",
+     "type",
+     "index",
+     "sTime",
+     "expansion1",
+     "expansion2",
+     "expansion3"
+    ]
+   }
+  },
+  "mcp_station_analysis_trajectory": {
+   "description": "传输轨迹分析，根据指定站点和时间范围，计算气团传输的后向/前向轨迹。\n【返回字段说明】\n| 字段名 | 类型 | 字段说明 |\n|--------|------|----------|\n| 返回数据 | String | GeoJSON格式的轨迹数据字符串 |",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "station": {
+      "type": "string",
+      "description": "站点编码，必填"
+     },
+     "type": {
+      "type": "string",
+      "description": "时间类型，必填；hourly(小时)、daily(日)、month(月)、other(其他)"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间，必填，格式yyyy-MM-dd HH:00:00"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间"
+     },
+     "expansion1": {
+      "type": "string",
+      "description": "轨迹方向，必填；back=后向轨迹，forward=前向轨迹"
+     },
+     "expansion2": {
+      "type": "string",
+      "description": "轨迹时长（小时），必填；可选值：6、12、24、36"
+     },
+     "expansion3": {
+      "type": "string",
+      "description": "高度层级，必填；可选值：1、2"
+     },
+     "cl": {
+      "type": "string",
+      "description": "是否聚合，必填；0=不聚合，1=聚合"
+     }
+    },
+    "required": [
+     "station",
+     "type",
+     "sTime",
+     "expansion1",
+     "expansion2",
+     "expansion3",
+     "cl"
+    ]
+   }
+  },
+  "mcp_grid_common_air_data": {
+   "description": "查询指定行政区下网格的空气浓度数据，支持按辖区、网格编码、污染因子、时间范围过滤，可指定是否查询全部数据。\n【参数说明】\n| 参数 | 必填 | 说明 |\n|------|------|------|\n| region | 是 | 行政区名称，如'北京市' |\n| type | 是 | 时间类型：hourly(小时)、daily(日)、month(月)、year(年)、week(周) |\n| index | 是 | 污染因子，单一，如pm25、pm10、so2、no2、o3、co |\n| sTime | 是 | 开始时间，格式yyyy-MM-dd HH:mm:ss或yyyy-MM-dd |\n|",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称，必填"
+     },
+     "type": {
+      "type": "string",
+      "description": "时间类型，必填；hourly(小时)、daily(日)、month(月)、year(年)、week(周)"
+     },
+     "index": {
+      "type": "string",
+      "description": "污染因子，必填，单一，如pm25、pm10"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间，必填，格式yyyy-MM-dd HH:mm:ss或yyyy-MM-dd"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间"
+     },
+     "areaKey": {
+      "type": "string",
+      "description": "辖区代码，多个以逗号连接"
+     },
+     "hash": {
+      "type": "string",
+      "description": "网格编码，多个以逗号连接"
+     },
+     "gridHashType": {
+      "type": "string",
+      "description": "网格查询参数类型"
+     },
+     "expansion1": {
+      "type": "string",
+      "description": "直接查询全部数据标识"
+     }
+    },
+    "required": [
+     "region",
+     "type",
+     "index",
+     "sTime"
+    ]
+   }
+  },
+  "mcp_grid_base_around_grids": {
+   "description": "获取指定行政区下的周边网格信息，返回周边网格的hash编码和名称列表。\n【参数说明】\n| 参数 | 必填 | 说明 |\n|------|------|------|\n| region | 是 | 行政区名称，如'北京市' |",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称，必填"
+     }
+    },
+    "required": [
+     "region"
+    ]
+   }
+  },
+  "mcp_grid_base_grid_by_station_proximity": {
+   "description": "根据站点行政区和站点类型，获取指定距离范围内的网格信息。\n【参数说明】\n| 参数 | 必填 | 说明 |\n|------|------|------|\n| region | 是 | 行政区名称，如'北京市' |\n| stationType | 是 | 站点类型中文，多个值以英文逗号拼接；标准站 S-100、国控站 S-10、省控站 S-11、市控站 S-12、乡镇站 S-14、微站 S-15 |\n| distance | 是 | 查询距离（米），最大值100000 |",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称，必填"
+     },
+     "stationType": {
+      "type": "string",
+      "description": "站点类型中文，必填，多个值以英文逗号拼接；标准站 S-100、国控站 S-10、省控站 S-11、市控站 S-12、乡镇站 S-14、微站 S-15"
+     },
+     "distance": {
+      "type": "string",
+      "description": "查询距离（米），必填，最大值100000"
+     }
+    },
+    "required": [
+     "region",
+     "stationType",
+     "distance"
+    ]
+   }
+  },
+  "mcp_grid_base_grid_info_by_code": {
+   "description": "通过网格code（名称）获取网格信息，返回指定行政区下单个网格的详细信息。\n【参数说明】\n| 参数 | 必填 | 说明 |\n|------|------|------|\n| region | 是 | 行政区名称，如'北京市' |\n| name | 是 | 网格code/名称，单一 |",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称，必填"
+     },
+     "name": {
+      "type": "string",
+      "description": "网格code/名称，必填，单一"
+     }
+    },
+    "required": [
+     "region",
+     "name"
+    ]
+   }
+  },
+  "mcp_grid_common_grid_statistics": {
+   "description": "查询行政区下网格信息统计，统计指定时间范围内各辖区的热点网格数量。\n【参数说明】\n| 参数 | 必填 | 说明 |\n|------|------|------|\n| region | 是 | 行政区名称，如'北京市' |\n| type | 是 | 时间类型：hourly(小时)、daily(日)、month(月)、year(年) |\n| sTime | 是 | 开始时间，格式yyyy-MM-dd HH:mm:ss或yyyy-MM-dd |\n| areaKey | 是 | 辖区编码，多个以逗号连接 |\n| eTime | 否 | 结束时间 |",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称，必填"
+     },
+     "type": {
+      "type": "string",
+      "description": "时间类型，必填；hourly(小时)、daily(日)、month(月)、year(年)"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间，必填，格式yyyy-MM-dd HH:mm:ss或yyyy-MM-dd"
+     },
+     "areaKey": {
+      "type": "string",
+      "description": "辖区编码，必填，多个以逗号连接"
+     },
+     "eTime": {
+      "type": "string",
+      "description": "结束时间"
+     }
+    },
+    "required": [
+     "region",
+     "type",
+     "sTime",
+     "areaKey"
+    ]
+   }
+  },
+  "mcp_grid_common_hot_grid_list": {
+   "description": "查询热点网格清单，返回指定行政区、时间范围内的热点网格详细数据。\n【参数说明】\n| 参数 | 必填 | 说明 |\n|------|------|------|\n| region | 是 | 行政区名称，如'北京市' |\n| sTime | 是 | 开始时间，格式yyyy-MM-dd HH:mm:ss或yyyy-MM-dd |\n| areaKey | 是 | 辖区编码，多个以逗号连接 |\n| type | 是 | 时间类型：hourly(小时)、daily(日)、month(月)、week(周)、season(季) |\n| index | 是 | 污染因子，如pm25、pm10、so2、no2、",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "region": {
+      "type": "string",
+      "description": "行政区名称，必填"
+     },
+     "sTime": {
+      "type": "string",
+      "description": "开始时间，必填，格式yyyy-MM-dd HH:mm:ss或yyyy-MM-dd"
+     },
+     "areaKey": {
+      "type": "string",
+      "description": "辖区编码，必填，多个以逗号连接"
+     },
+     "type": {
+      "type": "string",
+      "description": "时间类型，必填；hourly(小时)、daily(日)、month(月)、week(周)、season(季)"
+     },
+     "index": {
+      "type": "string",
+      "description": "污染因子，必填，如pm25、pm10、so2、no2、o3、co"
+     }
+    },
+    "required": [
+     "region",
+     "sTime",
+     "areaKey",
+     "type",
+     "index"
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,6 @@
+run 1
+1 failed in 0.44s
+run 2
+1 passed in 0.43s
+run 3
+1 failed in 0.44s

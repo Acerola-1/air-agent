@@ -304,6 +304,29 @@ async def get_tool_artifact(
     return row
 
 
+async def get_tool_artifact_by_call(
+    tool_call_id: str, *, tenant_id: str, user_id: str, thread_id: str
+) -> dict[str, Any] | None:
+    """按工具调用 ID 读取同一线程内最新归档；归属与过期规则同 get_tool_artifact."""
+    await init_artifact_storage_table()
+    rows = await _query(
+        f"SELECT * FROM {_TABLE_NAME} WHERE tool_call_id=? AND tenant_id=? AND user_id=? AND thread_id=? ORDER BY created_at DESC LIMIT 1",
+        (tool_call_id, tenant_id, user_id, thread_id),
+        fetch=True,
+        guc=_scope_guc(tenant_id, user_id),
+    )
+    if not rows:
+        return None
+    row = rows[0]
+    if row["status"] == "expired" or (
+        row["expires_at"]
+        and datetime.fromisoformat(row["expires_at"]) <= datetime.now(UTC)
+    ):
+        raise ArtifactExpired("原始资料已过期，历史消息仍保留。请重新查询资料。")
+    row["processing_metadata"] = json.loads(row["processing_metadata"] or "{}")
+    return row
+
+
 async def list_tool_artifacts(
     *, tenant_id: str, user_id: str, thread_id: str, offset: int = 0, limit: int = 50
 ) -> list[dict[str, Any]]:

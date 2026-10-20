@@ -19,10 +19,10 @@
 
 | 区域 | 当前职责 |
 |---|---|
-| `langgraph.json` | 六个公开 Graph ID 与 custom auth/custom HTTP 声明 |
-| `src/basic_qa/`、`src/intelligent_analysis/` | 显式业务节点流和语义 Skill 路由 |
+| `langgraph.json` | 三个公开 Graph ID（`basic-qa`、`data-analysis`、`intelligent-tracing`）与 custom auth/custom HTTP 声明 |
+| `src/basic_qa/` | 显式业务节点流和语义 Skill 路由 |
 | `src/data_analysis/` | 菜单驱动的确定性分析；不能被显式技能绕过菜单约束 |
-| `src/intelligent_report/`、`src/deep_research/`、`src/intelligent_tracing/` | DeepAgents；涉及执行边界需覆盖主任务和真实子任务 |
+| `src/intelligent_tracing/` | 受控溯源 DeepAgents 调度图（冻结请求 + 四专员 + 证据门禁）；涉及执行边界需覆盖主任务和真实子任务 |
 | `src/common/identity/`、`capabilities.py`、`mcp_scoped.py` | 可信身份、能力选择及作用域工具发现/执行 |
 | `src/common/event_ledger/`、`observability/` | 运行事实台账和模型/工具/Skill观测 |
 | `frontend/` | Next.js聊天、反馈、能力选择、画布和同源BFF |
