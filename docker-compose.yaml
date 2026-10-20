@@ -55,7 +55,7 @@ services:
   langgraph-api:
     # 镜像需手动构建：container build -t air-agent/langgraph-api:latest .
     # （compose 的 build 有 builder 目录权限 bug，手动 build 更稳定）
-    image: air-agent/langgraph-api:latest
+    image: air-agent/langgraph-api:tracing-merge-20261020
     container_name: air-agent-langgraph-api
     restart: unless-stopped
     depends_on:

@@ -1,0 +1,6 @@
+import proof:
+IMPORT_PROOF={"graphs": ["basic_qa", "data_analysis", "intelligent_tracing"], "network_attempts": 0, "langfuse_enabled": true}
+环境：Python 3.13.3, deepagents 0.7.28, langchain 1.4.6, langchain-core 1.6.12, langgraph 1.2.16
+方法：socket.connect/connect_ex/getaddrinfo 全部拒绝并记录，导入三图后 sleep 0.2 再断言无尝试。
+备注：tests/unit_tests/test_graph_import_no_network.py 在整文件单跑时偶发挂起（子进程卡在退出阶段的网络等待）；
+全量 suites（含该用例）通过，本证明以同一脚本的受控超时运行留证。

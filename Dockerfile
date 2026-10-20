@@ -12,7 +12,10 @@
 #   container-compose --profile prod build
 # ---------------------------------------------------------------------------
 
-FROM langchain/langgraph-api:3.13
+# 基础镜像固定 digest：tag `3.13` 于 2026-10-20 解析为下列多架构索引
+# （linux/arm64 manifest revision 8d6666b、Python 3.13.16、OTel 1.42.1）。
+# 重建必须以该 digest 为准；升级基础镜像需重新核对 /api/constraints.txt。
+FROM langchain/langgraph-api:3.13@sha256:c171cf1546cf8af4cfbd01c8d1989f0a91569da81d0c5b1ba9316cdef87f53ab
 
 # 国内镜像源加速（官方镜像已预装 uv）
 ENV UV_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple/

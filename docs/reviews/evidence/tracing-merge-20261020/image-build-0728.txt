@@ -1,0 +1,80 @@
+#7 0.152     #   langgraph-checkpoint
+#7 0.152     #   langgraph-prebuilt
+#7 0.152     #   langgraph-sdk
+#7 0.152 langchain-google-genai==4.4.2 \
+#7 0.152     # via deepagents
+#7 0.152 langchain-mcp-adapters==0.3.2 \
+#7 0.152 langchain-openai==1.4.3 \
+#7 0.152 langchain-protocol==0.0.18 \
+#7 0.152     #   langchain-core
+#7 0.152     #   langgraph-sdk
+#7 0.152 langchain-quickjs==0.3.9 \
+#7 0.152 langgraph==1.2.16 \
+#7 0.152     #   langchain
+#7 0.152     #   langchain-quickjs
+#7 0.152 langgraph-checkpoint==4.3.0 \
+#7 0.152     #   langgraph
+#7 0.152     #   langgraph-checkpoint-postgres
+#7 0.152     #   langgraph-checkpoint-sqlite
+#7 0.152     #   langgraph-prebuilt
+#7 0.152 langgraph-checkpoint-postgres==3.1.2 \
+#7 0.152 langgraph-checkpoint-sqlite==3.1.1 \
+#7 0.152 langgraph-prebuilt==1.1.0 \
+#7 0.152     # via langgraph
+#7 0.152 langgraph-sdk==0.4.8 \
+#7 0.152     # via langgraph
+#7 0.152     #   deepagents
+#7 0.152     #   langchain-core
+#7 0.152     # via langchain-mcp-adapters
+#7 0.152     #   langchain-openai
+#7 0.152     #   langgraph-checkpoint-postgres
+#7 0.152     #   langgraph-sdk
+#7 0.152     # via langgraph-checkpoint
+#7 0.152     #   deepagents
+#7 0.152     #   langchain-core
+#7 0.152     #   langgraph-checkpoint-postgres
+#7 0.152     # via langgraph-checkpoint-postgres
+#7 0.152     #   langchain
+#7 0.152     #   langchain-anthropic
+#7 0.152     #   langchain-core
+#7 0.152     #   langchain-google-genai
+#7 0.152     #   langgraph
+#7 0.152     #   langchain-core
+#7 0.152     # via langchain-quickjs
+#7 0.152     # via langgraph-checkpoint-sqlite
+#7 0.152     #   langchain-core
+#7 0.152     #   langchain-openai
+#7 0.152     #   langchain-core
+#7 0.152     #   langchain-mcp-adapters
+#7 0.152     #   langchain-protocol
+#7 0.152     #   langchain-core
+#7 0.153     # via deepagents
+#7 0.153     #   langgraph-sdk
+#7 0.153     #   langgraph
+#7 23.05 Resolved 130 packages in 22.83s
+#7 28.07  + deepagents==0.7.28
+#7 28.07  + langchain==1.4.6
+#7 28.07  + langchain-anthropic==1.7.6
+#7 28.07  - langchain-core==1.4.8
+#7 28.07  + langchain-core==1.6.12
+#7 28.07  + langchain-google-genai==4.4.2
+#7 28.07  + langchain-mcp-adapters==0.3.2
+#7 28.07  + langchain-openai==1.4.3
+#7 28.07  + langchain-quickjs==0.3.9
+#7 28.07  - langgraph==1.2.6
+#7 28.07  + langgraph==1.2.16
+#7 28.07  + langgraph-checkpoint-sqlite==3.1.1
+#7 28.07  - langgraph-sdk==0.4.6
+#7 28.07  + langgraph-sdk==0.4.8
+#8 [linux/arm64 3/7] RUN cd /deps/air_agent  && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir -c /api/constraints.txt --no-deps -e .
+#8 0.111 Resolved 1 package in 1ms
+#9 [linux/arm64 4/7] RUN mkdir -p /api/langgraph_api /api/langgraph_runtime /api/langgraph_license  && touch /api/langgraph_api/__init__.py /api/langgraph_runtime/__init__.py /api/langgraph_license/__init__.py
+#10 [linux/arm64 5/7] RUN PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -e /api
+#10 0.644 Resolved 1 package in 587ms
+#10 0.645    Building langgraph-api @ file:///api
+#10 0.762       Built langgraph-api @ file:///api
+#10 0.769  ~ langgraph-api==0.16.2 (from file:///api)
+#12 exporting config sha256:b59a130184af131aaa02c4aa4e450018455e7dd7970c6cd6f507137bcff6e018 done
+#12 exporting manifest list sha256:cb86f53e5314aad88fdf4a898b7b0684e35bcda4ae501b903c7a4d32d7f4f0f8 done
+#12 DONE 14.8s
+air-agent/langgraph-api:tracing-merge-20261020

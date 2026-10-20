@@ -2,18 +2,18 @@
 
 ## 0. 基线与集成分支
 
-- [ ] 0.1 复核 dev HEAD、`langgraph.json` 三图、当前业务授权/MCP 入口、feature 提交与两分支差异；把 HEAD、版本、三图和基线测试记录到新证据目录，验证记录中的图清单与 `langgraph.json` 一致
-- [ ] 0.2 从当前 dev 新建 `feature/intelligent-tracing-dev-merge`，以 `--no-ff` merge `feature/intelligent-tracing-pm25`；验证 merge 无冲突、集成分支可导入三图，并保留 merge commit 供对比
-- [ ] 0.3 统一文档口径：把 `AGENTS.md` 的“六图”旧描述改为以 `langgraph.json` 三图为准；验证文档与 `langgraph.json`、`Dockerfile` 的图清单一致
-- [ ] 0.4 建立本次 G0/G1/G2 证据目录和临时资源清单，明确不 seed/truncate/downgrade 正式库、不 compose down 共享栈；验证记录中有资源所有者、端口/库作用域和回收方式
+- [x] 0.1 复核 dev HEAD、`langgraph.json` 三图、当前业务授权/MCP 入口、feature 提交与两分支差异；把 HEAD、版本、三图和基线测试记录到新证据目录，验证记录中的图清单与 `langgraph.json` 一致
+- [x] 0.2 从当前 dev 新建 `feature/intelligent-tracing-dev-merge`，以 `--no-ff` merge `feature/intelligent-tracing-pm25`；验证 merge 无冲突、集成分支可导入三图，并保留 merge commit 供对比
+- [x] 0.3 统一文档口径：把 `AGENTS.md` 的“六图”旧描述改为以 `langgraph.json` 三图为准；验证文档与 `langgraph.json`、`Dockerfile` 的图清单一致
+- [x] 0.4 建立本次 G0/G1/G2 证据目录和临时资源清单，明确不 seed/truncate/downgrade 正式库、不 compose down 共享栈；验证记录中有资源所有者、端口/库作用域和回收方式
 
 ## 1. Phase 0：dev 依赖升级
 
-- [ ] 1.1 收紧 `pyproject.toml`：`deepagents>=0.7.28,<0.8`、`langchain-quickjs>=0.3.9,<1.0`，并对齐 langchain/core/langgraph 直写下限；验证 `uv lock` 能解析目标版本且声明不再允许 0.7.5
-- [ ] 1.2 用 Python 3.13 重新生成 `uv.lock`，确认 deepagents 0.7.28、langchain 1.4.6、core 1.6.12、langgraph 1.2.16、checkpoint 4.3.0、langsmith 0.14.11、quickjs 0.3.9；验证 `uv sync --frozen --all-extras --python 3.13` 安装结果与锁一致
-- [ ] 1.3 固定 Dockerfile 基础镜像 digest、明确新镜像 tag，并核对 `/api/constraints.txt` 与锁内核心包版本；构建镜像并验证 `/ok` 200、启动日志注册三图、`intelligent-tracing` 未被跳过
-- [ ] 1.4 在 `155214a` 上分别用 0.7.5 与 0.7.28 跑全量单测，按失败集合比较并记录既存 flaky；验证没有新增 tracing/业务权限/图接线失败，且 0.7.28 三图冷导入零网络请求
-- [ ] 1.5 自建空库验证迁移全部应用、`dirty=false`、checkpoint/store/thread/run 表存在；在自建存量副本演练 checkpoint 4.1.1→4.3.0 和回滚限制，验证不在共享正式库执行 downgrade
+- [x] 1.1 收紧 `pyproject.toml`：`deepagents>=0.7.28,<0.8`、`langchain-quickjs>=0.3.9,<1.0`，并对齐 langchain/core/langgraph 直写下限；验证 `uv lock` 能解析目标版本且声明不再允许 0.7.5
+- [x] 1.2 用 Python 3.13 重新生成 `uv.lock`，确认 deepagents 0.7.28、langchain 1.4.6、core 1.6.12、langgraph 1.2.16、checkpoint 4.3.0、langsmith 0.14.11、quickjs 0.3.9；验证 `uv sync --frozen --all-extras --python 3.13` 安装结果与锁一致
+- [x] 1.3 固定 Dockerfile 基础镜像 digest、明确新镜像 tag，并核对 `/api/constraints.txt` 与锁内核心包版本；构建镜像并验证 `/ok` 200、启动日志注册三图、`intelligent-tracing` 未被跳过
+- [x] 1.4 在 `155214a` 上分别用 0.7.5 与 0.7.28 跑全量单测，按失败集合比较并记录既存 flaky；验证没有新增 tracing/业务权限/图接线失败，且 0.7.28 三图冷导入零网络请求
+- [x] 1.5 自建空库验证迁移全部应用、`dirty=false`、checkpoint/store/thread/run 表存在；在自建存量副本演练 checkpoint 4.1.1→4.3.0 和回滚限制，验证不在共享正式库执行 downgrade
 - [ ] 1.6 将 Phase 0 作为独立提交（依赖/锁/镜像/迁移证据），验证该提交不包含 tracing 业务改造，可单独回滚
 
 ## 2. 集成 tracing 与契约适配

@@ -1,0 +1,9 @@
+ applied | maxv | dirty 
+---------+------+-------
+      62 |   63 | f
+(1 row)
+
+存量副本路径：旧镜像（API 0.15.1, checkpoint 4.1.1 时代构建）先在自建空库 tracing_upgrade 上完成 62 条迁移；
+新镜像（API 0.16.2, langgraph-checkpoint 4.3.0）接管同一库：/ok=200，dirty=false，新增迁移 0 条（迁移序列一致）。
+限制：旧镜像内置代码要求已退役的环境键（MCP_SERVER_URL / OPENCODE_GO_DEEPSEEK_V4_FLASH_API_KEY）且缺当前 identity 模块，
+不能作为现成回滚镜像直接启动；回滚必须按旧 uv.lock 重建镜像，未在本轮执行。

@@ -1,0 +1,21 @@
+ applied | maxv | dirty 
+---------+------+-------
+      62 |   63 | f
+(1 row)
+
+        tablename        
+-------------------------
+ assistant
+ assistant_versions
+ checkpoint_blobs
+ checkpoint_delete_queue
+ checkpoint_writes
+ checkpoints
+ cron
+ run
+ schema_migrations
+ store
+ thread
+ thread_ttl
+(12 rows)
+
