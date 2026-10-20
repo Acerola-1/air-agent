@@ -213,11 +213,8 @@ async def test_lead_and_specialist_tool_boundaries():
     assert "- general-purpose:" not in lead_model.bound_tools["task"]
     for name in ("station-data", "grid-data", "meteo-analyst", "evidence-reviewer"):
         assert name in lead_model.bound_tools["task"]
-    assert set(meteo_model.bound_tools) == {
-        "MeteoNarrative",
-        "inspect_meteo_snapshot",
-        "analyze_wind_relation",
-    }
+    # 气象数值由确定性中间件计算；专员不再持有取数工具。
+    assert set(meteo_model.bound_tools) == {"MeteoNarrative"}
     assert set(reviewer_model.bound_tools) == {"EvidenceReview"}
     for tools in (
         lead_model.bound_tools,

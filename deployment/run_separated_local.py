@@ -31,7 +31,9 @@ from urllib.request import Request, urlopen
 
 from dotenv import dotenv_values
 
-BRIDGE_HOST = "192.168.64.1"
+BRIDGE_HOST = (
+    os.environ.get("AIR_AGENT_BRIDGE_HOST", "192.168.64.1").strip() or "192.168.64.1"
+)
 BRIDGE_PORT = 19110
 GRAPH_PORT = 2024
 GRAPH_CONTAINER = "air-agent-langgraph-api"
@@ -441,6 +443,63 @@ def _start_http_service(service: Service, log_dir: Path) -> None:
         log_dir, service.key, "healthy", port=service.port, http_status=200
     )
     _out(f"就绪 {service.key}：HTTP 200。")
+
+
+def _detect_bridge_host(container_cli: str) -> str:
+    """Return the current container-network gateway used by the runtime container.
+
+    Apple container recreates its vmnet bridge after a runtime restart, so the
+    host address seen by containers can move (e.g. 192.168.64.1 → 192.168.65.1).
+    The private bridge must follow the current gateway; falling back keeps the
+    historical address for older installations.
+    """
+
+    def _gateway(payload: Any) -> str:
+        if isinstance(payload, list):
+            if len(payload) != 1:
+                return ""
+            payload = payload[0]
+        if not isinstance(payload, dict):
+            return ""
+        status = payload.get("status")
+        if not isinstance(status, dict):
+            return ""
+        networks = status.get("networks")
+        records = (
+            list(networks.values())
+            if isinstance(networks, dict)
+            else networks
+            if isinstance(networks, list)
+            else []
+        )
+        for record in records:
+            if isinstance(record, dict):
+                gateway = str(record.get("ipv4Gateway") or "").strip()
+                if gateway:
+                    return gateway
+        return ""
+
+    commands = (
+        ("inspect", GRAPH_CONTAINER),
+        ("network", "inspect", "default"),
+    )
+    for command in commands:
+        try:
+            result = subprocess.run(
+                [container_cli, *command],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+            if result.returncode != 0:
+                continue
+            gateway = _gateway(json.loads(result.stdout))
+            if gateway:
+                return gateway
+        except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+            continue
+    return BRIDGE_HOST
 
 
 def _container_ip(container_cli: str, container_name: str) -> str:
@@ -1133,7 +1192,8 @@ def _status() -> int:
         else:
             _out(f"未就绪 {name}：HTTP {status if status is not None else '无响应'}。")
             healthy = False
-    bridge_host = BRIDGE_HOST
+    container_cli = shutil.which("container")
+    bridge_host = _detect_bridge_host(container_cli) if container_cli else BRIDGE_HOST
     if _is_listening(BRIDGE_PORT, (bridge_host, "127.0.0.1")):
         _out(f"就绪 local-host-bridge：{BRIDGE_PORT} TCP 已监听。")
     else:
@@ -1148,6 +1208,11 @@ def _start(args: argparse.Namespace) -> int:
         if not root.is_dir():
             raise LaunchError(f"{label}仓库路径不存在。")
 
+    container_cli = shutil.which("container")
+    if container_cli is None:
+        raise LaunchError("缺少 Apple container CLI。")
+    global BRIDGE_HOST
+    BRIDGE_HOST = _detect_bridge_host(container_cli)
     iam_env, agent_env, rag_env = _validate_host_env(iam_root, agent_root, rag_root)
     graph_path = agent_root / ".env.langgraph"
     _validate_graph_env(graph_path)
@@ -1166,9 +1231,6 @@ def _start(args: argparse.Namespace) -> int:
         iam_root, agent_root, rag_root, iam_env, agent_env, rag_env
     )
     _preflight_builds(services, agent_root, iam_root, rag_root)
-    container_cli = shutil.which("container")
-    if container_cli is None:
-        raise LaunchError("缺少 Apple container CLI。")
     compose_cli = None
     if not _is_listening(GRAPH_PORT):
         compose_cli = shutil.which("container-compose")

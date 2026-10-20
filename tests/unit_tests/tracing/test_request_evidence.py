@@ -365,3 +365,39 @@ def test_region_filter_uses_trusted_catalog_field():
         resolve_station(station_code="S001", region_code="999999", catalog=catalog)
     with pytest.raises(RequestValidationError, match="未找到"):
         resolve_station(station_name="目标站", region_code="999999", catalog=catalog)
+
+
+def test_station_name_allows_region_prefix():
+    catalog = (
+        StationMeta(
+            station_code="S001",
+            name="北区建设指挥部",
+            region_code="410100",
+            region_name="航空港区",
+            latitude=34.75,
+            longitude=113.62,
+            distance_km=0,
+        ),
+    )
+    resolved = resolve_station(
+        station_name="郑州市北区建设指挥部",
+        region_name="郑州市",
+        catalog=catalog,
+    )
+    assert resolved.target is not None
+    assert resolved.target.station_code == "S001"
+    assert resolved.target.region_name == "郑州市"
+
+
+def test_normalize_region_and_station_splits_city_prefix():
+    from intelligent_tracing.tools import _normalize_region_and_station
+
+    region, station = _normalize_region_and_station(
+        "郑州市北区建设指挥部", "郑州市北区建设指挥部"
+    )
+    assert region == "郑州市"
+    assert station == "北区建设指挥部"
+    assert _normalize_region_and_station("郑州市", "北区建设指挥部") == (
+        "郑州市",
+        "北区建设指挥部",
+    )

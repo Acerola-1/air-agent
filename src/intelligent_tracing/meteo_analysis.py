@@ -326,7 +326,8 @@ def analyze_meteo(
         sample_count=wind_stats.paired_samples,
         derived_from=(weather_evidence.evidence_id,),
     )
-    limitations = list(quality.flags)
+    # pblh_sentinel 是内部质量标志；对用户只保留可解释的“边界层不可用”。
+    limitations = [flag for flag in quality.flags if flag != "pblh_sentinel"]
     limitations.extend(wind_stats.limitations)
     if quality.pblh_unavailable:
         limitations.append("pblh_unavailable")

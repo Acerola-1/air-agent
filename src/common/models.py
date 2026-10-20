@@ -32,6 +32,10 @@ class ModelRegistry:
         timeout=120,
         # 重试由节点执行并再次验证授权；SDK 内部重发会绕过运行守卫。
         max_retries=0,
+        # 当前网关在“长系统提示 + 多工具”流式调用中会丢失 tool_call 参数
+        # （G1 实测 freeze_tracing_request 收到空 args）。带工具时改用非流式
+        # 请求；纯文本回答仍可流式。
+        disable_streaming="tool_calling",
         http_async_client=httpx.AsyncClient(auth=TenantOutboundAuth()),
         http_client=httpx.Client(auth=TenantOutboundAuth()),
     )

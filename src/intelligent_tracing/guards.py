@@ -69,34 +69,87 @@ class NoFilesystemToolsMiddleware(FilesystemMiddleware):
         self.tools = []
 
 
+class _RunBudgetState:
+    """Per-run counters; a graph instance is shared by concurrent runs."""
+
+    __slots__ = ("calls", "task_calls", "started", "slots")
+
+    def __init__(self, max_concurrency: int) -> None:
+        self.calls = 0
+        self.task_calls = 0
+        self.started = time.monotonic()
+        self.slots = asyncio.Semaphore(max(1, max_concurrency))
+
+
 class TracingBudgetMiddleware(AgentMiddleware):
     """Bound lead model calls and return a validated partial-result state."""
 
     def __init__(self, budget: BudgetPolicy) -> None:
-        """Bind the frozen budget limits and start the wall clock."""
+        """Bind the frozen budget limits; clocks start per run."""
         self._budget = budget
-        self._calls = 0
-        self._task_calls = 0
-        self._started = time.monotonic()
-        self._task_slots = asyncio.Semaphore(max(1, budget.max_concurrency))
+        self._runs: dict[str, _RunBudgetState] = {}
 
-    def _timed_out(self) -> bool:
-        return time.monotonic() - self._started > self._budget.total_timeout_seconds
+    @staticmethod
+    def _current_config() -> dict[str, Any]:
+        try:
+            from langgraph.config import get_config
+
+            return dict(get_config() or {})
+        except Exception:  # pragma: no cover - offline direct calls
+            return {}
+
+    @staticmethod
+    def _run_key(config: dict[str, Any] | None = None) -> str:
+        cfg = dict(config or {})
+        configurable = cfg.get("configurable") or {}
+        metadata = cfg.get("metadata") or {}
+        return str(
+            configurable.get("run_id")
+            or metadata.get("run_id")
+            or configurable.get("thread_id")
+            or metadata.get("thread_id")
+            or "default"
+        )
+
+    def _state(self) -> _RunBudgetState:
+        key = self._run_key(self._current_config())
+        state = self._runs.get(key)
+        if state is None:
+            state = _RunBudgetState(self._budget.max_concurrency)
+            self._runs[key] = state
+        return state
+
+    async def abefore_agent(self, state: Any, runtime: Any = None) -> None:
+        """Reset budget counters at the start of every run."""
+        config = getattr(runtime, "config", None)
+        key = self._run_key(config if isinstance(config, dict) else None)
+        self._runs[key] = _RunBudgetState(self._budget.max_concurrency)
+        return None
+
+    async def aafter_agent(self, state: Any, runtime: Any = None) -> None:
+        """Drop the finished run's counters; a later run starts fresh."""
+        config = getattr(runtime, "config", None)
+        key = self._run_key(config if isinstance(config, dict) else None)
+        self._runs.pop(key, None)
+        return None
+
+    def _timed_out(self, state: _RunBudgetState) -> bool:
+        return time.monotonic() - state.started > self._budget.total_timeout_seconds
 
     async def awrap_model_call(self, request: Any, handler: Any) -> Any:
         """Count model calls; on exhaustion stop the loop without retrying."""
-        self._calls += 1
-        remaining = self._remaining()
-        if remaining <= 0 or self._calls > self._budget.max_model_calls:
+        state = self._state()
+        state.calls += 1
+        remaining = self._budget.total_timeout_seconds - (
+            time.monotonic() - state.started
+        )
+        if remaining <= 0 or state.calls > self._budget.max_model_calls:
             return self._stop_model()
         try:
             async with asyncio.timeout(remaining):
                 return await handler(request)
         except TimeoutError:
             return self._stop_model()
-
-    def _remaining(self) -> float:
-        return self._budget.total_timeout_seconds - (time.monotonic() - self._started)
 
     @staticmethod
     def _stop_model() -> ExtendedModelResponse:
@@ -114,16 +167,17 @@ class TracingBudgetMiddleware(AgentMiddleware):
 
     async def awrap_tool_call(self, request: Any, handler: Any) -> Any:
         """Bound task count/concurrency, total time and transient retries."""
+        state = self._state()
         call = getattr(request, "tool_call", {}) or {}
         name = str(call.get("name") or "")
         tool_call_id = str(call.get("id") or "")
-        if self._timed_out():
+        if self._timed_out(state):
             return self._stop_tool(tool_call_id, name, "总超时已耗尽")
         if name == "task":
-            self._task_calls += 1
-            if self._task_calls > self._budget.max_subagent_tasks:
+            state.task_calls += 1
+            if state.task_calls > self._budget.max_subagent_tasks:
                 return self._stop_tool(tool_call_id, name, "task 数已达预算上限")
-            async with self._task_slots:
+            async with state.slots:
                 return await handler(request)
         attempts = 0
         while True:

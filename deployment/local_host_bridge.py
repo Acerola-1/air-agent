@@ -38,7 +38,23 @@ _CONFIG_KEYS = {
     "allowed_models",
 }
 _ROUTE_PATHS = frozenset({IAM_PATH, MODEL_PATH})
-_ALLOWED_BIND_HOSTS = frozenset({"127.0.0.1", "192.168.64.1"})
+
+
+def _allowed_bind_host(host: str) -> bool:
+    """Allow loopback or a concrete private bridge address, never 0.0.0.0.
+
+    Container networks can move between host bridge subnets after an Apple
+    `container` restart; the source-IP allowlist, not the bind address, is the
+    authorization boundary.  Refuse unspecified/global/multicast addresses so
+    the bridge is never exposed on a public interface by typo.
+    """
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        return False
+    return address.is_loopback or (
+        address.is_private and not address.is_unspecified and not address.is_multicast
+    )
 
 
 class ConfigError(ValueError):
@@ -110,7 +126,7 @@ def _parse_config(raw: bytes) -> BridgeConfig:
         raise ConfigError("configuration shape mismatch")
 
     bind_host = data["bind_host"]
-    if not isinstance(bind_host, str) or bind_host not in _ALLOWED_BIND_HOSTS:
+    if not isinstance(bind_host, str) or not _allowed_bind_host(bind_host):
         raise ConfigError("invalid bind_host")
     bind_port = data["bind_port"]
     if (

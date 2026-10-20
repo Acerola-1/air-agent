@@ -11,7 +11,7 @@ from langchain.tools import ToolRuntime
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import StructuredTool
 from langgraph.types import Command
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from common.identity.runtime import identity_from_config
 from intelligent_tracing.claims import build_claim_allowlist, fallback_plan
@@ -43,6 +43,12 @@ from intelligent_tracing.schemas import (
 from intelligent_tracing.sources import DataSourceUnavailable
 
 
+class _EmptyArgs(BaseModel):
+    """Tool with no model-provided arguments."""
+
+    model_config = ConfigDict(extra="ignore", frozen=True)
+
+
 class FreezeRequestInput(BaseModel):
     """Candidate fields accepted from natural-language request parsing.
 
@@ -52,10 +58,14 @@ class FreezeRequestInput(BaseModel):
 
     model_config = ConfigDict(extra="ignore", frozen=True)
 
-    station_code: str = ""
-    station_name: str = ""
-    region_code: str = ""
-    region_name: str = ""
+    station_code: str = Field(default="", description="站点代码；与站点名称二选一")
+    station_name: str = Field(
+        default="", description="站点名称，例如“北区建设指挥部”，不要包含城市名"
+    )
+    region_code: str = Field(default="", description="行政区代码（可选）")
+    region_name: str = Field(
+        default="", description="行政区中文名，例如“郑州市”；不要填站点名称"
+    )
     pollutant: str = "pm2.5"
     start: datetime
     end: datetime
@@ -109,6 +119,22 @@ def run_id_from_config(config: dict[str, Any]) -> str:
         or configurable.get("langgraph_run_id")
         or ""
     )
+
+
+def _normalize_region_and_station(
+    region_name: str, station_name: str
+) -> tuple[str, str]:
+    """Split a combined "郑州市某站" input into region and station parts."""
+    region = (region_name or "").strip()
+    station = (station_name or "").strip()
+    for separator in ("市", "区", "县"):
+        index = region.find(separator)
+        if index > 0 and index + 1 < len(region):
+            prefix = region[: index + 1]
+            if station.startswith(prefix) and len(station) > len(prefix):
+                station = station[len(prefix) :].strip()
+            return prefix, station
+    return region, station
 
 
 def build_freeze_request_tool(
@@ -165,14 +191,17 @@ def build_freeze_request_tool(
             if identity_from_config(config) is None:
                 raise TracingScopeError("缺少已认证运行身份，无法冻结溯源请求")
             binding = business_binding_from_config(config)
+            region_name, station_name = _normalize_region_and_station(
+                candidate.region_name, candidate.station_name
+            )
             catalog = await provider.list_stations(
-                config=config, region_name=candidate.region_name
+                config=config, region_name=region_name
             )
             resolution = resolve_station(
                 station_code=candidate.station_code,
-                station_name=candidate.station_name,
+                station_name=station_name,
                 region_code=candidate.region_code,
-                region_name=candidate.region_name,
+                region_name=region_name,
                 catalog=catalog,
             )
         except TracingScopeError as exc:
@@ -296,6 +325,7 @@ def build_policy_summary_tool(policy: AnalysisPolicy) -> StructuredTool:
         func=_summary,
         name="get_analysis_policy_summary",
         description=f"返回冻结的 {policy.version} 阈值、口径和固定限制。",
+        args_schema=_EmptyArgs,
         infer_schema=False,
     )
 

@@ -7,13 +7,10 @@ from datetime import UTC, datetime
 from typing import Annotated, Any, NotRequired, TypedDict
 
 from langchain.agents.middleware.types import AgentMiddleware
-from langchain.tools import ToolRuntime
-from langchain_core.messages import AIMessage, AnyMessage
+from langchain_core.messages import AIMessage, AnyMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools import StructuredTool
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
-from pydantic import BaseModel, ConfigDict
 
 from common.middleware.tenant_runtime_guard_middleware import (
     TenantRuntimeGuardMiddleware,
@@ -272,11 +269,11 @@ def build_grid_runnable(
 
 
 class MeteoDeterministicMiddleware(AgentMiddleware):
-    """Compute authoritative meteo findings after the LLM analyst runs.
+    """Compute authoritative meteo findings and inject a verified summary.
 
-    The model may call restricted meteo tools to inspect the snapshot, but the
-    numbers published from this subagent always come from this deterministic
-    node-like middleware, never from model prose.
+    The subagent has no data tools.  The middleware fetches the frozen snapshot,
+    computes wind/lag findings deterministically, injects a compact summary into
+    the model's system message, and publishes the same findings on completion.
     """
 
     def __init__(
@@ -291,14 +288,38 @@ class MeteoDeterministicMiddleware(AgentMiddleware):
         self._source = source
         self._registry = registry
         self._policy = policy
+        self._runs: dict[str, tuple[datetime, str, MeteoFindings]] = {}
 
-    async def aafter_agent(
-        self, state: TracingSubgraphState, runtime: Any = None
-    ) -> dict[str, Any] | None:
-        """Register and return meteo findings for the parent state."""
-        request = state.get("request")
-        scope = state.get("scope")
-        station = state.get("station_findings")
+    @staticmethod
+    def _run_key(config: Any) -> str:
+        cfg = dict(config or {}) if isinstance(config, dict) else {}
+        configurable = cfg.get("configurable") or {}
+        metadata = cfg.get("metadata") or {}
+        return str(
+            configurable.get("run_id")
+            or metadata.get("run_id")
+            or configurable.get("thread_id")
+            or "default"
+        )
+
+    @staticmethod
+    def _summary(findings: MeteoFindings) -> str:
+        wind = findings.wind
+        if wind is None:
+            return "确定性气象摘要：风场证据不足或不可用，只能说明限制。"
+        return (
+            "确定性气象摘要（不得改写数值）："
+            f"配对样本={wind.paired_samples}，静风比例={wind.calm_ratio:.2f}，"
+            f"方向扇区覆盖={wind.sector_coverage:.2f}，"
+            f"方向级结论={'可用' if wind.direction_claim_allowed else '不可用'}。"
+        )
+
+    async def _analyze(
+        self, state: Any, config: dict[str, Any] | None
+    ) -> tuple[datetime, str, MeteoFindings] | None:
+        request = state.get("request") if hasattr(state, "get") else None
+        scope = state.get("scope") if hasattr(state, "get") else None
+        station = state.get("station_findings") if hasattr(state, "get") else None
         if request is None or scope is None or station is None:
             return None
         started = datetime.now(UTC)
@@ -316,86 +337,56 @@ class MeteoDeterministicMiddleware(AgentMiddleware):
         except Exception as exc:  # noqa: BLE001 - partial failure must remain explicit
             findings = unavailable_meteo_findings(request)
             failure = type(exc).__name__
+        result = (started, failure, findings)
+        self._runs[self._run_key(config)] = result
+        return result
+
+    async def awrap_model_call(self, request: Any, handler: Any) -> Any:
+        """Inject the deterministic summary before the analyst narrates."""
+        config = current_run_config(getattr(request, "runtime", None))
+        key = self._run_key(config)
+        result = self._runs.get(key)
+        if result is None:
+            result = await self._analyze(getattr(request, "state", {}), config)
+        if result is not None:
+            summary = SystemMessage(content=self._summary(result[2]))
+            existing = getattr(request, "system_message", None)
+            content = existing.content if existing is not None else ""
+            request = request.override(
+                system_message=SystemMessage(
+                    content=f"{content}\n\n{summary.content}".strip()
+                )
+            )
+        return await handler(request)
+
+    async def aafter_agent(
+        self, state: TracingSubgraphState, runtime: Any = None
+    ) -> dict[str, Any] | None:
+        """Publish deterministic findings and the linked child execution."""
+        request = state.get("request")
+        if request is None:
+            return None
+        config = current_run_config(runtime)
+        key = self._run_key(config)
+        result = self._runs.pop(key, None)
+        if result is None:
+            result = await self._analyze(state, config)
+        if result is None:
+            return None
+        started, failure, findings = result
         return {
             "meteo_findings": findings,
             "child_executions": (
                 build_child_execution(
                     role="meteo-analyst",
                     request=request,
-                    config=current_run_config(runtime),
+                    config=config,
                     started_at=started,
                     status="failed" if failure else "succeeded",
                     error_class=failure,
                 ),
             ),
         }
-
-
-class _EmptyToolInput(BaseModel):
-    """No model-provided arguments; context comes from ToolRuntime.state."""
-
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-
-def build_meteo_tools(
-    *,
-    source: TracingDataSource,
-    registry: EvidenceRegistry,
-    policy: AnalysisPolicy,
-) -> list[Any]:
-    """Build the restricted meteo tools exposed to the analyst model."""
-
-    async def _inspect(_input: _EmptyToolInput, runtime: ToolRuntime) -> str:
-        request = runtime.state.get("request")
-        scope = runtime.state.get("scope")
-        if request is None or scope is None:
-            return "缺少已冻结请求或可信作用域，拒绝读取气象快照。"
-        bundle = await source.fetch(request, scope=scope, policy=policy)
-        return (
-            f"气象行数={len(bundle.weather)}，模式行数={len(bundle.nwp)}，"
-            f"来源={sorted({row.source_type for row in bundle.weather + bundle.nwp})}。"
-        )
-
-    async def _wind(_input: _EmptyToolInput, runtime: ToolRuntime) -> str:
-        request = runtime.state.get("request")
-        scope = runtime.state.get("scope")
-        station = runtime.state.get("station_findings")
-        if request is None or scope is None or station is None:
-            return "缺少站点发现，暂不能计算风场关联。"
-        bundle = await source.fetch(request, scope=scope, policy=policy)
-        findings = analyze_meteo(
-            request,
-            bundle,
-            station,
-            registry=registry,
-            scope=scope,
-            policy=policy,
-        )
-        wind = findings.wind
-        if wind is None:
-            return "风场证据不足。"
-        return (
-            f"配对样本={wind.paired_samples}，静风比例={wind.calm_ratio:.2f}，"
-            f"方向扇区覆盖={wind.sector_coverage:.2f}，"
-            f"方向级结论={'可用' if wind.direction_claim_allowed else '不可用'}。"
-        )
-
-    return [
-        StructuredTool.from_function(
-            coroutine=_inspect,
-            name="inspect_meteo_snapshot",
-            description="查看冻结气象快照的行数、来源等摘要，不返回原始数组。",
-            args_schema=_EmptyToolInput,
-            infer_schema=False,
-        ),
-        StructuredTool.from_function(
-            coroutine=_wind,
-            name="analyze_wind_relation",
-            description="运行确定性风场/扇区/滞后关联分析，返回样本与限制摘要。",
-            args_schema=_EmptyToolInput,
-            infer_schema=False,
-        ),
-    ]
 
 
 class ReviewerChildExecutionMiddleware(AgentMiddleware):
@@ -442,12 +433,11 @@ def build_meteo_subagent(
             "不得自行计算数值、扩大数据选择或提升结论等级。"
         ),
         "model": model,
-        "tools": build_meteo_tools(source=source, registry=registry, policy=policy),
+        "tools": [],
         "system_prompt": (
-            "你是污染溯源的气象分析专员。你可以调用受限工具查看气象快照和运行"
-            "确定性风场关联分析。所有数值以工具结果为准，不得自行推算、补齐缺测、"
-            "推断源距离或确认污染来源。只返回对分析有用的气象条件、风场一致性、"
-            "滞后关联、反证与限制。"
+            "你是污染溯源的气象分析专员。系统已给出确定性气象摘要，所有数值以"
+            "摘要为准，不得自行推算、补齐缺测、推断源距离或确认污染来源。只返回"
+            "对分析有用的气象条件、风场一致性、滞后关联、反证与限制。"
         ),
         "response_format": MeteoNarrative,
         "middleware": [

@@ -38,6 +38,15 @@ class StationResolution:
     ambiguous: bool = False
 
 
+def _strip_region_prefix(name: str, region_name: str) -> str:
+    """Allow a user to say 郑州市X when the catalogue stores only X."""
+    text = name.strip()
+    prefix = region_name.strip()
+    if prefix and text.startswith(prefix) and len(text) > len(prefix):
+        return text[len(prefix) :].strip()
+    return text
+
+
 def resolve_station(
     *,
     station_code: str = "",
@@ -74,6 +83,15 @@ def resolve_station(
         for s in catalog
         if s.name == station_name and (not region_code or s.region_code == region_code)
     ]
+    if not matches:
+        normalized = _strip_region_prefix(station_name, region_name)
+        if normalized != station_name:
+            matches = [
+                s
+                for s in catalog
+                if s.name == normalized
+                and (not region_code or s.region_code == region_code)
+            ]
     if len(matches) == 1:
         station = matches[0]
         resolved_region = station.region_code or region_code

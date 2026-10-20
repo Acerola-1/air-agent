@@ -219,3 +219,34 @@ async def test_total_timeout_cancels_long_model_call():
     response = await middleware.awrap_model_call(SimpleNamespace(), slow)
     assert response.command.update["budget_exhausted"] is True
     assert time.monotonic() - started < 0.3
+
+
+@pytest.mark.anyio
+async def test_budget_clock_resets_per_run_on_shared_graph_instance():
+    import asyncio
+    import time
+    from types import SimpleNamespace
+
+    from intelligent_tracing.guards import TracingBudgetMiddleware
+    from intelligent_tracing.policy import BudgetPolicy
+
+    middleware = TracingBudgetMiddleware(
+        BudgetPolicy(total_timeout_seconds=0.2, max_model_calls=10)
+    )
+
+    async def handler(_request):
+        return "ok"
+
+    runtime = SimpleNamespace(config={"configurable": {"run_id": "run-1"}})
+    middleware._current_config = lambda: runtime.config  # type: ignore[method-assign]
+    await middleware.abefore_agent({}, runtime)
+    time.sleep(0.3)
+    stopped = await middleware.awrap_model_call(SimpleNamespace(), handler)
+    assert stopped.command.update["budget_exhausted"] is True
+
+    # 同一中间件实例的下一次运行重新计时，不继承上一次已耗尽的时钟。
+    next_runtime = SimpleNamespace(config={"configurable": {"run_id": "run-2"}})
+    middleware._current_config = lambda: next_runtime.config  # type: ignore[method-assign]
+    await middleware.abefore_agent({}, next_runtime)
+    assert await middleware.awrap_model_call(SimpleNamespace(), handler) == "ok"
+    await asyncio.sleep(0)

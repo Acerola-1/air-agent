@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import uuid
 from collections.abc import Awaitable, Callable
 from typing import Any
@@ -29,6 +30,8 @@ from intelligent_tracing.schemas import (
     TracingRequest,
     ValidatedReport,
 )
+
+logger = logging.getLogger(__name__)
 
 _CLARIFY_TEXT = (
     "请补充或确认站点代码/名称、分析时间范围（含时区）和调查半径；"
@@ -158,6 +161,11 @@ class TracingPublishMiddleware(AgentMiddleware):
             return {}
         current = await self._current_allowlist(state)
         run_id = str(config.get("configurable", {}).get("run_id") or "")
+        if current is None:
+            logger.warning(
+                "tracing publication: allowlist unavailable for analysis_id=%s",
+                getattr(request, "analysis_id", ""),
+            )
         if report is None:
             report = await self._build_fallback(state, run_id=run_id)
         elif current is not None:
@@ -248,6 +256,10 @@ class TracingPublishMiddleware(AgentMiddleware):
             run_id=run_id,
         )
         if not result.ok or result.report is None:
+            logger.warning(
+                "tracing publication: fallback rejected errors=%s",
+                getattr(result, "errors", ()),
+            )
             return None
         await self._report_store.save(result.report)
         return result.report
@@ -257,6 +269,7 @@ class TracingPublishMiddleware(AgentMiddleware):
     ) -> ValidatedReport | None:
         current = await self._current_allowlist(state)
         if current is None:
+            logger.warning("tracing publication: fallback allowlist missing")
             return None
         request, scope, allowlist = current
         return await self._render_fallback(request, scope, allowlist, run_id=run_id)
