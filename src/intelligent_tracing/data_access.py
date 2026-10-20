@@ -345,12 +345,15 @@ class StationCatalogProvider:
         if cached is not None and time.monotonic() - cached[0] <= self._ttl:
             self._cache.move_to_end(key)
             return cached[1]
-        payload = await _call_tool(
-            self._executor,
-            config,
-            TRACING_PRODUCT_TOOLS["station_catalog"],
-            {"region": region, "stationType": self._station_type},
-        )
+        try:
+            payload = await _call_tool(
+                self._executor,
+                config,
+                TRACING_PRODUCT_TOOLS["station_catalog"],
+                {"region": region, "stationType": self._station_type},
+            )
+        except MCPToolError as exc:
+            raise DataSourceUnavailable("station_catalog_unavailable") from exc
         stations = tuple(self._normalize(payload, region))
         if not stations:
             raise DataSourceUnavailable("授权站点目录为空")
@@ -433,16 +436,19 @@ class BusinessMCPDataSource:
         source_tools["station_catalog"] = TRACING_PRODUCT_TOOLS["station_catalog"]
 
         target = request.target
-        target_obs, tool = await self._station_series(
-            config,
-            request,
-            station_code=target.station_code,
-            region=region,
-            max_retries=retries,
-        )
+        try:
+            target_obs, tool = await self._station_series(
+                config,
+                request,
+                station_code=target.station_code,
+                region=region,
+                max_retries=retries,
+            )
+        except MCPToolError as exc:
+            raise DataSourceUnavailable("station_series_unavailable") from exc
         source_tools["station_series"] = tool
         if not target_obs:
-            raise DataSourceUnavailable("目标站小时数据不可用")
+            raise DataSourceUnavailable("station_series_empty")
 
         neighbors: dict[str, tuple[HourlyObservation, ...]] = {}
         selected = [

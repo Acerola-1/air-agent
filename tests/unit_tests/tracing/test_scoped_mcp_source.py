@@ -324,3 +324,28 @@ def test_payload_parse_rejects_business_failure():
             "t", json.dumps({"success": False, "code": 400, "msg": "参数错误"})
         )
     assert excinfo.value.transient is False
+
+
+@pytest.mark.anyio
+async def test_target_series_failure_is_explicit_not_empty_success(monkeypatch):
+    class FailingExecutor(RecordingExecutor):
+        async def __call__(self, server_key, tool_id, args, config):
+            if tool_id == TRACING_PRODUCT_TOOLS["station_series"]:
+                self.calls.append((server_key, tool_id, dict(args)))
+                return {"success": False, "code": 400, "msg": "参数错误"}
+            return await super().__call__(server_key, tool_id, args, config)
+
+    executor = FailingExecutor()
+    source = BusinessMCPDataSource(
+        station_catalog=StaticStationCatalog(_catalog()), executor=executor
+    )
+    monkeypatch.setattr(data_access, "_run_config", lambda: _config())
+    with pytest.raises(DataSourceUnavailable, match="station_series_unavailable"):
+        await source.fetch(make_request(), scope=make_scope(), policy=DEFAULT_POLICY)
+    # 参数/权限错误不重试：目标站序列只调用一次。
+    series_calls = [
+        call
+        for call in executor.calls
+        if call[1] == TRACING_PRODUCT_TOOLS["station_series"]
+    ]
+    assert len(series_calls) == 1

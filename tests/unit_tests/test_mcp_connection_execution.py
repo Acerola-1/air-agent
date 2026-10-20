@@ -573,3 +573,32 @@ async def test_user_empty_mcp_set_blocks_before_network(
             SERVER_KEY, "query_air", {"user_id": "u", "region": "x"}, config
         )
     assert await fixture_server.call_count("subject-a") == 0
+
+
+async def test_tracing_business_rejects_trajectory_with_zero_calls(
+    factory, fixture_server, monkeypatch
+) -> None:
+    from dataclasses import replace
+
+    from common.business_registry import TRACING_EXCLUDED_TOOLS
+
+    _configure(monkeypatch)
+    monkeypatch.setenv("FIXTURE_TOK_A", "tok-tenant-a")
+    tracing_permission = "agent:business:intelligent-tracing:use"
+    identity = replace(
+        _identity(permissions=frozenset({tracing_permission})),
+        business_code="intelligent-tracing",
+        business_permission=tracing_permission,
+        business_graph="intelligent-tracing",
+    )
+    config = _run_config(identity)
+    for tool in TRACING_EXCLUDED_TOOLS:
+        with pytest.raises(McpAuthorizationError):
+            await execute_mcp_tool(SERVER_KEY, tool, {}, config)
+    assert await fixture_server.call_count("subject-a") == 0
+
+    # 正向控制：同一身份调用未排除的查询工具仍会真实发送。
+    await execute_mcp_tool(
+        SERVER_KEY, "helper_get_latest_time", {"user_id": "u-1", "region": "r"}, config
+    )
+    assert await fixture_server.call_count("subject-a") == 1
