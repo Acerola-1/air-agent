@@ -56,28 +56,29 @@ class InMemoryReportStore:
         return report
 
 
-class ArtifactReportStore:
-    """G1 adapter over the existing scoped artifact table.
+class PersistentReportStore:
+    """Production report store over the scoped artifact table.
 
-    The adapter is intentionally thin: it delegates storage ownership and
-    retention to ``common.storage.artifact_db`` and re-verifies the report
-    digest/scope on read.  It is not exercised by G0 fixture tests.
+    Ownership and retention stay in ``common.storage.artifact_db``; this store
+    only adds report-specific validation (run binding, scope, digest, kind).
     """
 
-    async def save(self, report: ValidatedReport, *, run_id: str) -> str:
-        """Persist the report as a validated-report artifact."""
+    async def save(self, report: ValidatedReport) -> None:
+        """Persist one validated report; never store an unbound or tampered one."""
         from common.storage.artifact_db import save_tool_artifact
 
         if report.content_sha256 != report.compute_digest():
             raise ReportRereadError("报告摘要不一致，拒绝持久化")
-        return await save_tool_artifact(
+        if not report.run_id:
+            raise ReportRereadError("报告缺少运行归属，拒绝持久化")
+        await save_tool_artifact(
             tool_call_id=report.report_id,
             tool_name="validated_tracing_report",
             raw_payload=report.model_dump_json(),
             tenant_id=report.scope.tenant_id,
             user_id=report.scope.user_id,
             thread_id=report.scope.thread_id,
-            run_id=run_id,
+            run_id=report.run_id,
             summary=report.body_markdown[:500],
             kind="validated_report",
             processing_metadata={
@@ -86,30 +87,47 @@ class ArtifactReportStore:
                 "policy_version": report.policy_version,
                 "gate_version": report.gate_version,
                 "content_sha256": report.content_sha256,
+                "business_code": report.scope.business_code,
+                "business_policy_version": report.scope.business_policy_version,
             },
         )
 
     async def get(
-        self,
-        report_id: str,
-        *,
-        scope: RuntimeScope,
-        run_id: str,
+        self, report_id: str, *, scope: RuntimeScope
     ) -> ValidatedReport | None:
-        """Read and re-verify a report from the scoped artifact table."""
-        from common.storage.artifact_db import get_tool_artifact
-
-        record = await get_tool_artifact(
-            report_id,
-            tenant_id=scope.tenant_id,
-            user_id=scope.user_id,
-            thread_id=scope.thread_id,
+        """Read by report id within the current scope and re-verify its digest."""
+        from common.storage.artifact_db import (
+            ArtifactExpired,
+            get_tool_artifact_by_call,
         )
-        if record is None:
+
+        try:
+            row = await get_tool_artifact_by_call(
+                report_id,
+                tenant_id=scope.tenant_id,
+                user_id=scope.user_id,
+                thread_id=scope.thread_id,
+            )
+        except ArtifactExpired as exc:
+            raise ReportRereadError("报告已过期") from exc
+        if row is None:
             return None
-        report = ValidatedReport.model_validate_json(record["raw_payload"])
+        if row.get("kind") != "validated_report":
+            raise ReportRereadError("归档不是已验证报告")
+        report = ValidatedReport.model_validate_json(row["raw_payload"])
         if report.scope != scope:
             raise ReportRereadError("报告作用域与当前身份不一致")
         if report.content_sha256 != report.compute_digest():
             raise ReportRereadError("报告内容摘要校验失败")
+        if not report.run_id or str(row.get("run_id") or "") != report.run_id:
+            raise ReportRereadError("报告运行归属不一致")
         return report
+
+
+def default_report_store() -> ReportStore:
+    """Choose the production store when the runtime DB is configured."""
+    import os
+
+    if os.getenv("RUNTIME_DATABASE_URI"):
+        return PersistentReportStore()
+    return InMemoryReportStore()

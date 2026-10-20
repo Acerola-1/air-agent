@@ -17,11 +17,25 @@ from intelligent_tracing.schemas import (
     TracingRequest,
 )
 
+BUSINESS_CODE = "intelligent-tracing"
+BUSINESS_POLICY_VERSION = "2026-10-19.1"
+BUSINESS_PERMISSION = "agent:business:intelligent-tracing:use"
+
 TZ = ZoneInfo("Asia/Shanghai")
 START = datetime(2026, 10, 1, 0, 0, tzinfo=TZ)
 END = datetime(2026, 10, 2, 0, 0, tzinfo=TZ)
 BASELINE_START = START - timedelta(days=7)
 ANALYSIS_ID = "analysis-pm25-001"
+
+
+async def allow_publication(config, scope) -> bool:
+    """G0 lifecycle probe: controlled runs have no ledger row to consult."""
+    return True
+
+
+async def deny_publication(config, scope) -> bool:
+    """Deny probe for suppression tests."""
+    return False
 
 
 def hourly_values(start: datetime, count: int, factory) -> tuple:
@@ -321,6 +335,7 @@ def make_request(
             station_code="S001",
             station_name="目标站",
             region_code="410100",
+            region_name="测试市",
             latitude=34.75,
             longitude=113.62,
             coordinate_source="fixture",
@@ -338,8 +353,12 @@ def make_request(
             if baseline
             else None
         ),
-        analysis_policy_version="analysis-policy-v1",
+        analysis_policy_version="analysis-policy-v2",
         capability_snapshot_ref="sel-001",
+        business_code=BUSINESS_CODE,
+        business_policy_version=BUSINESS_POLICY_VERSION,
+        business_permission=BUSINESS_PERMISSION,
+        graph_id="intelligent-tracing",
     )
     return request.frozen()
 
@@ -355,6 +374,9 @@ def make_scope(
         context_version=context_version,
         epoch=epoch,
         membership_id="membership-a",
+        business_code=BUSINESS_CODE,
+        business_policy_version=BUSINESS_POLICY_VERSION,
+        business_permission=BUSINESS_PERMISSION,
     )
 
 

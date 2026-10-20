@@ -6,7 +6,7 @@ import asyncio
 import json
 from collections import OrderedDict
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Protocol
+from typing import Protocol
 
 from intelligent_tracing.policy import AnalysisPolicy
 from intelligent_tracing.schemas import DataBundle, RuntimeScope, TracingRequest
@@ -77,104 +77,6 @@ def load_fixture_bundle(path: Path) -> DataBundle:
     return DataBundle.model_validate(payload)
 
 
-class ScopedMCPDataSource:
-    """Scoped MCP adapter skeleton with dependency-intersection checks.
-
-    Real tool names and response shapes vary by deployment, so the mapping and
-    normalizer are explicit configuration.  The adapter validates the current
-    capability snapshot **before** any executor call and refuses excluded
-    dependencies without a network attempt.
-    """
-
-    def __init__(
-        self,
-        *,
-        tool_map: dict[str, str],
-        normalizer: Callable[[str, Any, TracingRequest], DataBundle],
-        executor: Callable[[str, dict[str, Any], dict[str, Any]], Awaitable[Any]]
-        | None = None,
-        allow_unscoped: bool = False,
-    ) -> None:
-        """Bind product-to-tool mapping and a scoped executor."""
-        forbidden = ("trajectory", "pscf")
-        for product, tool_id in tool_map.items():
-            if any(word in tool_id.lower() for word in forbidden):
-                raise ValueError(f"禁止装配轨迹/PSCF 工具: {product}={tool_id}")
-        self._tool_map = dict(tool_map)
-        self._normalizer = normalizer
-        self._executor = executor
-        self._allow_unscoped = allow_unscoped
-
-    def _run_config(self) -> dict[str, Any]:
-        try:
-            from langgraph.config import get_config
-
-            return dict(get_config() or {})
-        except Exception:  # pragma: no cover - offline direct calls
-            return {}
-
-    def _check_dependencies(self, config: dict[str, Any]) -> None:
-        configurable = config.get("configurable") or {}
-        metadata = config.get("metadata") or {}
-        mode = (
-            configurable.get("capability_mcp_mode")
-            or metadata.get("capability_mcp_mode")
-            or "auto"
-        )
-        if mode != "allowlist":
-            if self._allow_unscoped:
-                return
-            raise DataSourceUnavailable("capability_mcp_mode_not_allowlist")
-        allowed = set(
-            configurable.get("capability_tool_ids")
-            or metadata.get("capability_tool_ids")
-            or []
-        )
-        missing = [
-            product
-            for product, tool_id in self._tool_map.items()
-            if tool_id not in allowed
-        ]
-        if missing:
-            raise DataSourceUnavailable(
-                "dependency_excluded:" + ",".join(sorted(missing))
-            )
-
-    async def fetch(
-        self,
-        request: TracingRequest,
-        *,
-        scope: RuntimeScope,
-        policy: AnalysisPolicy,
-    ) -> DataBundle:
-        """Check all dependencies, then execute through the scoped executor."""
-        config = self._run_config()
-        self._check_dependencies(config)
-        if self._executor is None:
-            raise DataSourceUnavailable("mcp_source_not_configured")
-        products: dict[str, Any] = {}
-        args = {
-            "station": request.target.station_code,
-            "start": request.time_window.start.isoformat(),
-            "end": request.time_window.end.isoformat(),
-            "radius_km": request.neighbor_radius_km,
-        }
-        for product, tool_id in self._tool_map.items():
-            attempts = 0
-            while True:
-                try:
-                    products[product] = await self._executor(tool_id, args, config)
-                    break
-                except Exception as exc:  # noqa: BLE001 - classified below
-                    attempts += 1
-                    if (
-                        attempts > policy.budget.max_tool_retries
-                        or not _is_transient_source_error(exc)
-                    ):
-                        raise
-        return self._normalizer("bundle", products, request)
-
-
 class CachedDataSource:
     """Request-scoped snapshot cache shared by concurrent specialists.
 
@@ -191,16 +93,32 @@ class CachedDataSource:
         self._locks: dict[tuple[str, ...], asyncio.Lock] = {}
 
     @staticmethod
-    async def _authorize() -> None:
+    async def _authorize(request: TracingRequest, scope: RuntimeScope) -> None:
+        """Recheck trusted identity/business before a cache hit is returned."""
         from langgraph.config import get_config
 
         from common.identity.runtime import guard_runtime_call
+        from intelligent_tracing.runtime import (
+            TracingScopeError,
+            business_binding_from_config,
+        )
 
         try:
             config = dict(get_config() or {})
         except RuntimeError:
             return
         await guard_runtime_call(config)
+        binding = business_binding_from_config(config)
+        if (
+            binding.business_code != scope.business_code
+            or binding.business_policy_version != scope.business_policy_version
+            or binding.business_permission != scope.business_permission
+            or binding.graph_id != scope.graph_id
+            or request.business_code != scope.business_code
+            or request.business_policy_version != scope.business_policy_version
+            or request.graph_id != scope.graph_id
+        ):
+            raise TracingScopeError("缓存作用域与可信业务快照不一致")
 
     async def fetch(
         self,
@@ -210,7 +128,7 @@ class CachedDataSource:
         policy: AnalysisPolicy,
     ) -> DataBundle:
         """Return one shared snapshot per trusted scope/request revision."""
-        await self._authorize()
+        await self._authorize(request, scope)
         key = (
             scope.tenant_id,
             scope.user_id,
@@ -218,6 +136,8 @@ class CachedDataSource:
             scope.graph_id,
             scope.context_version,
             scope.epoch,
+            scope.business_code,
+            scope.business_policy_version,
             request.analysis_id,
             str(request.revision),
         )

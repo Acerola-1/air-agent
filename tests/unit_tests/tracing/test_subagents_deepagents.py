@@ -8,7 +8,15 @@ import time
 import pytest
 from deepagents.middleware.subagents import TaskToolSchema
 from fake_model import ScriptedChatModel
-from fixtures import build_bundle, make_request, make_scope
+from fixtures import (
+    BUSINESS_CODE,
+    BUSINESS_PERMISSION,
+    BUSINESS_POLICY_VERSION,
+    allow_publication,
+    build_bundle,
+    make_request,
+    make_scope,
+)
 from langchain_core.messages import AIMessage, HumanMessage
 
 from intelligent_tracing.evidence import EvidenceRegistry
@@ -151,6 +159,7 @@ def _graph(
         data_source=source,
         station_catalog=bundle.stations,
         report_store=store or InMemoryReportStore(),
+        lifecycle_probe=allow_publication,
     )
     return request, graph
 
@@ -168,6 +177,10 @@ async def _invoke(graph, request):
                 "execution_epoch": "epoch-1",
                 "ledger_attempt_id": "attempt-test",
                 "run_id": "run-test",
+                "ledger_business_code": BUSINESS_CODE,
+                "ledger_business_policy_version": BUSINESS_POLICY_VERSION,
+                "ledger_business_permission": BUSINESS_PERMISSION,
+                "ledger_graph_id": "intelligent-tracing",
             }
         },
     )
@@ -463,6 +476,7 @@ async def test_freeze_then_delegate_without_injected_scope(monkeypatch):
         data_source=FixtureDataSource(bundle),
         station_catalog=bundle.stations,
         report_store=InMemoryReportStore(),
+        lifecycle_probe=allow_publication,
     )
     out = await graph.ainvoke(
         {"messages": [HumanMessage(content="分析目标站 PM2.5")]},
@@ -473,6 +487,10 @@ async def test_freeze_then_delegate_without_injected_scope(monkeypatch):
                 "run_id": "run-trusted",
                 "ledger_attempt_id": "attempt-trusted",
                 "capability_selection_id": "sel-001",
+                "ledger_business_code": BUSINESS_CODE,
+                "ledger_business_policy_version": BUSINESS_POLICY_VERSION,
+                "ledger_business_permission": BUSINESS_PERMISSION,
+                "ledger_graph_id": "intelligent-tracing",
                 "langgraph_auth_user": {
                     "identity": "user-trusted",
                     "tenant_id": "tenant-trusted",
@@ -494,3 +512,28 @@ async def test_freeze_then_delegate_without_injected_scope(monkeypatch):
     assert all(
         child.attempt_id == "attempt-trusted" for child in out["child_executions"]
     )
+
+
+def test_default_graph_wires_business_mcp_source_and_catalog(monkeypatch):
+    from intelligent_tracing import graph as graph_module
+
+    created: dict[str, object] = {}
+
+    class FakeCatalog:
+        async def list_stations(self, *, config, region_name):
+            return ()
+
+    class FakeSource:
+        def __init__(self, *, station_catalog):
+            created["source_catalog"] = station_catalog
+
+    monkeypatch.setattr(graph_module, "StationCatalogProvider", FakeCatalog)
+    monkeypatch.setattr(graph_module, "BusinessMCPDataSource", FakeSource)
+    graph_module.build_tracing_graph(
+        model=_lead_model(),
+        meteo_model=_meteo_model(),
+        reviewer_model=_reviewer_model(make_request().analysis_id),
+        report_store=InMemoryReportStore(),
+        lifecycle_probe=allow_publication,
+    )
+    assert isinstance(created["source_catalog"], FakeCatalog)

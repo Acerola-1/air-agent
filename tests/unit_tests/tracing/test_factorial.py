@@ -6,7 +6,15 @@ import json
 
 import pytest
 from fake_model import ScriptedChatModel
-from fixtures import build_bundle, make_request, make_scope
+from fixtures import (
+    BUSINESS_CODE,
+    BUSINESS_PERMISSION,
+    BUSINESS_POLICY_VERSION,
+    allow_publication,
+    build_bundle,
+    make_request,
+    make_scope,
+)
 from langchain_core.messages import AIMessage, HumanMessage
 
 from intelligent_tracing.experiments import (
@@ -133,6 +141,7 @@ async def _run_deepagents(*, reviewer: bool):
         station_catalog=build_bundle().stations,
         report_store=InMemoryReportStore(),
         enable_reviewer=reviewer,
+        lifecycle_probe=allow_publication,
     )
     out = await graph.ainvoke(
         {
@@ -144,6 +153,10 @@ async def _run_deepagents(*, reviewer: bool):
             "configurable": {
                 "thread_id": "thread-a",
                 "execution_epoch": "epoch-1",
+                "ledger_business_code": BUSINESS_CODE,
+                "ledger_business_policy_version": BUSINESS_POLICY_VERSION,
+                "ledger_business_permission": BUSINESS_PERMISSION,
+                "ledger_graph_id": "intelligent-tracing",
             }
         },
     )

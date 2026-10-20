@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from intelligent_tracing.policy import AnalysisPolicy
+from intelligent_tracing.runtime import BusinessBinding
 from intelligent_tracing.schemas import (
     StationMeta,
     Target,
@@ -42,6 +43,7 @@ def resolve_station(
     station_code: str = "",
     station_name: str = "",
     region_code: str = "",
+    region_name: str = "",
     catalog: tuple[StationMeta, ...],
 ) -> StationResolution:
     """Resolve a station by code first, then by exact name within a region."""
@@ -58,6 +60,7 @@ def resolve_station(
                 station_code=station.station_code,
                 station_name=station.name,
                 region_code=resolved_region,
+                region_name=region_name or station.region_name,
                 latitude=station.latitude,
                 longitude=station.longitude,
                 coordinate_source="platform_catalog",
@@ -79,6 +82,7 @@ def resolve_station(
                 station_code=station.station_code,
                 station_name=station.name,
                 region_code=resolved_region,
+                region_name=region_name or station.region_name,
                 latitude=station.latitude,
                 longitude=station.longitude,
                 coordinate_source="platform_catalog",
@@ -119,13 +123,27 @@ def validate_and_freeze_request(
     candidate: TracingRequest,
     *,
     policy: AnalysisPolicy,
+    binding: BusinessBinding | None,
     config: dict[str, Any] | None = None,
-    allow_missing_capability: bool = False,
 ) -> TracingRequest:
-    """Validate policy, time window and capability binding, then freeze."""
+    """Validate policy, time window, business permit and selection reference.
+
+    业务许可只来自可信 config（`binding`）。`capability_snapshot_ref` 仅用于
+    回读已受理的技能/工具选择：提供时必须与已受理快照一致，但缺失它不会
+    替代也不会伪造业务授权。
+    """
     profile = policy.require_supported(candidate.pollutant)
     if candidate.analysis_policy_version != policy.version:
         raise RequestValidationError("分析策略版本与当前冻结策略不一致")
+    if binding is None:
+        raise RequestValidationError("缺少可信业务快照，拒绝冻结请求")
+    if (
+        candidate.business_code != binding.business_code
+        or candidate.business_policy_version != binding.business_policy_version
+        or candidate.business_permission != binding.business_permission
+        or candidate.graph_id != binding.graph_id
+    ):
+        raise RequestValidationError("请求业务字段与可信业务快照不一致")
     if candidate.time_window.timezone not in ("Asia/Shanghai",):
         raise RequestValidationError("当前仅支持 Asia/Shanghai 时区")
     if candidate.baseline_window is not None:
@@ -137,10 +155,8 @@ def validate_and_freeze_request(
         raise RequestValidationError("站点坐标无效")
     if profile.key != candidate.pollutant.lower():
         raise RequestValidationError("污染物画像不匹配")
-    if not allow_missing_capability:
+    if candidate.capability_snapshot_ref:
         allowed_refs = _capability_ref(config)
-        if not allowed_refs:
-            raise RequestValidationError("缺少服务端冻结的能力选择快照")
-        if candidate.capability_snapshot_ref not in allowed_refs:
+        if allowed_refs and candidate.capability_snapshot_ref not in allowed_refs:
             raise RequestValidationError("能力选择引用与已受理快照不一致")
     return candidate.frozen()

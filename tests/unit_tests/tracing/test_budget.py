@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import pytest
 from fake_model import ScriptedChatModel
-from fixtures import build_bundle, make_request, make_scope
+from fixtures import allow_publication, build_bundle, make_request, make_scope
 from langchain_core.messages import AIMessage, HumanMessage
 
 from intelligent_tracing.graph import build_tracing_graph
@@ -88,6 +88,7 @@ async def test_budget_exhaustion_publishes_partial_validated_report():
         station_catalog=bundle.stations,
         report_store=InMemoryReportStore(),
         policy=policy,
+        lifecycle_probe=allow_publication,
     )
     out = await graph.ainvoke(
         {
@@ -168,67 +169,32 @@ async def test_total_timeout_stops_before_next_call():
 
 
 @pytest.mark.anyio
-async def test_scoped_source_retries_transient_once_only(monkeypatch):
-    from fixtures import make_request, make_scope
-
-    from intelligent_tracing.policy import BudgetPolicy
-    from intelligent_tracing.sources import ScopedMCPDataSource
+async def test_mcp_call_retries_transient_once_only():
+    from intelligent_tracing.data_access import MCPToolError, _call_tool
 
     calls = 0
 
-    async def flaky_executor(tool_id, args, config):
+    async def flaky_executor(server_key, tool_id, args, config):
         nonlocal calls
         calls += 1
         if calls == 1:
             raise TimeoutError("temporary timeout")
-        return {"rows": []}
+        return {"success": True, "code": 200, "data": []}
 
-    source = ScopedMCPDataSource(
-        tool_map={"station": "mcp:svc:station"},
-        normalizer=lambda _kind, _products, _request: build_bundle(),
-        executor=flaky_executor,
-    )
-    monkeypatch.setattr(
-        source,
-        "_run_config",
-        lambda: {
-            "configurable": {
-                "capability_mcp_mode": "allowlist",
-                "capability_tool_ids": ["mcp:svc:station"],
-            }
-        },
-    )
-    policy = replace(
-        DEFAULT_POLICY,
-        budget=BudgetPolicy(max_tool_retries=1),
-    )
-    await source.fetch(make_request(), scope=make_scope(), policy=policy)
+    payload = await _call_tool(flaky_executor, {}, "station", {}, max_retries=1)
+    assert payload["success"] is True
     assert calls == 2
 
     calls = 0
 
-    async def denied_executor(tool_id, args, config):
+    async def denied_executor(server_key, tool_id, args, config):
         nonlocal calls
         calls += 1
         raise PermissionError("403 forbidden")
 
-    denied = ScopedMCPDataSource(
-        tool_map={"station": "mcp:svc:station"},
-        normalizer=lambda _kind, _products, _request: build_bundle(),
-        executor=denied_executor,
-    )
-    monkeypatch.setattr(
-        denied,
-        "_run_config",
-        lambda: {
-            "configurable": {
-                "capability_mcp_mode": "allowlist",
-                "capability_tool_ids": ["mcp:svc:station"],
-            }
-        },
-    )
-    with pytest.raises(PermissionError):
-        await denied.fetch(make_request(), scope=make_scope(), policy=policy)
+    with pytest.raises(MCPToolError) as excinfo:
+        await _call_tool(denied_executor, {}, "station", {}, max_retries=1)
+    assert excinfo.value.transient is False
     assert calls == 1
 
 

@@ -13,7 +13,12 @@ from langchain_core.tools import StructuredTool
 from langgraph.types import Command
 from pydantic import BaseModel, ConfigDict
 
+from common.identity.runtime import identity_from_config
 from intelligent_tracing.claims import build_claim_allowlist, fallback_plan
+from intelligent_tracing.data_access import (
+    StaticStationCatalog,
+    StationCatalog,
+)
 from intelligent_tracing.evidence import EvidenceRegistry
 from intelligent_tracing.gate import ReportGate
 from intelligent_tracing.policy import AnalysisPolicy
@@ -26,6 +31,7 @@ from intelligent_tracing.request import (
 )
 from intelligent_tracing.runtime import (
     TracingScopeError,
+    business_binding_from_config,
     runtime_scope_from_config,
 )
 from intelligent_tracing.schemas import (
@@ -34,6 +40,7 @@ from intelligent_tracing.schemas import (
     TimeWindow,
     TracingRequest,
 )
+from intelligent_tracing.sources import DataSourceUnavailable
 
 
 class FreezeRequestInput(BaseModel):
@@ -48,6 +55,7 @@ class FreezeRequestInput(BaseModel):
     station_code: str = ""
     station_name: str = ""
     region_code: str = ""
+    region_name: str = ""
     pollutant: str = "pm2.5"
     start: datetime
     end: datetime
@@ -91,19 +99,40 @@ def _config_from_runtime(runtime: ToolRuntime) -> dict[str, Any]:
         return {}
 
 
+def run_id_from_config(config: dict[str, Any]) -> str:
+    """Return the platform run id from trusted config (never from tool input)."""
+    configurable = config.get("configurable") or {}
+    metadata = config.get("metadata") or {}
+    return str(
+        configurable.get("run_id")
+        or metadata.get("run_id")
+        or configurable.get("langgraph_run_id")
+        or ""
+    )
+
+
 def build_freeze_request_tool(
     *,
-    station_catalog: tuple[StationMeta, ...],
+    station_catalog: StationCatalog | tuple[StationMeta, ...],
     policy: AnalysisPolicy,
-    allow_missing_capability: bool = False,
 ) -> StructuredTool:
-    """Build the request-freezing tool; it performs no data query."""
+    """Build the request-freezing tool; it performs no data query.
+
+    ``station_catalog`` 可以是受控静态目录（G0）或真实授权目录提供者；
+    真实提供者在冻结时才经统一执行层读取目录，构造工具不会发起网络请求。
+    """
+    provider: StationCatalog = (
+        StaticStationCatalog(station_catalog)
+        if isinstance(station_catalog, tuple)
+        else station_catalog
+    )
 
     async def _freeze(
         runtime: ToolRuntime,
         station_code: str = "",
         station_name: str = "",
         region_code: str = "",
+        region_name: str = "",
         pollutant: str = "pm2.5",
         start: datetime | None = None,
         end: datetime | None = None,
@@ -120,6 +149,7 @@ def build_freeze_request_tool(
                 station_code=station_code,
                 station_name=station_name,
                 region_code=region_code,
+                region_name=region_name,
                 pollutant=pollutant,
                 start=start,  # type: ignore[arg-type]
                 end=end,  # type: ignore[arg-type]
@@ -131,13 +161,23 @@ def build_freeze_request_tool(
                 revision=revision,
                 capability_snapshot_ref=capability_snapshot_ref,
             )
+            config = _config_from_runtime(runtime)
+            if identity_from_config(config) is None:
+                raise TracingScopeError("缺少已认证运行身份，无法冻结溯源请求")
+            binding = business_binding_from_config(config)
+            catalog = await provider.list_stations(
+                config=config, region_name=candidate.region_name
+            )
             resolution = resolve_station(
                 station_code=candidate.station_code,
                 station_name=candidate.station_name,
                 region_code=candidate.region_code,
-                catalog=station_catalog,
+                region_name=candidate.region_name,
+                catalog=catalog,
             )
-        except (RequestValidationError, ValueError) as exc:
+        except TracingScopeError as exc:
+            return {"status": "invalid", "message": str(exc)}
+        except (RequestValidationError, ValueError, DataSourceUnavailable) as exc:
             return {"status": "invalid", "message": str(exc)}
         if resolution.ambiguous:
             return {
@@ -178,14 +218,18 @@ def build_freeze_request_tool(
                 baseline_window=baseline,
                 analysis_policy_version=policy.version,
                 capability_snapshot_ref=candidate.capability_snapshot_ref,
+                business_code=binding.business_code,
+                business_policy_version=binding.business_policy_version,
+                business_permission=binding.business_permission,
+                graph_id=binding.graph_id,
             )
+            config = _config_from_runtime(runtime)
             frozen = validate_and_freeze_request(
                 request,
                 policy=policy,
-                config=_config_from_runtime(runtime),
-                allow_missing_capability=allow_missing_capability,
+                binding=binding,
+                config=config,
             )
-            config = _config_from_runtime(runtime)
             scope = runtime_scope_from_config(
                 config,
                 analysis_id=frozen.analysis_id,
@@ -224,8 +268,8 @@ def build_freeze_request_tool(
         coroutine=_freeze,
         name="freeze_tracing_request",
         description=(
-            "校验并冻结溯源请求。必须在任何数据委派前调用；缺少站点、时间或"
-            "半径时返回需要补问，不发起数据查询。"
+            "校验并冻结溯源请求。必须在任何数据委派前调用；缺少站点、行政区"
+            "中文名、时间或半径时返回需要补问，不发起数据查询。"
         ),
         args_schema=FreezeRequestInput,
         infer_schema=False,
@@ -251,7 +295,7 @@ def build_policy_summary_tool(policy: AnalysisPolicy) -> StructuredTool:
     return StructuredTool.from_function(
         func=_summary,
         name="get_analysis_policy_summary",
-        description="返回冻结的 analysis-policy-v1 阈值、口径和固定限制。",
+        description=f"返回冻结的 {policy.version} 阈值、口径和固定限制。",
         infer_schema=False,
     )
 
@@ -305,11 +349,15 @@ def build_report_tools(
             else (),
         )
         candidate_plan = plan or fallback_plan(allowlist)
-        result = gate.validate_and_render(candidate_plan, allowlist, request, scope)
+        config = _config_from_runtime(runtime)
+        run_id = run_id_from_config(config)
+        result = gate.validate_and_render(
+            candidate_plan, allowlist, request, scope, run_id=run_id
+        )
         used_fallback = False
         if not result.ok:
             fallback_result = gate.validate_and_render(
-                fallback_plan(allowlist), allowlist, request, scope
+                fallback_plan(allowlist), allowlist, request, scope, run_id=run_id
             )
             if not fallback_result.ok:
                 return {
@@ -380,14 +428,7 @@ def build_report_tools(
         }
         storage_status = "unavailable"
         config = _config_from_runtime(runtime)
-        configurable = config.get("configurable") or {}
-        metadata = config.get("metadata") or {}
-        run_id = str(
-            configurable.get("run_id")
-            or metadata.get("run_id")
-            or configurable.get("langgraph_run_id")
-            or ""
-        )
+        run_id = run_id_from_config(config)
         import os
 
         if os.getenv("RUNTIME_DATABASE_URI") and run_id:

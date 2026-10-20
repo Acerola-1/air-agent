@@ -495,6 +495,7 @@ def render_report(
     report_id: str,
     policy: AnalysisPolicy,
     created_at: datetime | None = None,
+    run_id: str = "",
 ) -> ValidatedReport:
     """Render a controlled Markdown report from allowlisted claims only."""
     claims = _by_id(allowlist)
@@ -661,6 +662,7 @@ def render_report(
         revision=request.revision,
         request_digest=request.request_digest or request.canonical_digest(),
         policy_version=allowlist.policy_version,
+        run_id=run_id,
         claim_ids=tuple(claim.claim_id for claim in selected),
         limitations=allowlist.limitations,
         body_markdown=body,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from langchain.agents.middleware.types import (
@@ -12,6 +13,9 @@ from langchain.agents.middleware.types import (
 )
 from langchain_core.messages import AIMessage
 
+from common.event_ledger.lifecycle import require_ledger_context
+from common.event_ledger.store import fetch_attempt_lifecycle, thread_deletion_exists
+from common.identity.runtime import guard_runtime_call
 from common.runtime_events import emit_event
 from intelligent_tracing.claims import build_claim_allowlist, fallback_plan
 from intelligent_tracing.evidence import EvidenceRegistry
@@ -43,6 +47,8 @@ class TracingPublishMiddleware(AgentMiddleware):
         gate: ReportGate,
         policy: AnalysisPolicy,
         report_store: ReportStore,
+        lifecycle_probe: Callable[[dict[str, Any], RuntimeScope], Awaitable[bool]]
+        | None = None,
     ) -> None:
         """Bind the execution-layer publication dependencies."""
         super().__init__()
@@ -50,7 +56,52 @@ class TracingPublishMiddleware(AgentMiddleware):
         self._gate = gate
         self._policy = policy
         self._report_store = report_store
+        self._lifecycle_probe = lifecycle_probe or self._ledger_probe
         self._published_ids: set[str] = set()
+
+    @staticmethod
+    async def _ledger_probe(config: dict[str, Any], scope: RuntimeScope) -> bool:
+        """Ask the event ledger whether publication is still allowed.
+
+        Any missing context, tombstone, terminal/cancelled attempt, ownership or
+        business mismatch suppresses publication; ledger outage fails closed.
+        """
+        try:
+            await guard_runtime_call(config)
+            ledger_scope, request_id, attempt_id = require_ledger_context(config)
+            if await thread_deletion_exists(ledger_scope, thread_id=scope.thread_id):
+                return False
+            row = await fetch_attempt_lifecycle(
+                ledger_scope, attempt_id=attempt_id, thread_id=scope.thread_id
+            )
+        except Exception:  # noqa: BLE001 - ledger outage must suppress output
+            return False
+        if row is None:
+            return False
+        if str(row.get("request_id") or "") != request_id:
+            return False
+        for key, expected in (
+            ("business_code", scope.business_code),
+            ("business_policy_version", scope.business_policy_version),
+        ):
+            current = str(row.get(key) or "")
+            if current and current != expected:
+                return False
+        state = str(row.get("state") or "").lower()
+        if state in {"cancelled", "canceled", "failed", "timed_out", "timeout"}:
+            return False
+        if bool(row.get("cancel_confirmed")):
+            return False
+        return True
+
+    async def _publication_allowed(
+        self, config: dict[str, Any], scope: RuntimeScope
+    ) -> bool:
+        """Return False unless the ledger probe explicitly allows publication."""
+        try:
+            return bool(await self._lifecycle_probe(config, scope))
+        except Exception:  # noqa: BLE001 - probe failure must fail closed
+            return False
 
     async def awrap_model_call(self, request: Any, handler: Any) -> Any:
         """Mark every model AIMessage non-visible before graph publication."""
@@ -103,16 +154,19 @@ class TracingPublishMiddleware(AgentMiddleware):
             return self._publish_text(config, _CLARIFY_TEXT, "clarify")
         if self._should_suppress(config, scope):
             return {}
+        if not await self._publication_allowed(config, scope):
+            return {}
         current = await self._current_allowlist(state)
+        run_id = str(config.get("configurable", {}).get("run_id") or "")
         if report is None:
-            report = await self._build_fallback(state)
+            report = await self._build_fallback(state, run_id=run_id)
         elif current is not None:
             request_now, scope_now, allowlist_now = current
             if not await self._report_is_current(
                 report, request_now, scope_now, allowlist_now, state
             ):
                 report = await self._render_fallback(
-                    request_now, scope_now, allowlist_now
+                    request_now, scope_now, allowlist_now, run_id=run_id
                 )
         if report is None:
             return self._publish_text(config, _INCOMPLETE_TEXT, "incomplete")
@@ -183,21 +237,29 @@ class TracingPublishMiddleware(AgentMiddleware):
         request: TracingRequest,
         scope: RuntimeScope,
         allowlist,
+        *,
+        run_id: str = "",
     ) -> ValidatedReport | None:
         result: ReportValidationResult = self._gate.validate_and_render(
-            fallback_plan(allowlist), allowlist, request, scope
+            fallback_plan(allowlist),
+            allowlist,
+            request,
+            scope,
+            run_id=run_id,
         )
         if not result.ok or result.report is None:
             return None
         await self._report_store.save(result.report)
         return result.report
 
-    async def _build_fallback(self, state: dict[str, Any]) -> ValidatedReport | None:
+    async def _build_fallback(
+        self, state: dict[str, Any], *, run_id: str = ""
+    ) -> ValidatedReport | None:
         current = await self._current_allowlist(state)
         if current is None:
             return None
         request, scope, allowlist = current
-        return await self._render_fallback(request, scope, allowlist)
+        return await self._render_fallback(request, scope, allowlist, run_id=run_id)
 
     async def _report_is_current(
         self,

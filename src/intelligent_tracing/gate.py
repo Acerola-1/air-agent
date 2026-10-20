@@ -35,6 +35,7 @@ class ReportGate:
         scope: RuntimeScope,
         *,
         report_id: str | None = None,
+        run_id: str = "",
     ) -> ReportValidationResult:
         """Validate a plan; on failure return errors and never retry a model."""
         errors = self.validate_plan(plan, allowlist)
@@ -52,6 +53,7 @@ class ReportGate:
             scope=scope,
             report_id=report_id or f"rep_{uuid.uuid4().hex}",
             policy=self._policy,
+            run_id=run_id,
         )
         text_errors = self._validate_text_boundary(report, allowlist)
         if text_errors:

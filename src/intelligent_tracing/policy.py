@@ -1,7 +1,8 @@
 """Versioned deterministic policy for pollution tracing analysis.
 
-`analysis-policy-v1` freezes the quality-control, anomaly, spatial, wind and
-process rules used by the tracing graph.  Values marked ``research`` are
+`analysis-policy-v2` enables the six pollutants for phase two; `analysis-policy-v1`
+is kept as the frozen PM2.5-only baseline. Both freeze the quality-control,
+anomaly, spatial, wind and process rules used by the tracing graph.  Values marked ``research`` are
 engineering heuristics selected for reproducibility; they are not regulatory
 limits, statistical significance levels or source-distance estimates.  The
 policy must be reviewed before production use and any change requires a new
@@ -13,7 +14,9 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Final
 
-POLICY_VERSION: Final[str] = "analysis-policy-v1"
+POLICY_VERSION_V1: Final[str] = "analysis-policy-v1"
+POLICY_VERSION_V2: Final[str] = "analysis-policy-v2"
+POLICY_VERSION: Final[str] = POLICY_VERSION_V2
 
 # The first delivery phase supports PM2.5 only.  Other pollutants are listed so
 # that unsupported requests can be rejected explicitly instead of silently
@@ -21,9 +24,9 @@ POLICY_VERSION: Final[str] = "analysis-policy-v1"
 KNOWN_POLLUTANTS: Final[tuple[str, ...]] = ("pm2.5", "pm10", "o3", "no2", "so2", "co")
 STAGE1_POLLUTANTS: Final[frozenset[str]] = frozenset({"pm2.5"})
 STAGE2_POLLUTANTS: Final[frozenset[str]] = frozenset(KNOWN_POLLUTANTS)
-# The default policy is phase one.  Stage-two profiles exist in code and are
-# covered by tests, but are not silently enabled for production requests.
-SUPPORTED_POLLUTANTS: Final[frozenset[str]] = STAGE1_POLLUTANTS
+# Production default is phase two.  Policy v1 stays available as an explicit
+# baseline and is never widened silently.
+SUPPORTED_POLLUTANTS: Final[frozenset[str]] = STAGE2_POLLUTANTS
 
 FIXED_LIMITATIONS: Final[tuple[str, ...]] = (
     "trajectory_unavailable",
@@ -171,7 +174,7 @@ class AnalysisPolicy:
     """Complete frozen policy bundle."""
 
     version: str = POLICY_VERSION
-    phase: int = 1
+    phase: int = 2
     enabled_pollutants: frozenset[str] = SUPPORTED_POLLUTANTS
     quality: QualityPolicy = field(default_factory=QualityPolicy)
     baseline: BaselinePolicy = field(default_factory=BaselinePolicy)
@@ -280,7 +283,14 @@ class AnalysisPolicy:
         return profile
 
 
-DEFAULT_POLICY: Final[AnalysisPolicy] = AnalysisPolicy()
-STAGE2_POLICY: Final[AnalysisPolicy] = AnalysisPolicy(
-    phase=2, enabled_pollutants=STAGE2_POLLUTANTS
+STAGE1_POLICY: Final[AnalysisPolicy] = AnalysisPolicy(
+    version=POLICY_VERSION_V1,
+    phase=1,
+    enabled_pollutants=STAGE1_POLLUTANTS,
 )
+DEFAULT_POLICY: Final[AnalysisPolicy] = AnalysisPolicy(
+    version=POLICY_VERSION_V2,
+    phase=2,
+    enabled_pollutants=STAGE2_POLLUTANTS,
+)
+STAGE2_POLICY: Final[AnalysisPolicy] = DEFAULT_POLICY

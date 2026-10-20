@@ -32,6 +32,8 @@ class Target(StrictModel):
     station_code: str = Field(min_length=1, max_length=128)
     station_name: str = Field(default="", max_length=200)
     region_code: str = Field(default="", max_length=64)
+    # 行政区中文名（MCP 查询参数）；来自请求候选或目录记录，不作为授权证明.
+    region_name: str = Field(default="", max_length=128)
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     coordinate_source: Literal["platform_catalog", "user", "fixture", "unknown"] = (
@@ -86,7 +88,13 @@ class TracingRequest(StrictModel):
     neighbor_radius_km: float = Field(ge=1, le=50)
     baseline_window: TimeWindow | None = None
     analysis_policy_version: str = Field(min_length=1, max_length=64)
-    capability_snapshot_ref: str = Field(min_length=1, max_length=256)
+    # 能力/技能选择引用只用于回读已受理选择，不承担业务授权语义.
+    capability_snapshot_ref: str = Field(default="", max_length=256)
+    # 以下字段只来自平台注入的可信业务快照，模型输入不能赋值.
+    business_code: str = Field(min_length=1, max_length=64)
+    business_policy_version: str = Field(min_length=1, max_length=64)
+    business_permission: str = Field(min_length=1, max_length=128)
+    graph_id: str = Field(min_length=1, max_length=64)
     parent_analysis_ref: ParentAnalysisRef | None = None
     request_digest: str = ""
 
@@ -119,6 +127,9 @@ class RuntimeScope(StrictModel):
     context_version: str = Field(min_length=1)
     epoch: str = Field(min_length=1)
     membership_id: str = ""
+    business_code: str = Field(min_length=1, max_length=64)
+    business_policy_version: str = Field(min_length=1, max_length=64)
+    business_permission: str = Field(min_length=1, max_length=128)
 
 
 class EvidenceRecord(StrictModel):
@@ -150,6 +161,9 @@ class EvidenceRecord(StrictModel):
     nwp_run_time: datetime | None = None
     nwp_lead_hours: int | None = Field(default=None, ge=0, le=240)
     metadata: dict[str, str] = Field(default_factory=dict)
+    business_code: str = Field(min_length=1, max_length=64)
+    business_policy_version: str = Field(min_length=1, max_length=64)
+    business_permission: str = Field(min_length=1, max_length=128)
     scope: RuntimeScope
 
     @model_validator(mode="after")
@@ -198,6 +212,7 @@ class StationMeta(StrictModel):
     station_code: str = Field(min_length=1)
     name: str = ""
     region_code: str = ""
+    region_name: str = ""
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     distance_km: float = Field(ge=0)
@@ -237,6 +252,8 @@ class DataBundle(StrictModel):
     nwp: tuple[HourlyWeather, ...] = ()
     source_type: Literal["fixture", "mcp", "controlled"] = "fixture"
     missing: tuple[str, ...] = ()
+    # 产品 → 实际执行工具，供证据记录真实 tool_id；fixture 为空.
+    source_tools: dict[str, str] = Field(default_factory=dict)
 
 
 class Coverage(StrictModel):
@@ -531,6 +548,7 @@ class ValidatedReport(StrictModel):
     revision: int = Field(ge=1)
     request_digest: str
     policy_version: str
+    run_id: str = ""
     claim_ids: tuple[str, ...]
     limitations: tuple[str, ...]
     body_markdown: str
@@ -549,12 +567,25 @@ class ValidatedReport(StrictModel):
             "revision": self.revision,
             "request_digest": self.request_digest,
             "policy_version": self.policy_version,
+            "run_id": self.run_id,
             "claim_ids": self.claim_ids,
             "limitations": self.limitations,
             "body_markdown": self.body_markdown,
             "canvas": self.canvas.model_dump(mode="json"),
             "evidence_ids": self.evidence_ids,
             "gate_version": self.gate_version,
+            # 摘要绑定可信作用域与业务许可，避免跨企业/跨线程复用到同一报告.
+            "scope": {
+                "tenant_id": self.scope.tenant_id,
+                "user_id": self.scope.user_id,
+                "thread_id": self.scope.thread_id,
+                "graph_id": self.scope.graph_id,
+                "context_version": self.scope.context_version,
+                "epoch": self.scope.epoch,
+                "business_code": self.scope.business_code,
+                "business_policy_version": self.scope.business_policy_version,
+                "business_permission": self.scope.business_permission,
+            },
         }
         canonical = json.dumps(
             payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False

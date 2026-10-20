@@ -6,6 +6,9 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from fixtures import (
+    BUSINESS_CODE,
+    BUSINESS_PERMISSION,
+    BUSINESS_POLICY_VERSION,
     END,
     START,
     make_request,
@@ -19,7 +22,22 @@ from intelligent_tracing.request import (
     resolve_station,
     validate_and_freeze_request,
 )
+from intelligent_tracing.runtime import (
+    TracingScopeError,
+    business_binding_from_config,
+)
 from intelligent_tracing.schemas import StationMeta
+
+
+def _business_config(**extra: object) -> dict:
+    configurable = {
+        "ledger_business_code": BUSINESS_CODE,
+        "ledger_business_policy_version": BUSINESS_POLICY_VERSION,
+        "ledger_business_permission": BUSINESS_PERMISSION,
+        "ledger_graph_id": "intelligent-tracing",
+    }
+    configurable.update(extra)
+    return {"configurable": configurable}
 
 
 def _catalog() -> tuple[StationMeta, ...]:
@@ -48,24 +66,47 @@ def test_station_name_ambiguity_returns_candidates_without_query():
     assert resolution.target is None
 
 
-def test_freeze_binds_capability_snapshot_and_digest():
+def test_freeze_binds_business_snapshot_and_digest():
     request = make_request()
-    config = {
-        "configurable": {
-            "capability_selection_id": "sel-001",
-            "capability_selection_digest": "sha256:abc",
-        }
-    }
-    frozen = validate_and_freeze_request(request, policy=DEFAULT_POLICY, config=config)
+    config = _business_config(
+        capability_selection_id="sel-001",
+        capability_selection_digest="sha256:abc",
+    )
+    binding = business_binding_from_config(config)
+    frozen = validate_and_freeze_request(
+        request, policy=DEFAULT_POLICY, binding=binding, config=config
+    )
     assert frozen.request_digest == request.canonical_digest()
-    assert frozen.request_digest
+    assert frozen.business_code == BUSINESS_CODE
+    assert frozen.business_permission == BUSINESS_PERMISSION
+    assert frozen.graph_id == "intelligent-tracing"
+
+
+def test_missing_business_snapshot_fails_closed():
+    with pytest.raises(TracingScopeError, match="业务快照"):
+        business_binding_from_config({"configurable": {"thread_id": "t"}})
+
+
+def test_forged_business_permission_is_rejected():
+    request = make_request().model_copy(
+        update={"business_permission": "agent:business:basic-qa:use"}
+    )
+    config = _business_config()
+    binding = business_binding_from_config(config)
+    with pytest.raises(RequestValidationError, match="可信业务快照"):
+        validate_and_freeze_request(
+            request, policy=DEFAULT_POLICY, binding=binding, config=config
+        )
 
 
 def test_forged_capability_snapshot_is_rejected():
     request = make_request()
-    config = {"configurable": {"capability_selection_id": "sel-other"}}
+    config = _business_config(capability_selection_id="sel-other")
+    binding = business_binding_from_config(config)
     with pytest.raises(RequestValidationError, match="能力选择引用"):
-        validate_and_freeze_request(request, policy=DEFAULT_POLICY, config=config)
+        validate_and_freeze_request(
+            request, policy=DEFAULT_POLICY, binding=binding, config=config
+        )
 
 
 def test_baseline_must_precede_target_window():
@@ -77,11 +118,13 @@ def test_baseline_must_precede_target_window():
             )
         }
     )
+    config = _business_config(capability_selection_id="sel-001")
     with pytest.raises(RequestValidationError, match="基线窗口"):
         validate_and_freeze_request(
             bad,
             policy=DEFAULT_POLICY,
-            config={"configurable": {"capability_selection_id": "sel-001"}},
+            binding=business_binding_from_config(config),
+            config=config,
         )
 
 
@@ -151,6 +194,10 @@ async def test_freeze_writes_scope_from_trusted_config_only():
                 "execution_epoch": "epoch-trusted",
                 "run_id": "run-trusted",
                 "capability_selection_id": "sel-001",
+                "ledger_business_code": BUSINESS_CODE,
+                "ledger_business_policy_version": BUSINESS_POLICY_VERSION,
+                "ledger_business_permission": BUSINESS_PERMISSION,
+                "ledger_graph_id": "intelligent-tracing",
                 "langgraph_auth_user": {
                     "identity": "user-trusted",
                     "tenant_id": "tenant-trusted",
@@ -231,12 +278,15 @@ async def test_freeze_requires_radius_clarification():
     tool = build_freeze_request_tool(
         station_catalog=build_bundle().stations,
         policy=DEFAULT_POLICY,
-        allow_missing_capability=True,
     )
     runtime = SimpleNamespace(
         config={
             "configurable": {
                 "thread_id": "thread-a",
+                "ledger_business_code": BUSINESS_CODE,
+                "ledger_business_policy_version": BUSINESS_POLICY_VERSION,
+                "ledger_business_permission": BUSINESS_PERMISSION,
+                "ledger_graph_id": "intelligent-tracing",
                 "langgraph_auth_user": {
                     "identity": "u",
                     "tenant_id": "t",
@@ -262,7 +312,7 @@ async def test_freeze_requires_radius_clarification():
 
 
 @pytest.mark.anyio
-async def test_freeze_rejects_missing_capability_snapshot_by_default():
+async def test_freeze_rejects_missing_business_snapshot():
     from types import SimpleNamespace
 
     from fixtures import END, START, build_bundle
@@ -299,7 +349,7 @@ async def test_freeze_rejects_missing_capability_snapshot_by_default():
         runtime, **candidate.model_dump()
     )
     assert result["status"] == "invalid"
-    assert "capability_snapshot_ref" in result["message"]
+    assert "业务快照" in result["message"]
 
 
 def test_region_filter_uses_trusted_catalog_field():

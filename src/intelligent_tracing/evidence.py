@@ -106,6 +106,9 @@ class EvidenceRegistry:
             nwp_run_time=nwp_run_time,
             nwp_lead_hours=nwp_lead_hours,
             metadata=metadata or {},
+            business_code=scope.business_code,
+            business_policy_version=scope.business_policy_version,
+            business_permission=scope.business_permission,
             scope=scope,
         )
         with self._lock:
@@ -173,6 +176,11 @@ class EvidenceRegistry:
             or record.scope.graph_id != scope.graph_id
             or record.scope.context_version != scope.context_version
             or record.scope.epoch != scope.epoch
+            or record.scope.business_code != scope.business_code
+            or record.scope.business_policy_version != scope.business_policy_version
+            or record.scope.business_permission != scope.business_permission
+            or record.business_code != scope.business_code
+            or record.business_policy_version != scope.business_policy_version
         ):
             raise EvidenceRegistryError("证据不属于当前请求作用域或修订")
 

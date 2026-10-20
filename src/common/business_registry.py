@@ -183,6 +183,19 @@ def _ipp(tools: Iterable[str]) -> tuple[BusinessConnection, ...]:
     )
 
 
+# 溯源业务的窄工具子集：在通用已审核清单之上再排除轨迹/PSCF。
+# 这些工具需要额外参数和专门可视化，不属于本阶段受控溯源的数据边界；
+# 执行层另有名称拒绝作为第二道防线（见 intelligent_tracing.data_access）。
+TRACING_EXCLUDED_TOOLS: tuple[str, ...] = (
+    "mcp_station_analysis_trajectory",
+    "mcp_station_analysis_single_pscf",
+    "mcp_station_analysis_history_pscf",
+)
+TRACING_APPROVED_QUERY_TOOLS: tuple[str, ...] = tuple(
+    tool for tool in IPP_APPROVED_QUERY_TOOLS if tool not in TRACING_EXCLUDED_TOOLS
+)
+
+
 BUSINESSES: dict[str, BusinessDefinition] = {
     "basic-qa": BusinessDefinition(
         code="basic-qa",
@@ -230,9 +243,9 @@ BUSINESSES: dict[str, BusinessDefinition] = {
         name_zh="智能溯源",
         permission="agent:business:intelligent-tracing:use",
         graph="intelligent-tracing",
-        # 溯源图没有固定 Skill 清单，按开发侧审核通过的完整查询工具集执行；
+        # 溯源只使用窄工具子集：通用已审核清单再去掉轨迹/PSCF；
         # 仍与连接配置 approved_query_tools 取交集，新增工具不会自动出现。
-        connections=_ipp(IPP_APPROVED_QUERY_TOOLS),
+        connections=_ipp(TRACING_APPROVED_QUERY_TOOLS),
     ),
 }
 

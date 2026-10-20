@@ -19,6 +19,11 @@ from common.langfuse_tracing import with_langfuse_tracing
 from common.middleware import TenantRuntimeGuardMiddleware, TimeContextMiddleware
 from common.models import ModelRegistry
 from common.observability.middleware import ObservabilityModelMiddleware
+from intelligent_tracing.data_access import (
+    BusinessMCPDataSource,
+    StationCatalog,
+    StationCatalogProvider,
+)
 from intelligent_tracing.evidence import EvidenceRegistry
 from intelligent_tracing.gate import ReportGate
 from intelligent_tracing.guards import (
@@ -28,13 +33,12 @@ from intelligent_tracing.guards import (
 )
 from intelligent_tracing.policy import DEFAULT_POLICY, AnalysisPolicy
 from intelligent_tracing.publishing import TracingPublishMiddleware
-from intelligent_tracing.report_store import InMemoryReportStore, ReportStore
-from intelligent_tracing.schemas import StationMeta
-from intelligent_tracing.sources import (
-    CachedDataSource,
-    TracingDataSource,
-    UnavailableDataSource,
+from intelligent_tracing.report_store import (
+    ReportStore,
+    default_report_store,
 )
+from intelligent_tracing.schemas import StationMeta
+from intelligent_tracing.sources import CachedDataSource, TracingDataSource
 from intelligent_tracing.state import TracingState
 from intelligent_tracing.subagents import (
     build_grid_runnable,
@@ -54,8 +58,8 @@ SYSTEM_PROMPT = """
 文件/代码工具，不输出事实正文；所有用户可见结论由服务端验证后的报告发布。
 
 ## 必须流程
-1. 先调用 `freeze_tracing_request` 冻结请求；缺少站点/时间/半径时向用户补问，
-   在冻结前不得委派数据任务。
+1. 先调用 `freeze_tracing_request` 冻结请求；缺少站点代码/名称、行政区中文名
+   （如“郑州市”）、时间范围或半径时向用户补问，在冻结前不得委派数据任务。
 2. 冻结后，在同一轮用原生 `task` 并行委派 `station-data` 与 `grid-data`。
    `task` 只有 `description` 和 `subagent_type`；子图会从受控状态读取冻结请求，
    不要在 description 里伪造站点、时间、半径、证据或授权字段。
@@ -146,25 +150,29 @@ def build_tracing_graph(
     meteo_model: Any = None,
     reviewer_model: Any = None,
     data_source: TracingDataSource | None = None,
-    station_catalog: tuple[StationMeta, ...] = (),
+    station_catalog: StationCatalog | tuple[StationMeta, ...] | None = None,
     policy: AnalysisPolicy = DEFAULT_POLICY,
     report_store: ReportStore | None = None,
     checkpointer: Any = None,
     name: str = "intelligent-tracing",
     enable_reviewer: bool = True,
+    lifecycle_probe: Any = None,
 ):
     """Build the tracing graph; G0 tests inject a fixture source and fake model."""
     resolved_model = model or ModelRegistry.main_llm
     resolved_meteo_model = meteo_model or resolved_model
     resolved_reviewer_model = reviewer_model or resolved_model
-    source = CachedDataSource(data_source or UnavailableDataSource())
+    catalog: StationCatalog = (
+        station_catalog if station_catalog is not None else StationCatalogProvider()
+    )
+    source = CachedDataSource(
+        data_source or BusinessMCPDataSource(station_catalog=catalog)
+    )
     registry = EvidenceRegistry()
     gate = ReportGate(registry=registry, policy=policy)
-    store = report_store or InMemoryReportStore()
+    store = report_store or default_report_store()
     backend = StateBackend()
-    station_tool = build_freeze_request_tool(
-        station_catalog=station_catalog, policy=policy
-    )
+    station_tool = build_freeze_request_tool(station_catalog=catalog, policy=policy)
     policy_tool = build_policy_summary_tool(policy)
     report_tool, canvas_tool = build_report_tools(
         registry=registry, gate=gate, policy=policy, report_store=store
@@ -216,6 +224,7 @@ def build_tracing_graph(
             gate=gate,
             policy=policy,
             report_store=store,
+            lifecycle_probe=lifecycle_probe,
         ),
     ]
 

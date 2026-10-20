@@ -8,7 +8,11 @@ import pytest
 from fixtures import START, build_bundle, make_request, make_scope
 
 from intelligent_tracing.evidence import EvidenceRegistry
-from intelligent_tracing.policy import DEFAULT_POLICY, STAGE2_POLICY
+from intelligent_tracing.policy import (
+    DEFAULT_POLICY,
+    STAGE1_POLICY,
+    STAGE2_POLICY,
+)
 from intelligent_tracing.quality import (
     clean_concentration_series,
     clean_weather,
@@ -20,13 +24,19 @@ from intelligent_tracing.station_analysis import analyze_station
 
 
 def test_supported_profiles_are_explicit():
+    assert DEFAULT_POLICY.version == "analysis-policy-v2"
+    assert STAGE2_POLICY is DEFAULT_POLICY
     assert DEFAULT_POLICY.require_supported("pm2.5").unit == "ug/m3"
+    for pollutant in ("pm2.5", "pm10", "o3", "no2", "so2", "co"):
+        assert DEFAULT_POLICY.require_supported(pollutant).key == pollutant
+    assert DEFAULT_POLICY.require_supported("co").unit == "mg/m3"
     with pytest.raises(ValueError, match="当前阶段未实现"):
-        DEFAULT_POLICY.require_supported("o3")
-    assert STAGE2_POLICY.require_supported("o3").display_name == "O3"
-    assert STAGE2_POLICY.require_supported("co").unit == "mg/m3"
+        DEFAULT_POLICY.require_supported("vocs")
+    # v1 保持仅 PM2.5，不被静默扩大。
+    assert STAGE1_POLICY.version == "analysis-policy-v1"
+    assert STAGE1_POLICY.require_supported("pm2.5").unit == "ug/m3"
     with pytest.raises(ValueError, match="当前阶段未实现"):
-        STAGE2_POLICY.require_supported("vocs")
+        STAGE1_POLICY.require_supported("o3")
 
 
 def test_pblh_sentinel_negative_uv_and_zero_values():
