@@ -183,3 +183,53 @@ def test_missing_fixed_limitation_is_rejected():
     result = gate.validate_and_render(plan, filtered, request, scope)
     assert not result.ok
     assert "fixed_limitations_missing" in result.errors
+
+
+def test_knowledge_heading_cannot_exempt_free_attribution_prose():
+    request, scope, _registry, analysis, gate = _analysis()
+    result = gate.validate_and_render(
+        fallback_plan(analysis.allowlist), analysis.allowlist, request, scope
+    )
+    report = result.report
+    forged = report.model_copy(
+        update={
+            "body_markdown": report.body_markdown
+            + "\n### 知识依据\n贡献率为99%，已确认企业。"
+        }
+    )
+    forged = forged.model_copy(update={"content_sha256": forged.compute_digest()})
+    assert "attribution_overclaim_in_text" in gate._validate_text_boundary(
+        forged, analysis.allowlist
+    )
+
+
+def test_knowledge_digest_old_roundtrip_and_registered_quote_positive_control():
+    from intelligent_tracing.schemas import KnowledgeBasisItem, ValidatedReport
+
+    request, scope, _registry, analysis, gate = _analysis()
+    plan = fallback_plan(analysis.allowlist)
+    old = gate.validate_and_render(plan, analysis.allowlist, request, scope).report
+    old_json = old.model_dump(mode="json")
+    old_json.pop("knowledge_basis")
+    reread = ValidatedReport.model_validate(old_json)
+    assert reread.compute_digest() == old.content_sha256
+    basis = KnowledgeBasisItem(
+        citation_id="11111111-1111-4111-8111-111111111111",
+        doc_name="F-I 测试方法",
+        excerpt="某过程贡献率为30%，此句仅供软件测试。",
+        location=None,
+        location_status="not_provided",
+        source_version="test-v1",
+        source_sha256="a" * 64,
+    )
+    plan = plan.model_copy(update={"knowledge_reference_ids": (basis.citation_id,)})
+    result = gate.validate_and_render(
+        plan, analysis.allowlist, request, scope, knowledge_basis=(basis,)
+    )
+    assert result.ok
+    assert result.report.claim_ids == old.claim_ids
+    assert result.report.evidence_ids == old.evidence_ids
+    assert result.report.knowledge_basis == (basis,)
+    assert result.report.compute_digest() == result.report.content_sha256
+    modified = result.report.model_copy(update={"knowledge_basis": ()})
+    assert modified.compute_digest() != result.report.content_sha256

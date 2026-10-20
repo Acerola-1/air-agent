@@ -25,6 +25,7 @@ from intelligent_tracing.policy import AnalysisPolicy
 from intelligent_tracing.process_assessment import assess_process
 from intelligent_tracing.report_store import ReportStore
 from intelligent_tracing.schemas import (
+    KnowledgeBasisItem,
     ReportValidationResult,
     RuntimeScope,
     TracingRequest,
@@ -135,10 +136,11 @@ class TracingPublishMiddleware(AgentMiddleware):
     def _invisible(message: AIMessage) -> AIMessage:
         return message.model_copy(
             update={
+                "content": "",
                 "additional_kwargs": {
                     **message.additional_kwargs,
                     "ui_visible": False,
-                }
+                },
             }
         )
 
@@ -167,14 +169,20 @@ class TracingPublishMiddleware(AgentMiddleware):
                 getattr(request, "analysis_id", ""),
             )
         if report is None:
-            report = await self._build_fallback(state, run_id=run_id)
+            report = await self._build_fallback(state, run_id=run_id, config=config)
         elif current is not None:
             request_now, scope_now, allowlist_now = current
             if not await self._report_is_current(
                 report, request_now, scope_now, allowlist_now, state
             ):
                 report = await self._render_fallback(
-                    request_now, scope_now, allowlist_now, run_id=run_id
+                    request_now,
+                    scope_now,
+                    allowlist_now,
+                    run_id=run_id,
+                    knowledge_basis=await self._fallback_knowledge(
+                        state, request_now, scope_now, allowlist_now, config
+                    ),
                 )
         if report is None:
             return self._publish_text(config, _INCOMPLETE_TEXT, "incomplete")
@@ -247,13 +255,24 @@ class TracingPublishMiddleware(AgentMiddleware):
         allowlist,
         *,
         run_id: str = "",
+        knowledge_basis: tuple[KnowledgeBasisItem, ...] | None = (),
     ) -> ValidatedReport | None:
+        if knowledge_basis is None:
+            return None
+        plan = fallback_plan(allowlist).model_copy(
+            update={
+                "knowledge_reference_ids": tuple(
+                    item.citation_id for item in knowledge_basis
+                )
+            }
+        )
         result: ReportValidationResult = self._gate.validate_and_render(
-            fallback_plan(allowlist),
+            plan,
             allowlist,
             request,
             scope,
             run_id=run_id,
+            knowledge_basis=knowledge_basis,
         )
         if not result.ok or result.report is None:
             logger.warning(
@@ -265,14 +284,46 @@ class TracingPublishMiddleware(AgentMiddleware):
         return result.report
 
     async def _build_fallback(
-        self, state: dict[str, Any], *, run_id: str = ""
+        self,
+        state: dict[str, Any],
+        *,
+        run_id: str = "",
+        config: dict[str, Any] | None = None,
     ) -> ValidatedReport | None:
         current = await self._current_allowlist(state)
         if current is None:
             logger.warning("tracing publication: fallback allowlist missing")
             return None
         request, scope, allowlist = current
-        return await self._render_fallback(request, scope, allowlist, run_id=run_id)
+        return await self._render_fallback(
+            request,
+            scope,
+            allowlist,
+            run_id=run_id,
+            knowledge_basis=await self._fallback_knowledge(
+                state, request, scope, allowlist, config or {}
+            ),
+        )
+
+    async def _fallback_knowledge(self, state, request, scope, allowlist, config):
+        """Re-resolve knowledge for fallback; never silently drop old sources."""
+        from common.knowledge.policy import citation_ids_from_messages
+        from intelligent_tracing.tools import _resolve_knowledge_basis
+
+        previous = state.get("validated_report")
+        ids = (
+            tuple(item.citation_id for item in previous.knowledge_basis)
+            if isinstance(previous, ValidatedReport)
+            else ()
+        )
+        ids = ids or tuple(citation_ids_from_messages(state.get("messages", [])))
+        if not ids:
+            return ()
+        plan = fallback_plan(allowlist).model_copy(
+            update={"knowledge_reference_ids": ids}
+        )
+        resolved = await _resolve_knowledge_basis(plan, scope=scope, config=config)
+        return None if isinstance(resolved, dict) else resolved
 
     async def _report_is_current(
         self,

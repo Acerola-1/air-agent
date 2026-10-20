@@ -1,0 +1,152 @@
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+16:45:07.735 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.internal.InternalClientIntegrationTest]: InternalClientIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:45:07.917 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.internal.InternalClientIntegrationTest
+16:45:08.025 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.internal.InternalClientIntegrationTest]: InternalClientIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:45:08.028 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.internal.InternalClientIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 16:45:08.634 INFO  [main] c.a.i.i.InternalClientIntegrationTest - Starting InternalClientIntegrationTest using Java 25.0.4.1 with PID 6945 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 16:45:08.640 INFO  [main] c.a.i.i.InternalClientIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 16:45:10.803 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 16:45:10.807 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 16:45:10.849 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 22 ms. Found 0 Redis repository interfaces.
+2026-10-20 16:45:12.259 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 16:45:12.616 INFO  [main] o.f.c.i.s.JdbcTableSchemaHistory - Schema history table "iam"."flyway_schema_history" does not exist yet
+2026-10-20 16:45:12.625 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.278s)
+2026-10-20 16:45:12.676 INFO  [main] o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "iam"."flyway_schema_history" ...
+2026-10-20 16:45:12.780 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": << Empty Schema >>
+2026-10-20 16:45:12.868 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "1 - identity schema"
+2026-10-20 16:45:13.285 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "2 - seed catalog"
+2026-10-20 16:45:13.357 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "3 - session revisions and authority"
+2026-10-20 16:45:13.473 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "4 - audit and bootstrap"
+2026-10-20 16:45:13.501 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "5 - bootstrap platform context"
+2026-10-20 16:45:13.526 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "6 - drop auth sessions touch trigger"
+2026-10-20 16:45:13.560 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "7 - internal clients and service principals"
+2026-10-20 16:45:13.642 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "8 - service token listing"
+2026-10-20 16:45:13.676 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "9 - member user brief"
+2026-10-20 16:45:13.702 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "10 - browser sso functions"
+2026-10-20 16:45:13.761 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "11 - sso clients and mint"
+2026-10-20 16:45:13.767 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: constraint "sso_clients_audience_check" of relation "sso_clients" does not exist, skipping
+2026-10-20 16:45:13.799 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "12 - role authority revisions"
+2026-10-20 16:45:13.831 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "13 - monotonic session renewal"
+2026-10-20 16:45:13.890 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "14 - bounded credential rotation"
+2026-10-20 16:45:13.913 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "15 - tenant visibility and admin guards"
+2026-10-20 16:45:13.943 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "16 - shared central sso sessions"
+2026-10-20 16:45:13.969 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "17 - registered client bearer"
+2026-10-20 16:45:13.988 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "18 - single roundtrip authority snapshot"
+2026-10-20 16:45:14.009 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "19 - rotation window starts at rotation"
+2026-10-20 16:45:14.033 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "20 - tenant resource entitlements"
+2026-10-20 16:45:14.053 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: trigger "entitlements_bump_revision" for relation "iam.tenant_entitlements" does not exist, skipping
+2026-10-20 16:45:14.057 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: trigger "resource_catalog_bump_tenants" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 16:45:14.062 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_read" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 16:45:14.065 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_write" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 16:45:14.079 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "21 - fix resource catalog rls"
+2026-10-20 16:45:14.085 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_select" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 16:45:14.085 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_insert" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 16:45:14.086 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_update" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 16:45:14.087 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_delete" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 16:45:14.100 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "22 - resource write boundaries"
+2026-10-20 16:45:14.129 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "23 - internal tenant status contract"
+2026-10-20 16:45:14.150 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "24 - agent business entitlements"
+2026-10-20 16:45:14.153 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - +------------+
+| set_config |
++------------+
+| on         |
++------------+
+
+2026-10-20 16:45:14.164 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: trigger "permissions_bump_affected" for relation "iam.permissions" does not exist, skipping
+2026-10-20 16:45:14.214 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "25 - knowledge user delegations"
+2026-10-20 16:45:14.363 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "26 - knowledge delegation trusted snapshot"
+2026-10-20 16:45:14.386 INFO  [main] o.f.core.internal.command.DbMigrate - Successfully applied 26 migrations to schema "iam", now at version v26 (execution time 00:00.967s)
+2026-10-20 16:45:16.814 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 16:45:18.679 INFO  [main] c.a.i.i.InternalClientIntegrationTest - Started InternalClientIntegrationTest in 10.51 seconds (process running for 11.556)
+2026-10-20 16:45:18.684 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 16:45:18.684 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 16:45:18.684 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 16:45:18.685 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 16:45:18.685 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 16:45:18.693 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+2026-10-20 16:45:18.722 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[ERROR] Tests run: 27, Failures: 0, Errors: 2, Skipped: 0, Time elapsed: 20.58 s <<< FAILURE! -- in com.airagent.iam.internal.InternalClientIntegrationTest
+[ERROR] com.airagent.iam.internal.InternalClientIntegrationTest.knowledgeIssuanceRejectsRedisMissingWhilePgSessionIsActive -- Time elapsed: 0.175 s <<< ERROR!
+java.lang.RuntimeException: 
+org.postgresql.util.PSQLException: ERROR: 资源型权限仅可授予企业独有角色
+  在位置：PL/pgSQL function iam.guard_role_assignment_boundary() line 39 at RAISE
+	at com.airagent.iam.internal.InternalClientIntegrationTest.migrateTx(InternalClientIntegrationTest.java:894)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.prepareKnowledgeIssuer(InternalClientIntegrationTest.java:690)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.knowledgeIssuanceRejectsRedisMissingWhilePgSessionIsActive(InternalClientIntegrationTest.java:729)
+Caused by: org.postgresql.util.PSQLException: ERROR: 资源型权限仅可授予企业独有角色
+  在位置：PL/pgSQL function iam.guard_role_assignment_boundary() line 39 at RAISE
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2993)
+	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2656)
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:446)
+	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:533)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:449)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:371)
+	at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:356)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:332)
+	at org.postgresql.jdbc.PgStatement.executeUpdate(PgStatement.java:305)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.migrateTx(InternalClientIntegrationTest.java:886)
+	... 2 more
+
+[ERROR] com.airagent.iam.internal.InternalClientIntegrationTest.knowledgeDelegationPositiveOperationMismatchAndLiveLogout -- Time elapsed: 0.200 s <<< ERROR!
+java.lang.RuntimeException: 
+org.postgresql.util.PSQLException: ERROR: 资源型权限仅可授予企业独有角色
+  在位置：PL/pgSQL function iam.guard_role_assignment_boundary() line 39 at RAISE
+	at com.airagent.iam.internal.InternalClientIntegrationTest.migrateTx(InternalClientIntegrationTest.java:894)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.prepareKnowledgeIssuer(InternalClientIntegrationTest.java:690)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.knowledgeDelegationPositiveOperationMismatchAndLiveLogout(InternalClientIntegrationTest.java:706)
+Caused by: org.postgresql.util.PSQLException: ERROR: 资源型权限仅可授予企业独有角色
+  在位置：PL/pgSQL function iam.guard_role_assignment_boundary() line 39 at RAISE
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2993)
+	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2656)
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:446)
+	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:533)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:449)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:371)
+	at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:356)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:332)
+	at org.postgresql.jdbc.PgStatement.executeUpdate(PgStatement.java:305)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.migrateTx(InternalClientIntegrationTest.java:886)
+	... 2 more
+
+[ERROR] Errors: 
+[ERROR]   InternalClientIntegrationTest.knowledgeDelegationPositiveOperationMismatchAndLiveLogout:706->prepareKnowledgeIssuer:690->migrateTx:894 Runtime org.postgresql.util.PSQLException: ERROR: 资源型权限仅可授予企业独有角色
+  在位置：PL/pgSQL function iam.guard_role_assignment_boundary() line 39 at RAISE
+[ERROR]   InternalClientIntegrationTest.knowledgeIssuanceRejectsRedisMissingWhilePgSessionIsActive:729->prepareKnowledgeIssuer:690->migrateTx:894 Runtime org.postgresql.util.PSQLException: ERROR: 资源型权限仅可授予企业独有角色
+  在位置：PL/pgSQL function iam.guard_role_assignment_boundary() line 39 at RAISE
+[ERROR] Tests run: 31, Failures: 0, Errors: 2, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.6:test (default-test) on project iam-server: 
+[ERROR] 
+[ERROR] See /Users/acerola/Dev/Java/air_agent_iam/server/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

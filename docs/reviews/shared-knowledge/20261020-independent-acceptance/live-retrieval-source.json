@@ -1,0 +1,22 @@
+{
+  "retrieval_status": "retrieved",
+  "fragments": 9,
+  "scope_in_rag": true,
+  "scope_in_old_500": false,
+  "scope_in_new_context": true,
+  "text": {
+    "status": 200,
+    "bytes": 4935,
+    "content_type": "text/plain; charset=utf-8",
+    "range": null,
+    "no_store": true
+  },
+  "pdf": {
+    "status": 206,
+    "bytes": 1024,
+    "content_type": "application/pdf",
+    "range": "bytes 0-1023/637662",
+    "no_store": true
+  },
+  "query_token_source_status": 403
+}

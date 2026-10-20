@@ -1,0 +1,13 @@
+[dev 2f5886a] [新增] 支持知识库单操作委托与实时源会话核验
+ 23 files changed, 1179 insertions(+), 10 deletions(-)
+ create mode 100644 server/src/main/java/com/airagent/iam/internal/dto/KnowledgeDelegationDTO.java
+ create mode 100644 server/src/main/java/com/airagent/iam/internal/entity/IssuedKnowledgeDelegationDO.java
+ create mode 100644 server/src/main/java/com/airagent/iam/internal/entity/KnowledgeDelegationDO.java
+ create mode 100644 server/src/main/java/com/airagent/iam/internal/service/KnowledgeDelegationService.java
+ create mode 100644 server/src/main/java/com/airagent/iam/internal/service/impl/KnowledgeDelegationServiceImpl.java
+ create mode 100644 server/src/main/java/com/airagent/iam/internal/vo/KnowledgeDelegationInactiveVO.java
+ create mode 100644 server/src/main/java/com/airagent/iam/internal/vo/KnowledgeDelegationIntrospectionVO.java
+ create mode 100644 server/src/main/java/com/airagent/iam/internal/vo/KnowledgeDelegationVO.java
+ create mode 100644 server/src/main/resources/db/migration/V25__knowledge_user_delegations.sql
+ create mode 100644 server/src/main/resources/db/migration/V26__knowledge_delegation_trusted_snapshot.sql
+ create mode 100644 server/src/test/java/com/airagent/iam/internal/service/KnowledgeDelegationServiceTest.java

@@ -431,3 +431,76 @@ async def test_default_ledger_probe_ledger_failure_suppresses(monkeypatch):
 
     monkeypatch.setattr(publishing_module, "guard_runtime_call", _boom)
     assert await middleware._publication_allowed(config, scope) is False
+
+
+@pytest.mark.anyio
+async def test_fallback_rerender_preserves_source_basis_and_old_claims():
+    from intelligent_tracing.schemas import KnowledgeBasisItem
+
+    request, scope, analysis, old, registry, gate = await _objects()
+    store = InMemoryReportStore()
+    middleware = TracingPublishMiddleware(
+        registry=registry,
+        gate=gate,
+        policy=DEFAULT_POLICY,
+        report_store=store,
+        lifecycle_probe=allow_publication,
+    )
+    basis = KnowledgeBasisItem(
+        citation_id="11111111-1111-4111-8111-111111111111",
+        doc_name="F-A 合成标准",
+        excerpt="示例限值35测试单位，仅供软件测试。",
+        location=None,
+        location_status="not_provided",
+        source_version="test-v1",
+        source_sha256="a" * 64,
+    )
+    report = await middleware._render_fallback(
+        request, scope, analysis.allowlist, run_id="test-run", knowledge_basis=(basis,)
+    )
+    assert report.knowledge_basis == (basis,)
+    assert report.claim_ids == old.claim_ids and report.evidence_ids == old.evidence_ids
+    assert "### 知识依据" in report.body_markdown
+    assert (
+        await middleware._render_fallback(
+            request, scope, analysis.allowlist, knowledge_basis=None
+        )
+        is None
+    )
+
+
+@pytest.mark.anyio
+async def test_report_rejects_cross_run_citation_before_rag_call(monkeypatch):
+    from unittest.mock import AsyncMock
+
+    from common.knowledge import store, validation
+    from intelligent_tracing.tools import _resolve_knowledge_basis
+
+    request, scope, analysis, old, registry, gate = await _objects()
+    plan = fallback_plan(analysis.allowlist).model_copy(
+        update={"knowledge_reference_ids": ("11111111-1111-4111-8111-111111111111",)}
+    )
+    import intelligent_tracing.tools as tools
+
+    monkeypatch.setattr(tools, "identity_from_config", lambda config: object())
+    monkeypatch.setattr(
+        store,
+        "get_citation",
+        AsyncMock(
+            return_value={
+                "thread_id": scope.thread_id,
+                "run_id": "old-run",
+                "source_sha256": "a" * 64,
+            }
+        ),
+    )
+    checked = AsyncMock()
+    monkeypatch.setattr(validation, "validate_citations", checked)
+    result = await _resolve_knowledge_basis(
+        plan,
+        scope=scope,
+        config={"configurable": {"run_id": "11111111-1111-4111-8111-111111111111"}},
+    )
+    assert result["status"] == "knowledge_reference_invalid"
+    assert result["errors"] == ["citation_scope_mismatch"]
+    checked.assert_not_awaited()

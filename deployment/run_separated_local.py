@@ -464,6 +464,11 @@ def _detect_bridge_host(container_cli: str) -> str:
         status = payload.get("status")
         if not isinstance(status, dict):
             return ""
+        # `container network inspect` puts the gateway directly on status,
+        # while a running container exposes it under status.networks[*].
+        direct = str(status.get("ipv4Gateway") or "").strip()
+        if direct:
+            return direct
         networks = status.get("networks")
         records = (
             list(networks.values())

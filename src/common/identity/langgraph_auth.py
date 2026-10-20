@@ -299,6 +299,32 @@ def _ledger_operation_kind(value: Any) -> str:
     return ""
 
 
+def _reject_injected_messages(value: Any) -> None:
+    """Only human input can enter a persisted graph from an untrusted caller."""
+    kwargs = value.get("kwargs") or {}
+    command = kwargs.get("command", value.get("command"))
+    if isinstance(command, dict) and any(
+        command.get(key) is not None for key in ("update", "goto")
+    ):
+        raise Auth.exceptions.HTTPException(
+            status_code=403, detail="恢复请求不能改写工具回执或执行路径。"
+        )
+    payload = kwargs.get("input", value.get("input"))
+    if not isinstance(payload, dict):
+        return
+    messages = payload.get("messages", [])
+    if isinstance(messages, dict):
+        messages = [messages]
+    if not isinstance(messages, list) or any(
+        not isinstance(message, dict)
+        or (message.get("type") or message.get("role")) not in {"human", "user"}
+        for message in messages
+    ):
+        raise Auth.exceptions.HTTPException(
+            status_code=403, detail="只接受用户消息，工具回执和助手历史须来自服务端。"
+        )
+
+
 def _run_input_content(value: Any) -> str:
     """从运行创建载荷取"最后一条用户消息正文"（与 admin 侧规范摘要口径一致）.
 
@@ -395,6 +421,19 @@ def _pin_ledger_ids(
     if isinstance(value.get("config"), dict):
         configs.append(value["config"])
     for config in configs:
+        tags = config.get("tags")
+        config["tags"] = list(
+            dict.fromkeys(
+                [
+                    *(
+                        [tag for tag in tags if isinstance(tag, str)]
+                        if isinstance(tags, list)
+                        else []
+                    ),
+                    "nostream",
+                ]
+            )
+        )
         configurable = config.get("configurable")
         if not isinstance(configurable, dict):
             configurable = {}
@@ -457,6 +496,18 @@ async def authenticate(request):  # noqa: ANN001 - 平台注入 starlette Reques
     """校验运行票据并核对实时身份状态；返回可信用户上下文."""
     authorization = request.headers.get("authorization", "")
     token = authorization.removeprefix("Bearer ").strip()
+    # Graph history and tool receipts are server-owned. Public state mutation
+    # would otherwise bypass the human-only run input check and forge receipts.
+    import re
+
+    if getattr(request, "method", "GET") in {"POST", "PUT", "PATCH"} and re.fullmatch(
+        r"/threads/[^/]+/state(?:/.*)?",
+        getattr(getattr(request, "url", None), "path", ""),
+    ):
+        raise Auth.exceptions.HTTPException(
+            status_code=403,
+            detail="不允许直接改写运行状态，请通过正常提问或恢复入口操作。",
+        )
     audience = os.environ.get("RUNTIME_TICKET_AUDIENCE", "langgraph-runtime")
     try:
         keys = parse_keys(os.environ.get("RUNTIME_TICKET_KEYS", ""))
@@ -734,7 +785,31 @@ async def on_thread_read(
     # 归属匹配才放行；普通成员只读本人线程（user 条件）
     if owner["user_id"] != ids["user_id"] or owner["tenant_id"] != ids["tenant_id"]:
         raise Auth.exceptions.HTTPException(status_code=403, detail="无权访问此会话")
+    await _validate_thread_knowledge(ctx, thread_id)
     return
+
+
+async def _validate_thread_knowledge(ctx: Any, thread_id: str) -> None:
+    """Protect native state/history/replay before the platform loads content."""
+    from common.identity.runtime import identity_from_auth_user
+    from common.knowledge.validation import (
+        KnowledgeValidationError,
+        validate_thread_knowledge,
+    )
+
+    identity = identity_from_auth_user(ctx.user)
+    if identity is None:
+        raise Auth.exceptions.HTTPException(status_code=403, detail="缺少可信身份")
+    try:
+        await validate_thread_knowledge(identity, thread_id)
+    except KnowledgeValidationError as exc:
+        raise Auth.exceptions.HTTPException(
+            status_code=exc.status, detail=str(exc)
+        ) from exc
+    except Exception as exc:
+        raise Auth.exceptions.HTTPException(
+            status_code=503, detail="知识来源核验暂不可用"
+        ) from exc
 
 
 @auth.on.threads.update
@@ -839,6 +914,7 @@ async def on_thread_create_run(
 ):
     """运行创建：线程归属校验；无绑定线程的运行拒绝."""
     _deny_migration(ctx)
+    _reject_injected_messages(value)
     ids = _claims_from_ctx(ctx)
     thread_id = str(value.get("thread_id") or "")
     if not thread_id:
@@ -848,6 +924,7 @@ async def on_thread_create_run(
     owner = await _owner_or_deny(thread_id, ids)
     if owner["tenant_id"] != ids["tenant_id"] or owner["user_id"] != ids["user_id"]:
         raise Auth.exceptions.HTTPException(status_code=403, detail="无权在此会话运行")
+    await _validate_thread_knowledge(ctx, thread_id)
 
     # F04：**已删除会话不得再产生运行**。删除是永久语义（存在标记即已删除，清理完成
     # 也不放行），新受理在管理端就被拒；这里封住"旧预留 + 直连原生"的旁路。

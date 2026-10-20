@@ -527,6 +527,20 @@ class ReportPlan(StrictModel):
     revision: int = Field(ge=1)
     claim_ids: tuple[str, ...] = ()
     review_claim_ids: tuple[str, ...] = ()
+    # 只允许引用已登记的知识 citation_id；原文/文号/页码/URL 仍无输入通道.
+    knowledge_reference_ids: tuple[str, ...] = ()
+
+
+class KnowledgeBasisItem(StrictModel):
+    """Server-resolved knowledge basis, independent from pollution evidence."""
+
+    citation_id: str = Field(min_length=1, max_length=64)
+    doc_name: str = Field(min_length=1, max_length=500)
+    excerpt: str = Field(min_length=1, max_length=500)
+    location: dict[str, Any] | None = None
+    location_status: Literal["provided", "not_provided"] = "not_provided"
+    source_version: str | None = None
+    source_sha256: str = Field(min_length=64, max_length=64)
 
 
 class CanvasContent(StrictModel):
@@ -559,6 +573,8 @@ class ValidatedReport(StrictModel):
     gate_version: str = REPORT_GATE_VERSION
     created_at: datetime
     published: bool = False
+    # 新增：独立知识依据区。旧报告为空，digest 计算保持原口径.
+    knowledge_basis: tuple[KnowledgeBasisItem, ...] = ()
 
     def compute_digest(self) -> str:
         """Hash the user-visible content and pinned metadata."""
@@ -587,6 +603,11 @@ class ValidatedReport(StrictModel):
                 "business_permission": self.scope.business_permission,
             },
         }
+        # 旧报告没有知识依据：保持原 digest 口径，避免把历史报告判为损坏.
+        if self.knowledge_basis:
+            payload["knowledge_basis"] = [
+                item.model_dump(mode="json") for item in self.knowledge_basis
+            ]
         canonical = json.dumps(
             payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
         )

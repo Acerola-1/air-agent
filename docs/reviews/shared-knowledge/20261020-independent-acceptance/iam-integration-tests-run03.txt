@@ -1,0 +1,48 @@
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+16:50:37.018 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.internal.InternalClientIntegrationTest]: InternalClientIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:50:37.095 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.internal.InternalClientIntegrationTest
+16:50:37.137 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.internal.InternalClientIntegrationTest]: InternalClientIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:50:37.139 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.internal.InternalClientIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 16:50:37.321 INFO  [main] c.a.i.i.InternalClientIntegrationTest - Starting InternalClientIntegrationTest using Java 25.0.4.1 with PID 8689 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 16:50:37.322 INFO  [main] c.a.i.i.InternalClientIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 16:50:38.015 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 16:50:38.016 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 16:50:38.041 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 11 ms. Found 0 Redis repository interfaces.
+2026-10-20 16:50:38.709 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 16:50:38.816 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.059s)
+2026-10-20 16:50:38.863 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 16:50:38.866 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 16:50:39.436 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 16:50:40.380 INFO  [main] c.a.i.i.InternalClientIntegrationTest - Started InternalClientIntegrationTest in 3.201 seconds (process running for 3.8)
+2026-10-20 16:50:40.384 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 16:50:40.384 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 16:50:40.384 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 16:50:40.385 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 16:50:40.385 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 16:50:40.391 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 16:50:40.421 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release

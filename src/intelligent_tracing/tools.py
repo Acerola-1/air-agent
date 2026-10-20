@@ -35,6 +35,7 @@ from intelligent_tracing.runtime import (
     runtime_scope_from_config,
 )
 from intelligent_tracing.schemas import (
+    KnowledgeBasisItem,
     ReportPlan,
     StationMeta,
     TimeWindow,
@@ -330,6 +331,82 @@ def build_policy_summary_tool(policy: AnalysisPolicy) -> StructuredTool:
     )
 
 
+async def _resolve_knowledge_basis(
+    plan: ReportPlan, *, scope: Any, config: dict[str, Any]
+) -> tuple[KnowledgeBasisItem, ...] | dict[str, Any]:
+    """Resolve model-selected citation ids against the protected store.
+
+    The model never supplies document names, page numbers, URLs or excerpts.
+    Any unknown/foreign/expired citation rejects the report plan instead of
+    being silently dropped.
+    """
+    ids = tuple(dict.fromkeys(plan.knowledge_reference_ids))
+    if not ids:
+        return ()
+    if len(ids) > 8:
+        return {"status": "knowledge_reference_invalid", "errors": ["too_many_refs"]}
+    identity = identity_from_config(config)
+    if identity is None:
+        return {
+            "status": "knowledge_reference_invalid",
+            "errors": ["identity_missing"],
+        }
+    from common.knowledge.store import (
+        CitationBackendUnavailable,
+        CitationNotFound,
+        get_citation,
+    )
+    from common.knowledge.validation import KnowledgeValidationError, validate_citations
+
+    items: list[KnowledgeBasisItem] = []
+    from common.event_ledger.lifecycle import trusted_run_id
+
+    run_id = trusted_run_id(config)
+    for citation_id in ids:
+        try:
+            row = await get_citation(identity, citation_id)
+        except (CitationNotFound, CitationBackendUnavailable):
+            return {
+                "status": "knowledge_reference_invalid",
+                "errors": ["citation_not_found"],
+            }
+        thread_id = str(row.get("thread_id") or "")
+        if (
+            thread_id != scope.thread_id
+            or not run_id
+            or str(row.get("run_id") or "") != run_id
+        ):
+            return {
+                "status": "knowledge_reference_invalid",
+                "errors": ["citation_scope_mismatch"],
+            }
+        digest = str(row.get("source_sha256") or "")
+        if len(digest) != 64:
+            return {
+                "status": "knowledge_reference_invalid",
+                "errors": ["citation_digest_missing"],
+            }
+        try:
+            await validate_citations(identity, [row])
+        except KnowledgeValidationError:
+            return {
+                "status": "knowledge_reference_invalid",
+                "errors": ["citation_source_invalid"],
+            }
+        items.append(
+            KnowledgeBasisItem(
+                citation_id=str(row["citation_id"]),
+                doc_name=str(row.get("doc_name") or "未命名文档")[:500],
+                excerpt=str(row.get("excerpt") or "")[:500],
+                location=row.get("location"),
+                location_status="provided" if row.get("location") else "not_provided",
+                source_version=row.get("source_version"),
+                source_sha256=digest,
+            )
+        )
+    return tuple(items)
+
+
 def build_report_tools(
     *,
     registry: EvidenceRegistry,
@@ -381,13 +458,34 @@ def build_report_tools(
         candidate_plan = plan or fallback_plan(allowlist)
         config = _config_from_runtime(runtime)
         run_id = run_id_from_config(config)
+        knowledge_basis = await _resolve_knowledge_basis(
+            candidate_plan, scope=scope, config=config
+        )
+        if isinstance(knowledge_basis, dict):
+            return knowledge_basis
         result = gate.validate_and_render(
-            candidate_plan, allowlist, request, scope, run_id=run_id
+            candidate_plan,
+            allowlist,
+            request,
+            scope,
+            run_id=run_id,
+            knowledge_basis=knowledge_basis,
         )
         used_fallback = False
         if not result.ok:
+            # fallback 只替换 claim 计划，不悄悄丢弃已核验的知识引用.
+            fallback = fallback_plan(allowlist).model_copy(
+                update={
+                    "knowledge_reference_ids": candidate_plan.knowledge_reference_ids
+                }
+            )
             fallback_result = gate.validate_and_render(
-                fallback_plan(allowlist), allowlist, request, scope, run_id=run_id
+                fallback,
+                allowlist,
+                request,
+                scope,
+                run_id=run_id,
+                knowledge_basis=knowledge_basis,
             )
             if not fallback_result.ok:
                 return {

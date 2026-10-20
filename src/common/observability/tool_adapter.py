@@ -72,6 +72,30 @@ def classify_tool_output(content: Any) -> str:
         return "empty_result"
     if not isinstance(content, dict):
         return "unknown"
+    if content.get("schema_version") == "agent.knowledge-search.v1":
+        outcome = content.get("outcome")
+        if outcome == "ok":
+            references = content.get("references")
+            return (
+                "succeeded"
+                if content.get("retrieval_status") in {"retrieved", "complete"}
+                and isinstance(references, list)
+                and bool(references)
+                and all(
+                    isinstance(ref, dict) and ref.get("verified") is True
+                    for ref in references
+                )
+                else "unknown"
+            )
+        return {
+            "no_match": "empty_result",
+            "permission_denied": "permission_denied",
+            "context_changed": "permission_denied",
+            "timeout": "timed_out",
+            "cancelled": "cancelled",
+            "unavailable": "technical_error",
+            "evidence_unusable": "technical_error",
+        }.get(outcome, "unknown")
     code = str(content.get("code", content.get("status_code", "")))
     if code in {"401", "403"}:
         return "permission_denied"
@@ -328,14 +352,26 @@ _COUNTER_LOCK = __import__("threading").Lock()
 _COUNTERS: dict[str, int] = {}
 
 
-async def observed_tool_call(config, *, tool_name, service_key, invoke):
+async def observed_tool_call(
+    config,
+    *,
+    tool_name,
+    service_key,
+    invoke,
+    logical_call_id=None,
+    network_attempted=True,
+):
     """在已授权物理调用边界记录一次尝试，采集失败不改变业务结果."""
     from common.observability.context import observation_context_from_config
 
     ctx = observation_context_from_config(config)
     if ctx is None or not observability_enabled():
         return await invoke()
-    logical = str((config.get("metadata") or {}).get("obs_tool_call_id") or new_id())
+    logical = str(
+        logical_call_id
+        or (config.get("metadata") or {}).get("obs_tool_call_id")
+        or new_id()
+    )
     key = (
         f"{ctx.tenant_id}:{ctx.attempt_id}:{ctx.submission_id}:{service_key}:{logical}"
     )
@@ -356,7 +392,7 @@ async def observed_tool_call(config, *, tool_name, service_key, invoke):
             service_key=service_key,
             retry_index=retry,
             exc=exc,
-            network_attempted=True,
+            network_attempted=network_attempted,
             started_at=started_at,
             duration_ms=int((__import__("time").monotonic() - started) * 1000),
             tool_call_id=logical,
@@ -368,8 +404,8 @@ async def observed_tool_call(config, *, tool_name, service_key, invoke):
         tool_name=tool_name,
         service_key=service_key,
         retry_index=retry,
-        output=value,
-        network_attempted=True,
+        output=getattr(value, "content", value),
+        network_attempted=network_attempted,
         started_at=started_at,
         duration_ms=int((__import__("time").monotonic() - started) * 1000),
         tool_call_id=logical,

@@ -168,4 +168,17 @@ class TenantRuntimeGuardMiddleware(AgentMiddleware):
             )
         if _is_mcp_tool(request):
             return await execute_mcp_tool_request(request)
+        if request.tool_call.get("name") == "knowledge_search":
+            from common.observability.context import current_observation_config
+            from common.observability.tool_adapter import observed_tool_call
+
+            return await observed_tool_call(
+                current_observation_config(getattr(request, "runtime", None)),
+                tool_name="knowledge_search",
+                service_key="knowledge-api",
+                logical_call_id=str(request.tool_call.get("id") or "") or None,
+                # The adapter may reject before HTTP; unknown is not zero.
+                network_attempted=None,
+                invoke=lambda: handler(request),
+            )
         return await handler(request)

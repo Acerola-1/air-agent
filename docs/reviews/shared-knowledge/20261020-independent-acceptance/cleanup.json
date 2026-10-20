@@ -1,0 +1,39 @@
+{
+  "owner": "shared-knowledge-independent-acceptance-20261020",
+  "processes": [
+    {
+      "pid": 3700,
+      "script": "run_rag.py",
+      "action": "terminated owned process group"
+    },
+    {
+      "pid": 13157,
+      "script": "run_frontend.py",
+      "action": "terminated owned process group"
+    }
+  ],
+  "containers": [
+    {
+      "name": "knowledge-acceptance-pg-20261020",
+      "action": "stop",
+      "exit_code": 0
+    },
+    {
+      "name": "knowledge-acceptance-pg-20261020",
+      "action": "delete",
+      "exit_code": 0
+    },
+    {
+      "name": "knowledge-acceptance-redis-20261020",
+      "action": "stop",
+      "exit_code": 0
+    },
+    {
+      "name": "knowledge-acceptance-redis-20261020",
+      "action": "delete",
+      "exit_code": 0
+    }
+  ],
+  "owned_containers_remaining": [],
+  "temporary_pg_credentials_removed": true
+}

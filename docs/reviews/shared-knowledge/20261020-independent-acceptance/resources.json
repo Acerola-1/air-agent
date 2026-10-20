@@ -1,0 +1,35 @@
+{
+  "owner": "shared-knowledge-independent-acceptance-20261020",
+  "containers": [
+    {
+      "name": "knowledge-acceptance-pg-20261020",
+      "port": 25439,
+      "database": "knowledge_acceptance",
+      "data": "own container filesystem, no shared volume",
+      "iam_test": "self-created empty database; IAM migrate/app roles on the owned cluster"
+    },
+    {
+      "name": "knowledge-acceptance-redis-20261020",
+      "port": 25479,
+      "data": "own empty Redis"
+    }
+  ],
+  "processes": [
+    {
+      "port": 28099,
+      "purpose": "temporary read-only RAG gateway; independent record root"
+    },
+    {
+      "port": 3300,
+      "purpose": "owned isolated frontend build, temporary server"
+    }
+  ],
+  "lifecycle": "reclaimed; see cleanup.json; ports checked after cleanup",
+  "ports_released": {
+    "25439": true,
+    "25479": true,
+    "28099": true,
+    "3300": true
+  },
+  "temporary_frontend_directory_removed": true
+}

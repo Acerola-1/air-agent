@@ -1,0 +1,8 @@
+就绪 iam-java：HTTP 200。
+就绪 iam-web：HTTP 200。
+就绪 agent-admin-api：HTTP 200。
+就绪 agent-chat-web：HTTP 200。
+就绪 agent-admin-web：HTTP 200。
+就绪 rag-api：HTTP 200。
+就绪 langgraph：HTTP 200。
+就绪 local-host-bridge：19110 TCP 已监听。

@@ -1,0 +1,10 @@
+{
+  "known_private_secret_hits": 0,
+  "files_to_commit_including_this_audit": 105,
+  "push": false,
+  "archive": false,
+  "deployment": false,
+  "scope": "local dev checkpoint; incomplete acceptance remains explicit",
+  "raw_log_files_verified_byte_exact": 35,
+  "bytes_excluding_this_audit": 1086403
+}

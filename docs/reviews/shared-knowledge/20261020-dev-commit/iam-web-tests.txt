@@ -1,0 +1,28 @@
+npm notice run air-agent-iam-web@0.1.0 test
+npm notice run vitest run --pool=forks --poolOptions.forks.singleFork=true
+
+ RUN  v3.2.7 /Users/acerola/Dev/Java/air_agent_iam/web
+
+(node:53989) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/stores/auth.spec.ts (5 tests) 58ms
+ ✓ src/views/LoginView.spec.ts (3 tests) 34ms
+stderr | src/composables/usePagedList.spec.ts > usePagedList 作用域/纪元守卫（C29） > A 企业在途响应在切到 B 后返回时被丢弃，不写入列表
+[Vue warn]: onBeforeUnmount is called when there is no active component instance to be associated with. Lifecycle injection APIs can only be used during execution of setup(). If you are using async setup(), make sure to register lifecycle hooks before the first await statement.
+
+stderr | src/composables/usePagedList.spec.ts > usePagedList 作用域/纪元守卫（C29） > A→B→A：首个 A 的迟到响应即使作用域再次相同也因纪元落后被丢弃
+[Vue warn]: onBeforeUnmount is called when there is no active component instance to be associated with. Lifecycle injection APIs can only be used during execution of setup(). If you are using async setup(), make sure to register lifecycle hooks before the first await statement.
+
+stderr | src/composables/usePagedList.spec.ts > usePagedList 作用域/纪元守卫（C29） > 新请求自动 abort 上一个在途请求
+[Vue warn]: onBeforeUnmount is called when there is no active component instance to be associated with. Lifecycle injection APIs can only be used during execution of setup(). If you are using async setup(), make sure to register lifecycle hooks before the first await statement.
+
+ ✓ src/composables/usePagedList.spec.ts (3 tests) 2ms
+ ✓ src/composables/useWriteScope.spec.ts (4 tests) 1ms
+ ✓ src/api/business.spec.ts (5 tests) 1ms
+ ✓ src/api/scope.spec.ts (8 tests) 0ms
+
+ Test Files  6 passed (6)
+      Tests  28 passed (28)
+   Start at  20:18:11
+   Duration  750ms (transform 108ms, setup 0ms, collect 180ms, tests 96ms, environment 262ms, prepare 44ms)
+

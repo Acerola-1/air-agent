@@ -13,6 +13,7 @@ from intelligent_tracing.schemas import (
     AllowedClaim,
     ClaimAllowlist,
     ClaimType,
+    KnowledgeBasisItem,
     MeteoFindings,
     ProcessResult,
     ReportPlan,
@@ -496,6 +497,7 @@ def render_report(
     policy: AnalysisPolicy,
     created_at: datetime | None = None,
     run_id: str = "",
+    knowledge_basis: tuple[KnowledgeBasisItem, ...] = (),
 ) -> ValidatedReport:
     """Render a controlled Markdown report from allowlisted claims only."""
     claims = _by_id(allowlist)
@@ -637,6 +639,8 @@ def render_report(
             code = claim.parameters["code"]
             text = _LIMITATION_TEXT.get(code, code)
             lines.append(f"- 限制：{text}")
+    if knowledge_basis:
+        lines.extend(render_knowledge_lines(knowledge_basis))
     lines.extend(
         [
             "",
@@ -685,5 +689,29 @@ def render_report(
         scope=scope,
         content_sha256="",
         created_at=created_at or datetime.now(UTC),
+        knowledge_basis=knowledge_basis,
     )
     return report.model_copy(update={"content_sha256": report.compute_digest()})
+
+
+def render_knowledge_lines(
+    knowledge_basis: tuple[KnowledgeBasisItem, ...],
+) -> list[str]:
+    """One canonical source block; a heading alone grants no scan exemption."""
+    if not knowledge_basis:
+        return []
+    lines = [
+        "### 知识依据",
+        "以下为独立的知识库引用，只说明标准/资料原文，不作为本次污染监测证据、"
+        "claim、贡献率或来源归因依据。",
+    ]
+    for item in knowledge_basis:
+        location = (
+            f"（位置：{json.dumps(item.location, ensure_ascii=False)}）"
+            if item.location
+            else "（位置未提供）"
+        )
+        lines.append(
+            f"- 《{item.doc_name}》{location}：{item.excerpt} [[cite:{item.citation_id}]]"
+        )
+    return lines

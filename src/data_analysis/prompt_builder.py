@@ -31,6 +31,12 @@ SYSTEM_PROMPT = """
     - 表格限制：如必须使用表格，不得超过两列；优先使用要点和短段落替代表格。
     - 发现异常或值得关注的点时，明确标注并给出建议。
 
+    ## 知识检索与依据
+    - 具体法规、标准、条款、文号、限值必须调用 knowledge_search，并仅引用返回的 citation_id；
+    - 引用格式 [[cite:<citation_id>]]；location_status=not_provided 时不要补页码；
+    - 未取得可核验依据时明确说明，不得凭常识补写具体规定；
+    - 知识检索不授予任何额外数据分析权限，菜单约束保持不变。
+
     ## Skill 使用规则
     你已自动匹配到当前页面的数据分析 Skill，完整执行规则已在下方提供。
     请严格按照规则中的数据获取流程、输出规范和刚性规则执行分析。
@@ -92,15 +98,25 @@ def filter_business_tools(
     """过滤业务工具——只保留 allowed_tool_names 中列出的工具.
 
     框架工具（不在业务工具列表中的）始终保留。
-    allowed_tool_names 为空或 None 时，不暴露任何业务工具。
-    create_artifact / get_beijing_time 作为跨技能通用工具始终保留，
-    保证 Agent 在任何技能命中场景下都能自主产出画布内容。
+    allowed_tool_names 为空或 None 时，不暴露任何数据分析业务工具，但保留
+    knowledge_search：无菜单时可做知识问答，不能据此启动任意数据分析。
+    create_artifact / get_beijing_time / knowledge_search 作为跨技能通用工具
+    始终保留，保证 Agent 在任何技能命中场景下都能产出画布与可核验知识依据。
     """
     if not allowed_tool_names:
-        return [t for t in all_tools if tool_name(t) == "compute_artifact"]
+        return [
+            t
+            for t in all_tools
+            if tool_name(t) in {"compute_artifact", "knowledge_search"}
+        ]
 
-    # 始终可见的通用工具：画布输出 + 时间，不受技能 allowed-tools 限制
-    always_visible = {"create_artifact", "get_beijing_time", "compute_artifact"}
+    # 始终可见的通用工具：画布输出 + 时间 + 知识检索，不受技能 allowed-tools 限制
+    always_visible = {
+        "create_artifact",
+        "get_beijing_time",
+        "compute_artifact",
+        "knowledge_search",
+    }
     allowed = set(allowed_tool_names) | always_visible
     filtered: list[Any] = []
     for t in all_tools:

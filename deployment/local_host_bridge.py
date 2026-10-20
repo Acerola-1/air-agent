@@ -23,9 +23,16 @@ from typing import Any
 import httpx
 
 IAM_PATH = "/v1/internal/identity/introspect"
+KNOWLEDGE_DELEGATION_PATH = "/v1/internal/knowledge-delegations"
 MODEL_PATH = "/v1/chat/completions"
 IAM_UPSTREAM_URL = "http://127.0.0.1:19100/v1/internal/identity/introspect"
+KNOWLEDGE_DELEGATION_UPSTREAM_URL = (
+    "http://127.0.0.1:19100/v1/internal/knowledge-delegations"
+)
 MODEL_UPSTREAM_URL = "http://127.0.0.1:7863/v1/chat/completions"
+RAG_UPSTREAM_BASE = "http://127.0.0.1:8099"
+RAG_POST_PATHS = frozenset({"/rag/api/query", "/rag/api/knowledge-references/validate"})
+RAG_GET_PREFIXES = ("/rag/api/source/", "/rag/api/document/")
 MAX_BODY_BYTES = 4 * 1024 * 1024
 MAX_CONFIG_BYTES = 64 * 1024
 _CONFIG_KEYS = {
@@ -295,7 +302,35 @@ class BridgeHandler(BaseHTTPRequestHandler):
             status = 404
         self._send_local(status, body_allowed=self.command != "HEAD")
 
-    do_GET = _reject_method
+    def do_GET(self) -> None:
+        """Allow read-only knowledge source/document ranges through the bridge."""
+        self.close_connection = True
+        if not self._source_is_allowed():
+            self._send_local(403)
+            return
+        if not self.path.startswith(RAG_GET_PREFIXES):
+            self._send_local(405 if self.path in _ROUTE_PATHS else 404)
+            return
+        authorization = self.headers.get("Authorization", "")
+        if not authorization.startswith("Bearer ") or len(authorization) > 4096:
+            self._send_local(401)
+            return
+        forwarded = {
+            "Authorization": authorization,
+            "Accept": self.headers.get("Accept", "*/*"),
+        }
+        for name in ("X-Knowledge-Remaining-Ms", "Range"):
+            value = self.headers.get(name)
+            if value:
+                forwarded[name] = value
+        self._proxy(
+            "GET",
+            RAG_UPSTREAM_BASE + self.path[len("/rag") :],
+            forwarded,
+            None,
+            None,
+        )
+
     do_HEAD = _reject_method
     do_PUT = _reject_method
     do_DELETE = _reject_method
@@ -310,11 +345,48 @@ class BridgeHandler(BaseHTTPRequestHandler):
         if not self._source_is_allowed():
             self._send_local(403)
             return
-        if self.path not in _ROUTE_PATHS:
+        if self.path in RAG_POST_PATHS:
+            authorization = self.headers.get("Authorization", "")
+            if not authorization.startswith("Bearer ") or len(authorization) > 4096:
+                self._send_local(401)
+                return
+            content_type = self._request_content_type()
+            if content_type is None:
+                self._send_local(415)
+                return
+            body, failure_status = self._read_body()
+            if failure_status is not None or body is None:
+                self._send_local(failure_status or 400)
+                return
+            try:
+                payload = _decode_json(body)
+            except (UnicodeDecodeError, ValueError, TypeError):
+                self._send_local(400)
+                return
+            if not isinstance(payload, dict):
+                self._send_local(400)
+                return
+            headers = {
+                "Authorization": authorization,
+                "Content-Type": content_type,
+                "Accept": "application/json",
+            }
+            remaining = self.headers.get("X-Knowledge-Remaining-Ms")
+            if remaining:
+                headers["X-Knowledge-Remaining-Ms"] = remaining
+            self._proxy(
+                "POST",
+                RAG_UPSTREAM_BASE + self.path[len("/rag") :],
+                headers,
+                content_type,
+                body,
+            )
+            return
+        if self.path not in _ROUTE_PATHS and self.path != KNOWLEDGE_DELEGATION_PATH:
             self._send_local(404)
             return
 
-        is_iam = self.path == IAM_PATH
+        is_iam = self.path in (IAM_PATH, KNOWLEDGE_DELEGATION_PATH)
         expected_authorization = (
             self.config.iam_authorization if is_iam else self.config.model_authorization
         )
@@ -339,10 +411,14 @@ class BridgeHandler(BaseHTTPRequestHandler):
             self._send_local(400)
             return
         if is_iam:
-            if payload.get("audience") != "langgraph-runtime":
+            if self.path == IAM_PATH and payload.get("audience") != "langgraph-runtime":
                 self._send_local(403)
                 return
-            upstream_url = IAM_UPSTREAM_URL
+            upstream_url = (
+                IAM_UPSTREAM_URL
+                if self.path == IAM_PATH
+                else KNOWLEDGE_DELEGATION_UPSTREAM_URL
+            )
         else:
             model = payload.get("model")
             if not isinstance(model, str):
@@ -353,7 +429,13 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 return
             upstream_url = MODEL_UPSTREAM_URL
 
-        self._proxy(upstream_url, expected_authorization, content_type, body)
+        self._proxy(
+            "POST",
+            upstream_url,
+            {"Authorization": expected_authorization, "Content-Type": content_type},
+            content_type,
+            body,
+        )
 
     def _authorization_matches(self, expected: str) -> bool:
         values = self.headers.get_all("Authorization", [])
@@ -392,26 +474,37 @@ class BridgeHandler(BaseHTTPRequestHandler):
         return body, None
 
     def _proxy(
-        self, upstream_url: str, authorization: str, content_type: str, body: bytes
+        self,
+        method: str,
+        upstream_url: str,
+        headers: dict[str, str],
+        content_type: str | None,
+        body: bytes | None,
     ) -> None:
         response: httpx.Response | None = None
         headers_started = False
         try:
             request = httpx.Request(
-                "POST",
+                method,
                 upstream_url,
-                headers={
-                    "Authorization": authorization,
-                    "Content-Type": content_type,
-                },
+                headers=headers,
                 content=body,
             )
             response = self.server.upstream_client.send(request, stream=True)  # type: ignore[attr-defined]
             headers_started = True
             self.send_response_only(response.status_code)
-            content_type_out = response.headers.get("content-type")
-            if content_type_out is not None:
-                self.send_header("Content-Type", content_type_out)
+            for name in (
+                "content-type",
+                "content-disposition",
+                "content-range",
+                "accept-ranges",
+                "x-content-offset",
+                "x-content-next-offset",
+                "x-content-total-chars",
+            ):
+                value = response.headers.get(name)
+                if value is not None:
+                    self.send_header(name.title(), value)
             self.send_header("Connection", "close")
             self.end_headers()
             self.wfile.flush()

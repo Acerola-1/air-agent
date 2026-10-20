@@ -1,0 +1,15 @@
+跳过 iam-java：端口已监听。
+就绪 iam-java：HTTP 200。
+跳过 LangGraph：2024 已监听，不执行 Compose。
+跳过 local-host-bridge：来源 IP 未变且 19110 已监听。
+就绪 LangGraph：HTTP 200。
+跳过 agent-admin-api：端口已监听。
+就绪 agent-admin-api：HTTP 200。
+跳过 rag-api：端口已监听。
+就绪 rag-api：HTTP 200。
+跳过 iam-web：端口已监听。
+就绪 iam-web：HTTP 200。
+已启动 agent-chat-web，等待健康检查。
+就绪 agent-chat-web：HTTP 200。
+跳过 agent-admin-web：端口已监听。
+就绪 agent-admin-web：HTTP 200。

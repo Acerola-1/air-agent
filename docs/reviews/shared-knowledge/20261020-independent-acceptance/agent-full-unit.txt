@@ -1,0 +1,316 @@
+...................ssssssssssssssssssssssss............................. [ 10%]
+...............F........................................................ [ 21%]
+.ssssssssssssssssssssssssssssssssssssssssssssss.........sss............. [ 31%]
+........................FFFF..FEEEEEE.EEEEEEEEEEEE...................... [ 42%]
+........................................................................ [ 53%]
+........................................................................ [ 63%]
+........................................................................ [ 74%]
+..............................................................FF........ [ 84%]
+.......................................F................................ [ 95%]
+..............................                                           [100%]
+==================================== ERRORS ====================================
+__ ERROR at setup of test_rejects_wrong_credentials_and_never_calls_upstream ___
+tests/unit_tests/test_local_host_bridge.py:75: in bridge_harness
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), _upstream_handler(state))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   PermissionError: [Errno 1] Operation not permitted
+________ ERROR at setup of test_rejects_unlisted_path_query_and_method _________
+tests/unit_tests/test_local_host_bridge.py:75: in bridge_harness
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), _upstream_handler(state))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   PermissionError: [Errno 1] Operation not permitted
+___________ ERROR at setup of test_rejects_wrong_audience_and_model ____________
+tests/unit_tests/test_local_host_bridge.py:75: in bridge_harness
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), _upstream_handler(state))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   PermissionError: [Errno 1] Operation not permitted
+_________ ERROR at setup of test_rejects_bad_json_and_body_over_limit __________
+tests/unit_tests/test_local_host_bridge.py:75: in bridge_harness
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), _upstream_handler(state))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   PermissionError: [Errno 1] Operation not permitted
+____ ERROR at setup of test_forwards_only_fixed_route_auth_and_content_type ____
+tests/unit_tests/test_local_host_bridge.py:75: in bridge_harness
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), _upstream_handler(state))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   PermissionError: [Errno 1] Operation not permitted
+______ ERROR at setup of test_sse_chunks_arrive_before_upstream_finishes _______
+tests/unit_tests/test_local_host_bridge.py:75: in bridge_harness
+    upstream = ThreadingHTTPServer(("127.0.0.1", 0), _upstream_handler(state))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   PermissionError: [Errno 1] Operation not permitted
+_ ERROR at setup of test_missing_connection_rejected_without_network[asyncio] __
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+_ ERROR at setup of test_missing_credential_rejected_without_anonymous_fallback[asyncio] _
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+_______ ERROR at setup of test_unlisted_business_tool_rejected[asyncio] ________
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+___ ERROR at setup of test_real_bearer_auth_and_no_user_id_spoofing[asyncio] ___
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+____ ERROR at setup of test_ab_cache_and_credentials_are_isolated[asyncio] _____
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+_ ERROR at setup of test_handshake_succeeds_then_revocation_blocks_tool_call_without_network[asyncio] _
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+_______ ERROR at setup of test_retry_after_revocation_not_sent[asyncio] ________
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+_ ERROR at setup of test_connection_rotation_rediscovers_and_uses_new_credential[asyncio] _
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+_ ERROR at setup of test_discovery_deduplicates_per_connection_scope[asyncio] __
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+_______ ERROR at setup of test_request_helper_degrades_readably[asyncio] _______
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+___ ERROR at setup of test_user_empty_mcp_set_blocks_before_network[asyncio] ___
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+_ ERROR at setup of test_tracing_business_rejects_trajectory_with_zero_calls[asyncio] _
+tests/unit_tests/test_mcp_connection_execution.py:82: in fixture_server
+    await srv.start()
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+tests/mcp_fixture/server.py:407: in _free_port
+    sock.bind(("127.0.0.1", 0))
+E   PermissionError: [Errno 1] Operation not permitted
+=================================== FAILURES ===================================
+___________ test_reset_checkpointer_cache_closes_previous_connection ___________
+tests/unit_tests/test_checkpointing.py:69: in test_reset_checkpointer_cache_closes_previous_connection
+    assert checkpointer.conn.closed is True
+E   assert False is True
+E    +  where False = <test_checkpointing.CloseableConnection object at 0x1181bfa10>.closed
+E    +    where <test_checkpointing.CloseableConnection object at 0x1181bfa10> = <test_checkpointing.CloseableCheckpointer object at 0x1181bfb60>.conn
+____________________ test_policy_route_fast_path_skips_llm _____________________
+tests/unit_tests/test_knowledge_route.py:16: in test_policy_route_fast_path_skips_llm
+    tools.clear_knowledge_route_cache()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+___________________ test_knowledge_route_fast_path_skips_llm ___________________
+tests/unit_tests/test_knowledge_route.py:23: in test_knowledge_route_fast_path_skips_llm
+    tools.clear_knowledge_route_cache()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+______________________ test_route_cache_reuses_llm_result ______________________
+tests/unit_tests/test_knowledge_route.py:30: in test_route_cache_reuses_llm_result
+    tools.clear_knowledge_route_cache()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+____________________ test_ambiguous_route_uses_llm_fallback ____________________
+tests/unit_tests/test_knowledge_route.py:50: in test_ambiguous_route_uses_llm_fallback
+    tools.clear_knowledge_route_cache()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'common.tools' has no attribute 'clear_knowledge_route_cache'
+_______________________ test_rejects_unlisted_source_ip ________________________
+tests/unit_tests/test_local_host_bridge.py:140: in test_rejects_unlisted_source_ip
+    server = bridge.BridgeHTTPServer(("127.0.0.1", 0), bridge.BridgeHandler, config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+deployment/local_host_bridge.py:223: in __init__
+    super().__init__(server_address, request_handler)
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+../../../Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   PermissionError: [Errno 1] Operation not permitted
+_________________ test_confirmed_owner_still_readable[asyncio] _________________
+src/common/identity/langgraph_auth.py:772: in _validate_thread_knowledge
+    await validate_thread_knowledge(identity, thread_id)
+src/common/knowledge/validation.py:112: in validate_thread_knowledge
+    await validate_citations(identity, await list_thread_citations(identity, thread_id))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/common/knowledge/store.py:262: in list_thread_citations
+    await init_citation_storage()
+src/common/knowledge/store.py:110: in init_citation_storage
+    async with await psycopg.AsyncConnection.connect(
+.venv/lib/python3.13/site-packages/psycopg/connection_async.py:146: in connect
+    raise new_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15432 failed: Operation not permitted
+E   	Is the server running on that host and accepting TCP/IP connections?
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '15432', hostaddr: '::1': connection is bad: connection to server at "::1", port 15432 failed: Operation not permitted
+E   	Is the server running on that host and accepting TCP/IP connections?
+E   - host: 'localhost', port: '15432', hostaddr: '127.0.0.1': connection is bad: connection to server at "127.0.0.1", port 15432 failed: Operation not permitted
+E   	Is the server running on that host and accepting TCP/IP connections?
+
+The above exception was the direct cause of the following exception:
+tests/unit_tests/test_thread_claim_protocol.py:122: in test_confirmed_owner_still_readable
+    await lgauth.on_thread_read(_Ctx(), {"thread_id": _TID})  # 不抛错
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/common/identity/langgraph_auth.py:756: in on_thread_read
+    await _validate_thread_knowledge(ctx, thread_id)
+src/common/identity/langgraph_auth.py:778: in _validate_thread_knowledge
+    raise Auth.exceptions.HTTPException(
+E   langgraph_sdk.auth.exceptions.HTTPException: 503: 知识来源核验暂不可用
+____________________ test_migrated_owner_readable[asyncio] _____________________
+src/common/identity/langgraph_auth.py:772: in _validate_thread_knowledge
+    await validate_thread_knowledge(identity, thread_id)
+src/common/knowledge/validation.py:112: in validate_thread_knowledge
+    await validate_citations(identity, await list_thread_citations(identity, thread_id))
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/common/knowledge/store.py:262: in list_thread_citations
+    await init_citation_storage()
+src/common/knowledge/store.py:110: in init_citation_storage
+    async with await psycopg.AsyncConnection.connect(
+.venv/lib/python3.13/site-packages/psycopg/connection_async.py:146: in connect
+    raise new_ex.with_traceback(None)
+E   psycopg.OperationalError: connection is bad: connection to server at "127.0.0.1", port 15432 failed: Operation not permitted
+E   	Is the server running on that host and accepting TCP/IP connections?
+E   Multiple connection attempts failed. All failures were:
+E   - host: 'localhost', port: '15432', hostaddr: '::1': connection is bad: connection to server at "::1", port 15432 failed: Operation not permitted
+E   	Is the server running on that host and accepting TCP/IP connections?
+E   - host: 'localhost', port: '15432', hostaddr: '127.0.0.1': connection is bad: connection to server at "127.0.0.1", port 15432 failed: Operation not permitted
+E   	Is the server running on that host and accepting TCP/IP connections?
+
+The above exception was the direct cause of the following exception:
+tests/unit_tests/test_thread_claim_protocol.py:130: in test_migrated_owner_readable
+    await lgauth.on_thread_read(_Ctx(), {"thread_id": _TID})
+src/common/identity/langgraph_auth.py:756: in on_thread_read
+    await _validate_thread_knowledge(ctx, thread_id)
+src/common/identity/langgraph_auth.py:778: in _validate_thread_knowledge
+    raise Auth.exceptions.HTTPException(
+E   langgraph_sdk.auth.exceptions.HTTPException: 503: 知识来源核验暂不可用
+__ test_knowledge_digest_old_roundtrip_and_registered_quote_positive_control ___
+tests/unit_tests/tracing/test_gate_security.py:229: in test_knowledge_digest_old_roundtrip_and_registered_quote_positive_control
+    assert result.ok
+E   AssertionError: assert False
+E    +  where False = ReportValidationResult(ok=False, errors=('knowledge_section_mismatch',), used_fallback=False, report=None).ok
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_checkpointing.py::test_reset_checkpointer_cache_closes_previous_connection
+FAILED tests/unit_tests/test_knowledge_route.py::test_policy_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_knowledge_route_fast_path_skips_llm
+FAILED tests/unit_tests/test_knowledge_route.py::test_route_cache_reuses_llm_result
+FAILED tests/unit_tests/test_knowledge_route.py::test_ambiguous_route_uses_llm_fallback
+FAILED tests/unit_tests/test_local_host_bridge.py::test_rejects_unlisted_source_ip
+FAILED tests/unit_tests/test_thread_claim_protocol.py::test_confirmed_owner_still_readable[asyncio]
+FAILED tests/unit_tests/test_thread_claim_protocol.py::test_migrated_owner_readable[asyncio]
+FAILED tests/unit_tests/tracing/test_gate_security.py::test_knowledge_digest_old_roundtrip_and_registered_quote_positive_control
+ERROR tests/unit_tests/test_local_host_bridge.py::test_rejects_wrong_credentials_and_never_calls_upstream
+ERROR tests/unit_tests/test_local_host_bridge.py::test_rejects_unlisted_path_query_and_method
+ERROR tests/unit_tests/test_local_host_bridge.py::test_rejects_wrong_audience_and_model
+ERROR tests/unit_tests/test_local_host_bridge.py::test_rejects_bad_json_and_body_over_limit
+ERROR tests/unit_tests/test_local_host_bridge.py::test_forwards_only_fixed_route_auth_and_content_type
+ERROR tests/unit_tests/test_local_host_bridge.py::test_sse_chunks_arrive_before_upstream_finishes
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_missing_connection_rejected_without_network[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_missing_credential_rejected_without_anonymous_fallback[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_unlisted_business_tool_rejected[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_real_bearer_auth_and_no_user_id_spoofing[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_ab_cache_and_credentials_are_isolated[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_handshake_succeeds_then_revocation_blocks_tool_call_without_network[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_retry_after_revocation_not_sent[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_connection_rotation_rediscovers_and_uses_new_credential[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_discovery_deduplicates_per_connection_scope[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_request_helper_degrades_readably[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_user_empty_mcp_set_blocks_before_network[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_tracing_business_rejects_trajectory_with_zero_calls[asyncio]
+9 failed, 578 passed, 73 skipped, 18 errors in 36.14s

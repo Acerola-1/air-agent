@@ -115,6 +115,12 @@ async def test_fresh_claim_is_pending_not_confirmed(monkeypatch) -> None:
 
 
 async def test_confirmed_owner_still_readable(monkeypatch) -> None:
+    from unittest.mock import AsyncMock
+
+    from common.knowledge import store
+
+    monkeypatch.setattr(store, "list_thread_citations", AsyncMock(return_value=[]))
+
     async def fake_owner(thread_id: str, *, tenant_id: str, user_id: str):
         return {"tenant_id": "t-1", "user_id": "u-1", "source": "native"}
 
@@ -123,6 +129,12 @@ async def test_confirmed_owner_still_readable(monkeypatch) -> None:
 
 
 async def test_migrated_owner_readable(monkeypatch) -> None:
+    from unittest.mock import AsyncMock
+
+    from common.knowledge import store
+
+    monkeypatch.setattr(store, "list_thread_citations", AsyncMock(return_value=[]))
+
     async def fake_owner(thread_id: str, *, tenant_id: str, user_id: str):
         return {"tenant_id": "t-1", "user_id": "u-1", "source": "migrated"}
 

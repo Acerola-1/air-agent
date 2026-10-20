@@ -1,0 +1,562 @@
+[INFO] Scanning for projects...
+[WARNING] Could not transfer metadata /.meta/prefixes.txt from/to spring-release (https://repo.spring.io/release): HTTP Status: 401
+[INFO] Loaded 24142 auto-discovered prefixes for remote repository central (prefixes-central.txt)
+[WARNING] The requested profile "aliyun-public" could not be activated because it does not exist.
+[WARNING] The requested profile "aliyun-central" could not be activated because it does not exist.
+[WARNING] The requested profile "gradle-plugin" could not be activated because it does not exist.
+[WARNING] The requested profile "apache-snapshots" could not be activated because it does not exist.
+[WARNING] The requested profile "activiti-repos" could not be activated because it does not exist.
+[WARNING] The requested profile "bladex" could not be activated because it does not exist.
+[INFO] 
+[INFO] ----------------------< com.airagent:iam-server >-----------------------
+[INFO] Building air-agent-iam-server 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] Loaded 74 auto-discovered prefixes for remote repository apache.snapshots (prefixes-apache.snapshots.txt)
+[INFO] Loaded 24142 auto-discovered prefixes for remote repository maven-central (prefixes-maven-central.txt)
+[WARNING] Could not transfer metadata /.meta/prefixes.txt from/to flyway-community-db-support (https://maven.pkg.github.com/flyway/flyway-community-db-support): HTTP Status: 401
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ iam-server ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 45 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ iam-server ---
+[WARNING]  Parameter 'compilerVersion' (user property 'maven.compiler.compilerVersion') is deprecated: This parameter is no longer evaluated by the underlying compilers, instead the actual version of the javac binary is automatically retrieved.
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ iam-server ---
+[INFO] Copying 2 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ iam-server ---
+[WARNING]  Parameter 'compilerVersion' (user property 'maven.compiler.compilerVersion') is deprecated: This parameter is no longer evaluated by the underlying compilers, instead the actual version of the javac binary is automatically retrieved.
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ iam-server ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.airagent.iam.security.internal.RateLimitIntegrationTest
+20:19:26.397 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.security.internal.RateLimitIntegrationTest]: RateLimitIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:26.483 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.security.internal.RateLimitIntegrationTest
+20:19:26.523 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.security.internal.RateLimitIntegrationTest]: RateLimitIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:26.524 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.security.internal.RateLimitIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:19:26.699 INFO  [main] c.a.i.s.i.RateLimitIntegrationTest - Starting RateLimitIntegrationTest using Java 25.0.4.1 with PID 54443 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:19:26.700 INFO  [main] c.a.i.s.i.RateLimitIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:19:27.287 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:19:27.288 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:19:27.307 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 11 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:19:27.754 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:19:27.789 INFO  [main] o.f.c.i.s.JdbcTableSchemaHistory - Schema history table "iam"."flyway_schema_history" does not exist yet
+2026-10-20 20:19:27.791 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.019s)
+2026-10-20 20:19:27.804 INFO  [main] o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "iam"."flyway_schema_history" ...
+2026-10-20 20:19:27.837 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": << Empty Schema >>
+2026-10-20 20:19:27.859 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "1 - identity schema"
+2026-10-20 20:19:27.989 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "2 - seed catalog"
+2026-10-20 20:19:28.003 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "3 - session revisions and authority"
+2026-10-20 20:19:28.021 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "4 - audit and bootstrap"
+2026-10-20 20:19:28.028 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "5 - bootstrap platform context"
+2026-10-20 20:19:28.034 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "6 - drop auth sessions touch trigger"
+2026-10-20 20:19:28.041 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "7 - internal clients and service principals"
+2026-10-20 20:19:28.051 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "8 - service token listing"
+2026-10-20 20:19:28.057 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "9 - member user brief"
+2026-10-20 20:19:28.069 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "10 - browser sso functions"
+2026-10-20 20:19:28.077 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "11 - sso clients and mint"
+2026-10-20 20:19:28.079 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: constraint "sso_clients_audience_check" of relation "sso_clients" does not exist, skipping
+2026-10-20 20:19:28.085 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "12 - role authority revisions"
+2026-10-20 20:19:28.091 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "13 - monotonic session renewal"
+2026-10-20 20:19:28.096 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "14 - bounded credential rotation"
+2026-10-20 20:19:28.101 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "15 - tenant visibility and admin guards"
+2026-10-20 20:19:28.107 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "16 - shared central sso sessions"
+2026-10-20 20:19:28.114 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "17 - registered client bearer"
+2026-10-20 20:19:28.119 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "18 - single roundtrip authority snapshot"
+2026-10-20 20:19:28.124 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "19 - rotation window starts at rotation"
+2026-10-20 20:19:28.133 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "20 - tenant resource entitlements"
+2026-10-20 20:19:28.139 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: trigger "entitlements_bump_revision" for relation "iam.tenant_entitlements" does not exist, skipping
+2026-10-20 20:19:28.139 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: trigger "resource_catalog_bump_tenants" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 20:19:28.141 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_read" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 20:19:28.141 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_write" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 20:19:28.147 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "21 - fix resource catalog rls"
+2026-10-20 20:19:28.149 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_select" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 20:19:28.149 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_insert" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 20:19:28.149 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_update" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 20:19:28.149 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: policy "resource_catalog_delete" for relation "iam.resource_catalog" does not exist, skipping
+2026-10-20 20:19:28.154 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "22 - resource write boundaries"
+2026-10-20 20:19:28.159 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "23 - internal tenant status contract"
+2026-10-20 20:19:28.163 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "24 - agent business entitlements"
+2026-10-20 20:19:28.164 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - +------------+
+| set_config |
++------------+
+| on         |
++------------+
+
+2026-10-20 20:19:28.166 INFO  [main] o.f.c.i.s.DefaultSqlScriptExecutor - DB: trigger "permissions_bump_affected" for relation "iam.permissions" does not exist, skipping
+2026-10-20 20:19:28.171 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "25 - knowledge user delegations"
+2026-10-20 20:19:28.180 INFO  [main] o.f.core.internal.command.DbMigrate - Migrating schema "iam" to version "26 - knowledge delegation trusted snapshot"
+2026-10-20 20:19:28.186 INFO  [main] o.f.core.internal.command.DbMigrate - Successfully applied 26 migrations to schema "iam", now at version v26 (execution time 00:00.206s)
+2026-10-20 20:19:28.531 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:19:29.172 INFO  [main] c.a.i.s.i.RateLimitIntegrationTest - Started RateLimitIntegrationTest in 2.606 seconds (process running for 3.128)
+2026-10-20 20:19:29.174 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:19:29.174 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:19:29.174 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:19:29.175 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:19:29.175 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:19:29.181 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:19:29.197 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.929 s -- in com.airagent.iam.security.internal.RateLimitIntegrationTest
+[INFO] Running com.airagent.iam.security.CrossLanguageVectorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.368 s -- in com.airagent.iam.security.CrossLanguageVectorTest
+[INFO] Running com.airagent.iam.auth.SessionAuthorityIntegrationTest
+20:19:35.661 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.auth.SessionAuthorityIntegrationTest]: SessionAuthorityIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:35.724 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.auth.SessionAuthorityIntegrationTest
+20:19:35.754 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.auth.SessionAuthorityIntegrationTest]: SessionAuthorityIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:35.756 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.auth.SessionAuthorityIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:19:35.903 INFO  [main] c.a.i.a.SessionAuthorityIntegrationTest - Starting SessionAuthorityIntegrationTest using Java 25.0.4.1 with PID 54463 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:19:35.904 INFO  [main] c.a.i.a.SessionAuthorityIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:19:36.371 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:19:36.372 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:19:36.388 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 9 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:19:36.792 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:19:36.836 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.024s)
+2026-10-20 20:19:36.857 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:19:36.860 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:19:37.198 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:19:37.771 INFO  [main] c.a.i.a.SessionAuthorityIntegrationTest - Started SessionAuthorityIntegrationTest in 1.99 seconds (process running for 2.434)
+2026-10-20 20:19:37.773 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:19:37.773 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:19:37.773 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:19:37.774 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:19:37.775 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:19:37.779 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:19:37.804 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-10-20 20:19:39.423 WARN  [main] com.airagent.iam.auth.OutboxRelay - outbox 投递失败 id=4242 kind=redis_delete_keys attempts=1 reason=RedisConnectionFailureException
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.021 s -- in com.airagent.iam.auth.SessionAuthorityIntegrationTest
+[INFO] Running com.airagent.iam.admin.ResourceAdminIntegrationTest
+20:19:43.365 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.admin.ResourceAdminIntegrationTest]: ResourceAdminIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:43.428 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.admin.ResourceAdminIntegrationTest
+20:19:43.460 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.admin.ResourceAdminIntegrationTest]: ResourceAdminIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:43.462 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.admin.ResourceAdminIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:19:43.612 INFO  [main] c.a.i.a.ResourceAdminIntegrationTest - Starting ResourceAdminIntegrationTest using Java 25.0.4.1 with PID 54469 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:19:43.613 INFO  [main] c.a.i.a.ResourceAdminIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:19:44.079 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:19:44.080 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:19:44.097 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 10 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:19:44.484 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:19:44.524 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.022s)
+2026-10-20 20:19:44.556 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:19:44.558 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:19:44.879 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:19:45.506 INFO  [main] o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-10-20 20:19:45.506 INFO  [main] o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-10-20 20:19:45.507 INFO  [main] o.s.t.w.s.TestDispatcherServlet - Completed initialization in 1 ms
+2026-10-20 20:19:45.526 INFO  [main] c.a.i.a.ResourceAdminIntegrationTest - Started ResourceAdminIntegrationTest in 2.041 seconds (process running for 2.52)
+2026-10-20 20:19:45.528 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:19:45.528 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:19:45.528 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:19:45.529 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:19:45.529 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:19:45.534 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:19:45.553 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.821 s -- in com.airagent.iam.admin.ResourceAdminIntegrationTest
+[INFO] Running com.airagent.iam.admin.AdminApiIntegrationTest
+20:19:49.893 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.admin.AdminApiIntegrationTest]: AdminApiIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:49.962 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.admin.AdminApiIntegrationTest
+20:19:49.993 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.admin.AdminApiIntegrationTest]: AdminApiIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:49.994 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.admin.AdminApiIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:19:50.208 INFO  [main] c.a.i.admin.AdminApiIntegrationTest - Starting AdminApiIntegrationTest using Java 25.0.4.1 with PID 54518 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:19:50.214 INFO  [main] c.a.i.admin.AdminApiIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:19:51.357 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:19:51.358 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:19:51.379 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:19:52.033 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:19:52.122 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.039s)
+2026-10-20 20:19:52.158 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:19:52.162 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:19:52.610 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:19:53.331 INFO  [main] c.a.i.admin.AdminApiIntegrationTest - Started AdminApiIntegrationTest in 3.311 seconds (process running for 3.817)
+2026-10-20 20:19:53.336 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:19:53.336 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:19:53.336 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:19:53.337 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:19:53.337 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:19:53.341 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:19:53.366 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.596 s -- in com.airagent.iam.admin.AdminApiIntegrationTest
+[INFO] Running com.airagent.iam.admin.AgentBusinessEntitlementIntegrationTest
+20:19:59.138 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.admin.AgentBusinessEntitlementIntegrationTest]: AgentBusinessEntitlementIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:59.200 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.admin.AgentBusinessEntitlementIntegrationTest
+20:19:59.231 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.admin.AgentBusinessEntitlementIntegrationTest]: AgentBusinessEntitlementIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:19:59.232 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.admin.AgentBusinessEntitlementIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:19:59.378 INFO  [main] c.a.i.a.AgentBusinessEntitlementIntegrationTest - Starting AgentBusinessEntitlementIntegrationTest using Java 25.0.4.1 with PID 54528 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:19:59.379 INFO  [main] c.a.i.a.AgentBusinessEntitlementIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:19:59.849 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:19:59.850 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:19:59.866 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 8 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:20:00.271 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:20:00.308 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.021s)
+2026-10-20 20:20:00.327 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:20:00.329 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:20:00.700 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:20:01.252 INFO  [main] o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-10-20 20:20:01.252 INFO  [main] o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-10-20 20:20:01.253 INFO  [main] o.s.t.w.s.TestDispatcherServlet - Completed initialization in 1 ms
+2026-10-20 20:20:01.279 INFO  [main] c.a.i.a.AgentBusinessEntitlementIntegrationTest - Started AgentBusinessEntitlementIntegrationTest in 2.024 seconds (process running for 2.478)
+2026-10-20 20:20:01.281 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:20:01.282 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:20:01.282 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:20:01.283 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:20:01.283 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:20:01.290 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:20:01.312 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.358 s -- in com.airagent.iam.admin.AgentBusinessEntitlementIntegrationTest
+[INFO] Running com.airagent.iam.internal.service.KnowledgeDelegationServiceTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.697 s -- in com.airagent.iam.internal.service.KnowledgeDelegationServiceTest
+[INFO] Running com.airagent.iam.internal.InternalClientIntegrationTest
+20:20:09.257 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.internal.InternalClientIntegrationTest]: InternalClientIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:09.338 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.internal.InternalClientIntegrationTest
+20:20:09.377 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.internal.InternalClientIntegrationTest]: InternalClientIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:09.379 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.internal.InternalClientIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:20:09.593 INFO  [main] c.a.i.i.InternalClientIntegrationTest - Starting InternalClientIntegrationTest using Java 25.0.4.1 with PID 54548 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:20:09.594 INFO  [main] c.a.i.i.InternalClientIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:20:10.789 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:20:10.792 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:20:10.828 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 21 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:20:12.109 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:20:12.237 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.062s)
+2026-10-20 20:20:12.299 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:20:12.308 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:20:13.093 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:20:14.172 INFO  [main] c.a.i.i.InternalClientIntegrationTest - Started InternalClientIntegrationTest in 4.751 seconds (process running for 5.345)
+2026-10-20 20:20:14.174 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:20:14.174 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:20:14.174 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:20:14.175 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:20:14.175 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:20:14.183 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:20:14.204 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.73 s -- in com.airagent.iam.internal.InternalClientIntegrationTest
+[INFO] Running com.airagent.iam.db.MyBatisTransactionIntegrationTest
+20:20:21.612 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.db.MyBatisTransactionIntegrationTest]: MyBatisTransactionIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:21.680 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.db.MyBatisTransactionIntegrationTest
+20:20:21.717 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.db.MyBatisTransactionIntegrationTest]: MyBatisTransactionIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:21.719 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.db.MyBatisTransactionIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:20:21.874 INFO  [main] c.a.i.d.MyBatisTransactionIntegrationTest - Starting MyBatisTransactionIntegrationTest using Java 25.0.4.1 with PID 54625 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:20:21.874 INFO  [main] c.a.i.d.MyBatisTransactionIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:20:22.466 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:20:22.467 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:20:22.490 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 14 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:20:23.008 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:20:23.064 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.037s)
+2026-10-20 20:20:23.097 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:20:23.100 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:20:23.534 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:20:24.366 INFO  [main] c.a.i.d.MyBatisTransactionIntegrationTest - Started MyBatisTransactionIntegrationTest in 2.622 seconds (process running for 3.088)
+2026-10-20 20:20:24.368 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:20:24.369 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:20:24.369 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:20:24.369 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:20:24.370 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:20:24.380 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:20:24.405 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.254 s -- in com.airagent.iam.db.MyBatisTransactionIntegrationTest
+[INFO] Running com.airagent.iam.db.DbIsolationIntegrationTest
+20:20:25.584 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.db.DbIsolationIntegrationTest]: DbIsolationIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:25.666 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.db.DbIsolationIntegrationTest
+20:20:25.717 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.db.DbIsolationIntegrationTest]: DbIsolationIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:25.720 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.db.DbIsolationIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:20:25.905 INFO  [main] c.a.i.db.DbIsolationIntegrationTest - Starting DbIsolationIntegrationTest using Java 25.0.4.1 with PID 54629 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:20:25.906 INFO  [main] c.a.i.db.DbIsolationIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:20:26.484 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:20:26.485 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:20:26.506 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 13 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:20:26.988 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:20:27.047 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.031s)
+2026-10-20 20:20:27.074 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:20:27.077 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:20:27.462 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:20:28.124 INFO  [main] c.a.i.db.DbIsolationIntegrationTest - Started DbIsolationIntegrationTest in 2.367 seconds (process running for 2.951)
+2026-10-20 20:20:28.126 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:20:28.126 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:20:28.126 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:20:28.127 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:20:28.127 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:20:28.133 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:20:28.156 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.605 s -- in com.airagent.iam.db.DbIsolationIntegrationTest
+[INFO] Running com.airagent.iam.ops.OpsCommandIntegrationTest
+20:20:30.830 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.ops.OpsCommandIntegrationTest]: OpsCommandIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:30.899 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.ops.OpsCommandIntegrationTest
+20:20:30.940 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.ops.OpsCommandIntegrationTest]: OpsCommandIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:30.941 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.ops.OpsCommandIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:20:31.107 INFO  [main] c.a.i.ops.OpsCommandIntegrationTest - Starting OpsCommandIntegrationTest using Java 25.0.4.1 with PID 54633 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:20:31.108 INFO  [main] c.a.i.ops.OpsCommandIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:20:31.780 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:20:31.781 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:20:31.798 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 9 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:20:32.282 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:20:32.329 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.028s)
+2026-10-20 20:20:32.355 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:20:32.356 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:20:32.756 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:20:33.434 INFO  [main] c.a.i.ops.OpsCommandIntegrationTest - Started OpsCommandIntegrationTest in 2.466 seconds (process running for 2.955)
+2026-10-20 20:20:33.437 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:20:33.438 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:20:33.438 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:20:33.439 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:20:33.439 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:20:33.443 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:20:33.465 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.411 s -- in com.airagent.iam.ops.OpsCommandIntegrationTest
+[INFO] Running com.airagent.iam.webapi.BrowserSessionIntegrationTest
+20:20:35.934 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.webapi.BrowserSessionIntegrationTest]: BrowserSessionIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:36.025 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.webapi.BrowserSessionIntegrationTest
+20:20:36.075 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.webapi.BrowserSessionIntegrationTest]: BrowserSessionIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+20:20:36.078 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.webapi.BrowserSessionIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 20:20:36.279 INFO  [main] c.a.i.w.BrowserSessionIntegrationTest - Starting BrowserSessionIntegrationTest using Java 25.0.4.1 with PID 54636 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 20:20:36.280 INFO  [main] c.a.i.w.BrowserSessionIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 20:20:37.333 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 20:20:37.335 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 20:20:37.391 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 43 ms. Found 0 Redis repository interfaces.
+2026-10-20 20:20:38.157 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 20:20:38.216 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.034s)
+2026-10-20 20:20:38.245 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 20:20:38.249 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 20:20:38.975 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 20:20:39.717 INFO  [main] o.s.b.t.m.w.SpringBootMockServletContext - Initializing Spring TestDispatcherServlet ''
+2026-10-20 20:20:39.717 INFO  [main] o.s.t.w.s.TestDispatcherServlet - Initializing Servlet ''
+2026-10-20 20:20:39.719 INFO  [main] o.s.t.w.s.TestDispatcherServlet - Completed initialization in 2 ms
+2026-10-20 20:20:39.749 INFO  [main] c.a.i.w.BrowserSessionIntegrationTest - Started BrowserSessionIntegrationTest in 3.64 seconds (process running for 4.214)
+2026-10-20 20:20:39.753 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 20:20:39.753 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 20:20:39.753 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 20:20:39.754 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 20:20:39.754 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 20:20:39.763 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 20:20:39.780 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-10-20 20:20:43.439 WARN  [main] o.s.web.servlet.PageNotFound - No mapping for GET /v1/admin/nope
+2026-10-20 20:20:43.530 WARN  [main] o.s.web.servlet.PageNotFound - No mapping for GET /web-api/auth/missing
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.687 s -- in com.airagent.iam.webapi.BrowserSessionIntegrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 105, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:22 min
+[INFO] Finished at: 2026-10-20T20:20:43+08:00
+[INFO] ------------------------------------------------------------------------
+[WARNING] The requested profile "aliyun-public" could not be activated because it does not exist.
+[WARNING] The requested profile "aliyun-central" could not be activated because it does not exist.
+[WARNING] The requested profile "gradle-plugin" could not be activated because it does not exist.
+[WARNING] The requested profile "apache-snapshots" could not be activated because it does not exist.
+[WARNING] The requested profile "activiti-repos" could not be activated because it does not exist.
+[WARNING] The requested profile "bladex" could not be activated because it does not exist.

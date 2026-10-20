@@ -17,7 +17,7 @@ from contextlib import asynccontextmanager, suppress
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 from common.artifact_scope import verify_scope
 from common.identity.db import IdentityBackendUnavailable
@@ -180,6 +180,20 @@ async def _owners(request: Request, thread_id: str) -> tuple[str, str]:
         raise HTTPException(status_code=503, detail="归属确认不可用") from exc
     if owner is None or owner["source"] not in {"native", "migrated"}:
         raise HTTPException(status_code=404, detail="资料不存在或不属于此会话")
+    if request.method == "GET":
+        from common.identity.runtime import identity_from_auth_user
+        from common.knowledge.validation import (
+            KnowledgeValidationError,
+            validate_thread_knowledge,
+        )
+
+        identity = identity_from_auth_user(actor)
+        if identity is None:
+            raise HTTPException(status_code=403, detail="缺少可信身份")
+        try:
+            await validate_thread_knowledge(identity, thread_id)
+        except KnowledgeValidationError as exc:
+            raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
     return tenant_id, user_id
 
 
@@ -235,6 +249,69 @@ async def delete_archives(request: Request, thread_id: str):
         tenant_id=tenant_id, user_id=user_id, thread_id=thread_id
     )
     return {"ok": True}
+
+
+# ------------------------------------------------------------- 知识引用原文代理
+
+
+@app.get("/knowledge/citations/{citation_id}/{kind}")
+async def read_knowledge_citation(
+    request: Request,
+    citation_id: str,
+    kind: str,
+    offset: int = 0,
+    limit: int = 8000,
+):
+    """受保护原文读取：citation 映射来自服务端存储，浏览器不能指定来源."""
+    from common.identity.runtime import identity_from_auth_user
+    from common.knowledge.proxy import CitationSourceError, read_citation_with_budget
+    from common.knowledge.store import (
+        CitationBackendUnavailable,
+        CitationNotFound,
+        get_citation,
+    )
+
+    try:
+        uuid.UUID(citation_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="引用不存在") from exc
+    actor = await _authenticate_custom(request)
+    identity = identity_from_auth_user(actor)
+    if identity is None:
+        raise HTTPException(status_code=403, detail="缺少可信用户身份")
+    try:
+        citation = await get_citation(identity, citation_id)
+    except CitationNotFound as exc:
+        raise HTTPException(
+            status_code=404, detail="引用不存在或不属于当前用户"
+        ) from exc
+    except CitationBackendUnavailable as exc:
+        raise HTTPException(status_code=503, detail="引用存储暂不可用") from exc
+    thread_id = str(citation.get("thread_id") or "")
+    if thread_id:
+        from common.identity.db import fetch_thread_owner
+
+        owner = await fetch_thread_owner(
+            thread_id, tenant_id=identity.tenant_id, user_id=identity.user_id
+        )
+        if owner is None or owner["source"] not in {"native", "migrated"}:
+            raise HTTPException(status_code=404, detail="引用所在会话不可访问")
+    try:
+        body, content_type, headers, status = await read_citation_with_budget(
+            identity,
+            citation,
+            kind=kind,
+            offset=offset,
+            limit=limit,
+            range_header=request.headers.get("range"),
+        )
+    except TimeoutError as exc:
+        raise HTTPException(status_code=504, detail="原文读取超时") from exc
+    except CitationSourceError as exc:
+        raise HTTPException(status_code=exc.status, detail=exc.message) from exc
+    return Response(
+        content=body, media_type=content_type, headers=headers, status_code=status
+    )
 
 
 # ------------------------------------------------------------- R01 归属认领确认

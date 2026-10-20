@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, ToolMessage
@@ -47,6 +47,14 @@ def test_routes_and_computation_scope():
     ]
 
 
+def test_knowledge_search_is_visible_in_every_qa_lane():
+    """纯问候/知识/数据三条车道的模型工具列表都保留知识检索 schema."""
+    service = nodes()
+    for intent in ("chitchat", "knowledge", "data_query"):
+        names = {tool.name for tool in service._available_tools({"intent": intent}, {})}
+        assert "knowledge_search" in names, intent
+
+
 @pytest.mark.anyio
 async def test_all_intents_update_summary(monkeypatch):
     update = AsyncMock(
@@ -63,6 +71,7 @@ async def test_all_intents_update_summary(monkeypatch):
 @pytest.mark.anyio
 async def test_model_projects_watermark_and_marks_only_final(monkeypatch):
     model = AsyncMock()
+    model.bind_tools = Mock(return_value=model)
     model.ainvoke.return_value = AIMessage(
         content="<think>内部</think>最终答案", id="result"
     )

@@ -1,0 +1,11 @@
+{
+  "http_status": 500,
+  "elapsed_ms": 25.4,
+  "statement_timeout_ms": [],
+  "connection_closed": [
+    true
+  ],
+  "remaining_active_queries": 0,
+  "independent_connection_ok": true,
+  "postgres": "owned empty temporary container on 25439"
+}

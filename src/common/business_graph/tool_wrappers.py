@@ -272,7 +272,9 @@ def _global_fallback(request: Any, exc: Exception) -> ToolMessage:
 
 
 def _obs_service_key(mcp: bool, tool_name_str: str) -> str | None:
-    """观测用服务键：MCP 工具按工厂目录解析；本地工具 None."""
+    """知识库使用独立服务键，MCP 工具按工厂目录解析."""
+    if not mcp and tool_name_str == "knowledge_search":
+        return "knowledge-api"
     if not mcp:
         return None
     try:
@@ -402,6 +404,9 @@ async def composed_tool_wrapper(
                     duration_ms=int((_obs_time.monotonic() - obs_started) * 1000),
                     tool_call_id=obs_tool_call_id or None,
                     output=result.content if isinstance(result, ToolMessage) else None,
+                    network_attempted=None
+                    if obs_tool_name == "knowledge_search"
+                    else False,
                 )
             except Exception:  # noqa: BLE001 - 观测失败开放
                 pass
@@ -423,6 +428,9 @@ async def composed_tool_wrapper(
                     duration_ms=int((_obs_time.monotonic() - obs_started) * 1000),
                     tool_call_id=obs_tool_call_id or None,
                     exc=exc,
+                    network_attempted=None
+                    if obs_tool_name == "knowledge_search"
+                    else False,
                 )
             except Exception:  # noqa: BLE001 - 观测失败开放
                 pass

@@ -1,0 +1,12 @@
+{
+  "iam": {
+    "commit": "2f5886a8fddb45bb7334bc6f1131df953663b816",
+    "branch": "dev",
+    "remaining_changes": ""
+  },
+  "rag": {
+    "commit": "6a44e44a0f06b78926b3a0b74ac8bb4d593b0544",
+    "branch": "dev",
+    "remaining_changes": ""
+  }
+}

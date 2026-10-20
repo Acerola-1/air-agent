@@ -15,6 +15,7 @@ from deepagents.profiles import (
 from langchain.agents.middleware.types import AgentMiddleware
 
 from common.event_ledger.lifecycle import LedgerLifecycleMiddleware
+from common.knowledge.tool import build_knowledge_tool
 from common.langfuse_tracing import with_langfuse_tracing
 from common.middleware import TenantRuntimeGuardMiddleware, TimeContextMiddleware
 from common.models import ModelRegistry
@@ -70,6 +71,9 @@ SYSTEM_PROMPT = """
    计划或不带计划的确定性回退，不接受自由正文。
 6. 如用户需要画布，调用 `publish_tracing_canvas`，只传已验证报告 ID 和展示方式；
    不得调用任意 content 的原始画布工具。
+7. 具体法规/标准/限值问题使用 `knowledge_search`；只引用返回的 citation_id，
+   引用格式 [[cite:<citation_id>]]。知识依据只进入报告的独立知识区，不得作为
+   本次污染监测证据、claim 或归因等级。
 
 ## 边界
 - 不调用、探测或恢复轨迹/PSCF；相关能力固定不可用。
@@ -177,6 +181,7 @@ def build_tracing_graph(
     report_tool, canvas_tool = build_report_tools(
         registry=registry, gate=gate, policy=policy, report_store=store
     )
+    knowledge_tool = build_knowledge_tool()
     subagents = [
         {
             "name": "station-data",
@@ -232,7 +237,7 @@ def build_tracing_graph(
     try:
         return create_deep_agent(
             model=resolved_model,
-            tools=[station_tool, policy_tool, report_tool, canvas_tool],
+            tools=[station_tool, policy_tool, report_tool, canvas_tool, knowledge_tool],
             system_prompt=SYSTEM_PROMPT if enable_reviewer else SYSTEM_PROMPT_NO_REVIEW,
             middleware=middleware,
             backend=backend,

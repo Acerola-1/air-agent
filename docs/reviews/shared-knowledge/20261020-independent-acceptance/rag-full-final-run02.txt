@@ -1,0 +1,53 @@
+........................................................................ [  9%]
+........................................................................ [ 19%]
+........................................................................ [ 29%]
+.......................F...F............................................ [ 39%]
+........................................................................ [ 49%]
+........................................................................ [ 58%]
+........................................................................ [ 68%]
+........................................................................ [ 78%]
+........................................................................ [ 88%]
+........................................................................ [ 98%]
+..............                                                           [100%]
+=================================== FAILURES ===================================
+_________________ test_full_matching_anchor_validates_positive _________________
+tests/test_evaluation_review_r3.py:154: in test_full_matching_anchor_validates_positive
+    expected = ev.validate_phase4_anchor(anchor_path=path, values=values)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/env_rag_final/evaluation.py:1533: in validate_phase4_anchor
+    raise AdapterError(
+E   env_rag_final.local_adapter.AdapterError: Phase 4 anchor validation failed (zero backend contact): answer endpoint class drift: LLM_BINDING_HOST lacks 127.0.0.1:8787
+________________ test_anchor_temperature_zero_matching_positive ________________
+tests/test_evaluation_review_r4.py:77: in test_anchor_temperature_zero_matching_positive
+    expected = ev.validate_phase4_anchor(anchor_path=path, values=values)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/env_rag_final/evaluation.py:1533: in validate_phase4_anchor
+    raise AdapterError(
+E   env_rag_final.local_adapter.AdapterError: Phase 4 anchor validation failed (zero backend contact): answer endpoint class drift: LLM_BINDING_HOST lacks 127.0.0.1:8787
+=============================== warnings summary ===============================
+tests/test_remote_http.py: 13 warnings
+tests/test_remote_review.py: 5 warnings
+  /Users/acerola/Dev/Python/RAG/env-rag-final/src/env_rag_final/access/server.py:155: NotAppKeyWarning: It is recommended to use web.AppKey instances for keys.
+  https://docs.aiohttp.org/en/stable/web_advanced.html#application-s-config
+    app["service"] = service
+
+tests/test_remote_http.py::test_machine_bearer_query_is_authorized_then_hits_the_sentinel
+  /Users/acerola/Dev/Python/RAG/env-rag-final/src/env_rag_final/access/server.py:238: NotAppKeyWarning: It is recommended to use web.RequestKey instances for keys.
+  https://docs.aiohttp.org/en/stable/web_advanced.html#request-s-storage
+    request["_credential"] = credential
+
+tests/test_remote_http.py::test_machine_bearer_query_is_authorized_then_hits_the_sentinel
+  /Users/acerola/Dev/Python/RAG/env-rag-final/src/env_rag_final/access/server.py:239: NotAppKeyWarning: It is recommended to use web.RequestKey instances for keys.
+  https://docs.aiohttp.org/en/stable/web_advanced.html#request-s-storage
+    request["_session"] = session
+
+tests/test_remote_review.py::test_sso_state_is_server_owned_and_consumed_before_exchange
+tests/test_remote_review.py::test_sso_state_is_server_owned_and_consumed_before_exchange
+  /Users/acerola/Dev/Python/RAG/env-rag-final/.venv/lib/python3.12/site-packages/aiohttp/web_protocol.py:593: DeprecationWarning: returning HTTPException object is deprecated (#2415) and will be removed, please raise the exception instead
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_evaluation_review_r3.py::test_full_matching_anchor_validates_positive
+FAILED tests/test_evaluation_review_r4.py::test_anchor_temperature_zero_matching_positive
+2 failed, 732 passed, 22 warnings in 28.93s

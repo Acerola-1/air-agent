@@ -392,6 +392,10 @@ async def guard_request_call(request: Any) -> RuntimeIdentity | None:
             raise RuntimeIdentityError("缺少已认证运行身份，拒绝发起外部调用")
         return None
     await revalidate(identity)
+    if _remote_enabled():
+        from langgraph.config import get_config
+
+        await _guard_knowledge_context(identity, dict(get_config() or {}))
     return identity
 
 
@@ -407,7 +411,20 @@ async def guard_runtime_call(config: dict[str, Any] | None) -> RuntimeIdentity |
             raise RuntimeIdentityError("缺少已认证运行身份，拒绝发起外部调用")
         return None
     await revalidate(identity)
+    await _guard_knowledge_context(identity, config or {})
     return identity
+
+
+async def _guard_knowledge_context(
+    identity: RuntimeIdentity, config: dict[str, Any]
+) -> None:
+    if not _remote_enabled():
+        return
+    from common.knowledge.validation import validate_thread_knowledge
+
+    configurable = config.get("configurable") or {}
+    thread_id = str(configurable.get("thread_id") or "")
+    await validate_thread_knowledge(identity, thread_id)
 
 
 async def guard_model_call(config: Any) -> RuntimeIdentity | None:

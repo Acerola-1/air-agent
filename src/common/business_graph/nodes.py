@@ -56,14 +56,21 @@ from common.runtime_tools import get_business_tools, tool_name
 from common.skill_router import SkillRouteCandidate, SkillSemanticRouter
 
 # 始终可见的本地工具名集合 (不被 skill allowed-tools 过滤掉).
-# 知识检索工具已移除, 当前仅保留时间工具.
-# 始终可见的工具：时间工具 + create_artifact 画布工具.
+# knowledge_search 是三图共享的受管本地 HTTP 工具：纯问候轮次也保持 schema 可见，
+# 但不主动调用；关闭 MCP 不会移除它，任何 Skill 过滤也不能隐藏它。
+# 始终可见的工具：时间工具 + create_artifact 画布工具 + 知识检索.
 # load_skill 始终可见：多候选时模型可自主加载更匹配的 skill 规则，
 # 单候选/零候选时模型无理由调用，不会产生副作用。
 # create_artifact 是跨技能的通用画布输出能力，不受技能 allowed_tools 限制，
 # 保证 Agent 在任何技能命中场景下都能自主产出 HTML/Markdown/SVG 画布内容.
 _ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset(
-    {"get_beijing_time", "create_artifact", "load_skill", "compute_artifact"}
+    {
+        "get_beijing_time",
+        "create_artifact",
+        "load_skill",
+        "compute_artifact",
+        "knowledge_search",
+    }
 )
 
 # 兜底消息常量 (模型调用失败 / 空回复时使用, 与 data_analysis/nodes.py 保持一致).
@@ -350,14 +357,18 @@ class BusinessGraphNodes:
     ) -> list[Any]:
         """按意图车道与能力选择过滤业务工具.
 
-        - chitchat 车道：零工具（纯对话，不暴露任何工具 schema）；
-        - knowledge 车道：仅始终可见的本地工具（时间 + create_artifact）；
+        - chitchat 车道：仅保留 knowledge_search 的 schema（不主动调用）；
+        - knowledge 车道：始终可见的本地工具（时间 + create_artifact + 知识检索）；
         - data_query 车道：业务工具（按已受理 MCP 白名单收窄）+ 可选 load_skill；
         - 显式单选 Skill 时无需披露 load_skill 工具。
         """
         intent = state.get("intent") or INTENT_DATA_QUERY
         if intent == INTENT_CHITCHAT:
-            return []
+            return [
+                tool
+                for tool in get_business_tools(include_computation=False)
+                if tool_name(tool) == "knowledge_search"
+            ]
 
         business = get_business_tools(include_computation=True)
         if intent == INTENT_KNOWLEDGE:
@@ -564,6 +575,11 @@ class BusinessGraphNodes:
                     "业务图模型空回复重试失败: {}，使用兜底消息", type(exc).__name__
                 )
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
+
+        # 服务端依据门禁：完整答案先判定，未核验的具体法规/限值不先公开。
+        from common.knowledge.policy import apply_answer_policy
+
+        response = apply_answer_policy(response, messages)
 
         try:
             if (

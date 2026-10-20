@@ -499,6 +499,9 @@ async def call_model(
             )
             response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
+    from common.knowledge.policy import apply_answer_policy
+
+    response = apply_answer_policy(response, messages)
     return {
         **visible_result(response, config, metrics=metrics, publish=False),
         "data_model_started_at": data_model_started_at,
@@ -590,6 +593,20 @@ async def finalize_output(
     # 兜底：如果清洗后为空，使用兜底消息
     if not cleaned:
         cleaned = _SERVICE_UNAVAILABLE_MESSAGE
+
+    # 服务端依据门禁：原始答案与清洗稿都在公开前检查；清洗若误删引用标记，
+    # 回退到已通过检查的原始答案，而不是放行未核验具体规定或误伤合法引用。
+    from common.knowledge.policy import enforce_answer_policy
+
+    state_messages = state.get("messages", [])
+    published, blocked, _reason = enforce_answer_policy(cleaned, state_messages)
+    if blocked:
+        original_published, original_blocked, _ = enforce_answer_policy(
+            answer, state_messages
+        )
+        cleaned = published if original_blocked else original_published
+    else:
+        cleaned = published
 
     original = _last_answer_message(state)
     from common.observability.skill_adapter import record_loaded_execution

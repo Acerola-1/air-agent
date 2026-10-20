@@ -1,0 +1,2 @@
+# 原始测试输出保留换行与行尾空格；源码和 Markdown 仍正常检查。
+*.txt -text -whitespace

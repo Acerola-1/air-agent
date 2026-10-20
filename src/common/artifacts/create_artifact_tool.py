@@ -12,9 +12,12 @@ fenced code block 自动识别能力已随中间件移除，待重新设计。�
 from __future__ import annotations
 
 import hashlib
+import html
+import re
 import uuid
 from typing import Any, Literal
 
+from langchain.tools import ToolRuntime
 from pydantic import BaseModel, Field, ValidationError
 
 ArtifactContentType = Literal[
@@ -69,6 +72,7 @@ def create_artifact_tool_fn(
     content_type: str,
     content: str,
     open_in: str = "canvas_window",
+    runtime: ToolRuntime = None,  # type: ignore[assignment]
     **_: Any,
 ) -> dict[str, Any]:
     """create_artifact 工具执行函数.
@@ -106,6 +110,31 @@ def create_artifact_tool_fn(
                 f"支持的 open_in={sorted(_OPEN_IN_MODES)}。"
             ),
         }
+
+    from common.knowledge.policy import enforce_answer_policy
+
+    state = getattr(runtime, "state", None) or {}
+    messages = state.get("messages", []) if isinstance(state, dict) else []
+    scan_text = html.unescape(
+        re.sub(r"<[^>]*>", "", validated.title + "\n" + validated.content)
+    )
+    published, blocked, reason = enforce_answer_policy(scan_text, messages)
+    if blocked or (
+        published != scan_text and validated.content_type not in {"markdown", "text"}
+    ):
+        return {
+            "code": 422,
+            "success": False,
+            "message": "画布涉及具体标准规定，尚未取得可核验依据；请先检索并使用带来源的原文摘录。",
+        }
+    if reason == "quoted_source_only":
+        validated = validated.model_copy(
+            update={
+                "title": "知识库原文依据",
+                "content_type": "markdown",
+                "content": published,
+            }
+        )
 
     # 2) 生成 artifact_id：同一内容的幂等恢复用 UUID + 内容哈希
     artifact_id = f"art_{uuid.uuid4().hex[:12]}"

@@ -1,0 +1,31 @@
+{
+  "owner": "knowledge-dev-commit-check-20261020",
+  "ports": [
+    25439,
+    25479
+  ],
+  "shared_resources_modified": false,
+  "maven_exit_code": 0,
+  "cleanup": [
+    {
+      "name": "knowledge-commit-redis-20261020",
+      "action": "stop",
+      "exit_code": 0
+    },
+    {
+      "name": "knowledge-commit-redis-20261020",
+      "action": "delete",
+      "exit_code": 0
+    },
+    {
+      "name": "knowledge-commit-pg-20261020",
+      "action": "stop",
+      "exit_code": 0
+    },
+    {
+      "name": "knowledge-commit-pg-20261020",
+      "action": "delete",
+      "exit_code": 0
+    }
+  ]
+}

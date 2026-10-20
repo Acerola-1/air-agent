@@ -1,0 +1,198 @@
+........FFFFFFFF.                                                        [100%]
+=================================== FAILURES ===================================
+_ test_delegation_response_compares_all_revisions_and_expiry[asyncio-user_auth_revision] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ca31f40>
+bad_field = 'user_auth_revision'
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize('bad_field', ['user_auth_revision', 'tenant_auth_revision', 'membership_revision', 'expires_at'])
+    async def test_delegation_response_compares_all_revisions_and_expiry(monkeypatch, bad_field):
+        identity = _identity()
+        response = {
+            'schema_version': 'iam.knowledge-delegation.v1', 'token_type':'Bearer',
+            'audience':'knowledge', 'operation':'query', 'delegation_token':'kdl_test',
+            'expires_at':(datetime.now(UTC)+timedelta(seconds=30)).isoformat(),
+            'source': {'user_id':identity.user_id, 'tenant_id':identity.tenant_id,
+                'membership_id':identity.membership_id, 'session_id':identity.session_id,
+                'context_version':1, 'revisions':{
+                    'session_ctx_version':1,'user_auth_revision':0,
+                    'tenant_auth_revision':1,'membership_revision':1}},
+        }
+        if bad_field == 'expires_at': response['expires_at']='2000-01-01T00:00:00Z'
+        else: response['source']['revisions'][bad_field]=999
+        real=httpx.AsyncClient
+        monkeypatch.setattr(delegation.httpx, 'AsyncClient', lambda **kwargs: real(**kwargs,
+            transport=httpx.MockTransport(lambda req:httpx.Response(200,json=response))))
+>       with pytest.raises(delegation.KnowledgeDelegationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE KnowledgeDelegationError
+
+tests/unit_tests/test_knowledge_acceptance.py:118: Failed
+_ test_delegation_response_compares_all_revisions_and_expiry[asyncio-tenant_auth_revision] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10ca323f0>
+bad_field = 'tenant_auth_revision'
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize('bad_field', ['user_auth_revision', 'tenant_auth_revision', 'membership_revision', 'expires_at'])
+    async def test_delegation_response_compares_all_revisions_and_expiry(monkeypatch, bad_field):
+        identity = _identity()
+        response = {
+            'schema_version': 'iam.knowledge-delegation.v1', 'token_type':'Bearer',
+            'audience':'knowledge', 'operation':'query', 'delegation_token':'kdl_test',
+            'expires_at':(datetime.now(UTC)+timedelta(seconds=30)).isoformat(),
+            'source': {'user_id':identity.user_id, 'tenant_id':identity.tenant_id,
+                'membership_id':identity.membership_id, 'session_id':identity.session_id,
+                'context_version':1, 'revisions':{
+                    'session_ctx_version':1,'user_auth_revision':0,
+                    'tenant_auth_revision':1,'membership_revision':1}},
+        }
+        if bad_field == 'expires_at': response['expires_at']='2000-01-01T00:00:00Z'
+        else: response['source']['revisions'][bad_field]=999
+        real=httpx.AsyncClient
+        monkeypatch.setattr(delegation.httpx, 'AsyncClient', lambda **kwargs: real(**kwargs,
+            transport=httpx.MockTransport(lambda req:httpx.Response(200,json=response))))
+>       with pytest.raises(delegation.KnowledgeDelegationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE KnowledgeDelegationError
+
+tests/unit_tests/test_knowledge_acceptance.py:118: Failed
+_ test_delegation_response_compares_all_revisions_and_expiry[asyncio-membership_revision] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10caa33f0>
+bad_field = 'membership_revision'
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize('bad_field', ['user_auth_revision', 'tenant_auth_revision', 'membership_revision', 'expires_at'])
+    async def test_delegation_response_compares_all_revisions_and_expiry(monkeypatch, bad_field):
+        identity = _identity()
+        response = {
+            'schema_version': 'iam.knowledge-delegation.v1', 'token_type':'Bearer',
+            'audience':'knowledge', 'operation':'query', 'delegation_token':'kdl_test',
+            'expires_at':(datetime.now(UTC)+timedelta(seconds=30)).isoformat(),
+            'source': {'user_id':identity.user_id, 'tenant_id':identity.tenant_id,
+                'membership_id':identity.membership_id, 'session_id':identity.session_id,
+                'context_version':1, 'revisions':{
+                    'session_ctx_version':1,'user_auth_revision':0,
+                    'tenant_auth_revision':1,'membership_revision':1}},
+        }
+        if bad_field == 'expires_at': response['expires_at']='2000-01-01T00:00:00Z'
+        else: response['source']['revisions'][bad_field]=999
+        real=httpx.AsyncClient
+        monkeypatch.setattr(delegation.httpx, 'AsyncClient', lambda **kwargs: real(**kwargs,
+            transport=httpx.MockTransport(lambda req:httpx.Response(200,json=response))))
+>       with pytest.raises(delegation.KnowledgeDelegationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE KnowledgeDelegationError
+
+tests/unit_tests/test_knowledge_acceptance.py:118: Failed
+_ test_delegation_response_compares_all_revisions_and_expiry[asyncio-expires_at] _
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10caa2eb0>
+bad_field = 'expires_at'
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize('bad_field', ['user_auth_revision', 'tenant_auth_revision', 'membership_revision', 'expires_at'])
+    async def test_delegation_response_compares_all_revisions_and_expiry(monkeypatch, bad_field):
+        identity = _identity()
+        response = {
+            'schema_version': 'iam.knowledge-delegation.v1', 'token_type':'Bearer',
+            'audience':'knowledge', 'operation':'query', 'delegation_token':'kdl_test',
+            'expires_at':(datetime.now(UTC)+timedelta(seconds=30)).isoformat(),
+            'source': {'user_id':identity.user_id, 'tenant_id':identity.tenant_id,
+                'membership_id':identity.membership_id, 'session_id':identity.session_id,
+                'context_version':1, 'revisions':{
+                    'session_ctx_version':1,'user_auth_revision':0,
+                    'tenant_auth_revision':1,'membership_revision':1}},
+        }
+        if bad_field == 'expires_at': response['expires_at']='2000-01-01T00:00:00Z'
+        else: response['source']['revisions'][bad_field]=999
+        real=httpx.AsyncClient
+        monkeypatch.setattr(delegation.httpx, 'AsyncClient', lambda **kwargs: real(**kwargs,
+            transport=httpx.MockTransport(lambda req:httpx.Response(200,json=response))))
+>       with pytest.raises(delegation.KnowledgeDelegationError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE KnowledgeDelegationError
+
+tests/unit_tests/test_knowledge_acceptance.py:118: Failed
+_____________ test_prior_turn_citation_cannot_authorize_new_claim ______________
+
+    def test_prior_turn_citation_cannot_authorize_new_claim():
+        message = _tool_message(CITE, '测试指标A的示例限值为35测试单位。')
+        answer = f'依据《测试空气标准A》第5条，示例限值为35测试单位 [[cite:{CITE}]]。'
+        _, blocked, _ = enforce_answer_policy(answer, [message, HumanMessage(content='新一轮')])
+>       assert blocked
+E       assert False
+
+tests/unit_tests/test_knowledge_acceptance.py:46: AssertionError
+_ test_real_citation_does_not_authorize_unsupported_paraphrase[\u793a\u4f8b\u9650\u503c\u4e3a35\u6beb\u514b] _
+
+claim = '示例限值为35毫克'
+
+    @pytest.mark.parametrize('claim', [
+        '示例限值为35毫克', '全部污染物的示例限值为35测试单位',
+        '示例限值不限定35测试单位', '2025版示例限值为35测试单位',
+    ])
+    def test_real_citation_does_not_authorize_unsupported_paraphrase(claim):
+        message = _tool_message(CITE, '《测试空气标准A》2026版第5条：测试指标A的示例限值为35测试单位。')
+        answer = f'依据《测试空气标准A》第5条，{claim} [[cite:{CITE}]]。'
+        published, blocked, _ = enforce_answer_policy(answer, [message])
+>       assert blocked or claim not in published
+E       AssertionError: assert (False or '示例限值为35毫克' not in '依据《测试空气标准A》...111111111]]。'
+E         
+E         '示例限值为35毫克' is contained here:
+E           依据《测试空气标准A》第5条，示例限值为35毫克 [[cite:11111111-1111-4111-8111-111111111111]]。
+E         ?                +++++++++)
+
+tests/unit_tests/test_knowledge_acceptance.py:57: AssertionError
+_ test_real_citation_does_not_authorize_unsupported_paraphrase[\u5168\u90e8\u6c61\u67d3\u7269\u7684\u793a\u4f8b\u9650\u503c\u4e3a35\u6d4b\u8bd5\u5355\u4f4d] _
+
+claim = '全部污染物的示例限值为35测试单位'
+
+    @pytest.mark.parametrize('claim', [
+        '示例限值为35毫克', '全部污染物的示例限值为35测试单位',
+        '示例限值不限定35测试单位', '2025版示例限值为35测试单位',
+    ])
+    def test_real_citation_does_not_authorize_unsupported_paraphrase(claim):
+        message = _tool_message(CITE, '《测试空气标准A》2026版第5条：测试指标A的示例限值为35测试单位。')
+        answer = f'依据《测试空气标准A》第5条，{claim} [[cite:{CITE}]]。'
+        published, blocked, _ = enforce_answer_policy(answer, [message])
+>       assert blocked or claim not in published
+E       AssertionError: assert (False or '全部污染物的示例限值为35测试单位' not in '依据《测试空气标准A》...111111111]]。'
+E         
+E         '全部污染物的示例限值为35测试单位' is contained here:
+E           依据《测试空气标准A》第5条，全部污染物的示例限值为35测试单位 [[cite:11111111-1111-4111-8111-111111111111]]。
+E         ?                +++++++++++++++++)
+
+tests/unit_tests/test_knowledge_acceptance.py:57: AssertionError
+_ test_real_citation_does_not_authorize_unsupported_paraphrase[\u793a\u4f8b\u9650\u503c\u4e0d\u9650\u5b9a35\u6d4b\u8bd5\u5355\u4f4d] _
+
+claim = '示例限值不限定35测试单位'
+
+    @pytest.mark.parametrize('claim', [
+        '示例限值为35毫克', '全部污染物的示例限值为35测试单位',
+        '示例限值不限定35测试单位', '2025版示例限值为35测试单位',
+    ])
+    def test_real_citation_does_not_authorize_unsupported_paraphrase(claim):
+        message = _tool_message(CITE, '《测试空气标准A》2026版第5条：测试指标A的示例限值为35测试单位。')
+        answer = f'依据《测试空气标准A》第5条，{claim} [[cite:{CITE}]]。'
+        published, blocked, _ = enforce_answer_policy(answer, [message])
+>       assert blocked or claim not in published
+E       AssertionError: assert (False or '示例限值不限定35测试单位' not in '依据《测试空气标准A》...111111111]]。'
+E         
+E         '示例限值不限定35测试单位' is contained here:
+E           依据《测试空气标准A》第5条，示例限值不限定35测试单位 [[cite:11111111-1111-4111-8111-111111111111]]。
+E         ?                +++++++++++++)
+
+tests/unit_tests/test_knowledge_acceptance.py:57: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit_tests/test_knowledge_acceptance.py::test_delegation_response_compares_all_revisions_and_expiry[asyncio-user_auth_revision]
+FAILED tests/unit_tests/test_knowledge_acceptance.py::test_delegation_response_compares_all_revisions_and_expiry[asyncio-tenant_auth_revision]
+FAILED tests/unit_tests/test_knowledge_acceptance.py::test_delegation_response_compares_all_revisions_and_expiry[asyncio-membership_revision]
+FAILED tests/unit_tests/test_knowledge_acceptance.py::test_delegation_response_compares_all_revisions_and_expiry[asyncio-expires_at]
+FAILED tests/unit_tests/test_knowledge_acceptance.py::test_prior_turn_citation_cannot_authorize_new_claim
+FAILED tests/unit_tests/test_knowledge_acceptance.py::test_real_citation_does_not_authorize_unsupported_paraphrase[\u793a\u4f8b\u9650\u503c\u4e3a35\u6beb\u514b]
+FAILED tests/unit_tests/test_knowledge_acceptance.py::test_real_citation_does_not_authorize_unsupported_paraphrase[\u5168\u90e8\u6c61\u67d3\u7269\u7684\u793a\u4f8b\u9650\u503c\u4e3a35\u6d4b\u8bd5\u5355\u4f4d]
+FAILED tests/unit_tests/test_knowledge_acceptance.py::test_real_citation_does_not_authorize_unsupported_paraphrase[\u793a\u4f8b\u9650\u503c\u4e0d\u9650\u5b9a35\u6d4b\u8bd5\u5355\u4f4d]
+8 failed, 9 passed in 0.51s

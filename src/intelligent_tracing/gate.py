@@ -11,6 +11,7 @@ from intelligent_tracing.schemas import (
     AllowedClaim,
     ClaimAllowlist,
     ClaimType,
+    KnowledgeBasisItem,
     ReportPlan,
     ReportValidationResult,
     RuntimeScope,
@@ -36,11 +37,18 @@ class ReportGate:
         *,
         report_id: str | None = None,
         run_id: str = "",
+        knowledge_basis: tuple[KnowledgeBasisItem, ...] = (),
     ) -> ReportValidationResult:
         """Validate a plan; on failure return errors and never retry a model."""
         errors = self.validate_plan(plan, allowlist)
         if errors:
             return ReportValidationResult(ok=False, errors=tuple(errors))
+        # 知识引用必须已由受保护引用存储解析；未知/未登记 ID 一律拒绝.
+        resolved_ids = {item.citation_id for item in knowledge_basis}
+        if not set(plan.knowledge_reference_ids) <= resolved_ids:
+            return ReportValidationResult(
+                ok=False, errors=("knowledge_reference_not_resolved",)
+            )
         claims = {claim.claim_id: claim for claim in allowlist.claims}
         selected = [claims[claim_id] for claim_id in plan.claim_ids]
         semantic_errors = self._validate_claim_semantics(selected, request, scope)
@@ -54,6 +62,7 @@ class ReportGate:
             report_id=report_id or f"rep_{uuid.uuid4().hex}",
             policy=self._policy,
             run_id=run_id,
+            knowledge_basis=knowledge_basis,
         )
         text_errors = self._validate_text_boundary(report, allowlist)
         if text_errors:
@@ -329,7 +338,18 @@ class ReportGate:
             errors.append("contribution_refusal_missing")
         if report.content_sha256 != report.compute_digest():
             errors.append("report_digest_mismatch")
-        for line in report.body_markdown.splitlines():
+        from intelligent_tracing.claims import render_knowledge_lines
+
+        scan_body = report.body_markdown
+        source_block = "\n\n".join(render_knowledge_lines(report.knowledge_basis))
+        if source_block:
+            if scan_body.count(source_block) != 1:
+                errors.append("knowledge_section_mismatch")
+            else:
+                scan_body = scan_body.replace(source_block, "", 1)
+        # Only the exact server-rendered, registered block is exempt. A forged
+        # heading must not turn all following prose into trusted source text.
+        for line in scan_body.splitlines():
             if any(
                 word in line
                 for word in ("已确认企业", "确定是某", "来源概率为", "贡献率为")

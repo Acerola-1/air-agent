@@ -5,6 +5,17 @@ import remarkGfm from "remark-gfm";
 import { memo, useState } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CitationViewer } from "@/components/chat/CitationViewer";
+
+const CITATION_RE = /\[\[cite:([0-9a-fA-F-]{36})\]\]/g;
+const CITATION_HREF = /^https:\/\/citation\.invalid\/([0-9a-fA-F-]{36})$/;
+
+/** 模型只能输出 [[cite:<id>]]；渲染前换成可点击占位链接，来源由服务端解析. */
+function withCitationLinks(content: string): string {
+  return content.replace(CITATION_RE, (_match, id: string) => {
+    return `[📄 查看来源](https://citation.invalid/${id})`;
+  });
+}
 
 /** 带有 Mac 风格顶栏和复制按钮的现代代码块 */
 function CodeBlock({
@@ -88,6 +99,7 @@ function CodeBlock({
 
 /** 现代 Markdown 渲染器（增强表格、引用、链接与代码块样式） */
 export const Markdown = memo(function Markdown({ content }: { content: string }) {
+  const [citationId, setCitationId] = useState<string | null>(null);
   return (
     <div className="text-foreground leading-relaxed">
       <ReactMarkdown
@@ -130,17 +142,32 @@ export const Markdown = memo(function Markdown({ content }: { content: string })
             />
           ),
           p: (p) => <p className={cn("my-2.5 leading-7 text-foreground/90 first:mt-0 last:mb-0", p.className)} {...p} />,
-          a: (p) => (
-            <a
-              className={cn(
-                "text-primary font-medium underline underline-offset-4 decoration-primary/40 transition-colors hover:decoration-primary",
-                p.className
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              {...p}
-            />
-          ),
+          a: (p) => {
+            const match = CITATION_HREF.exec(p.href ?? "");
+            if (match) {
+              return (
+                <button
+                  type="button"
+                  data-knowledge-citation-id={match[1]}
+                  className="mx-0.5 inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/5 px-1.5 py-0.5 text-[0.8em] font-medium text-primary transition-colors hover:bg-primary/10"
+                  onClick={() => setCitationId(match[1])}
+                >
+                  {p.children ?? "查看来源"}
+                </button>
+              );
+            }
+            return (
+              <a
+                className={cn(
+                  "text-primary font-medium underline underline-offset-4 decoration-primary/40 transition-colors hover:decoration-primary",
+                  p.className
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                {...p}
+              />
+            );
+          },
           blockquote: (p) => (
             <blockquote
               className={cn(
@@ -183,8 +210,14 @@ export const Markdown = memo(function Markdown({ content }: { content: string })
           code: CodeBlock,
         }}
       >
-        {content}
+        {withCitationLinks(content)}
       </ReactMarkdown>
+      {citationId && (
+        <CitationViewer
+          citationId={citationId}
+          onClose={() => setCitationId(null)}
+        />
+      )}
     </div>
   );
 });

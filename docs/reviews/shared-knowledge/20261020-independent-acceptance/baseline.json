@@ -1,0 +1,81 @@
+{
+  "agent": {
+    "head": "3b6890b24ada77b7b291e4a39890e538255c1bce",
+    "branch": "dev",
+    "files": {
+      ".env.example": "0b1dde81bbce8f2d38d52dbdea42f9b16095d3836f5812d95e7495d224ac79e3",
+      "deployment/local_host_bridge.py": "013c523bd4e3afc21f3af02e80c641c3f828ba7f633c465b6af722164817bb38",
+      "deployment/run_separated_local.py": "c17a766cf75472ca54778715737fc03004c1a9ecaf97994d6752941767e101f1",
+      "frontend/components/chat/Markdown.tsx": "54c3cb3ad9246dcadb46166cbff13e7b3625098adfb415820c8291562c86dedf",
+      "openspec/changes/add-shared-knowledge-retrieval-tool/tasks.md": "a40532b9a27cc1296e7829d2a3fc74c03f20f3c11552ddf7975cc3d4934eb0dd",
+      "src/common/artifact_http.py": "609fdf2f3d86884021fe23f8a9e858036e02bac18012816ada2094f43fd90b13",
+      "src/common/business_graph/nodes.py": "530028796d59af83481612e7ff58b908d60b5a602602e518305dbeae1bdd082d",
+      "src/common/business_graph/prompting.py": "46028c82005cee716cea8f8f432f2ad6d76ee00dbf4be11f43b1817b91fa4616",
+      "src/common/runtime_tools.py": "718bf540f415a548435412946add37751d29fadad53a2b5e9bea3f1484cb4d7a",
+      "src/data_analysis/nodes.py": "c9ff236c622725296fa2f5f795c784d4b1ffcbc3c47e69d2c97d5875d5a51c54",
+      "src/data_analysis/prompt_builder.py": "1247c591af16dcba490c8861c1d3014ba3d85f945a74755c1930f96a779d2b44",
+      "src/intelligent_tracing/claims.py": "67877b5dd4b1cc79fca5332699f63ac4a9194b5397f9b11acddd724ac5221099",
+      "src/intelligent_tracing/gate.py": "2645bbaa0a21a858bdee6cb3b317173350e577d3bfba391aae1b6153aade1111",
+      "src/intelligent_tracing/graph.py": "e7d551c74af701acd188cc590b210d4acf2a53e101cafc769a5792c29bd6b328",
+      "src/intelligent_tracing/schemas.py": "2c06b1c7523015b74886a51f80138be77bfeba64268c9303a133fe01bed7ccd4",
+      "src/intelligent_tracing/tools.py": "222a8433245ee85fac213e2411c5473f9322ac2db12a99494cb6b1933881ba1d",
+      "tests/unit_tests/test_business_graph_nodes.py": "0a2668a9421d8a5f5001b97188d01e144fe20a3231fc7879ec3fa89c291038cd",
+      "tests/unit_tests/tracing/test_subagents_deepagents.py": "7328cfc4e59a73ce52cca78e9aacb172ee38707d68ec842c61deea845b9fb1b2",
+      "admin/api/migrations/versions/0023_knowledge_citations.py": "622f0f4d787369c0c9c575e6170ac3c02d1de04f76099e69f9d01ebe0174c871",
+      "docs/knowledge-retrieval.md": "eecbfec31c2fc5df3436835f861fbb4851b18256f77fd2af6b0614849f5ddab8",
+      "docs/reviews/shared-knowledge/20261020-implementation/REPORT.md": "ae9e3ebef5be38a45a9776d3f399a3dad519f1b64a7b553a2ee6ebb31dd46273",
+      "frontend/app/api/knowledge/citations/[citationId]/[kind]/route.ts": "974d6d7d9aa04f44500ed97832594901e2f0f0560aa93d5599fe5619aef7933d",
+      "frontend/components/chat/CitationViewer.tsx": "8216d5ef2b579dcb561c47748cc20531eea091783cc34de18dcf75012d6a2a8c",
+      "src/common/knowledge/__init__.py": "48cfbcb8165d3cdc26e7f0db97fa524255813469eefb9c93f9aa8b89757a5d8e",
+      "src/common/knowledge/client.py": "21f241284b2197cea1ccb6374b8edb1028601ba6008fb9b21051118dcf0396e6",
+      "src/common/knowledge/contracts.py": "b8e11242f2553db280ca75df4dc5acd0bf22d35cf53e4aefd599e094b6066943",
+      "src/common/knowledge/delegation.py": "963b9dfa6b4b5cfde78956a0b8501958781541d10b95552cdc7adddb6891ebfa",
+      "src/common/knowledge/policy.py": "bdb0cdedb65d5b5a2f33f12e1426168472ee0e809428db5803d55726b03677e5",
+      "src/common/knowledge/proxy.py": "0c6963421507fc028230a6fac84a235b750efc2cba7da0cec2a0e8e9d321cc8f",
+      "src/common/knowledge/store.py": "ff7c9e4a63a36fb5201fc1173695695652495fc6094ebb89980a0eb2e2787344",
+      "src/common/knowledge/tool.py": "deebca34a0a7f9e1826c269c127c2e3e5fcbf74aca533520b3d93475ed5de2a8",
+      "tests/unit_tests/test_knowledge_contracts.py": "24929e037ababba95e6010642c56fc0adb19885f84012a7119e3037a435c6891"
+    }
+  },
+  "iam": {
+    "head": "c040855ab5191558b8ffcd9e5c37266af8c479a8",
+    "branch": "dev",
+    "files": {
+      ".env.example": "66fe1a5bcd1d89b515a762cb0e87793c7f0cea2af1fb8240185bfe42a9b3f47a",
+      "server/src/main/java/com/airagent/iam/auth/IdentityAssembler.java": "6b6f4561a1e510eac5cc857878706e2d2531c12cca57b73917cf17e387cd235e",
+      "server/src/main/java/com/airagent/iam/config/IamProperties.java": "a4915ff7946c00daf699ef9cd8762d92e82d8f44cc2399ce2eb8d1806207d616",
+      "server/src/main/java/com/airagent/iam/internal/controller/InternalApiController.java": "fd0f906cedc07e559cbd929581c13920d1f846492f59e11725999deac2f607ff",
+      "server/src/main/java/com/airagent/iam/internal/dto/IntrospectDTO.java": "d1077ecd02e879c7f0e08725d65bef8d462884551435605b5e113fa1288176c0",
+      "server/src/main/java/com/airagent/iam/internal/mapper/IdentityMapper.java": "7098c4cc34f506d8d6dba02a15ca477fc4fd0ceaab318d6e7d496baed50352b0",
+      "server/src/main/java/com/airagent/iam/internal/service/impl/IntrospectionServiceImpl.java": "894b2ef1dbff35b0bf17471096fec865d1fcf9f4f878d013d37c3123ee4ee3d0",
+      "server/src/main/java/com/airagent/iam/security/internal/InternalClientInterceptor.java": "5eea7ff3a65496f882ed400292e337764d3f69c20ad760560230032e857df837",
+      "server/src/main/resources/application.yml": "4ab22a3f79f4b3f680bd8e06bef207f228be35782d0c9bbb2b1f46b06048e304",
+      "server/src/main/resources/mapper/auth/InfrastructureMapper.xml": "da1e6abebc74f4bd00760ab904d7d31b0bd1bd16393efc49b3f3283cadc7cc5d",
+      "server/src/main/resources/mapper/internal/IdentityMapper.xml": "bd67248947c7f7cb3a2d81f6444d3318dd9a5c39e7487e0873d8cc4f6c5cf83f",
+      "server/src/main/java/com/airagent/iam/internal/dto/KnowledgeDelegationDTO.java": "619cc81c77eee95027f6050fa4959ff6a970a40d0a4fb7e6ae1d599ff9b20131",
+      "server/src/main/java/com/airagent/iam/internal/entity/IssuedKnowledgeDelegationDO.java": "83dc81398e91aca4309d17256f4e7fbdc619cb68d266e8db70c1a19ca65c1680",
+      "server/src/main/java/com/airagent/iam/internal/entity/KnowledgeDelegationDO.java": "6bd31bbd71c9df93393032cb6245c91615932e2eafda25119c221bcfba41081b",
+      "server/src/main/java/com/airagent/iam/internal/service/KnowledgeDelegationService.java": "49fbc24b65b39039f0bfb8ad894be1d1781fdfbb5c2adfbbaddddf9ccdb4c5ed",
+      "server/src/main/java/com/airagent/iam/internal/service/impl/KnowledgeDelegationServiceImpl.java": "e03fd3e2ed6a1cb6b83c4eceef5431bf3eb350a9590f9c150cecd98cc1dd06fe",
+      "server/src/main/java/com/airagent/iam/internal/vo/KnowledgeDelegationInactiveVO.java": "b3868a6271dec51c35518932a8266f18c67b5eaeaaed47c7930b8d0a978e65b5",
+      "server/src/main/java/com/airagent/iam/internal/vo/KnowledgeDelegationIntrospectionVO.java": "7ca852447dfdfb472bc4ea9d5e6a1c7d031e6f3f0add0e64fb29e7e9d532a26f",
+      "server/src/main/java/com/airagent/iam/internal/vo/KnowledgeDelegationVO.java": "cdf02ceed7a15877497c8e85dfb8b9169169e3d8d3484312d562f2779440b8f7",
+      "server/src/main/resources/db/migration/V25__knowledge_user_delegations.sql": "ad16d6c8963f6044260fb79083d3982c262e4fbb1310e8678bb7ac43ef677eb7",
+      "server/src/main/resources/db/migration/V26__knowledge_delegation_trusted_snapshot.sql": "fdba64fb02ee18300df2556df9e9a1c3cf623c65d3b2d8589729d8e9fcf83705"
+    }
+  },
+  "rag": {
+    "head": "7f4cf374b356e287a39b08ea32ad9ad523c4804b",
+    "branch": "dev",
+    "files": {
+      "src/env_rag_final/access/auth.py": "2f86470844d12294a8fc197b4a7622af498362ae99b2c25781c87ac025988d21",
+      "src/env_rag_final/access/gateway.py": "331580290355ba8e0a2c59b4baa837b88a4431989ac7cb83f98448ca515d0c61",
+      "src/env_rag_final/access/providers.py": "21f5f45901a415849a253f149048d1abd55b31fe394fbf491cad06cf2624e875",
+      "src/env_rag_final/access/remote.py": "a45240886a0e54edd7d9256d23e8930662a4c5f1ffa2b2a661c422846d32fa2c",
+      "src/env_rag_final/access/server.py": "3e7bd0b98fbd2c91aaf42bf18e84c62030d1d255e0e240762c94f3bd9c57584a",
+      "tests/test_remote_boundaries.py": "06f50243380c4e4b9567abc2e5808c0dde64f93e3269156cb92bef641cc70a0c",
+      "tests/test_remote_iam.py": "e145e87e85aeb47115b8c8fdc6cf7cda0c985d72a1ca21716bec4ccb6c95cd5e",
+      "tests/test_knowledge_delegation.py": "923fd905746920b1451bc9f04652c9c5f9d869c3d539e3d840b5f27202ba221d"
+    }
+  }
+}

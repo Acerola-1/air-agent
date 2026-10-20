@@ -1,0 +1,86 @@
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+16:48:00.687 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.internal.InternalClientIntegrationTest]: InternalClientIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:48:00.749 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.internal.InternalClientIntegrationTest
+16:48:00.783 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.airagent.iam.internal.InternalClientIntegrationTest]: InternalClientIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+16:48:00.785 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.airagent.iam.IamApplication for test class com.airagent.iam.internal.InternalClientIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.8)
+
+2026-10-20 16:48:00.933 INFO  [main] c.a.i.i.InternalClientIntegrationTest - Starting InternalClientIntegrationTest using Java 25.0.4.1 with PID 8026 (started by acerola in /Users/acerola/Dev/Java/air_agent_iam/server)
+2026-10-20 16:48:00.934 INFO  [main] c.a.i.i.InternalClientIntegrationTest - The following 1 profile is active: "it"
+2026-10-20 16:48:01.488 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-20 16:48:01.489 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-20 16:48:01.506 INFO  [main] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 9 ms. Found 0 Redis repository interfaces.
+2026-10-20 16:48:01.958 INFO  [main] org.flywaydb.core.FlywayExecutor - Database: jdbc:postgresql://127.0.0.1:25439/iam_test?ApplicationName=iam-it-flyway (PostgreSQL 17.10)
+2026-10-20 16:48:02.012 INFO  [main] o.f.core.internal.command.DbValidate - Successfully validated 26 migrations (execution time 00:00.029s)
+2026-10-20 16:48:02.036 INFO  [main] o.f.core.internal.command.DbMigrate - Current version of schema "iam": 26
+2026-10-20 16:48:02.038 INFO  [main] o.f.core.internal.command.DbMigrate - Schema "iam" is up to date. No migration necessary.
+2026-10-20 16:48:02.425 WARN  [main] i.n.r.d.DnsServerAddressStreamProviders - Can not find io.netty.resolver.dns.macos.MacOSDnsServerAddressStreamProvider in the classpath, fallback to system defaults. This may result in incorrect DNS resolutions on MacOS. Check whether you have a dependency on 'io.netty:netty-resolver-dns-native-macos'
+____ ____    ___ ____ _  _ ____ _  _ 
+[__  |__| __  |  |  | |_/  |___ |\ | 
+___] |  |     |  |__| | \_ |___ | \| 
+https://sa-token.com (v1.46.0)
+2026-10-20 16:48:03.173 INFO  [main] c.a.i.i.InternalClientIntegrationTest - Started InternalClientIntegrationTest in 2.364 seconds (process running for 2.835)
+2026-10-20 16:48:03.177 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 agent 未配置 id/secret，跳过预置
+2026-10-20 16:48:03.178 INFO  [main] c.airagent.iam.auth.BootstrapRunner - SSO 客户端 kb 未配置 id/secret，跳过预置
+2026-10-20 16:48:03.178 INFO  [main] c.airagent.iam.auth.BootstrapRunner - 未配置 bootstrap 账号/口令，跳过引导
+2026-10-20 16:48:03.178 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-10-20 16:48:03.178 WARN  [main] o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-10-20 16:48:03.183 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Starting...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+2026-10-20 16:48:03.205 INFO  [scheduling-1] com.zaxxer.hikari.HikariDataSource - iam-it-hikari - Start completed.
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/acerola/Dev/Env/maven/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[ERROR] Tests run: 27, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 9.332 s <<< FAILURE! -- in com.airagent.iam.internal.InternalClientIntegrationTest
+[ERROR] com.airagent.iam.internal.InternalClientIntegrationTest.knowledgeIssuanceRejectsRedisMissingWhilePgSessionIsActive -- Time elapsed: 0.149 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 管理侧 DML 应命中行：INSERT INTO iam.permissions(id,code,name_zh,scope,grantable_to_tenants,resource_code,sort) VALUES ('01930000-0000-4000-8000-000000009981','knowledge:lib:air:read','测试空气资料读取','tenant',true,'knowledge:lib:air',9981) ON CONFLICT (code) DO NOTHING;INSERT INTO iam.tenant_entitlements(tenant_id,resource_code,status) VALUES ('01931000-0000-4100-8100-000000001001','knowledge:lib:air','active') ON CONFLICT DO NOTHING;INSERT INTO iam.roles(id,code,scope,tenant_id,name) VALUES ('01930000-0000-4000-8000-000000009982','it_knowledge_reader','tenant','01931000-0000-4100-8100-000000001001','测试资料角色');INSERT INTO iam.role_permissions(role_id,permission_id) SELECT '01930000-0000-4000-8000-000000009982',id FROM iam.permissions WHERE code='knowledge:lib:air:read' ON CONFLICT DO NOTHING;INSERT INTO iam.membership_roles(tenant_id,membership_id,role_id) VALUES ('01931000-0000-4100-8100-000000001001','01931000-0000-4300-8300-000000003001','01930000-0000-4000-8000-000000009982');UPDATE iam.internal_clients SET audiences=ARRAY['langgraph-runtime','knowledge'], scopes=ARRAY['identity:introspect','runtime-ticket:issue','knowledge-delegation:issue'] WHERE client_id='it-runtime-client' ==> expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:158)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:139)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:69)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:41)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:228)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.migrateTx(InternalClientIntegrationTest.java:889)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.prepareKnowledgeIssuer(InternalClientIntegrationTest.java:690)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.knowledgeIssuanceRejectsRedisMissingWhilePgSessionIsActive(InternalClientIntegrationTest.java:731)
+
+[ERROR] com.airagent.iam.internal.InternalClientIntegrationTest.knowledgeDelegationPositiveOperationMismatchAndLiveLogout -- Time elapsed: 0.162 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 管理侧 DML 应命中行：INSERT INTO iam.permissions(id,code,name_zh,scope,grantable_to_tenants,resource_code,sort) VALUES ('01930000-0000-4000-8000-000000009981','knowledge:lib:air:read','测试空气资料读取','tenant',true,'knowledge:lib:air',9981) ON CONFLICT (code) DO NOTHING;INSERT INTO iam.tenant_entitlements(tenant_id,resource_code,status) VALUES ('01931000-0000-4100-8100-000000001001','knowledge:lib:air','active') ON CONFLICT DO NOTHING;INSERT INTO iam.roles(id,code,scope,tenant_id,name) VALUES ('01930000-0000-4000-8000-000000009982','it_knowledge_reader','tenant','01931000-0000-4100-8100-000000001001','测试资料角色');INSERT INTO iam.role_permissions(role_id,permission_id) SELECT '01930000-0000-4000-8000-000000009982',id FROM iam.permissions WHERE code='knowledge:lib:air:read' ON CONFLICT DO NOTHING;INSERT INTO iam.membership_roles(tenant_id,membership_id,role_id) VALUES ('01931000-0000-4100-8100-000000001001','01931000-0000-4300-8300-000000003001','01930000-0000-4000-8000-000000009982');UPDATE iam.internal_clients SET audiences=ARRAY['langgraph-runtime','knowledge'], scopes=ARRAY['identity:introspect','runtime-ticket:issue','knowledge-delegation:issue'] WHERE client_id='it-runtime-client' ==> expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:158)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:139)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:69)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:41)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:228)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.migrateTx(InternalClientIntegrationTest.java:889)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.prepareKnowledgeIssuer(InternalClientIntegrationTest.java:690)
+	at com.airagent.iam.internal.InternalClientIntegrationTest.knowledgeDelegationPositiveOperationMismatchAndLiveLogout(InternalClientIntegrationTest.java:708)
+
+[ERROR] Failures: 
+[ERROR]   InternalClientIntegrationTest.knowledgeDelegationPositiveOperationMismatchAndLiveLogout:708->prepareKnowledgeIssuer:690->migrateTx:889 管理侧 DML 应命中行：INSERT INTO iam.permissions(id,code,name_zh,scope,grantable_to_tenants,resource_code,sort) VALUES ('01930000-0000-4000-8000-000000009981','knowledge:lib:air:read','测试空气资料读取','tenant',true,'knowledge:lib:air',9981) ON CONFLICT (code) DO NOTHING;INSERT INTO iam.tenant_entitlements(tenant_id,resource_code,status) VALUES ('01931000-0000-4100-8100-000000001001','knowledge:lib:air','active') ON CONFLICT DO NOTHING;INSERT INTO iam.roles(id,code,scope,tenant_id,name) VALUES ('01930000-0000-4000-8000-000000009982','it_knowledge_reader','tenant','01931000-0000-4100-8100-000000001001','测试资料角色');INSERT INTO iam.role_permissions(role_id,permission_id) SELECT '01930000-0000-4000-8000-000000009982',id FROM iam.permissions WHERE code='knowledge:lib:air:read' ON CONFLICT DO NOTHING;INSERT INTO iam.membership_roles(tenant_id,membership_id,role_id) VALUES ('01931000-0000-4100-8100-000000001001','01931000-0000-4300-8300-000000003001','01930000-0000-4000-8000-000000009982');UPDATE iam.internal_clients SET audiences=ARRAY['langgraph-runtime','knowledge'], scopes=ARRAY['identity:introspect','runtime-ticket:issue','knowledge-delegation:issue'] WHERE client_id='it-runtime-client' ==> expected: <true> but was: <false>
+[ERROR]   InternalClientIntegrationTest.knowledgeIssuanceRejectsRedisMissingWhilePgSessionIsActive:731->prepareKnowledgeIssuer:690->migrateTx:889 管理侧 DML 应命中行：INSERT INTO iam.permissions(id,code,name_zh,scope,grantable_to_tenants,resource_code,sort) VALUES ('01930000-0000-4000-8000-000000009981','knowledge:lib:air:read','测试空气资料读取','tenant',true,'knowledge:lib:air',9981) ON CONFLICT (code) DO NOTHING;INSERT INTO iam.tenant_entitlements(tenant_id,resource_code,status) VALUES ('01931000-0000-4100-8100-000000001001','knowledge:lib:air','active') ON CONFLICT DO NOTHING;INSERT INTO iam.roles(id,code,scope,tenant_id,name) VALUES ('01930000-0000-4000-8000-000000009982','it_knowledge_reader','tenant','01931000-0000-4100-8100-000000001001','测试资料角色');INSERT INTO iam.role_permissions(role_id,permission_id) SELECT '01930000-0000-4000-8000-000000009982',id FROM iam.permissions WHERE code='knowledge:lib:air:read' ON CONFLICT DO NOTHING;INSERT INTO iam.membership_roles(tenant_id,membership_id,role_id) VALUES ('01931000-0000-4100-8100-000000001001','01931000-0000-4300-8300-000000003001','01930000-0000-4000-8000-000000009982');UPDATE iam.internal_clients SET audiences=ARRAY['langgraph-runtime','knowledge'], scopes=ARRAY['identity:introspect','runtime-ticket:issue','knowledge-delegation:issue'] WHERE client_id='it-runtime-client' ==> expected: <true> but was: <false>
+[ERROR] Tests run: 31, Failures: 2, Errors: 0, Skipped: 0
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.6:test (default-test) on project iam-server: There are test failures.
+[ERROR] 
+[ERROR] See /Users/acerola/Dev/Java/air_agent_iam/server/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

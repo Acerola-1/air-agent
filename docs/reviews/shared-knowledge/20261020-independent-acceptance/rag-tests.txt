@@ -1,0 +1,19 @@
+.................................                                        [100%]
+=============================== warnings summary ===============================
+tests/test_remote_http.py: 13 warnings
+  /Users/acerola/Dev/Python/RAG/env-rag-final/src/env_rag_final/access/server.py:147: NotAppKeyWarning: It is recommended to use web.AppKey instances for keys.
+  https://docs.aiohttp.org/en/stable/web_advanced.html#application-s-config
+    app["service"] = service
+
+tests/test_remote_http.py::test_machine_bearer_query_is_authorized_then_hits_the_sentinel
+  /Users/acerola/Dev/Python/RAG/env-rag-final/src/env_rag_final/access/server.py:230: NotAppKeyWarning: It is recommended to use web.RequestKey instances for keys.
+  https://docs.aiohttp.org/en/stable/web_advanced.html#request-s-storage
+    request["_credential"] = credential
+
+tests/test_remote_http.py::test_machine_bearer_query_is_authorized_then_hits_the_sentinel
+  /Users/acerola/Dev/Python/RAG/env-rag-final/src/env_rag_final/access/server.py:231: NotAppKeyWarning: It is recommended to use web.RequestKey instances for keys.
+  https://docs.aiohttp.org/en/stable/web_advanced.html#request-s-storage
+    request["_session"] = session
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+33 passed, 15 warnings in 4.51s

@@ -1,0 +1,21 @@
+{
+  "http_status": 504,
+  "elapsed_ms": 165.8,
+  "statement_timeout_ms": [
+    149,
+    19999
+  ],
+  "connection_closed": [
+    true,
+    true
+  ],
+  "remaining_active_queries": 0,
+  "independent_connection_ok": true,
+  "postgres": "owned empty temporary container on 25439",
+  "disconnect": {
+    "elapsed_ms": 10.9,
+    "connection_closed": true,
+    "remaining_active_queries": 0,
+    "independent_connection_ok": true
+  }
+}
