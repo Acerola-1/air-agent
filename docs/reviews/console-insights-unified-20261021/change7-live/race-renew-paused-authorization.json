@@ -1,0 +1,36 @@
+{
+  "batch": [
+    {
+      "text": "隔离续期一：洛阳市2026年5月7日PM2.5是多少？",
+      "thread_id": "4c355d55-ade5-47b4-b9d6-bee108ef6e26",
+      "run_id": "01a15d95-79ed-7233-bb79-6126ff4f81ab",
+      "request_id": "65b482f5-93cc-47b4-b9fa-0620c0fb5a88",
+      "attempt_id": "fdabbdd8-eb46-487c-a3b4-461bea20f568",
+      "confirmed": true
+    },
+    {
+      "text": "隔离续期二：郑州市2026年5月7日AQI是多少？",
+      "thread_id": "ce5e47b4-c7df-459f-a73c-fd89689e468f",
+      "run_id": "01a15d95-7eae-7362-ad33-0de8b5339a43",
+      "request_id": "e29f9b2a-02bb-4f67-818b-433b189dd366",
+      "attempt_id": "494263a3-b5b8-44ac-9a3e-7c1b3aae2809",
+      "confirmed": true
+    },
+    {
+      "text": "隔离续期三：北京市2026年5月7日PM10是多少？",
+      "thread_id": "a9886e83-6510-41b4-a5a7-c3cfe3694952",
+      "run_id": "01a15d95-8296-7d43-bade-b7a959d4021b",
+      "request_id": "1b14c54a-ffb9-49fb-a16c-7a9e8cd280af",
+      "attempt_id": "0fb59d5c-d361-4781-b97e-0027b7d3d885",
+      "confirmed": true
+    }
+  ],
+  "stats_before": {
+    "chat_calls": 19,
+    "mcp_calls": 0,
+    "embedding_calls": 14
+  },
+  "revoke": "{\"status\": 200, \"permission_codes\": [\"agent:business:basic-qa:use\", \"agent:business:data-analysis:use\", \"agent:business:intelligent-tracing:use\", \"agent:content:read\", \"agent:feedback:manage\", \"agent:metrics:read\", \"agent:operations:read\"]}",
+  "state_after_revoke": "state         | state_revision | processed_sources | classified_intents |   last_error_code    \n----------------------+----------------+-------------------+--------------------+----------------------\n paused_authorization |              2 |                 0 |                  0 | paused_authorization\n(1 row)",
+  "job_id": "0e7a2cd6-3ee5-44b6-a4af-2887d2651571"
+}

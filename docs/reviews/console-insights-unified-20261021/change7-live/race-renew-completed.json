@@ -1,0 +1,71 @@
+{
+  "pause": {
+    "job_id": "0e7a2cd6-3ee5-44b6-a4af-2887d2651571",
+    "job_kind": "incremental",
+    "state": "paused_authorization",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:30:42.517235Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 0,
+    "failed_sources": 0,
+    "classified_intents": 0,
+    "unclassified_intents": 0,
+    "actual_tokens": 0,
+    "usage_missing": false,
+    "state_revision": 2,
+    "last_error_code": "paused_authorization",
+    "created_at": "2026-10-21T08:30:42.519182Z",
+    "authorization_expires_at": "2026-10-21T20:30:42.517313Z",
+    "started_at": "2026-10-21T08:30:45.676897Z",
+    "paused_at": "2026-10-21T08:30:47.199654Z",
+    "completed_at": null,
+    "estimated_tokens": 0,
+    "max_sources": 3,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  },
+  "renew": {
+    "status": 200,
+    "body": {
+      "result": {
+        "job_id": "0e7a2cd6-3ee5-44b6-a4af-2887d2651571",
+        "action": "renew",
+        "state": "pending",
+        "state_revision": 3,
+        "replayed": false
+      },
+      "replayed": false
+    }
+  },
+  "final": {
+    "job_id": "0e7a2cd6-3ee5-44b6-a4af-2887d2651571",
+    "job_kind": "incremental",
+    "state": "completed",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:30:42.517235Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 3,
+    "failed_sources": 0,
+    "classified_intents": 1,
+    "unclassified_intents": 2,
+    "actual_tokens": 79,
+    "usage_missing": false,
+    "state_revision": 7,
+    "last_error_code": null,
+    "created_at": "2026-10-21T08:30:42.519182Z",
+    "authorization_expires_at": "2026-10-21T20:30:58.796992Z",
+    "started_at": "2026-10-21T08:30:45.676897Z",
+    "paused_at": "2026-10-21T08:30:47.199654Z",
+    "completed_at": "2026-10-21T08:31:16.647572Z",
+    "estimated_tokens": 240,
+    "max_sources": 3,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  }
+}

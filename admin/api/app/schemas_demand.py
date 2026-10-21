@@ -241,6 +241,9 @@ class JobItem(InsightsModel):
     state: str
     window_start: AwareDatetime
     window_end: AwareDatetime | None
+    as_of: AwareDatetime | None = None
+    batch_size: NonNegativeInt | None = None
+    lease_deadline: AwareDatetime | None = None
     processed_sources: NonNegativeInt
     failed_sources: NonNegativeInt
     classified_intents: NonNegativeInt

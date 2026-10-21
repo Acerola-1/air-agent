@@ -379,6 +379,16 @@ async function handleRequest(req: NextRequest, method: string) {
       { status: 503 }
     );
   }
+  // 墓碑和资料清理已经成功后，平台线程不存在就是删除完成，重复删除保持成功。
+  if (
+    method === "DELETE" &&
+    segments[0] === "threads" &&
+    threadId &&
+    segments.length === 2 &&
+    res.status === 404
+  ) {
+    return new NextResponse(null, { status: 204 });
+  }
   if (res.status === 401 || res.status === 403) {
     const text = await res.text();
     return new NextResponse(text, {

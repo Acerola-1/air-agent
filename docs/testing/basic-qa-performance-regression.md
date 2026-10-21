@@ -10,7 +10,8 @@
 - 当前图入口见 [graph.py](../../src/basic_qa/graph.py)，节点流见 [builder.py](../../src/common/business_graph/builder.py)：意图判断、按需 Skill 路由、模型调用与工具循环、台账收尾。调用次数取实测，不能假定一次提问只有一次模型调用。
 - [已有验收](../reviews/agent-interactions-observability-takeover-acceptance.md)仅覆盖局部开销及特定联调，未建立生产并发/长时负载基线。旧基准可能引用退役身份接口或测试资源，不直接运行。
 - [模型观测规格](../../openspec/specs/agent-model-observability/spec.md)、[浏览器计时规格](../../openspec/specs/agent-chat-interaction-events/spec.md)约束指标口径。部分主规格仍有历史“六图”或旧模块描述，本规范范围以当前 `langgraph.json` 的 `basic-qa` 为准，不恢复旧路径。
-- `add-agent-admin-console` 仍是活动计划；不能依赖尚未实施的性能页面。报告可由测试端、受控观测和只读导出生成。
+- Change6已交付业务代码，完整组合与规模验收仍待执行；后台页面不是独立正确性判据。报告由测试端、受控观测和只读导出生成，并与后台结果核对。
+- 与Change6/7共用资源、固定题目和采集器的执行安排见`openspec/changes/validate-console-insights-live-workflows/design.md`的D6及`docs/handoffs/console-insights-performance-unified-goal.md`。命令入口见[统一活动运行说明](unified-campaign-runner.md)。仍以本规范定义P/E与S/R/F，不因整合任务自动启动压测。
 
 ### 1.1 两层证据分别出结论
 

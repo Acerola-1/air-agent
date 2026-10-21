@@ -1,0 +1,21 @@
+{
+  "thread_id": "e118dd73-636e-4574-9e0c-6bc9026bdc5e",
+  "request_id": "bd37a0cc-1a41-42b7-97d0-33b51e67e599",
+  "before": {
+    "eligible": 2,
+    "processed": 2,
+    "classified": 3
+  },
+  "delete": {
+    "first_status": 503,
+    "final_status": 204,
+    "note": "隔离管理 API 的 CSRF_ALLOWED_ORIGINS 补入聊天 BFF 端口后成功"
+  },
+  "after": {
+    "eligible": 1,
+    "processed": 1,
+    "classified": 2,
+    "deleted_gap": true
+  },
+  "browser": "chat sidebar delete + admin insights refresh at localhost:3100"
+}

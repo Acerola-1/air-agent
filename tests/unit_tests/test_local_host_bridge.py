@@ -92,6 +92,8 @@ def bridge_harness(monkeypatch: pytest.MonkeyPatch):
         iam_client_secret="test-iam-secret",
         model_bearer="test-model-placeholder",
         allowed_models=frozenset({"test-model"}),
+        iam_introspect_url=bridge.IAM_UPSTREAM_URL,
+        model_url=bridge.MODEL_UPSTREAM_URL,
     )
     server = bridge.BridgeHTTPServer(("127.0.0.1", 0), bridge.BridgeHandler, config)
     bridge_thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -293,3 +295,28 @@ def test_bridge_bind_host_accepts_private_gateway_and_rejects_unspecified():
     assert not bridge._allowed_bind_host("0.0.0.0")
     assert not bridge._allowed_bind_host("8.8.8.8")
     assert not bridge._allowed_bind_host("not-an-ip")
+
+
+def test_optional_upstream_stays_on_loopback() -> None:
+    base = {
+        "bind_host": "127.0.0.1",
+        "bind_port": 25450,
+        "allowed_source_ips": ["192.168.64.20"],
+        "iam_client_id": "campaign-runtime",
+        "iam_client_secret": "secret",
+        "model_bearer": "bearer",
+        "allowed_models": ["controlled-p"],
+    }
+    parsed = bridge._parse_config(json.dumps(base).encode())
+    assert parsed.iam_introspect_url == bridge.IAM_UPSTREAM_URL
+    overridden = {
+        **base,
+        "iam_introspect_url": "http://127.0.0.1:25445/v1/internal/identity/introspect",
+        "model_url": "http://127.0.0.1:25449/v1/chat/completions",
+    }
+    parsed = bridge._parse_config(json.dumps(overridden).encode())
+    assert parsed.iam_introspect_url.endswith(":25445/v1/internal/identity/introspect")
+    assert parsed.model_url.endswith(":25449/v1/chat/completions")
+    rejected = {**base, "model_url": "http://127.0.0.1:15432/v1/chat/completions"}
+    with pytest.raises(bridge.ConfigError):
+        bridge._parse_config(json.dumps(rejected).encode())

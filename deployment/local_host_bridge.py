@@ -19,6 +19,7 @@ from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
@@ -43,6 +44,11 @@ _CONFIG_KEYS = {
     "iam_client_secret",
     "model_bearer",
     "allowed_models",
+}
+_OPTIONAL_CONFIG_KEYS = {
+    "iam_introspect_url",
+    "knowledge_delegation_url",
+    "model_url",
 }
 _ROUTE_PATHS = frozenset({IAM_PATH, MODEL_PATH})
 
@@ -70,7 +76,7 @@ class ConfigError(ValueError):
 
 @dataclass(frozen=True)
 class BridgeConfig:
-    """Validated bridge settings; the upstream destinations are fixed in code."""
+    """Validated bridge settings. Upstream URLs default to the formal loopback endpoints."""
 
     bind_host: str
     bind_port: int
@@ -79,6 +85,9 @@ class BridgeConfig:
     iam_client_secret: str = field(repr=False)
     model_bearer: str = field(repr=False)
     allowed_models: frozenset[str] = frozenset()
+    iam_introspect_url: str = IAM_UPSTREAM_URL
+    knowledge_delegation_url: str = KNOWLEDGE_DELEGATION_UPSTREAM_URL
+    model_url: str = MODEL_UPSTREAM_URL
 
     @property
     def iam_authorization(self) -> str:
@@ -113,6 +122,24 @@ def _decode_json(raw: bytes) -> Any:
     )
 
 
+def _loopback_url(value: object, name: str) -> str:
+    """Accept only an http URL on 127.0.0.1, never a formal database port."""
+    if not isinstance(value, str):
+        raise ConfigError(f"invalid {name}")
+    parsed = urlparse(value)
+    if (
+        parsed.scheme != "http"
+        or parsed.hostname != "127.0.0.1"
+        or parsed.port in {None, 15432, 19132}
+        or parsed.username
+        or parsed.password
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise ConfigError(f"invalid {name}")
+    return value
+
+
 def _nonempty_string(value: Any, name: str) -> str:
     if (
         not isinstance(value, str)
@@ -129,7 +156,9 @@ def _parse_config(raw: bytes) -> BridgeConfig:
         data = _decode_json(raw)
     except (UnicodeDecodeError, ValueError, TypeError) as exc:
         raise ConfigError("invalid configuration JSON") from exc
-    if not isinstance(data, dict) or set(data) != _CONFIG_KEYS:
+    if not isinstance(data, dict) or not _CONFIG_KEYS <= set(data) <= (
+        _CONFIG_KEYS | _OPTIONAL_CONFIG_KEYS
+    ):
         raise ConfigError("configuration shape mismatch")
 
     bind_host = data["bind_host"]
@@ -174,6 +203,14 @@ def _parse_config(raw: bytes) -> BridgeConfig:
         iam_client_secret=client_secret,
         model_bearer=model_bearer,
         allowed_models=frozenset(models),
+        iam_introspect_url=_loopback_url(
+            data.get("iam_introspect_url", IAM_UPSTREAM_URL), "iam_introspect_url"
+        ),
+        knowledge_delegation_url=_loopback_url(
+            data.get("knowledge_delegation_url", KNOWLEDGE_DELEGATION_UPSTREAM_URL),
+            "knowledge_delegation_url",
+        ),
+        model_url=_loopback_url(data.get("model_url", MODEL_UPSTREAM_URL), "model_url"),
     )
 
 
@@ -415,9 +452,9 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 self._send_local(403)
                 return
             upstream_url = (
-                IAM_UPSTREAM_URL
+                self.config.iam_introspect_url
                 if self.path == IAM_PATH
-                else KNOWLEDGE_DELEGATION_UPSTREAM_URL
+                else self.config.knowledge_delegation_url
             )
         else:
             model = payload.get("model")
@@ -427,7 +464,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             if model not in self.config.allowed_models:
                 self._send_local(403)
                 return
-            upstream_url = MODEL_UPSTREAM_URL
+            upstream_url = self.config.model_url
 
         self._proxy(
             "POST",

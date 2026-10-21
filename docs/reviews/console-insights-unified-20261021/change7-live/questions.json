@@ -1,0 +1,540 @@
+{
+  "items": [
+    {
+      "cluster_id": "59af0cab-5c9d-4e55-bdac-5345fa99e540",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 11,
+      "distinct_requests": 11,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.071429,
+        "numerator": 11,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 11
+      }
+    },
+    {
+      "cluster_id": "2816a77e-1bd6-430e-8424-51bf555f8fbb",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 10,
+      "distinct_requests": 10,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.064935,
+        "numerator": 10,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 10
+      }
+    },
+    {
+      "cluster_id": "d616174b-7f08-407b-b95d-2112380e5e68",
+      "canonical_name": "成因污染成因",
+      "status": "candidate",
+      "topic_id": "44e3349a-2042-415e-8d66-6a7a1ed5f495",
+      "topic_name": "污染成因",
+      "atomic_intent_count": 10,
+      "distinct_requests": 10,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.064935,
+        "numerator": 10,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 10
+      }
+    },
+    {
+      "cluster_id": "ffc12d51-afb3-44b5-b253-3a80dd70a703",
+      "canonical_name": "查询空气质量（否定）",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 10,
+      "distinct_requests": 10,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.064935,
+        "numerator": 10,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 10
+      }
+    },
+    {
+      "cluster_id": "724772b9-677c-47a6-bb38-201978ddef2a",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 3,
+      "distinct_requests": 3,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.019481,
+        "numerator": 3,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 3
+      }
+    },
+    {
+      "cluster_id": "91c2b663-c635-477a-a5d7-8c257a31aff9",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 3,
+      "distinct_requests": 3,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.019481,
+        "numerator": 3,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 3
+      }
+    },
+    {
+      "cluster_id": "21e6e3b9-799c-4786-b14f-b6155a314bd8",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 2,
+      "distinct_requests": 2,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.012987,
+        "numerator": 2,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 2
+      }
+    },
+    {
+      "cluster_id": "9c4e7399-b91e-4de8-82ee-f90d225a92f2",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 2,
+      "distinct_requests": 2,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.012987,
+        "numerator": 2,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 2
+      }
+    },
+    {
+      "cluster_id": "03076fd5-f810-43d9-b45e-ad865cb2d4df",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "147e5f32-1258-4ca7-9fbb-d27eb1d2145a",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "1559bafb-f42a-454f-aec0-dafd63dccdbf",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "2ffaac8b-e9fa-4a6a-8d42-793d51593816",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "30c091c7-2959-452b-b1e8-a410d36fefa4",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "3372174a-f9a2-40f6-b549-d46702774c24",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "33c7fd64-e84a-46a6-beee-5840e5d21647",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "3670342e-cc53-4bb5-8241-681fd3be270f",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "3682a95c-12f2-4ef9-8112-5adb0b0fb111",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "3c5d1d18-4391-4ca0-9dd4-7c097da8b339",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "45eac512-9686-439e-8677-e2f7d4a9391b",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    },
+    {
+      "cluster_id": "4818d1d7-bcc6-4831-886f-5614ce5a0e85",
+      "canonical_name": "查询空气质量",
+      "status": "candidate",
+      "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+      "topic_name": "空气质量查询",
+      "atomic_intent_count": 1,
+      "distinct_requests": 1,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.006494,
+        "numerator": 1,
+        "denominator": 154
+      },
+      "previous_count": 0,
+      "growth_rate": null,
+      "new": true,
+      "comparison_status": "comparable",
+      "request_level_negative_feedback": 0,
+      "feedback_coverage": {
+        "numerator": 0,
+        "denominator": 1
+      }
+    }
+  ],
+  "next_cursor": "eyJhIjogIjIwMjYtMTAtMjFUMDg6MTE6NTcuMDU1MjIyKzAwOjAwIiwgImFyIjogMTA3LCAiYXYiOiAiaXNvbGF0ZWQtdjEiLCAiY3YiOiAyLCAiZiI6ICIzM2I4MjE4Y2NjN2E4ZDFlNTE1MiIsICJrIjogIjF8NDgxOGQxZDctYmNjNi00ODMxLTg4NmYtNTYxNGNlNWEwZTg1IiwgInIiOiAiaW50ZW50cyIsICJ0IjogIjg3YTY1MGYyLTVlMzMtNGVkOS04OGExLTVjMGJhMDYxNjhjOCIsICJ2IjogMSwgIndlIjogIjIwMjYtMTAtMjFUMDg6MTE6NTcuMDU1MjIyKzAwOjAwIiwgIndzIjogIjIwMjYtMTAtMTRUMTY6MDA6MDArMDA6MDAifQ==.d2e20a3c499718fc35018485c54be50ccca3d4aac007e659b7d0f84ac5964fd5",
+  "has_more": true,
+  "limit": 20,
+  "sort": "atomic_intent_count",
+  "filters": {
+    "rank": "intents"
+  },
+  "meta": {
+    "schema_version": "demand-insights-v1",
+    "metric_version": "demand-insights-metrics-v1",
+    "as_of": "2026-10-21T08:11:57.055222Z",
+    "window": {
+      "start": "2026-10-14T16:00:00Z",
+      "end": "2026-10-21T08:11:57.055222Z",
+      "timezone": "Asia/Shanghai",
+      "kind": "last_7_days",
+      "partial_day": true
+    },
+    "filters": {
+      "rank": "intents"
+    },
+    "scope": {
+      "tenant_id": "87a650f2-5e33-4ed9-88a1-5c0ba06168c8",
+      "context_version": 2
+    },
+    "projected_at": null,
+    "data_lag_seconds": 0.0,
+    "measurement_source": "direct_sql",
+    "status": "ok",
+    "limitations": [],
+    "analysis_version": "isolated-v1",
+    "assignment_revision": 107,
+    "embedding_profile": "controlled-embed-v1",
+    "profile_id": "d084f1c7-446c-40d4-8614-4a104c19e1e8",
+    "profile_state_revision": 108,
+    "source_cutoff": "2026-10-21T07:55:26.650379Z",
+    "eligible_requests": 107,
+    "processed_requests": 107,
+    "pending_requests": 0,
+    "failed_requests": 0,
+    "missing_content_requests": 0,
+    "pending_confirmation_requests": 0,
+    "expired_or_deleted_requests": 0,
+    "review_required_requests": 0,
+    "classified_intents": 100,
+    "unclassified_intents": 54,
+    "total_intents": 154,
+    "negative_feedback_requests": 0,
+    "evaluated_requests": 0,
+    "technical_failure_requests": 0,
+    "stopped_requests": 0,
+    "coverage": 1.0,
+    "feedback_coverage": 0.0,
+    "comparable": true
+  },
+  "previous_comparable": true
+}

@@ -1,0 +1,74 @@
+{
+  "batch": [
+    {
+      "text": "隔离取消一：洛阳市2026年5月7日PM2.5是多少？",
+      "thread_id": "e909baae-efd9-46a2-974c-cb7254131396",
+      "run_id": "01a15d90-e614-7e50-bf9a-f5bd143a006a",
+      "request_id": "99b4f428-2f6b-4343-ba27-a02a4619714c",
+      "attempt_id": "4abc1680-3d92-42f5-8424-265e427310c4",
+      "confirmed": true
+    },
+    {
+      "text": "隔离取消二：郑州市2026年5月7日AQI是多少？",
+      "thread_id": "1711757f-18f5-414e-96d6-21bb7c3f32c8",
+      "run_id": "01a15d90-eab5-7881-96eb-22db43730c48",
+      "request_id": "da9a6044-ae24-4c8f-9484-9951f290cfab",
+      "attempt_id": "6498ae5d-6855-4f74-9aeb-159b974c6fb0",
+      "confirmed": true
+    },
+    {
+      "text": "隔离取消三：北京市2026年5月7日PM10是多少？",
+      "thread_id": "022256fe-abb9-476a-bd3d-972d5ecf10bc",
+      "run_id": "01a15d90-ef2a-7202-905e-1b66abe4e424",
+      "request_id": "57d75f95-ad71-4cd0-b6b0-f919a6d73902",
+      "attempt_id": "b0e6f00d-32eb-4a25-93db-795dcd578bae",
+      "confirmed": true
+    }
+  ],
+  "stats_before": {
+    "chat_calls": 11,
+    "mcp_calls": 0,
+    "embedding_calls": 8
+  },
+  "cancel": {
+    "status": 200,
+    "body": {
+      "result": {
+        "job_id": "5b781124-c144-42df-b865-6d03f2855400",
+        "action": "cancel",
+        "state": "cancelled",
+        "state_revision": 10,
+        "replayed": false
+      },
+      "replayed": false
+    }
+  },
+  "job": {
+    "job_id": "5b781124-c144-42df-b865-6d03f2855400",
+    "job_kind": "incremental",
+    "state": "cancelled",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:25:46.766923Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 0,
+    "failed_sources": 0,
+    "classified_intents": 0,
+    "unclassified_intents": 0,
+    "actual_tokens": 0,
+    "usage_missing": false,
+    "state_revision": 10,
+    "last_error_code": "pending",
+    "created_at": "2026-10-21T08:25:46.770423Z",
+    "authorization_expires_at": "2026-10-21T20:25:46.767003Z",
+    "started_at": "2026-10-21T08:25:48.015640Z",
+    "paused_at": null,
+    "completed_at": "2026-10-21T08:26:08.643109Z",
+    "estimated_tokens": 0,
+    "max_sources": 3,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": true
+  }
+}

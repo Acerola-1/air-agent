@@ -1,0 +1,67 @@
+{
+  "batch": [
+    {
+      "text": "隔离取消复核一：洛阳市2026年5月7日PM2.5是多少？",
+      "thread_id": "495a7ebe-c535-49e9-8788-59071c5c30d5",
+      "run_id": "01a15d91-be37-7bf1-bcc8-48c6e8e963f3",
+      "request_id": "7c1e132c-68e0-4a18-988f-dd4c1f7b94a2",
+      "attempt_id": "836958e2-0cb7-4fa5-9c12-839b57dc69af",
+      "confirmed": true
+    },
+    {
+      "text": "隔离取消复核二：郑州市2026年5月7日AQI是多少？",
+      "thread_id": "082064e6-7f79-4e90-927a-32e4a9b08b39",
+      "run_id": "01a15d91-c226-7930-a1fc-454dace79f4e",
+      "request_id": "13ea9df4-0439-4ce5-8fd3-61af1ebd11c9",
+      "attempt_id": "966ff9e5-a025-4e48-b8ee-6d963c13623b",
+      "confirmed": true
+    }
+  ],
+  "stats_before": {
+    "chat_calls": 13,
+    "mcp_calls": 0,
+    "embedding_calls": 12
+  },
+  "cancel": {
+    "status": 200,
+    "body": {
+      "result": {
+        "job_id": "738c7425-bdcc-47a3-a63d-1648723f5cd3",
+        "action": "cancel",
+        "state": "cancelled",
+        "state_revision": 14,
+        "replayed": false
+      },
+      "replayed": false
+    }
+  },
+  "job": {
+    "job_id": "738c7425-bdcc-47a3-a63d-1648723f5cd3",
+    "job_kind": "incremental",
+    "state": "cancelled",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:26:36.606542Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 0,
+    "failed_sources": 0,
+    "classified_intents": 0,
+    "unclassified_intents": 0,
+    "actual_tokens": 0,
+    "usage_missing": false,
+    "state_revision": 14,
+    "last_error_code": "pending",
+    "created_at": "2026-10-21T08:26:36.610531Z",
+    "authorization_expires_at": "2026-10-21T20:26:36.606625Z",
+    "started_at": "2026-10-21T08:26:39.002017Z",
+    "paused_at": null,
+    "completed_at": "2026-10-21T08:27:09.793211Z",
+    "estimated_tokens": 0,
+    "max_sources": 2,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": true
+  },
+  "immediate_intent_query": "request_id | count \n------------+-------\n(0 rows)"
+}

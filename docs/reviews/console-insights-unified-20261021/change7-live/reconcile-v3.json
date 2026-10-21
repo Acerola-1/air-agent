@@ -1,0 +1,68 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "check_id": "campaign-admissions",
+      "expected": 92,
+      "actual": 92,
+      "status": "PASS",
+      "detail": "每个计划样本都有独立 request_id"
+    },
+    {
+      "check_id": "history-visible-in-index",
+      "expected": 50,
+      "actual": 50,
+      "status": "PASS",
+      "detail": "多轮历史产生的真实请求仍在活动索引中"
+    },
+    {
+      "check_id": "change6-question-total",
+      "expected": 92,
+      "actual": 92,
+      "status": "PASS",
+      "detail": "空隔离库窗口内的提问数等于本次已受理请求"
+    },
+    {
+      "check_id": "change7-source-coverage",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "detail": "已受理请求要么进入来源，要么进入未归类清单"
+    },
+    {
+      "check_id": "change7-intent-identity",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "detail": "同一请求的同一拆分序号只能对应一个意图"
+    },
+    {
+      "check_id": "change7-single-effective-cluster",
+      "expected": 0,
+      "actual": 0,
+      "status": "PASS",
+      "detail": "同一意图不能同时获得多个有效簇归属；不同意图可以分属不同簇"
+    },
+    {
+      "check_id": "change7-history-retained",
+      "expected": 50,
+      "actual": 50,
+      "status": "PASS",
+      "detail": "历史 cohort 的请求没有从洞察来源中消失"
+    },
+    {
+      "check_id": "change7-intent-counts",
+      "expected": null,
+      "actual": {
+        "intents": 326,
+        "classified": 213,
+        "unclassified": 113,
+        "multi_intent_requests": 76
+      },
+      "status": "PASS",
+      "detail": "意图数按 intent_id 去重；多意图请求按 request_id 聚合"
+    }
+  ],
+  "admitted_request_count": 92,
+  "note": "榜单中的重复频率来自本测试设定，不代表真实用户需求。"
+}

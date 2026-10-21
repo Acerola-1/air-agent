@@ -1,0 +1,57 @@
+{
+  "job_id": "410f5e6f-a62a-4a71-a667-0f7f644a5867",
+  "batch": [
+    {
+      "text": "隔离租约一：洛阳市2026年5月7日PM2.5是多少？",
+      "thread_id": "6a6df2b5-14f9-4f0a-b3eb-e84522908445",
+      "run_id": "01a15d9e-1ab6-7540-b990-8baeb44ac3cd",
+      "request_id": "500267d3-7ee8-44b7-a407-a039bf6ad9f5",
+      "attempt_id": "b1a5b027-3b35-4d32-9e2a-54951b0b46de",
+      "confirmed": true
+    },
+    {
+      "text": "隔离租约二：郑州市2026年5月7日AQI是多少？",
+      "thread_id": "1f980fd2-52db-41ee-bbc2-efcd263db367",
+      "run_id": "01a15d9e-1e27-7b30-93fc-e4ebd680fe11",
+      "request_id": "e7310fcf-6370-44dd-b90f-775d33138d12",
+      "attempt_id": "d3a61ae5-905e-4686-ae69-84876add87ac",
+      "confirmed": true
+    },
+    {
+      "text": "隔离租约三：北京市2026年5月7日PM10是多少？",
+      "thread_id": "7ce81437-72c1-494e-82d4-eb6b1780492e",
+      "run_id": "01a15d9e-21b9-71e1-a755-f6d2f6e35d5b",
+      "request_id": "8e4b6de6-9ae0-4943-b68e-68e72385daec",
+      "attempt_id": "7a2732b7-6b1d-4406-87fe-4bf43be9c6c9",
+      "confirmed": true
+    }
+  ],
+  "final": {
+    "job_id": "410f5e6f-a62a-4a71-a667-0f7f644a5867",
+    "job_kind": "incremental",
+    "state": "completed",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:40:10.492980Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 3,
+    "failed_sources": 0,
+    "classified_intents": 1,
+    "unclassified_intents": 2,
+    "actual_tokens": 78,
+    "usage_missing": false,
+    "state_revision": 11,
+    "last_error_code": null,
+    "created_at": "2026-10-21T08:40:10.495495Z",
+    "authorization_expires_at": "2026-10-21T20:40:10.493027Z",
+    "started_at": "2026-10-21T08:40:13.000443Z",
+    "paused_at": null,
+    "completed_at": "2026-10-21T08:42:44.417109Z",
+    "estimated_tokens": 240,
+    "max_sources": 3,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  }
+}

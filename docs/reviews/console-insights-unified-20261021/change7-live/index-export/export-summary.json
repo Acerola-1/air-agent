@@ -1,0 +1,10 @@
+{
+  "schema_version": "insight-index-export.v1",
+  "clusters": 58,
+  "cluster_sources": 213,
+  "unclassified_intents": 113,
+  "gaps": 5,
+  "requests": 235,
+  "complete": true,
+  "errors": {}
+}

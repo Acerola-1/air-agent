@@ -1,0 +1,22 @@
+{
+  "scenario": "迟到响应：受控模型首包延迟 3s，发送后停止并切换线程，验证 A 的结果不写入 B",
+  "thread_a": "洛阳市",
+  "thread_b": "输入联动测试：洛阳市2026年5月7日P…",
+  "stop_clicked": true,
+  "switched_to_b": true,
+  "b": {
+    "contains_late_question": false,
+    "answer_count": 1,
+    "answer_is_b_own": true
+  },
+  "a_after_switch_back": {
+    "contains_late_question": true,
+    "answer_count": 1,
+    "late_answer_written": false
+  },
+  "screenshots": [
+    "browser/late-response-thread-b.png",
+    "browser/late-response-thread-a.png"
+  ],
+  "method_note": "聊天页在运行中锁定线程切换；按 UI 真实行为先停止生成再切换，验证停止后的迟到结果被 epoch 丢弃。"
+}

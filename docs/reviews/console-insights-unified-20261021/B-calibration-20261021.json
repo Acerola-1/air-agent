@@ -1,0 +1,84 @@
+{
+  "provider": {
+    "provider": "real_embedding",
+    "dimension": 4096,
+    "model": "Qwen/Qwen3-Embedding-8B",
+    "profile": "siliconflow-qwen3-8b-v1",
+    "usage_tokens": 1417
+  },
+  "fixture_quality": false,
+  "samples": {
+    "total": 160,
+    "calibration": 60,
+    "holdout": 100,
+    "hard_negative_holdout_intents": 62
+  },
+  "thresholds": {
+    "similarity": 0.72,
+    "margin": 0.1,
+    "review_low": 0.62
+  },
+  "calibration_tuning": {
+    "rows": 60,
+    "auto_classified": 60,
+    "precision": 1.0,
+    "coverage": 1.0,
+    "false_merges": 0
+  },
+  "holdout": {
+    "clear_intents": 100,
+    "auto_classified": 100,
+    "correct_auto": 100,
+    "precision": 1.0,
+    "coverage": 1.0,
+    "false_merges": 0,
+    "key_false_merges": 0,
+    "hard_negative_auto": 62,
+    "hard_negative_correct": 62,
+    "rejected_expected": 10,
+    "sensitive_leaks": 0,
+    "unclassified_or_new": 0
+  },
+  "confusion": [
+    {
+      "expected": "advice",
+      "predicted": "auto_correct",
+      "count": 10
+    },
+    {
+      "expected": "cause",
+      "predicted": "auto_correct",
+      "count": 20
+    },
+    {
+      "expected": "forecast",
+      "predicted": "auto_correct",
+      "count": 10
+    },
+    {
+      "expected": "query_air_quality",
+      "predicted": "auto_correct",
+      "count": 50
+    },
+    {
+      "expected": "query_trend",
+      "predicted": "auto_correct",
+      "count": 10
+    },
+    {
+      "expected": "sensitive",
+      "predicted": "rejected",
+      "count": 10
+    }
+  ],
+  "gate": {
+    "min_precision": 0.98,
+    "min_coverage": 0.6,
+    "min_auto": 50,
+    "max_false_merges": 0
+  },
+  "passed": true,
+  "limitations": [
+    "合成样本；真实生产分布需另行抽样校准"
+  ]
+}

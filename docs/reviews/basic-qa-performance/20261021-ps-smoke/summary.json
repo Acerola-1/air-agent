@@ -1,0 +1,26 @@
+{
+  "schema_version": "basic-qa-perf.v1",
+  "run_id": "20261021-121015-5a659c",
+  "campaign_id": "campaign-20261021-121015-235a659c",
+  "recorded_at": "2026-10-21T04:15:01.138908+00:00",
+  "layer": "P",
+  "profile": "S",
+  "n_planned_measured": 40,
+  "n_sent_measured": 40,
+  "outcomes": {
+    "stream_completed": 40
+  },
+  "completion_p50_ms": null,
+  "completion_p95_ms": null,
+  "pipeline_p50_ms": 2984.0,
+  "pipeline_p95_ms": 5403.45,
+  "p95_exploratory": true,
+  "token_coverage": {
+    "calls": 1,
+    "usage_provided": 0,
+    "missing_reason": "未采集或提供商未返回"
+  },
+  "browser_samples": 0,
+  "all_request_rows": 92,
+  "smoke_claim": "仅冒烟范围；不表示性能回归或容量通过"
+}

@@ -420,27 +420,32 @@ def build_meteo_subagent(
     policy: AnalysisPolicy,
     backend: Any,
 ) -> dict[str, Any]:
-    """Return the isolated declarative meteo-analyst spec."""
+    """Return a compiled meteo-analyst subagent that receives the parent state.
+
+    A declarative subagent is isolated to the task description, so request,
+    scope and station findings were unavailable to the deterministic wind
+    analysis and its child execution was never reported. Compiling it with
+    ``TracingSubgraphState`` keeps the same middleware while making the
+    findings and child execution visible to the parent graph.
+    """
+    from langchain.agents import create_agent
+
     from intelligent_tracing.guards import (
         NoFilesystemToolsMiddleware,
         guarded_summarization,
     )
 
-    return {
-        "name": "meteo-analyst",
-        "description": (
-            "隔离的气象分析专员。只使用受限气象工具和确定性风场/滞后分析；"
-            "不得自行计算数值、扩大数据选择或提升结论等级。"
-        ),
-        "model": model,
-        "tools": [],
-        "system_prompt": (
+    runnable = create_agent(
+        model=model,
+        tools=[],
+        system_prompt=(
             "你是污染溯源的气象分析专员。系统已给出确定性气象摘要，所有数值以"
             "摘要为准，不得自行推算、补齐缺测、推断源距离或确认污染来源。只返回"
             "对分析有用的气象条件、风场一致性、滞后关联、反证与限制。"
         ),
-        "response_format": MeteoNarrative,
-        "middleware": [
+        response_format=MeteoNarrative,
+        state_schema=TracingSubgraphState,
+        middleware=[
             NoFilesystemToolsMiddleware(),
             TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
             ObservabilityModelMiddleware(role="meteo"),
@@ -449,6 +454,15 @@ def build_meteo_subagent(
                 source=source, registry=registry, policy=policy
             ),
         ],
+        name="meteo-analyst",
+    )
+    return {
+        "name": "meteo-analyst",
+        "description": (
+            "隔离的气象分析专员。只使用受限气象工具和确定性风场/滞后分析；"
+            "不得自行计算数值、扩大数据选择或提升结论等级。"
+        ),
+        "runnable": runnable,
     }
 
 

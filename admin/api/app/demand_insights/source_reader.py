@@ -266,7 +266,11 @@ async def record_gap(
             ON CONFLICT (tenant_id, request_id, analysis_version) DO UPDATE SET
                 reason=EXCLUDED.reason,
                 detail=EXCLUDED.detail,
-                attempts=agent_question_source_gaps.attempts + 1,
+                attempts=CASE
+                    WHEN EXCLUDED.reason IN ('pending_confirmation','missing_content')
+                    THEN 0
+                    ELSE agent_question_source_gaps.attempts + 1
+                END,
                 last_attempt_at=now(),
                 updated_at=now()
             """
@@ -518,6 +522,35 @@ async def mark_source(
     )
 
 
+async def mark_exhausted(
+    session: AsyncSession,
+    *,
+    tenant_id: str,
+    source_id: uuid.UUID,
+    max_attempts: int,
+) -> int:
+    """Turn a retry-exhausted source into a visible terminal failure.
+
+    A source can stay ``processing`` when a job is cancelled or loses its
+    lease after the attempt counter was committed. Without this transition it
+    would never be retried (attempts >= max) and also never appear as failed.
+    """
+    result = await session.execute(
+        text(
+            """
+            UPDATE agent_question_sources
+               SET status='failed', failure_code='attempts_exhausted',
+                   processed_at=now(), updated_at=now()
+             WHERE tenant_id=:tenant AND id=:id
+               AND status IN ('processing','failed')
+               AND attempts >= :max_attempts
+            """
+        ),
+        {"tenant": tenant_id, "id": source_id, "max_attempts": max_attempts},
+    )
+    return int(result.rowcount or 0)
+
+
 async def begin_source_attempt(
     session: AsyncSession,
     *,
@@ -570,7 +603,8 @@ async def load_retry_sources(
                 FROM agent_question_sources
                 WHERE tenant_id=:tenant AND profile_id=:profile
                   AND analysis_version=:av
-                  AND status IN ('processing','failed') AND attempts < :max_attempts
+                  AND status IN ('processing','failed')
+                  AND (status='processing' OR attempts < :max_attempts)
                   AND (CAST(:window_start AS timestamptz) IS NULL OR admitted_at>=:window_start)
                   AND (CAST(:window_end AS timestamptz) IS NULL OR admitted_at<:window_end)
                   AND (next_attempt_at IS NULL OR next_attempt_at <= now())

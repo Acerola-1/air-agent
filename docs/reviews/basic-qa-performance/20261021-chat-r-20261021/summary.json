@@ -1,0 +1,138 @@
+{
+  "profile": "R",
+  "layer": "P",
+  "rounds": [
+    {
+      "concurrency": 1,
+      "round_id": 1,
+      "sent": 40,
+      "success": 40,
+      "outcomes": {
+        "stream_completed": 40
+      },
+      "first_answer_p50_ms": 705.0,
+      "first_answer_p95_ms": 765.8499999999996,
+      "complete_p50_ms": 883.0,
+      "complete_p95_ms": 983.9499999999997,
+      "duration_seconds": 180.0
+    },
+    {
+      "concurrency": 1,
+      "round_id": 2,
+      "sent": 40,
+      "success": 40,
+      "outcomes": {
+        "stream_completed": 40
+      },
+      "first_answer_p50_ms": 724.5,
+      "first_answer_p95_ms": 996.2499999999999,
+      "complete_p50_ms": 927.5,
+      "complete_p95_ms": 1275.2499999999995,
+      "duration_seconds": 180.01
+    },
+    {
+      "concurrency": 1,
+      "round_id": 3,
+      "sent": 40,
+      "success": 40,
+      "outcomes": {
+        "stream_completed": 40
+      },
+      "first_answer_p50_ms": 704.5,
+      "first_answer_p95_ms": 798.4999999999993,
+      "complete_p50_ms": 883.5,
+      "complete_p95_ms": 1013.3499999999996,
+      "duration_seconds": 180.0
+    },
+    {
+      "concurrency": 5,
+      "round_id": 1,
+      "sent": 17,
+      "success": 14,
+      "outcomes": {
+        "admission_failed": 26,
+        "stream_completed": 14
+      },
+      "first_answer_p50_ms": 1304.5,
+      "first_answer_p95_ms": 6312.549999999998,
+      "complete_p50_ms": 1487.0,
+      "complete_p95_ms": 7519.299999999999,
+      "duration_seconds": 180.0
+    },
+    {
+      "concurrency": 5,
+      "round_id": 2,
+      "sent": 17,
+      "success": 13,
+      "outcomes": {
+        "admission_failed": 27,
+        "stream_completed": 13
+      },
+      "first_answer_p50_ms": 2012.0,
+      "first_answer_p95_ms": 7817.199999999999,
+      "complete_p50_ms": 2148.0,
+      "complete_p95_ms": 8516.399999999998,
+      "duration_seconds": 180.0
+    },
+    {
+      "concurrency": 5,
+      "round_id": 3,
+      "sent": 29,
+      "success": 25,
+      "outcomes": {
+        "stream_completed": 25,
+        "admission_failed": 15
+      },
+      "first_answer_p50_ms": 1688.0,
+      "first_answer_p95_ms": 4887.0,
+      "complete_p50_ms": 1949.0,
+      "complete_p95_ms": 5550.399999999998,
+      "duration_seconds": 180.01
+    },
+    {
+      "concurrency": 10,
+      "round_id": 1,
+      "sent": 12,
+      "success": 8,
+      "outcomes": {
+        "admission_failed": 32,
+        "stream_completed": 8
+      },
+      "first_answer_p50_ms": 2863.5,
+      "first_answer_p95_ms": 2935.1,
+      "complete_p50_ms": 3008.0,
+      "complete_p95_ms": 3072.4,
+      "duration_seconds": 180.01
+    },
+    {
+      "concurrency": 10,
+      "round_id": 2,
+      "sent": 14,
+      "success": 13,
+      "outcomes": {
+        "admission_failed": 27,
+        "stream_completed": 13
+      },
+      "first_answer_p50_ms": 2089.0,
+      "first_answer_p95_ms": 10120.599999999999,
+      "complete_p50_ms": 2265.0,
+      "complete_p95_ms": 10333.399999999998,
+      "duration_seconds": 180.0
+    },
+    {
+      "concurrency": 10,
+      "round_id": 3,
+      "sent": 15,
+      "success": 8,
+      "outcomes": {
+        "admission_failed": 32,
+        "stream_completed": 8
+      },
+      "first_answer_p50_ms": 6000.5,
+      "first_answer_p95_ms": 11841.599999999995,
+      "complete_p50_ms": 6289.5,
+      "complete_p95_ms": 11966.099999999997,
+      "duration_seconds": 180.0
+    }
+  ]
+}

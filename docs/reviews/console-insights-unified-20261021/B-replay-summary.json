@@ -1,0 +1,131 @@
+{
+  "dataset": "160 synthetic labeled cases; 60 calibration / 100 holdout; 62 hard-negative holdout intents",
+  "provider": {
+    "provider": "real_embedding",
+    "dimension": 4096,
+    "model": "Qwen/Qwen3-Embedding-8B",
+    "profile": "siliconflow-qwen3-8b-v1",
+    "usage_tokens": 1417
+  },
+  "thresholds": {
+    "similarity": 0.72,
+    "margin": 0.1,
+    "review_low": 0.62
+  },
+  "calibration": {
+    "rows": 60,
+    "auto_classified": 60,
+    "precision": 1.0,
+    "coverage": 1.0,
+    "false_merges": 0
+  },
+  "holdout": {
+    "clear_intents": 100,
+    "auto_classified": 100,
+    "correct_auto": 100,
+    "precision": 1.0,
+    "coverage": 1.0,
+    "false_merges": 0,
+    "key_false_merges": 0,
+    "hard_negative_auto": 62,
+    "hard_negative_correct": 62,
+    "rejected_expected": 10,
+    "sensitive_leaks": 0,
+    "unclassified_or_new": 0
+  },
+  "passed": true,
+  "limitations": [
+    "合成样本；真实生产分布需另行抽样校准",
+    "未使用辅助LLM；质量门槛为真实Embedding-only",
+    "隔离回放为非上下文原始80条+上下文追问10条，10条敏感样本按预期跳过"
+  ],
+  "replay": {
+    "original_processed": 80,
+    "original_first_intent_match": 80,
+    "context_followups": 10,
+    "context_match": 10,
+    "sensitive_skipped": 10,
+    "job": {
+      "job_id": "69753ba9-c7a5-4414-8419-2699b04284ed",
+      "job_kind": "incremental",
+      "state": "completed",
+      "window_start": "2026-10-20T16:00:00Z",
+      "window_end": null,
+      "as_of": "2026-10-21T10:16:44.134910Z",
+      "batch_size": 100,
+      "lease_deadline": null,
+      "processed_sources": 100,
+      "failed_sources": 20,
+      "classified_intents": 58,
+      "unclassified_intents": 32,
+      "actual_tokens": 779,
+      "usage_missing": false,
+      "state_revision": 5,
+      "last_error_code": null,
+      "created_at": "2026-10-21T10:16:44.140231Z",
+      "authorization_expires_at": "2026-10-21T22:17:07.856439Z",
+      "started_at": "2026-10-21T10:16:47.270145Z",
+      "paused_at": "2026-10-21T10:16:50.947907Z",
+      "completed_at": "2026-10-21T10:18:04.050833Z",
+      "estimated_tokens": 8200,
+      "max_sources": 200,
+      "max_tokens": 200000,
+      "continuous": false,
+      "cancel_requested": false
+    },
+    "overview": {
+      "schema_version": "demand-insights-v1",
+      "metric_version": "demand-insights-metrics-v1",
+      "as_of": "2026-10-21T10:18:04.297712Z",
+      "window": {
+        "start": "2026-10-14T16:00:00Z",
+        "end": "2026-10-21T10:18:04.297712Z",
+        "timezone": "Asia/Shanghai",
+        "kind": "last_7_days",
+        "partial_day": true
+      },
+      "filters": {},
+      "scope": {
+        "tenant_id": "2b78eca0-7ff4-4b96-98fb-8db96111a537",
+        "context_version": 2
+      },
+      "projected_at": null,
+      "data_lag_seconds": 0.0,
+      "measurement_source": "direct_sql",
+      "status": "partial",
+      "limitations": [
+        "当前窗口处理覆盖不足；未处理问题未计入零需求"
+      ],
+      "analysis_version": "isolated-v1",
+      "assignment_revision": 80,
+      "embedding_profile": "siliconflow-qwen3-8b-v1",
+      "profile_id": "da552303-7f23-43cb-bd1d-3be4e0cf8e41",
+      "profile_state_revision": 81,
+      "source_cutoff": "2026-10-21T10:16:36.221653Z",
+      "eligible_requests": 100,
+      "processed_requests": 80,
+      "pending_requests": 0,
+      "failed_requests": 0,
+      "missing_content_requests": 0,
+      "pending_confirmation_requests": 0,
+      "expired_or_deleted_requests": 0,
+      "review_required_requests": 0,
+      "classified_intents": 58,
+      "unclassified_intents": 32,
+      "total_intents": 90,
+      "negative_feedback_requests": 0,
+      "evaluated_requests": 0,
+      "technical_failure_requests": 0,
+      "stopped_requests": 0,
+      "coverage": 0.8,
+      "feedback_coverage": 0.0,
+      "comparable": false
+    }
+  },
+  "evidence": [
+    "B-calibration-20261021.json",
+    ".local/campaign-20261021/B-replay-sent.json",
+    ".local/campaign-20261021/B-replay-job.json",
+    ".local/campaign-20261021/B-replay-context.json"
+  ]
+}

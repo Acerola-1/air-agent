@@ -1,0 +1,57 @@
+{
+  "thread_id": "5849d53b-9777-4589-8d15-b0a5c98aa1e7",
+  "run_id": "01a15dc1-7252-7ab2-a1a9-adbfb1d1b282",
+  "confirm_status": 200,
+  "stats_before": {
+    "chat_calls": 0,
+    "mcp_calls": 0,
+    "mcp_tool_calls": 0,
+    "embedding_calls": 0
+  },
+  "stats_after": {
+    "chat_calls": 7,
+    "mcp_calls": 27,
+    "mcp_tool_calls": 6,
+    "embedding_calls": 0
+  },
+  "child_executions": [
+    {
+      "role": "station-data",
+      "status": "succeeded",
+      "tool_call_count": 0,
+      "error_class": ""
+    },
+    {
+      "role": "grid-data",
+      "status": "succeeded",
+      "tool_call_count": 0,
+      "error_class": ""
+    },
+    {
+      "role": "meteo-analyst",
+      "status": "succeeded",
+      "tool_call_count": 0,
+      "error_class": ""
+    },
+    {
+      "role": "evidence-reviewer",
+      "status": "succeeded",
+      "tool_call_count": 0,
+      "error_class": ""
+    }
+  ],
+  "meteo_present": true,
+  "validated_report": true,
+  "answer_nonempty": true,
+  "answer_sha256": "754319a1281e38343fc2966e465c6a9dbc91a464e1c923220317db56350ee516",
+  "answer_chars": 637,
+  "freeze_status": [
+    "{\"status\": \"frozen\", \"analysis_id\": \"isolated-connectivity\", \"revision\": 1, \"thread_id\": \"5849d53b-9777-4589-8d15-b0a5c98aa1e7\"}"
+  ],
+  "task_results": [
+    "{\"analysis_id\":\"isolated-connectivity\",\"revision\":1,\"pattern\":\"unknown\",\"target_anomalous\":false,\"valid_neighbor_count\":0,\"sync_neighbors\":[],\"grid\":null,\"evide",
+    "{\"analysis_id\":\"isolated-connectivity\",\"revision\":1,\"station_code\":\"S001\",\"status\":\"insufficient\",\"coverage\":{\"expected_hours\":23,\"valid_hours\":23,\"ratio\":1.0,\"",
+    "{\"summary\":\"受控气象叙述：合成风场与边界层数据仅用于确定性分析。\",\"supplemental_checks\":[],\"limitations_observed\":[\"受控合成数据，不代表真实气象\"]}",
+    "{\"analysis_id\":\"isolated-connectivity\",\"revision\":1,\"issues\":[],\"contradictions\":[],\"omissions\":[],\"downgrade_suggestions\":[],\"reviewed_claim_ids\":[],\"review_su"
+  ]
+}

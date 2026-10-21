@@ -1,0 +1,119 @@
+{
+  "request": {
+    "operation_id": "616f7842-f1e5-45a9-98d4-7f2590597430",
+    "expected_revision": 0,
+    "action": "merge",
+    "target_cluster_id": "2816a77e-1bd6-430e-8424-51bf555f8fbb"
+  },
+  "source_detail": {
+    "meta": {
+      "schema_version": "demand-insights-v1",
+      "metric_version": "demand-insights-metrics-v1",
+      "as_of": "2026-10-21T08:22:10.324031Z",
+      "window": {
+        "start": "2026-10-14T16:00:00Z",
+        "end": "2026-10-21T08:22:10.324031Z",
+        "timezone": "Asia/Shanghai",
+        "kind": "last_7_days",
+        "partial_day": true
+      },
+      "filters": {},
+      "scope": {
+        "tenant_id": "87a650f2-5e33-4ed9-88a1-5c0ba06168c8",
+        "context_version": 2
+      },
+      "projected_at": null,
+      "data_lag_seconds": 0.0,
+      "measurement_source": "direct_sql",
+      "status": "ok",
+      "limitations": [],
+      "analysis_version": "isolated-v1",
+      "assignment_revision": 231,
+      "embedding_profile": "controlled-embed-v1",
+      "profile_id": "d084f1c7-446c-40d4-8614-4a104c19e1e8",
+      "profile_state_revision": 232,
+      "source_cutoff": "2026-10-21T08:18:34.909192Z",
+      "eligible_requests": 230,
+      "processed_requests": 230,
+      "pending_requests": 0,
+      "failed_requests": 0,
+      "missing_content_requests": 0,
+      "pending_confirmation_requests": 0,
+      "expired_or_deleted_requests": 0,
+      "review_required_requests": 0,
+      "classified_intents": 214,
+      "unclassified_intents": 112,
+      "total_intents": 326,
+      "negative_feedback_requests": 0,
+      "evaluated_requests": 0,
+      "technical_failure_requests": 0,
+      "stopped_requests": 0,
+      "coverage": 1.0,
+      "feedback_coverage": 0.0,
+      "comparable": true
+    },
+    "cluster_id": "21e6e3b9-799c-4786-b14f-b6155a314bd8",
+    "canonical_name": "查询空气质量",
+    "action": "query",
+    "object": "air_quality",
+    "time_kind": "point",
+    "negation": false,
+    "constraints": {
+      "action": "query",
+      "object": "air_quality",
+      "negation": false,
+      "slot_keys": [
+        "city",
+        "date",
+        "pollutant"
+      ],
+      "time_kind": "point"
+    },
+    "status": "candidate",
+    "revision": 0,
+    "topic_id": "23279c5e-ac8c-420a-90bb-56ac28b8f47c",
+    "topic_name": "空气质量查询",
+    "created_at": "2026-10-21T08:10:51.853843Z",
+    "updated_at": "2026-10-21T08:10:51.853843Z",
+    "statistics": {
+      "atomic_intent_count": 4,
+      "distinct_requests": 4,
+      "distinct_users": 1,
+      "share": {
+        "value": 0.01227,
+        "numerator": 4,
+        "denominator": 326
+      },
+      "request_level_negative_feedback": 0
+    },
+    "summary": "查询空气质量：窗口内 4 个原子意图、4 个请求；摘要仅引用当前统计，不推断原因。",
+    "summary_source": "deterministic",
+    "trend": [
+      {
+        "day": "2026-10-21",
+        "intents": 4,
+        "requests": 4,
+        "users": 1
+      }
+    ],
+    "coverage": {
+      "eligible_requests": 230,
+      "processed_requests": 230,
+      "coverage": 1.0
+    }
+  },
+  "status": 200,
+  "body": {
+    "result": {
+      "action": "merge",
+      "preview": false,
+      "cluster_id": "21e6e3b9-799c-4786-b14f-b6155a314bd8",
+      "target_cluster_id": "2816a77e-1bd6-430e-8424-51bf555f8fbb",
+      "affected_intents": 4,
+      "revision": 1,
+      "assignment_revision": 232,
+      "replayed": false
+    },
+    "replayed": false
+  }
+}

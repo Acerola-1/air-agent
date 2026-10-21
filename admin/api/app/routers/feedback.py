@@ -91,6 +91,7 @@ async def resolve_timing_attempt(
             await session.execute(
                 text(
                     "SELECT s.attempt_id::text,s.id::text AS submission_id, "
+                    "q.id::text AS request_id, "
                     "c.id::text AS selection_id,c.selection_digest,c.skill_mode,c.skill_id, "
                     "c.mcp_mode,c.tool_ids,c.material_version,c.catalog_version,c.selection_source "
                     "FROM agent_submissions s JOIN agent_requests q "
@@ -137,6 +138,7 @@ async def resolve_timing_attempt(
     return {
         "attempt_id": row["attempt_id"],
         "submission_id": row["submission_id"],
+        "request_id": row["request_id"],
         "capability_selection": selection,
     }
 

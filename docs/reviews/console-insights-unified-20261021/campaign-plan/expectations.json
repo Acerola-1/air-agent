@@ -1,0 +1,67 @@
+{
+  "schema_version": "campaign-expectations.v1",
+  "semantic_denominator": 40,
+  "semantic_case_ids": [
+    "BQA-001",
+    "BQA-002",
+    "BQA-003",
+    "BQA-004",
+    "BQA-005",
+    "BQA-006",
+    "BQA-007",
+    "BQA-008",
+    "BQA-009",
+    "BQA-010",
+    "BQA-011",
+    "BQA-012",
+    "BQA-013",
+    "BQA-014",
+    "BQA-015",
+    "BQA-016",
+    "BQA-017",
+    "BQA-018",
+    "BQA-019",
+    "BQA-020",
+    "BQA-021",
+    "BQA-022",
+    "BQA-023",
+    "BQA-024",
+    "BQA-025",
+    "BQA-026",
+    "BQA-027",
+    "BQA-028",
+    "BQA-029",
+    "BQA-030",
+    "BQA-031",
+    "BQA-032",
+    "BQA-033",
+    "BQA-034",
+    "BQA-035",
+    "BQA-036",
+    "BQA-037",
+    "BQA-038",
+    "BQA-039",
+    "BQA-040"
+  ],
+  "by_cohort": {
+    "measured": 40,
+    "history": 50,
+    "representative": 2
+  },
+  "by_graph": {
+    "basic-qa": 90,
+    "data-analysis": 1,
+    "intelligent-tracing": 1
+  },
+  "by_expected_intent": {
+    "knowledge": 10,
+    "data_query": 80
+  },
+  "by_expected_intent_measured_only": {
+    "knowledge": 10,
+    "data_query": 30
+  },
+  "request_ids_expected_after_send": 92,
+  "history_must_remain_visible": 50,
+  "note": "榜单中的重复频率来自本测试设定，不代表真实用户需求。"
+}

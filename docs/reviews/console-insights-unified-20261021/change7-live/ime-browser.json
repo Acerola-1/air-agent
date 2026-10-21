@@ -1,0 +1,23 @@
+{
+  "scenario": "IME/系统输入法输入（浏览器 DOM composition 事件；IAB 无系统 IME 注入通道）",
+  "input": "洛阳市",
+  "compositionstart": true,
+  "input_event": {
+    "type": "insertCompositionText",
+    "isComposing": true
+  },
+  "send_enabled_during_composition": true,
+  "enter_during_composition_sent": false,
+  "compositionend": true,
+  "enter_after_composition_sent": true,
+  "result": {
+    "question_visible": true,
+    "answer_visible": true,
+    "thread_title": "洛阳市"
+  },
+  "screenshots": [
+    "browser/ime-composing.png",
+    "browser/ime-sent.png"
+  ],
+  "method_note": "使用原生 value setter + composition/input/KeyboardEvent 驱动受控 textarea；不是接口调用。"
+}

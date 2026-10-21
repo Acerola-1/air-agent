@@ -1,0 +1,66 @@
+{
+  "summary_status": 200,
+  "api_questions": 105,
+  "api_questions_status": "measured",
+  "api_historical": 0,
+  "api_historical_status": "zero",
+  "db": {
+    "questions": 105,
+    "historical": 0,
+    "deleted_questions": 5,
+    "deleted_historical": 0,
+    "requests": 105,
+    "confirmed_submissions": 104,
+    "open_outbox": 10,
+    "tombstones": 8
+  },
+  "api_matches_non_historical_including_deleted": true,
+  "api_matches_non_historical_excluding_deleted": false,
+  "historical_matches": true,
+  "insights_job": 422,
+  "insights_code": null,
+  "after_drain": {
+    "smoke_cohorts": {
+      "measured": 40,
+      "history": 50,
+      "representative": 2
+    },
+    "smoke_ids_still_present": {
+      "measured": {
+        "sent": 40,
+        "still_present": 40
+      },
+      "history": {
+        "sent": 50,
+        "still_present": 50
+      },
+      "representative": {
+        "sent": 2,
+        "still_present": 2
+      }
+    },
+    "questions_before_drain": 105,
+    "questions_after_drain": 105,
+    "api_questions_after_drain": 105,
+    "api_historical_after_drain": 0,
+    "open_outbox_before": 10,
+    "open_outbox_after": 0,
+    "drain": [
+      {
+        "claimed": 10,
+        "done": 10,
+        "retried": 0,
+        "dead_lettered": 0
+      },
+      {
+        "claimed": 0,
+        "done": 0,
+        "retried": 0,
+        "dead_lettered": 0
+      }
+    ],
+    "deleted_questions_still_counted": 5,
+    "insights_job": 403,
+    "insights_code": "permission_denied"
+  }
+}

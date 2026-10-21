@@ -1,0 +1,1 @@
+{"schema_version": "basic-qa-perf.v1", "run_id": "20261021-121015-5a659c", "round_id": "round-1", "layer": "P", "profile": "S", "stage": "smoke", "recorded_at": "2026-10-21T04:15:01.138704+00:00", "kind": "model", "usage": null, "usage_status": "not_collected", "detail": "尚未从台账观测导出物理尝试"}

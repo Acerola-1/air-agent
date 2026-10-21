@@ -1,0 +1,49 @@
+{
+  "stats_before": {
+    "chat_calls": 8,
+    "mcp_calls": 0,
+    "embedding_calls": 0
+  },
+  "stats_inflight": {
+    "chat_calls": 8,
+    "mcp_calls": 0,
+    "embedding_calls": 1
+  },
+  "delete_status": 204,
+  "job": {
+    "job_id": "bf4f5234-ffdc-4f86-9a04-9ec782a39736",
+    "job_kind": "incremental",
+    "state": "completed",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:24:08.045780Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 0,
+    "failed_sources": 0,
+    "classified_intents": 0,
+    "unclassified_intents": 0,
+    "actual_tokens": 0,
+    "usage_missing": false,
+    "state_revision": 24,
+    "last_error_code": null,
+    "created_at": "2026-10-21T08:24:08.049191Z",
+    "authorization_expires_at": "2026-10-21T20:24:08.045853Z",
+    "started_at": "2026-10-21T08:24:09.287687Z",
+    "paused_at": null,
+    "completed_at": "2026-10-21T08:25:06.765288Z",
+    "estimated_tokens": 0,
+    "max_sources": 1,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  },
+  "deleted_request": {
+    "text": "隔离竞态一：洛阳市2026年5月7日PM2.5是多少？",
+    "thread_id": "bff57c6c-17ba-47e2-b3ac-7065011d542f",
+    "run_id": "01a15d8f-4551-7b11-80e2-bb628ab54302",
+    "request_id": "000d4fd2-42d9-42a2-8fdf-6883c876a082",
+    "attempt_id": "be78e3b8-28fb-407b-b10f-1d68b75b44d9",
+    "confirmed": true
+  }
+}

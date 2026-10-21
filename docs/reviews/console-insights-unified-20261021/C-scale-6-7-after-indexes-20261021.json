@@ -1,0 +1,55 @@
+{
+  "scope": "isolated SQL; 100k requests/300k attempts/1M observations; 200k intents/1000 clusters; concurrency 10; 35x2",
+  "results": [
+    {
+      "name": "change6_list",
+      "samples": 70,
+      "concurrency": 10,
+      "p50_ms": 4.683104503783397,
+      "p95_ms": 8.395041004405357,
+      "errors": [],
+      "target_ms": 500,
+      "status": "PASS"
+    },
+    {
+      "name": "change6_aggregate",
+      "samples": 70,
+      "concurrency": 10,
+      "p50_ms": 3581.1761244985973,
+      "p95_ms": 4185.959917012951,
+      "errors": [],
+      "target_ms": 1500,
+      "status": "FAIL"
+    },
+    {
+      "name": "change6_content",
+      "samples": 70,
+      "concurrency": 10,
+      "p50_ms": 3.1168124987743795,
+      "p95_ms": 5.514124990440905,
+      "errors": [],
+      "target_ms": 500,
+      "status": "PASS"
+    },
+    {
+      "name": "change7_leaderboard",
+      "samples": 70,
+      "concurrency": 10,
+      "p50_ms": 2939.1069789999165,
+      "p95_ms": 4117.254625001806,
+      "errors": [],
+      "target_ms": 1000,
+      "status": "FAIL"
+    },
+    {
+      "name": "change7_sources",
+      "samples": 70,
+      "concurrency": 10,
+      "p50_ms": 10.774062502605375,
+      "p95_ms": 18.791333000990562,
+      "errors": [],
+      "target_ms": 500,
+      "status": "PASS"
+    }
+  ]
+}

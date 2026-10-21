@@ -2263,11 +2263,6 @@ async def request_thread_deletion(
         .mappings()
         .first()
     )
-    if owner is None or str(owner["source"]) not in ("native", "migrated"):
-        raise NotFound("对象不存在", code="not_found")
-    owns = str(owner["user_id"]) == str(identity.user.id)
-    if not owns and "agent:thread:delete" not in identity.permissions:
-        raise NotFound("对象不存在", code="not_found")
     await session.execute(
         text("SELECT pg_advisory_xact_lock(hashtextextended(:k, 0))"),
         {"k": f"thread:{tenant_id}:{thread_id}"},
@@ -2280,19 +2275,30 @@ async def request_thread_deletion(
             )
         )
     ).scalar_one_or_none()
-    if existing is None:
-        existing = AgentThreadDeletion(
-            id=uuid.uuid4(),
-            tenant_id=tenant_id,
-            thread_id=thread_id,
-            user_id=uuid.UUID(str(owner["user_id"])),
-            requested_by=identity.user.id,
-            state="requested",
-            attempts=0,
-            requested_at=now,
+    if existing is not None:
+        same_user = existing.user_id is not None and str(existing.user_id) == str(
+            identity.user.id
         )
-        session.add(existing)
-        await session.flush()
+        if not same_user and "agent:thread:delete" not in identity.permissions:
+            raise NotFound("对象不存在", code="not_found")
+        return {"thread_id": thread_id, "deletion_state": existing.state}
+    if owner is None or str(owner["source"]) not in ("native", "migrated"):
+        raise NotFound("对象不存在", code="not_found")
+    owns = str(owner["user_id"]) == str(identity.user.id)
+    if not owns and "agent:thread:delete" not in identity.permissions:
+        raise NotFound("对象不存在", code="not_found")
+    existing = AgentThreadDeletion(
+        id=uuid.uuid4(),
+        tenant_id=tenant_id,
+        thread_id=thread_id,
+        user_id=uuid.UUID(str(owner["user_id"])),
+        requested_by=identity.user.id,
+        state="requested",
+        attempts=0,
+        requested_at=now,
+    )
+    session.add(existing)
+    await session.flush()
     await emit_fact(
         session,
         tenant_id=tenant_id,

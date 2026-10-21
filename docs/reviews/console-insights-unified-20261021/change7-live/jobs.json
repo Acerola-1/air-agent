@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "schema_version": "demand-insights-v1",
+    "metric_version": "demand-insights-metrics-v1",
+    "as_of": "2026-10-21T08:11:57.261640Z",
+    "window": {
+      "start": "2026-10-14T16:00:00Z",
+      "end": "2026-10-21T08:11:57.261640Z",
+      "timezone": "Asia/Shanghai",
+      "kind": "last_7_days",
+      "partial_day": true
+    },
+    "filters": {},
+    "scope": {
+      "tenant_id": "87a650f2-5e33-4ed9-88a1-5c0ba06168c8",
+      "context_version": 2
+    },
+    "projected_at": null,
+    "data_lag_seconds": 0.0,
+    "measurement_source": "direct_sql",
+    "status": "partial",
+    "limitations": [],
+    "analysis_version": "isolated-v1",
+    "assignment_revision": 107,
+    "embedding_profile": "controlled-embed-v1",
+    "profile_id": "d084f1c7-446c-40d4-8614-4a104c19e1e8",
+    "profile_state_revision": 108,
+    "source_cutoff": null,
+    "eligible_requests": 0,
+    "processed_requests": 0,
+    "pending_requests": 0,
+    "failed_requests": 0,
+    "missing_content_requests": 0,
+    "pending_confirmation_requests": 0,
+    "expired_or_deleted_requests": 0,
+    "review_required_requests": 0,
+    "classified_intents": 0,
+    "unclassified_intents": 0,
+    "total_intents": 0,
+    "negative_feedback_requests": 0,
+    "evaluated_requests": 0,
+    "technical_failure_requests": 0,
+    "stopped_requests": 0,
+    "coverage": null,
+    "feedback_coverage": null,
+    "comparable": false
+  },
+  "items": [
+    {
+      "job_id": "ca93ca12-d52a-4ca0-b226-75debcbb851a",
+      "job_kind": "incremental",
+      "state": "completed",
+      "window_start": "2026-10-20T16:00:00Z",
+      "window_end": null,
+      "processed_sources": 107,
+      "failed_sources": 0,
+      "classified_intents": 100,
+      "unclassified_intents": 54,
+      "actual_tokens": 3130,
+      "usage_missing": false,
+      "state_revision": 6,
+      "last_error_code": null,
+      "created_at": "2026-10-21T08:10:45.704793Z",
+      "authorization_expires_at": "2026-10-21T20:10:45.695314Z"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "thread_id": "2f738a2a-dd7d-4bb3-a361-c2adfd3b2b66",
+  "run_id": "01a15da9-371a-76b0-90f0-98ab9fc1ba57",
+  "confirm_status": 200,
+  "stats_before": {
+    "chat_calls": 5,
+    "mcp_calls": 20,
+    "mcp_tool_calls": 5,
+    "embedding_calls": 0
+  },
+  "stats_after": {
+    "chat_calls": 10,
+    "mcp_calls": 47,
+    "mcp_tool_calls": 11,
+    "embedding_calls": 0
+  },
+  "child_executions": [
+    {
+      "role": "station-data",
+      "status": "succeeded",
+      "tool_call_count": 0,
+      "error_class": ""
+    },
+    {
+      "role": "grid-data",
+      "status": "succeeded",
+      "tool_call_count": 0,
+      "error_class": ""
+    },
+    {
+      "role": "evidence-reviewer",
+      "status": "succeeded",
+      "tool_call_count": 0,
+      "error_class": ""
+    }
+  ],
+  "meteo_present": false,
+  "validated_report": true,
+  "answer_nonempty": true,
+  "answer_sha256": "03dda71f300e7f8d27158954e343559025dc8498f09743b7d63981f1cb74378a",
+  "answer_chars": 612,
+  "answer_excerpt": "## PM2.5 污染过程与来向线索分析\n\n分析对象：洛阳市国控站（S001）  \n\n时间范围：2026年05月07日00时至2026年05月07日23时  \n\n分析策略：analysis-policy-v2\n\n### 数据覆盖\n数据完整率 100.0%（有效 23 / 应有 23 小时，最大连续缺口 0 小时）。\n\n### 异常过程\n当前数据覆盖或基线不足，无法判断是否存在异常；未把未知当作无异常。\n\n### 评价口径\n24小时滑动均值：34.4 微克/立方米，有效小时 23/24；该指标仅作补充统计，不是自然日均或法规评价。\n\n- 限制：当前不提供轨迹/PSCF分析，不能据此判断传输路径。\n\n- 限制：缺少排放源清单，不能确认具体企业或排口。\n\n- 限制：缺少化学组分资料，不能判断二次生成或源类贡献。\n\n- 限制：比较基线覆盖或样本不足，未生成相对异常结论。\n\n- 限制：目标站未检出异",
+  "freeze_status": [
+    "{\"status\": \"frozen\", \"analysis_id\": \"isolated-connectivity\", \"revision\": 1, \"thread_id\": \"2f738a2a-dd7d-4bb3-a361-c2adfd3b2b66\"}"
+  ],
+  "task_results": [
+    "{\"summary\":\"受控气象叙述：合成风场与边界层数据仅用于确定性分析。\",\"supplemental_checks\":[],\"limitations_observed\":[\"受控合成数据，不代表真实气象\"]}",
+    "{\"analysis_id\":\"isolated-connectivity\",\"revision\":1,\"station_code\":\"S001\",\"status\":\"insufficient\",\"coverage\":{\"expected_hours\":23,\"valid_hours\":23,\"ratio\":1.0,\"",
+    "{\"analysis_id\":\"isolated-connectivity\",\"revision\":1,\"issues\":[],\"contradictions\":[],\"omissions\":[],\"downgrade_suggestions\":[],\"reviewed_claim_ids\":[],\"review_su",
+    "{\"analysis_id\":\"isolated-connectivity\",\"revision\":1,\"pattern\":\"unknown\",\"target_anomalous\":false,\"valid_neighbor_count\":0,\"sync_neighbors\":[],\"grid\":null,\"evide"
+  ]
+}

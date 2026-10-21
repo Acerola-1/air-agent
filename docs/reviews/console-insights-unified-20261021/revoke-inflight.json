@@ -1,0 +1,32 @@
+{
+  "removed": "agent:business:basic-qa:use",
+  "revoke": 200,
+  "inflight": {
+    "model_calls_before_revoke": 1,
+    "model_calls_after_revoke": 0,
+    "stream": {
+      "status": 200
+    },
+    "counts": {
+      "requests": 1,
+      "texts": 0,
+      "answers": 1
+    }
+  },
+  "after_revoke": {
+    "create": 401,
+    "stream": null,
+    "stream_error": null,
+    "model_calls": 0,
+    "counts": null
+  },
+  "restore": 403,
+  "restore_finally": 403,
+  "permission_restored_in_isolated_iam": true,
+  "restored_run": {
+    "create": 200,
+    "stream": 200,
+    "model_calls": 1,
+    "texts": 1
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "version": "public-graph-representative-20261021-v1",
+  "purpose": "basic-qa 固定40题之外的两张公开图连通样本。不计入40题分母，也不代替各图业务正确性。",
+  "cases": [
+    {
+      "case_id": "REP-DATA-001",
+      "graph_id": "data-analysis",
+      "menu_name": "CityHourBroadcast",
+      "question": "按小时播报菜单查询洛阳市2026年5月7日PM2.5，这是隔离连通检查。",
+      "deadline_seconds": 180,
+      "expected_intent": null
+    },
+    {
+      "case_id": "REP-TRACE-001",
+      "graph_id": "intelligent-tracing",
+      "menu_name": null,
+      "question": "请对测试城市洛阳市2026年5月7日的PM2.5做一次隔离溯源连通检查，只使用本次测试数据。",
+      "deadline_seconds": 180,
+      "expected_intent": null
+    }
+  ]
+}

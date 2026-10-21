@@ -1,0 +1,15 @@
+{
+  "request": {
+    "operation_id": "8021c093-7367-4a3c-ab22-ffd028ed7b5f",
+    "expected_revision": 0,
+    "action": "rename",
+    "new_name": "隔离验收·空气质量查询"
+  },
+  "status": 409,
+  "body": {
+    "detail": {
+      "code": "revision_conflict",
+      "error": "标准问题已变化，请刷新后重试"
+    }
+  }
+}

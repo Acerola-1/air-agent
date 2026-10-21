@@ -1,0 +1,9 @@
+{
+  "migration_dir": "/Users/acerola/Dev/Java/air_agent_iam/server/src/main/resources/db/migration",
+  "latest_version": "V27",
+  "feedback_manage_registered": true,
+  "insights_manage_registered": false,
+  "proposed_next_version": "V28",
+  "proposed_sql": "-- 提议，未授权，未应用到 IAM 仓库。\n-- Change7：只登记 agent:insights:manage，不授予企业、角色或 root。\nSELECT set_config('app.is_platform', 'on', true);\n\nINSERT INTO iam.permissions\n    (id, code, name_zh, scope, grantable_to_tenants, resource_code, sort)\nVALUES\n    ('01930000-0000-4000-8000-000000000515', 'agent:insights:manage',\n     '运营需求洞察', 'tenant', true, NULL, 515)\nON CONFLICT (code) DO NOTHING;\n",
+  "applied": false
+}

@@ -466,14 +466,17 @@ async def test_late_confirmation_gap_rediscovered(engines):
             discovered[0], now=dt.datetime.now(dt.UTC)
         )
         assert source is None and reason == "pending_confirmation"
-        await source_reader.record_gap(
-            session,
-            tenant_id=str(tenant),
-            profile_id=profile["active_profile_id"],
-            analysis_version=profile["analysis_version"],
-            row=discovered[0],
-            reason=reason,
-        )
+        # Repeated scans while the admission is still pending must not exhaust
+        # the retry budget; late confirmation has to remain discoverable.
+        for _ in range(8):
+            await source_reader.record_gap(
+                session,
+                tenant_id=str(tenant),
+                profile_id=profile["active_profile_id"],
+                analysis_version=profile["analysis_version"],
+                row=discovered[0],
+                reason=reason,
+            )
         await session.commit()
     async with owner() as session:
         await session.execute(

@@ -1,0 +1,64 @@
+{
+  "pending_before": 0,
+  "create": 200,
+  "delete": 204,
+  "claimed_for_thread": 1,
+  "claimed_other": 0,
+  "stale_handle": "rejected",
+  "receipts_after_stale": 0,
+  "takeover_batch": {
+    "claimed": 1,
+    "done": 1,
+    "retried": 0,
+    "dead_lettered": 0
+  },
+  "stale_finish": {
+    "confirmed": false,
+    "reason": "lease_generation_moved"
+  },
+  "deletion_state": "completed",
+  "deletion_receipts": 1,
+  "open_outbox_for_thread": 1,
+  "drain": [
+    {
+      "claimed": 0,
+      "done": 0,
+      "retried": 0,
+      "dead_lettered": 0
+    }
+  ],
+  "outbox_by_consumer": [
+    {
+      "consumer": "deletion_cleanup",
+      "status": "done",
+      "count": 1
+    },
+    {
+      "consumer": "external_trace_cleanup",
+      "status": "pending",
+      "count": 1
+    }
+  ],
+  "receipts_by_consumer": [
+    {
+      "consumer": "deletion_cleanup",
+      "events": 1,
+      "rows": 1
+    }
+  ],
+  "drain_remaining": [
+    {
+      "claimed": 1,
+      "done": 1,
+      "retried": 0,
+      "dead_lettered": 0
+    },
+    {
+      "claimed": 0,
+      "done": 0,
+      "retried": 0,
+      "dead_lettered": 0
+    }
+  ],
+  "open_outbox_after_drain": 0
+}

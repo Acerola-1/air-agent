@@ -158,7 +158,13 @@ async def _authenticate_custom(request: Request) -> dict[str, Any]:
         ) from exc
 
 
-async def _owners(request: Request, thread_id: str) -> tuple[str, str]:
+async def _owners(
+    request: Request,
+    thread_id: str,
+    *,
+    allow_deleted: bool = False,
+    allow_tombstone_without_owner: bool = False,
+) -> tuple[str, str]:
     """独立校验 v2 scope（自定义 app 不经平台认证中间件——探针实测）."""
     try:
         scope = verify_scope(request.headers.get("x-artifact-scope", ""), thread_id)
@@ -174,11 +180,25 @@ async def _owners(request: Request, thread_id: str) -> tuple[str, str]:
         raise HTTPException(status_code=403, detail="资料作用域与当前身份不一致")
     try:
         owner = await fetch_thread_owner(
-            thread_id, tenant_id=tenant_id, user_id=user_id
+            thread_id,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            allow_deleted=allow_deleted,
         )
     except IdentityBackendUnavailable as exc:
         raise HTTPException(status_code=503, detail="归属确认不可用") from exc
     if owner is None or owner["source"] not in {"native", "migrated"}:
+        if allow_tombstone_without_owner:
+            from common.identity.db import fetch_deleted_thread_ids
+
+            try:
+                deleted = await fetch_deleted_thread_ids(
+                    tenant_id=tenant_id, user_id=user_id
+                )
+            except IdentityBackendUnavailable as exc:
+                raise HTTPException(status_code=503, detail="归属确认不可用") from exc
+            if thread_id in deleted:
+                return tenant_id, user_id
         raise HTTPException(status_code=404, detail="资料不存在或不属于此会话")
     if request.method == "GET":
         from common.identity.runtime import identity_from_auth_user
@@ -244,7 +264,9 @@ async def read_archive(
 @app.delete("/archives/{thread_id}")
 async def delete_archives(request: Request, thread_id: str):
     """清理已授权线程资料，重复请求幂等."""
-    tenant_id, user_id = await _owners(request, thread_id)
+    tenant_id, user_id = await _owners(
+        request, thread_id, allow_deleted=True, allow_tombstone_without_owner=True
+    )
     await delete_thread_artifacts(
         tenant_id=tenant_id, user_id=user_id, thread_id=thread_id
     )

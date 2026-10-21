@@ -400,3 +400,18 @@ async def test_zero_revisions_are_valid_but_revoked_permissions_are_not(monkeypa
     payload["permissions"] = []
     denied = await delegations.check_delegation(db, delegation=delegation, settings=_settings())
     assert not denied.ok and "permissions" in denied.reason
+
+
+def test_pause_state_keeps_iam_unavailable_as_authorization_pause() -> None:
+    assert (
+        worker.pause_state_for(InsightsUnavailable("IAM 不可用", code="iam_unavailable"))
+        == "paused_authorization"
+    )
+    assert (
+        worker.pause_state_for(InsightsUnavailable("撤权", code="authorization_revoked"))
+        == "paused_authorization"
+    )
+    assert (
+        worker.pause_state_for(InsightsUnavailable("模型失败", code="model_timeout"))
+        == "paused_failure"
+    )

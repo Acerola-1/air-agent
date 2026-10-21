@@ -1,0 +1,187 @@
+{
+  "positive": {
+    "stream": 200,
+    "model_calls": 1,
+    "before_delete": {
+      "requests": 1,
+      "contents": 1,
+      "texts": 1,
+      "answers": 1,
+      "deletion_state": null,
+      "deleted_refs": 0,
+      "live_refs": 1
+    },
+    "delete": 204,
+    "after_delete": {
+      "requests": 1,
+      "contents": 1,
+      "texts": 1,
+      "answers": 1,
+      "deletion_state": "requested",
+      "deleted_refs": 0,
+      "live_refs": 1
+    }
+  },
+  "late": {
+    "model_calls_before_delete": 1,
+    "model_calls_after_delete": 0,
+    "stream": {
+      "status": 200,
+      "bytes": 33467
+    },
+    "delete": 204,
+    "repeat_delete": 503,
+    "read": 404,
+    "archive": 404,
+    "new_run": 403,
+    "counts": {
+      "requests": 1,
+      "contents": 0,
+      "texts": 0,
+      "answers": 0,
+      "deletion_state": "requested",
+      "deleted_refs": 0,
+      "live_refs": 1
+    },
+    "prior_retries": {
+      "160d8543": {
+        "delete": 204,
+        "counts": {
+          "requests": 1,
+          "contents": 1,
+          "texts": 1,
+          "answers": 1,
+          "deletion_state": "requested",
+          "deleted_refs": 0,
+          "live_refs": 1
+        }
+      },
+      "c58dd8af": {
+        "delete": 204,
+        "counts": {
+          "requests": 1,
+          "contents": 1,
+          "texts": 1,
+          "answers": 1,
+          "deletion_state": "requested",
+          "deleted_refs": 0,
+          "live_refs": 1
+        }
+      }
+    }
+  },
+  "follow_up": {
+    "threads": [
+      {
+        "thread": "6326c1ff",
+        "state_before_worker": "requested",
+        "repeat_delete": 503,
+        "repeat_error": "会话删除登记失败，暂未删除，请重试",
+        "repeat_code": "deletion_marking_failed",
+        "content_status": 404,
+        "content_code": null,
+        "content_text_present": false
+      },
+      {
+        "thread": "2d2bd879",
+        "state_before_worker": "requested",
+        "repeat_delete": 503,
+        "repeat_error": "会话删除登记失败，暂未删除，请重试",
+        "repeat_code": "deletion_marking_failed",
+        "content_status": 404,
+        "content_code": null,
+        "content_text_present": false
+      },
+      {
+        "thread": "0260435b",
+        "state_before_worker": "requested",
+        "repeat_delete": 503,
+        "repeat_error": "会话删除登记失败，暂未删除，请重试",
+        "repeat_code": "deletion_marking_failed",
+        "content_status": 404,
+        "content_code": null,
+        "content_text_present": false
+      },
+      {
+        "thread": "c58dd8af",
+        "state_before_worker": "requested",
+        "repeat_delete": 503,
+        "repeat_error": "会话删除登记失败，暂未删除，请重试",
+        "repeat_code": "deletion_marking_failed",
+        "content_status": 404,
+        "content_code": null,
+        "content_text_present": false
+      }
+    ],
+    "worker_batches": [
+      {
+        "claimed": 50,
+        "done": 0,
+        "retried": 50,
+        "dead_lettered": 0
+      },
+      {
+        "claimed": 50,
+        "done": 0,
+        "retried": 50,
+        "dead_lettered": 0
+      },
+      {
+        "claimed": 50,
+        "done": 0,
+        "retried": 50,
+        "dead_lettered": 0
+      },
+      {
+        "claimed": 50,
+        "done": 0,
+        "retried": 50,
+        "dead_lettered": 0
+      },
+      {
+        "claimed": 50,
+        "done": 0,
+        "retried": 50,
+        "dead_lettered": 0
+      },
+      {
+        "claimed": 50,
+        "done": 0,
+        "retried": 50,
+        "dead_lettered": 0
+      },
+      {
+        "claimed": 50,
+        "done": 0,
+        "retried": 50,
+        "dead_lettered": 0
+      },
+      {
+        "claimed": 50,
+        "done": 0,
+        "retried": 50,
+        "dead_lettered": 0
+      }
+    ],
+    "deletion_states": {
+      "requested": 5
+    },
+    "refs": {
+      "live": 103,
+      "deleted": 0
+    },
+    "deleted_thread_answer_texts": 4
+  },
+  "resolved": {
+    "repeat_delete": 204,
+    "read_after_delete": 404,
+    "archive_after_delete": 404,
+    "new_run_after_delete": 403,
+    "deletion_states": {
+      "completed": 7
+    },
+    "deleted_thread_answer_texts": 0,
+    "worker_done_after_runtime_uri": 524,
+    "worker_follow_up_done": 4
+  }
+}

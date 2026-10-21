@@ -1,0 +1,30 @@
+{
+  "stats_before": {
+    "chat_calls": 19,
+    "mcp_calls": 0,
+    "embedding_calls": 18
+  },
+  "create_job": {
+    "status": 403,
+    "body": {
+      "detail": {
+        "code": "permission_denied",
+        "error": "缺少权限: agent:insights:manage"
+      }
+    }
+  },
+  "retry": {
+    "status": 403,
+    "body": {
+      "detail": {
+        "code": "permission_denied",
+        "error": "缺少权限: agent:insights:manage"
+      }
+    }
+  },
+  "stats_after": {
+    "chat_calls": 19,
+    "mcp_calls": 0,
+    "embedding_calls": 18
+  }
+}

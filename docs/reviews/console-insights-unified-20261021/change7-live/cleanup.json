@@ -1,0 +1,97 @@
+{
+  "date": "2026-10-21",
+  "scope": "aa-campaign-20261021 isolated resources only",
+  "containers_deleted": [
+    "aa-campaign-20261021-langgraph",
+    "aa-campaign-20261021-graph-redis",
+    "aa-campaign-20261021-biz-pg",
+    "aa-campaign-20261021-iam-pg",
+    "aa-campaign-20261021-iam-redis"
+  ],
+  "host_processes_stopped": [
+    "admin web :3100",
+    "BFF :25448",
+    "admin API :25446",
+    "IAM :25445",
+    "controlled model/MCP :25449",
+    "MCP proxy :25451",
+    "host bridge :25450",
+    "insights worker"
+  ],
+  "restore_database": "campaign_restore dropped after evidence capture",
+  "verification": "container ls has no aa-campaign-*; no listeners on 25440-25459/3100",
+  "kept_private": ".local/campaign-20261021 (gitignored): sessions, dumps, private evidence",
+  "formal_resources_touched": false,
+  "rebuild_cycle": {
+    "purpose": "rerun tracing after meteo child_executions fix",
+    "containers_deleted": [
+      "aa-campaign-20261021-langgraph",
+      "aa-campaign-20261021-graph-redis",
+      "aa-campaign-20261021-biz-pg",
+      "aa-campaign-20261021-iam-pg",
+      "aa-campaign-20261021-iam-redis"
+    ],
+    "test_databases_dropped": [
+      "campaign_insights_test",
+      "campaign_restore"
+    ],
+    "host_processes_stopped": [
+      "admin web :3100",
+      "BFF :25448",
+      "admin API :25446",
+      "IAM :25445",
+      "controlled :25449",
+      "MCP proxy :25451",
+      "bridge :25450",
+      "insights worker"
+    ],
+    "final_check": "container ls no aa-campaign-*; no listeners on 25440-25459/3100; no campaign processes",
+    "formal_resources_touched": false
+  },
+  "third_cycle": {
+    "purpose": "browser late-response and IME verification",
+    "containers_deleted": [
+      "aa-campaign-20261021-langgraph",
+      "aa-campaign-20261021-graph-redis",
+      "aa-campaign-20261021-biz-pg",
+      "aa-campaign-20261021-iam-pg",
+      "aa-campaign-20261021-iam-redis"
+    ],
+    "host_processes_stopped": [
+      "BFF :25448",
+      "admin API :25446",
+      "IAM :25445",
+      "controlled :25449",
+      "MCP proxy :25451",
+      "bridge :25450"
+    ],
+    "final_check": "container ls no aa-campaign-*; no listeners on 25440-25459/3100; no campaign processes",
+    "formal_resources_touched": false
+  },
+  "final_bc_cycle": {
+    "purpose": "B synthetic-set quality calibration/replay and C chat R + 6/7 fixed-scale SQL",
+    "containers_deleted": [
+      "aa-campaign-20261021-langgraph",
+      "aa-campaign-20261021-graph-redis",
+      "aa-campaign-20261021-biz-pg",
+      "aa-campaign-20261021-iam-pg",
+      "aa-campaign-20261021-iam-redis",
+      "aa-campaign-20261021-scale-pg"
+    ],
+    "host_processes_stopped": [
+      "BFF :25448",
+      "admin API :25446",
+      "IAM :25445",
+      "controlled :25449",
+      "MCP proxy :25451",
+      "bridge :25450"
+    ],
+    "test_databases_dropped": [
+      "campaign_scale (removed with scale-pg container)",
+      "campaign_business (removed with biz-pg container)"
+    ],
+    "final_check": "container ls empty of aa-campaign-*; no listeners on 25440-25460/3100; no campaign processes",
+    "formal_resources_touched": false,
+    "evidence_kept": "docs/reviews/basic-qa-performance/20261021-chat-r-20261021/ and docs/reviews/console-insights-unified-20261021/{B-report-20261021.md,B-calibration-20261021.json,B-replay-summary.json,C-report-20261021.md,C-scale-6-7-20261021.json,C-scale-6-7-after-indexes-20261021.json,change7-live/C-logs/}"
+  }
+}

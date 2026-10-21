@@ -1,0 +1,26 @@
+{
+  "request": {
+    "operation_id": "9c6cf558-0f67-430d-9be8-69927ec3bfa6",
+    "expected_revision": 230,
+    "action": "assign",
+    "intent_ids": [
+      "218db77f-3f16-41ec-a9a6-4c54fc489553"
+    ],
+    "target_cluster_id": "2816a77e-1bd6-430e-8424-51bf555f8fbb"
+  },
+  "status": 200,
+  "body": {
+    "result": {
+      "action": "assign",
+      "preview": false,
+      "intent_ids": [
+        "218db77f-3f16-41ec-a9a6-4c54fc489553"
+      ],
+      "target_cluster_id": "2816a77e-1bd6-430e-8424-51bf555f8fbb",
+      "affected_intents": 1,
+      "assignment_revision": 231,
+      "replayed": false
+    },
+    "replayed": false
+  }
+}

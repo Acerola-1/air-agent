@@ -35,6 +35,18 @@ def _worker_id(settings: InsightsSettings) -> str:
     return f"{settings.worker_id}:{os.getpid()}"
 
 
+def pause_state_for(exc: InsightsUnavailable) -> str:
+    """Map an unavailable error to the documented pause state.
+
+    Delegation/revocation and IAM unavailability pause authorization and keep
+    the delegation for renewal; model/protocol faults pause as failures.
+    """
+    code = str(exc.code or "")
+    if "authorization" in code or code == "iam_unavailable":
+        return "paused_authorization"
+    return "paused_failure"
+
+
 def _apply_worker_transaction(session, transaction, connection):
     scope = session.info.get("insights_scope")
     if scope is None:
@@ -302,6 +314,13 @@ async def _process_batch(
                 source_id=source["id"],
                 max_attempts=settings.max_attempts,
             )
+            if attempt is None:
+                await source_reader.mark_exhausted(
+                    session,
+                    tenant_id=tenant,
+                    source_id=source["id"],
+                    max_attempts=settings.max_attempts,
+                )
             await session.commit()
         if attempt is None:
             continue
@@ -321,11 +340,7 @@ async def _process_batch(
             except InsightsUnavailable as exc:
                 await session.rollback()
                 logger.warning("insights source authorization/model pause code=%s", exc.code)
-                return (
-                    processed,
-                    "paused_authorization" if "authorization" in exc.code else "paused_failure",
-                    True,
-                )
+                return processed, pause_state_for(exc), True
             except Exception as exc:  # noqa: BLE001
                 await session.rollback()
                 logger.warning(
@@ -412,11 +427,7 @@ async def _run_job(
             factory, job, profile, settings, gateway
         )
     except InsightsUnavailable as exc:
-        state = (
-            "paused_authorization"
-            if "authorization" in exc.code or exc.code == "iam_unavailable"
-            else "paused_failure"
-        )
+        state = pause_state_for(exc)
         processed = 0
         async with factory() as session:
             await _set_worker(session, str(job["tenant_id"]))

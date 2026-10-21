@@ -1,0 +1,18 @@
+{
+  "request_id": "5e298761-4b67-4a9e-88c6-4f337bb37008",
+  "thread_id": "fab539e9-3e44-4454-a89b-e047d6ad3162",
+  "before": {
+    "question_count": 235,
+    "total_intents": 326,
+    "classified": 214,
+    "processed_requests": 230
+  },
+  "delete_status": 204,
+  "after": {
+    "question_count": 235,
+    "total_intents": 316,
+    "classified": 208,
+    "processed_requests": 224
+  },
+  "read_status": 404
+}

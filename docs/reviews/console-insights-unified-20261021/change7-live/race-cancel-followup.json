@@ -1,0 +1,30 @@
+{
+  "job": {
+    "job_id": "1be1fba7-0707-46bb-9150-c3af96fccc93",
+    "job_kind": "incremental",
+    "state": "completed",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:26:14.287709Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 3,
+    "failed_sources": 0,
+    "classified_intents": 2,
+    "unclassified_intents": 1,
+    "actual_tokens": 78,
+    "usage_missing": false,
+    "state_revision": 4,
+    "last_error_code": null,
+    "created_at": "2026-10-21T08:26:14.290299Z",
+    "authorization_expires_at": "2026-10-21T20:26:14.287773Z",
+    "started_at": "2026-10-21T08:26:14.760561Z",
+    "paused_at": null,
+    "completed_at": "2026-10-21T08:26:23.906642Z",
+    "estimated_tokens": 240,
+    "max_sources": 10,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  }
+}

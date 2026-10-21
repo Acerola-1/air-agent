@@ -1,0 +1,143 @@
+{
+  "thread_id": "e118dd73-636e-4574-9e0c-6bc9026bdc5e",
+  "run_id": "01a15dc6-41f7-7541-8b52-42594e6299ce",
+  "confirm_status": 200,
+  "first_admission": {
+    "request_id": "bd37a0cc-1a41-42b7-97d0-33b51e67e599",
+    "attempt_id": "69b0b0a9-c10a-4271-9888-60c54cd35501",
+    "submission_id": "91af331e-5b39-41e9-a897-ef46f446d98a",
+    "admission_status": "admitting",
+    "operation_kind": "initial",
+    "reused": false,
+    "thread_id": "e118dd73-636e-4574-9e0c-6bc9026bdc5e",
+    "graph_id": "basic-qa",
+    "business_code": "basic-qa",
+    "business_policy_version": "2026-10-19.1",
+    "ledger_marker": "lr:bd37a0cc-1a41-42b7-97d0-33b51e67e599:69b0b0a9-c10a-4271-9888-60c54cd35501",
+    "capability_selection": {
+      "id": "b6901896-3a87-4f96-a90b-3f4800337c30",
+      "selection_id": "b6901896-3a87-4f96-a90b-3f4800337c30",
+      "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "auto",
+        "tool_ids": []
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "auto",
+      "tool_ids": [],
+      "catalog_version": "cat_000000000000000000000000",
+      "material_version": "auto",
+      "selection_source": "automatic",
+      "validation_time": "2026-10-21T09:23:56.360668+00:00"
+    }
+  },
+  "job1": {
+    "job_id": "483d49e9-3829-4c94-9f43-da61b4581e29",
+    "job_kind": "incremental",
+    "state": "pending",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T09:23:57.396227Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 0,
+    "failed_sources": 0,
+    "classified_intents": 0,
+    "unclassified_intents": 0,
+    "actual_tokens": 0,
+    "usage_missing": false,
+    "state_revision": 46,
+    "last_error_code": "pending",
+    "created_at": "2026-10-21T09:23:57.399856Z",
+    "authorization_expires_at": "2026-10-21T21:23:57.396373Z",
+    "started_at": "2026-10-21T09:24:00.733554Z",
+    "paused_at": null,
+    "completed_at": null,
+    "estimated_tokens": 0,
+    "max_sources": 5,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  },
+  "gaps_before": [
+    {
+      "request_id": "bd37a0cc-1a41-42b7-97d0-33b51e67e599",
+      "reason": "missing_content",
+      "detail": null,
+      "attempts": 0,
+      "admitted_at": "2026-10-21T09:23:56.360668Z"
+    }
+  ],
+  "retry_admission": {
+    "request_id": "bd37a0cc-1a41-42b7-97d0-33b51e67e599",
+    "attempt_id": "64cf6315-ca79-4014-a02b-077c047c710c",
+    "submission_id": "d5e7bb5e-27e3-4ee6-b292-baaeed418ce0",
+    "admission_status": "admitting",
+    "operation_kind": "retry",
+    "reused": false,
+    "thread_id": "e118dd73-636e-4574-9e0c-6bc9026bdc5e",
+    "graph_id": "basic-qa",
+    "business_code": "basic-qa",
+    "business_policy_version": "2026-10-19.1",
+    "ledger_marker": "lr:bd37a0cc-1a41-42b7-97d0-33b51e67e599:64cf6315-ca79-4014-a02b-077c047c710c",
+    "capability_selection": {
+      "id": "9e5249b4-3c41-47dc-bb0c-b1f96bf4ef21",
+      "selection_id": "9e5249b4-3c41-47dc-bb0c-b1f96bf4ef21",
+      "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+      "digest_version": 2,
+      "selection_status": "collected",
+      "skill": {
+        "mode": "auto",
+        "skill_id": null
+      },
+      "mcp": {
+        "mode": "auto",
+        "tool_ids": []
+      },
+      "skill_mode": "auto",
+      "skill_id": null,
+      "mcp_mode": "auto",
+      "tool_ids": [],
+      "catalog_version": "cat_000000000000000000000000",
+      "material_version": "auto",
+      "selection_source": "automatic",
+      "validation_time": "2026-10-21T09:25:57.806096+00:00"
+    }
+  },
+  "job2": {
+    "job_id": "efbcb984-6bb9-42e2-9fb1-5e9c6bb9990e",
+    "job_kind": "incremental",
+    "state": "pending",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T09:25:57.862930Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 0,
+    "failed_sources": 0,
+    "classified_intents": 0,
+    "unclassified_intents": 0,
+    "actual_tokens": 0,
+    "usage_missing": false,
+    "state_revision": 44,
+    "last_error_code": "pending",
+    "created_at": "2026-10-21T09:25:57.866285Z",
+    "authorization_expires_at": "2026-10-21T21:25:57.862966Z",
+    "started_at": "2026-10-21T09:26:02.490306Z",
+    "paused_at": null,
+    "completed_at": null,
+    "estimated_tokens": 0,
+    "max_sources": 5,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  },
+  "gaps_after": []
+}

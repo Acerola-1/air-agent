@@ -1,0 +1,52 @@
+{
+  "primary_result": "unknown",
+  "answer_nonempty": false,
+  "answer_associated": true,
+  "model_calls": 1,
+  "mcp_calls": 0,
+  "state_status": 200,
+  "role_mentions": {
+    "station-data": 1,
+    "grid-data": 1,
+    "meteo-analyst": 1,
+    "evidence-reviewer": 1
+  },
+  "state_detail": {
+    "attempt_state": "running",
+    "child_results": [],
+    "task_tool_calls": 4,
+    "state_keys": [
+      "child_executions"
+    ]
+  },
+  "execution": {
+    "next": [
+      "tools",
+      "tools",
+      "tools",
+      "tools"
+    ],
+    "children": [],
+    "tasks": [
+      "station-data",
+      "grid-data",
+      "meteo-analyst",
+      "evidence-reviewer"
+    ],
+    "finding_keys": [],
+    "attempt_state": "running"
+  },
+  "freeze_first": {
+    "primary_result": "stream_completed",
+    "answer_nonempty": true,
+    "answer_associated": true,
+    "model_calls": 2,
+    "mcp_calls": 0,
+    "next": [],
+    "tools": [
+      "freeze_tracing_request",
+      "result:freeze_tracing_request:invalid"
+    ],
+    "task_errors": []
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "create": 200,
+  "responses": [
+    {
+      "status": 200,
+      "kind": "stream",
+      "bytes": 17303
+    },
+    {
+      "status": 202,
+      "kind": "other",
+      "bytes": 215
+    }
+  ],
+  "model_calls": 1,
+  "requests": 1,
+  "submissions": 1,
+  "confirmed_submissions": 1,
+  "platform_runs": 1,
+  "interpretation": "one stream completed; the other returned 202 and did not create a second request, submission, or platform run",
+  "drain": [
+    {
+      "claimed": 5,
+      "done": 5,
+      "retried": 0,
+      "dead_lettered": 0
+    },
+    {
+      "claimed": 0,
+      "done": 0,
+      "retried": 0,
+      "dead_lettered": 0
+    }
+  ],
+  "open_outbox_after": 0
+}

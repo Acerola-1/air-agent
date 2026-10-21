@@ -1,0 +1,20 @@
+{
+  "request": {
+    "operation_id": "288f0aad-465d-4d10-835f-2222ca670802",
+    "expected_revision": 0,
+    "action": "rename",
+    "new_name": "隔离验收·空气质量查询"
+  },
+  "status": 200,
+  "body": {
+    "result": {
+      "action": "rename",
+      "preview": false,
+      "cluster_id": "2816a77e-1bd6-430e-8424-51bf555f8fbb",
+      "new_name": "隔离验收·空气质量查询",
+      "revision": 1,
+      "replayed": false
+    },
+    "replayed": false
+  }
+}

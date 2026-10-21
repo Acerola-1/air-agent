@@ -1,0 +1,60 @@
+{
+  "guards": {
+    "delegations_expired": 0,
+    "jobs_paused": 0,
+    "sources": 1,
+    "clusters_refreshed": 1
+  },
+  "guards_second": {
+    "delegations_expired": 1,
+    "jobs_paused": 1,
+    "sources": 0,
+    "clusters_refreshed": 0
+  },
+  "runtime_readable_content_with_tombstone": 0,
+  "runtime_content_rows_before_tombstone_filter": 1,
+  "expired_job": {
+    "state": "paused_authorization",
+    "last_error_code": "delegation_restored_expired"
+  },
+  "target": {
+    "text": "恢复演练目标：洛阳市2026年5月7日PM2.5是多少？",
+    "thread_id": "0ba161de-6646-40ff-9baa-c6fa550b7c55",
+    "run_id": "01a15db1-ad14-70f3-9c39-dbac4dc9f6db",
+    "request_id": "c2ae87e1-7744-447e-9bdc-c57e60626b23",
+    "attempt_id": "24c8ff26-5b01-4774-87b6-48fc947d3fca",
+    "confirmed": true
+  },
+  "delete": {
+    "delete_status": 204,
+    "cleanup_job": {
+      "job_id": "e62dcf95-0f48-4e7e-8c43-6553089c306f",
+      "job_kind": "incremental",
+      "state": "completed",
+      "window_start": "2026-10-20T16:00:00Z",
+      "window_end": null,
+      "as_of": "2026-10-21T09:02:51.134928Z",
+      "batch_size": 100,
+      "lease_deadline": null,
+      "processed_sources": 0,
+      "failed_sources": 0,
+      "classified_intents": 0,
+      "unclassified_intents": 0,
+      "actual_tokens": 0,
+      "usage_missing": false,
+      "state_revision": 28,
+      "last_error_code": null,
+      "created_at": "2026-10-21T09:02:51.139306Z",
+      "authorization_expires_at": "2026-10-21T21:02:51.135084Z",
+      "started_at": "2026-10-21T09:02:53.247056Z",
+      "paused_at": null,
+      "completed_at": "2026-10-21T09:04:01.758456Z",
+      "estimated_tokens": 0,
+      "max_sources": 1,
+      "max_tokens": 200000,
+      "continuous": false,
+      "cancel_requested": false
+    }
+  },
+  "restore_scope": "campaign_restore on the isolated PG; pre-delete dump restored, tombstone+permissions reapplied, product restore_guards run"
+}

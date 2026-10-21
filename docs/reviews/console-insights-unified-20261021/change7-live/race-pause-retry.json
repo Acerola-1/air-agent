@@ -1,0 +1,110 @@
+{
+  "batch": [
+    {
+      "text": "隔离暂停一：洛阳市2026年5月7日PM2.5是多少？",
+      "thread_id": "3dd3aa90-0186-425c-8c2e-2866ac572fc7",
+      "run_id": "01a15d96-5857-7923-b29d-b2698f74d889",
+      "request_id": "46e01fe4-0f57-4740-83f4-04d50b977e90",
+      "attempt_id": "3bd3f33b-0de6-4269-93ba-8ae84fc35ce2",
+      "confirmed": true
+    },
+    {
+      "text": "隔离暂停二：郑州市2026年5月7日AQI是多少？",
+      "thread_id": "88474635-be43-417a-9571-9e640c0c37f0",
+      "run_id": "01a15d96-5bea-72c3-a3a9-d25b3475d82a",
+      "request_id": "538442a0-3c3f-4213-996a-8cc6ac551141",
+      "attempt_id": "72968ead-3bf3-44c0-8878-a53ddb36332b",
+      "confirmed": true
+    },
+    {
+      "text": "隔离暂停三：北京市2026年5月7日PM10是多少？",
+      "thread_id": "0e90077a-7c36-4c23-97a1-7dad419d9182",
+      "run_id": "01a15d96-5f98-7ae2-a845-a20e3f76a406",
+      "request_id": "fd3e245f-8d10-4ea9-a9da-c4d941b61558",
+      "attempt_id": "4c4f5ad5-ee0a-4c36-9262-ffeb914ea29b",
+      "confirmed": true
+    }
+  ],
+  "pause": {
+    "status": 200,
+    "body": {
+      "result": {
+        "job_id": "7db2a964-e10b-4511-a3ff-f471cda873d7",
+        "action": "pause",
+        "state": "paused_user",
+        "state_revision": 1,
+        "replayed": false
+      },
+      "replayed": false
+    }
+  },
+  "paused": {
+    "job_id": "7db2a964-e10b-4511-a3ff-f471cda873d7",
+    "job_kind": "incremental",
+    "state": "paused_user",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:31:39.050164Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 0,
+    "failed_sources": 0,
+    "classified_intents": 0,
+    "unclassified_intents": 0,
+    "actual_tokens": null,
+    "usage_missing": false,
+    "state_revision": 1,
+    "last_error_code": null,
+    "created_at": "2026-10-21T08:31:39.052148Z",
+    "authorization_expires_at": "2026-10-21T20:31:39.050222Z",
+    "started_at": null,
+    "paused_at": "2026-10-21T08:31:39.135062Z",
+    "completed_at": null,
+    "estimated_tokens": 0,
+    "max_sources": 3,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  },
+  "retry": {
+    "status": 200,
+    "body": {
+      "result": {
+        "job_id": "7db2a964-e10b-4511-a3ff-f471cda873d7",
+        "action": "retry",
+        "state": "pending",
+        "state_revision": 2,
+        "replayed": false
+      },
+      "replayed": false
+    }
+  },
+  "final": {
+    "job_id": "7db2a964-e10b-4511-a3ff-f471cda873d7",
+    "job_kind": "incremental",
+    "state": "completed",
+    "window_start": "2026-10-20T16:00:00Z",
+    "window_end": null,
+    "as_of": "2026-10-21T08:31:39.050164Z",
+    "batch_size": 100,
+    "lease_deadline": null,
+    "processed_sources": 3,
+    "failed_sources": 0,
+    "classified_intents": 1,
+    "unclassified_intents": 2,
+    "actual_tokens": 78,
+    "usage_missing": false,
+    "state_revision": 12,
+    "last_error_code": null,
+    "created_at": "2026-10-21T08:31:39.052148Z",
+    "authorization_expires_at": "2026-10-21T20:31:39.050222Z",
+    "started_at": "2026-10-21T08:31:41.730406Z",
+    "paused_at": "2026-10-21T08:31:39.135062Z",
+    "completed_at": "2026-10-21T08:32:06.179221Z",
+    "estimated_tokens": 240,
+    "max_sources": 3,
+    "max_tokens": 200000,
+    "continuous": false,
+    "cancel_requested": false
+  }
+}

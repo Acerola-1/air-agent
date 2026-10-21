@@ -1,0 +1,24 @@
+{
+  "schema_version": "basic-qa-perf.v1",
+  "run_id": "20261021-161640-5a659c",
+  "campaign_id": "campaign-20261021-161640-235a659c",
+  "layer": "P",
+  "profile": "S",
+  "recorded_at": "2026-10-21T08:18:41.503233+00:00",
+  "digests": {
+    "cases_sha256": "235a659c8a415962f92a90ad348f180439a1844ca26bc8de7b9da61c3f63189b",
+    "fixtures_sha256": "f5f10592777b02230497ed08403930b179b1173d4f3d6c0db7920002f004be2e",
+    "representatives_sha256": "36e4b71c543f32d0e979cedfbd0000a4ccda063f865e792e7c7fbee7242ceeff",
+    "dataset_version": "bqa-reference-202605-v1",
+    "representative_version": "public-graph-representative-20261021-v1"
+  },
+  "allow_real_models": false,
+  "allow_load": false,
+  "blocked_reason": null,
+  "conclusion": "冒烟链路完成，质量与浏览器未验收",
+  "browser": "未执行",
+  "targets": [
+    "http://127.0.0.1:25448",
+    "http://127.0.0.1:25446"
+  ]
+}

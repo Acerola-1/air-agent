@@ -1,0 +1,129 @@
+[
+  {
+    "step": "login",
+    "status": 200,
+    "body": {
+      "ok": true
+    }
+  },
+  {
+    "step": "tenant-revision",
+    "status": 200,
+    "body": {
+      "auth_revision": 2
+    }
+  },
+  {
+    "step": "entitle-agent:business:data-analysis",
+    "status": 200,
+    "body": {
+      "error": null
+    }
+  },
+  {
+    "step": "entitle-agent:business:intelligent-tracing",
+    "status": 200,
+    "body": {
+      "error": null
+    }
+  },
+  {
+    "step": "switch",
+    "status": 200,
+    "body": {
+      "permissions": [
+        "entitlement:manage",
+        "platform:audit:read",
+        "platform:client:write",
+        "platform:role:read",
+        "platform:role:write",
+        "platform:service:write",
+        "platform:tenant:read",
+        "platform:tenant:write",
+        "platform:user:password:reset",
+        "platform:user:read",
+        "platform:user:role:assign",
+        "platform:user:write",
+        "tenant:audit:read",
+        "tenant:department:read",
+        "tenant:department:write",
+        "tenant:member:read",
+        "tenant:member:write",
+        "tenant:resource:grant",
+        "tenant:role:read",
+        "tenant:role:write"
+      ],
+      "tenant_revision": 4
+    }
+  },
+  {
+    "step": "role-insights-missing",
+    "status": 400,
+    "body": {
+      "code": "bad_request",
+      "message": "存在未知权限码",
+      "request_id": "7cb8ee33-de3a-44ff-b949-052cbbf4bfcd"
+    }
+  },
+  {
+    "step": "role-known",
+    "status": 201,
+    "body": {
+      "error": null,
+      "id_present": true
+    }
+  },
+  {
+    "step": "me",
+    "status": 200,
+    "body": {
+      "tenant_revision": 4
+    }
+  },
+  {
+    "step": "create-operator",
+    "status": 201,
+    "body": {
+      "error": null,
+      "id_present": true
+    }
+  },
+  {
+    "step": "operator-login",
+    "status": 200,
+    "body": {
+      "ok": true
+    }
+  },
+  {
+    "step": "operator-switch",
+    "status": 200,
+    "body": {
+      "audience": "air-agent",
+      "permissions": []
+    }
+  },
+  {
+    "step": "operator-iam-admin-switch",
+    "status": 200,
+    "body": {
+      "permissions": [
+        "agent:business:basic-qa:use",
+        "agent:business:data-analysis:use",
+        "agent:business:intelligent-tracing:use",
+        "agent:content:read",
+        "agent:feedback:manage",
+        "agent:metrics:read",
+        "agent:operations:read"
+      ]
+    }
+  },
+  {
+    "step": "revoke-then-old-session",
+    "status": 401,
+    "body": {
+      "revoke_http": 200,
+      "role_restored_after_check": true
+    }
+  }
+]

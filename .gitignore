@@ -346,6 +346,9 @@ frontend/.env*.local
 .trae
 # 本地账号数据（登录系统，勿提交）
 data/
+# 可复跑的公开合成测试输入需要随代码交付。
+!docs/testing/data/
+!docs/testing/data/*.json
 db/*.db
 db/*.db-shm
 db/*.db-wal
