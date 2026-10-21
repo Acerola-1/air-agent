@@ -1,0 +1,148 @@
+{
+  "entry": "official-api-actual-deepagents",
+  "test_data": "synthetic",
+  "iam": "not_under_test",
+  "passed": true,
+  "phase": "resumed",
+  "versions": {
+    "langgraph-api": "0.16.2",
+    "langgraph": "1.2.16",
+    "deepagents": "0.7.28",
+    "langchain-core": "1.6.12"
+  },
+  "first": [
+    {
+      "type": "final_output_start",
+      "seq": 0,
+      "section_id": null,
+      "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+      "message_id": "rep_347d1706721648a8970448ba97ec257c",
+      "run_id": "01a15f45-95ed-7160-8149-dd44dcf22bfb",
+      "reason_code": null,
+      "section_count": 6
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 1,
+      "section_id": "header",
+      "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+      "message_id": "rep_347d1706721648a8970448ba97ec257c",
+      "run_id": "01a15f45-95ed-7160-8149-dd44dcf22bfb",
+      "reason_code": null,
+      "section_count": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 2,
+      "section_id": "claims-1",
+      "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+      "message_id": "rep_347d1706721648a8970448ba97ec257c",
+      "run_id": "01a15f45-95ed-7160-8149-dd44dcf22bfb",
+      "reason_code": null,
+      "section_count": null
+    }
+  ],
+  "resumed": [
+    {
+      "type": "final_output_delta",
+      "seq": 3,
+      "section_id": "claims-2",
+      "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+      "message_id": "rep_347d1706721648a8970448ba97ec257c",
+      "run_id": "01a15f45-ab2b-7803-9fe5-6d862224c2c8",
+      "reason_code": null,
+      "section_count": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 4,
+      "section_id": "claims-3",
+      "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+      "message_id": "rep_347d1706721648a8970448ba97ec257c",
+      "run_id": "01a15f45-ab2b-7803-9fe5-6d862224c2c8",
+      "reason_code": null,
+      "section_count": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 5,
+      "section_id": "claims-4",
+      "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+      "message_id": "rep_347d1706721648a8970448ba97ec257c",
+      "run_id": "01a15f45-ab2b-7803-9fe5-6d862224c2c8",
+      "reason_code": null,
+      "section_count": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 6,
+      "section_id": "limits",
+      "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+      "message_id": "rep_347d1706721648a8970448ba97ec257c",
+      "run_id": "01a15f45-ab2b-7803-9fe5-6d862224c2c8",
+      "reason_code": null,
+      "section_count": null
+    },
+    {
+      "type": "final_output_done",
+      "seq": 7,
+      "section_id": null,
+      "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+      "message_id": "rep_347d1706721648a8970448ba97ec257c",
+      "run_id": "01a15f45-ab2b-7803-9fe5-6d862224c2c8",
+      "reason_code": null,
+      "section_count": null
+    }
+  ],
+  "final_progress": {
+    "failed_reason": "",
+    "completed": true,
+    "published_section_ids": [
+      "header",
+      "claims-1",
+      "claims-2",
+      "claims-3",
+      "claims-4",
+      "limits"
+    ],
+    "last_seq": 7
+  },
+  "pending_tasks": 0,
+  "restart": true,
+  "sections": [
+    "header",
+    "claims-1",
+    "claims-2",
+    "claims-3",
+    "claims-4",
+    "limits"
+  ],
+  "first_events": 3,
+  "resumed_events": 5,
+  "output_id": "out_6bb8a2d7f033474089ab433db05730a6",
+  "message_id": "rep_347d1706721648a8970448ba97ec257c",
+  "sequences": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "specialist_count": 4,
+  "specialist_statuses": {
+    "station-data": "succeeded",
+    "grid-data": "succeeded",
+    "meteo-analyst": "succeeded",
+    "evidence-reviewer": "succeeded"
+  },
+  "content_sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa",
+  "cleanup_requested": [
+    "aa-streamfix-20261021-pg",
+    "aa-streamfix-20261021-redis",
+    "aa-streamfix-20261021-api"
+  ],
+  "cleanup_verified": true
+}

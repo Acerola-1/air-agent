@@ -44,10 +44,17 @@ def _route_after_intent(
     return "prepare_model"
 
 
+def _route_after_prepare(
+    state: BusinessGraphState,
+) -> Literal["call_model", "answer_model"]:
+    """条件边：需要工具规划 -> call_model；否则直接生成最终正文."""
+    return "call_model" if state.get("needs_planning") else "answer_model"
+
+
 def _route_after_model(
     state: BusinessGraphState,
-) -> Literal["execute_tools", "__end__"]:
-    """条件边：call_model 后路由——有 tool_calls -> execute_tools；否则 -> END."""
+) -> Literal["execute_tools", "answer_model", "__end__"]:
+    """条件边：计划调工具 -> execute_tools；计划完成 -> answer_model；控制消息 -> END."""
     messages = state.get("messages", [])
     if not messages:
         return "__end__"
@@ -55,7 +62,11 @@ def _route_after_model(
     last_message = messages[-1]
     if isinstance(last_message, AIMessage) and last_message.tool_calls:
         return "execute_tools"
-    return "__end__"
+    if isinstance(last_message, AIMessage) and last_message.additional_kwargs.get(
+        "ui_visible"
+    ):
+        return "__end__"
+    return "answer_model"
 
 
 def _route_after_tools(
@@ -110,6 +121,7 @@ def build_business_graph(
     builder.add_node("resolve_skill", nodes.resolve_skill)
     builder.add_node("prepare_model", nodes.prepare_model)
     builder.add_node("call_model", nodes.call_model)
+    builder.add_node("answer_model", nodes.answer_model)
     builder.add_node(
         "execute_tools",
         ToolNode(
@@ -142,13 +154,21 @@ def build_business_graph(
     )
 
     builder.add_edge("resolve_skill", "prepare_model")
-    builder.add_edge("prepare_model", "call_model")
+    builder.add_conditional_edges(
+        "prepare_model",
+        _route_after_prepare,
+        {
+            "call_model": "call_model",
+            "answer_model": "answer_model",
+        },
+    )
 
     builder.add_conditional_edges(
         "call_model",
         _route_after_model,
         {
             "execute_tools": "execute_tools",
+            "answer_model": "answer_model",
             "__end__": "ledger_finalize",
         },
     )
@@ -162,6 +182,7 @@ def build_business_graph(
         },
     )
 
+    builder.add_edge("answer_model", "ledger_finalize")
     builder.add_edge("ledger_finalize", END)
 
     graph = builder.compile(checkpointer=checkpointer)

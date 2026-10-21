@@ -161,6 +161,7 @@ def build_tracing_graph(
     name: str = "intelligent-tracing",
     enable_reviewer: bool = True,
     lifecycle_probe: Any = None,
+    section_barrier: Any = None,
 ):
     """Build the tracing graph; G0 tests inject a fixture source and fake model."""
     resolved_model = model or ModelRegistry.main_llm
@@ -179,7 +180,11 @@ def build_tracing_graph(
     station_tool = build_freeze_request_tool(station_catalog=catalog, policy=policy)
     policy_tool = build_policy_summary_tool(policy)
     report_tool, canvas_tool = build_report_tools(
-        registry=registry, gate=gate, policy=policy, report_store=store
+        registry=registry,
+        gate=gate,
+        policy=policy,
+        report_store=store,
+        section_barrier=section_barrier,
     )
     knowledge_tool = build_knowledge_tool()
     subagents = [

@@ -12,6 +12,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import signal
+import threading
 import time
 import uuid
 from collections.abc import Callable, Iterable, Iterator
@@ -25,6 +27,14 @@ _AI_TYPES = frozenset({"ai", "assistant", "AIMessage", "AIMessageChunk"})
 _NON_VISIBLE_BLOCKS = frozenset({"reasoning", "thinking", "tool_use", "tool_call"})
 _THINK = re.compile(r"<think>[\s\S]*?</think>")
 _THINK_OPEN = re.compile(r"<think>[\s\S]*$")
+
+
+class _ClientDeadline(Exception):
+    """Raised by SIGALRM when the per-question deadline is exhausted."""
+
+
+def _raise_deadline(_signum: int, _frame: object) -> None:
+    raise _ClientDeadline()
 
 
 def _headers(
@@ -152,6 +162,20 @@ class _StreamState:
         self.initial_message_ids: set[str] | None = None
         self.values_answer_id: str | None = None
         self.values_answer: str | None = None
+        # agent-output-stream-v1 layered timing.
+        self.first_safe_delta_ms: int | None = None
+        self.last_safe_delta_ms: int | None = None
+        self.first_delta_source: str | None = None
+        self.output_id: str | None = None
+        self.output_message_id: str | None = None
+        self.delta_count = 0
+        self.output_protocol_version: int | None = None
+        self.aborted_reason: str | None = None
+        self.done_message: str | None = None
+        self.done_sha256: str | None = None
+        self.last_seq: int | None = None
+        self.stream_end_ms: int | None = None
+        self.confirmation_end_ms: int | None = None
 
     def _mark_first(self) -> None:
         if self.first_answer_ms is None:
@@ -193,13 +217,57 @@ class _StreamState:
             self._consume_values(payload)
             return
         if event_name == "custom" and isinstance(payload, dict):
-            if payload.get("type") == "final_output_done":
-                text = payload.get("message")
-                if isinstance(text, str):
-                    cleaned = _strip_reasoning(text)
-                    if cleaned:
-                        self.final_text = cleaned
+            output_type = str(payload.get("type") or "")
+            if output_type.startswith("final_output_"):
+                self._consume_output_event(payload)
+                return
+
+    def _consume_output_event(self, payload: dict[str, Any]) -> None:
+        """Parse the versioned answer lifecycle without treating progress as text."""
+        version = payload.get("output_protocol_version")
+        if version is not None:
+            self.output_protocol_version = int(version)
+        output_type = str(payload.get("type") or "")
+        if output_type == "final_output_start":
+            self.output_id = str(payload.get("output_id") or self.output_id or "") or None
+            self.output_message_id = (
+                str(payload.get("message_id") or self.output_message_id or "") or None
+            )
+            return
+        if output_type == "final_output_delta":
+            text = payload.get("message")
+            if not isinstance(text, str) or not text:
+                return
+            self.delta_count += 1
+            self.last_seq = payload.get("seq") if isinstance(payload.get("seq"), int) else self.last_seq
+            self.first_delta_source = self.first_delta_source or "new_delta"
+            if self.first_safe_delta_ms is None:
+                self.first_safe_delta_ms = int((self.clock() - self.started) * 1000)
+                self._mark_first()
+            self.last_safe_delta_ms = int((self.clock() - self.started) * 1000)
+            self.output_message_id = (
+                str(payload.get("message_id") or self.output_message_id or "") or None
+            )
+            return
+        if output_type == "final_output_done":
+            text = payload.get("message")
+            if isinstance(text, str):
+                cleaned = _strip_reasoning(text)
+                if cleaned:
+                    self.final_text = cleaned
+                    self.done_message = cleaned
+                    self.done_sha256 = payload.get("content_sha256")
+                    if self.first_safe_delta_ms is None:
+                        # Legacy or single-shot: complete text arrived in one event.
+                        self.first_delta_source = (
+                            "legacy_done"
+                            if payload.get("output_protocol_version") is None
+                            else "single_shot"
+                        )
                         self._mark_first()
+            return
+        if output_type == "final_output_aborted":
+            self.aborted_reason = str(payload.get("reason_code") or "unknown")
 
     def _consume_messages(self, payload: object) -> None:
         """Handle a messages-tuple frame: ``[message, metadata]``."""
@@ -282,6 +350,7 @@ def send_sample(
     thread_id: str | None = None,
     submission_key: str | None = None,
     clock: Callable[[], float] = time.monotonic,
+    include_answer_text: bool = False,
 ) -> dict[str, Any]:
     """Create or reuse a thread, stream one run, and confirm the ledger association."""
     base = bff_base_url.rstrip("/")
@@ -316,7 +385,14 @@ def send_sample(
     reused: dict[str, Any] | None = None
     stream_status = "not_started"
     http_status: int | None = None
+    old_handler = None
+    timer_armed = False
     try:
+        if threading.current_thread() is threading.main_thread():
+            old_handler = signal.signal(signal.SIGALRM, _raise_deadline)
+            remaining = max(0.2, float(sample.deadline_seconds) - (clock() - started))
+            signal.setitimer(signal.ITIMER_REAL, remaining)
+            timer_armed = True
         with client.stream(
             "POST",
             f"{base}/api/threads/{thread_id}/runs/stream",
@@ -335,11 +411,19 @@ def send_sample(
                 else:
                     for event_name, data in _iter_sse(response.iter_lines()):
                         state.consume(event_name, data)
+                    state.stream_end_ms = int((clock() - started) * 1000)
                     stream_status = "completed"
+    except _ClientDeadline:
+        stream_status = "timeout"
     except httpx.TimeoutException:
         stream_status = "timeout"
     except httpx.TransportError:
         stream_status = "transport_failed"
+    finally:
+        if timer_armed:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            if old_handler is not None:
+                signal.signal(signal.SIGALRM, old_handler)
 
     if reused is not None:
         complete_ms = int((clock() - started) * 1000)
@@ -399,6 +483,7 @@ def send_sample(
     else:
         association = "unconfirmed"
 
+    state.confirmation_end_ms = int((clock() - started) * 1000)
     answer = state.answer_text()
     complete_ms = int((clock() - started) * 1000)
     if http_status is not None and http_status >= 400:
@@ -430,7 +515,17 @@ def send_sample(
             "submission_id": state.ledger.get("ledger_submission_id"),
             "platform_run_id": run_id,
             "client_first_answer_ms": state.first_answer_ms,
+            "client_first_safe_delta_ms": state.first_safe_delta_ms,
+            "client_last_safe_delta_ms": state.last_safe_delta_ms,
+            "client_stream_end_ms": state.stream_end_ms,
+            "client_confirmation_end_ms": state.confirmation_end_ms,
             "client_complete_ms": complete_ms,
+            "first_delta_source": state.first_delta_source,
+            "delta_count": state.delta_count,
+            "output_id": state.output_id,
+            "output_message_id": state.output_message_id,
+            "output_protocol_version": state.output_protocol_version,
+            "aborted_reason": state.aborted_reason,
             "answer_associated": association
             in {"confirmed", "confirmed_without_metadata"},
             "association_status": association,
@@ -444,6 +539,8 @@ def send_sample(
             "counts_as_semantic_sample": sample.counts_as_semantic_sample,
         }
     )
+    if include_answer_text:
+        row["_answer_text"] = answer
     return row
 
 

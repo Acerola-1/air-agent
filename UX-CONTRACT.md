@@ -52,6 +52,14 @@ CSS 变量／Tailwind 运行时为 tokens 所有者，DESIGN.md 记录语义与�
 
 当前运行使用线程、generation 与 run 身份，旧结果不能修改新会话。SSE error 视为失败。取消与切换使用服务端 cancel 和断流取消；流内仅消费已确认终答和公开状态，messages 原始增量不作为正文。
 
+## 正文流式状态（agent-output-stream-v1）
+
+- 正文只消费服务端 `final_output_start/delta/done/aborted` 生命周期；`messages` 原始增量、工具参数、内部摘要和 DeepAgents 专员草稿永不作正文。
+- 处理中显示独立状态条；收到已校验 delta 后正文立即追加，标“正在生成 · 内容尚未最终确认”。`done` 才表示完整终答；`aborted` 或流结束但无 done 时保留已显示内容并标“未完成”，不开放反馈/复制为完整答案。已有正文后失败不得另开完成输出；仅零正文的失败允许由 single_shot 固定失败文案替代。
+- 客户端按 `thread_id/run_id/output_id` 隔离输出，按 `seq` 连续追加；重复帧忽略，冲突/缺口回读可信快照。DeepAgents 按逐节检查点续发，不重发已确认章节；传输重放不得重复追加正文。
+- 旧 done-only 事件仍显示完整答案，但计时与来源标为 legacy，不计新协议流式。
+- 停止待确认、刷新、切换企业与 A→B→A 的旧输出不得复活或写入当前正文。
+
 ## Accessibility and layout
 
 详情切换为原生 button，aria-expanded 与视图一致。公开状态用 live region，错误说明用 alert。只在接近底部时跟随回答增长，用户上翻时保留阅读位置。输入法保护沿用现有 Composer，动态区域不改动输入框宽度。归档原文有局部滚动容器，保持滚动条可见并可操作。

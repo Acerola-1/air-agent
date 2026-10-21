@@ -1,0 +1,18 @@
+{
+  "graph": "intelligent-tracing",
+  "entry": "official-langgraph-api-http-sse",
+  "thread_id": "01a15f0b-26ab-7832-ac5d-8a689e2c7c01",
+  "deltas": 6,
+  "sections": [
+    "header",
+    "claims-1",
+    "claims-2",
+    "claims-3",
+    "claims-4",
+    "limits"
+  ],
+  "done_count": 1,
+  "first_delta_source": "new_delta",
+  "answer_chars": 1341,
+  "answer_sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+}

@@ -1,0 +1,17 @@
+{
+  "graph": "data-analysis",
+  "mode": "real_configuration",
+  "model": "hy3",
+  "deltas": 11,
+  "done": 1,
+  "first_delta_source": "new_delta",
+  "answer_chars": 496,
+  "answer_sha256": "fe2bf72db81970ae97ab034464f77951908af14f12254d1e22a1b4bc9a283f31",
+  "visible_answer_chars": 496,
+  "validation_errors": [],
+  "t_submit": 0.0,
+  "t_first_safe_delta": 20.82,
+  "t_last_safe_delta": 22.702,
+  "t_stream_end": 22.82,
+  "t_confirmation_end": 22.82
+}

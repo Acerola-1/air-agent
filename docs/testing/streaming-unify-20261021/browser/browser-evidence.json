@@ -1,0 +1,98 @@
+{
+  "entry": "real Next.js page + real BFF proxy + controlled SSE upstream (ZCode IAB)",
+  "clock": "browser performance.now() for submit/first/final; fixture monotonic state for source barrier",
+  "runs": [
+    {
+      "graph": "basic-qa",
+      "scenario": "12-fragment source blocked after 2 fragments",
+      "t_submit_ms": 13695.3,
+      "t_first_streaming_paint_ms": 14068.3,
+      "first_paint_delta_ms": 373.0,
+      "t_final_answer_paint_ms": 20873.2,
+      "visible_partial": "第1段安全正文。第2段安全正文。",
+      "visible_partial_chars": 16,
+      "source_finished_at_first_paint": false,
+      "fixture_at_barrier": true,
+      "final_answer_chars": 99,
+      "incomplete_marker_after_success": 0,
+      "screenshot": "screenshots/basic-qa-first-deltas.png",
+      "refresh_same_answer": {
+        "before_chars": 99,
+        "after_chars": 99,
+        "answer_count_after_refresh": 1,
+        "thread_reopened": true
+      }
+    },
+    {
+      "graph": "data-analysis",
+      "scenario": "cleanup source blocked after 2 fragments",
+      "visible_partial": "第1段安全正文。第2段安全正文。",
+      "visible_partial_chars": 16,
+      "source_finished_at_first_paint": false,
+      "fixture_at_barrier": true,
+      "final_answer_chars": 99,
+      "incomplete_marker_after_success": 0,
+      "screenshot": "screenshots/data-analysis-first-deltas.png"
+    },
+    {
+      "graph": "intelligent-tracing",
+      "scenario": "section barrier before claims-2",
+      "visible_sections_at_barrier": [
+        "header",
+        "claims-1"
+      ],
+      "done_at_barrier": 0,
+      "source_finished_at_first_paint": false,
+      "fixture_at_barrier": true,
+      "final_sections": [
+        "header",
+        "claims-1",
+        "claims-2",
+        "limits"
+      ],
+      "final_answer_contains_limitations": true,
+      "specialist_or_lead_draft_visible": false,
+      "screenshot": "screenshots/intelligent-tracing-first-section.png"
+    },
+    {
+      "graph": "basic-qa",
+      "scenario": "isolated identity revocation after first safe deltas",
+      "visible_partial": "第1段安全正文。第2段安全正文。",
+      "source_finished_at_revocation": false,
+      "fixture_at_barrier": true,
+      "revoked": true,
+      "incomplete_marker_count": 1,
+      "confirmed_answer_bodies": [
+        "第1段安全正文。第2段安全正文。"
+      ],
+      "streaming_body_after_abort": 0,
+      "screenshot": "screenshots/basic-qa-revocation-incomplete.png"
+    },
+    {
+      "graph": "basic-qa",
+      "scenario": "user stop after first safe deltas",
+      "visible_partial": "第1段安全正文。第2段安全正文。",
+      "incomplete_marker_count": 1,
+      "confirmed_answer_bodies": [
+        "第1段安全正文。第2段安全正文。"
+      ],
+      "streaming_body_after_stop": 0,
+      "screenshot": "screenshots/basic-qa-stop-incomplete.png"
+    },
+    {
+      "graph": "basic-qa",
+      "scenario": "A to B thread isolation",
+      "old_thread_content_cleared": true,
+      "new_thread_content_present": true,
+      "old_thread_content_in_new_thread": false
+    }
+  ],
+  "notes": [
+    "The controlled source barrier is a test-only observation point; product publisher has no sleep.",
+    "Browser first paint is measured by MutationObserver when [data-streaming-answer-body] first has non-empty text.",
+    "The basic-qa final paint includes the deliberate operator delay between first paint and release; it is not a model generation latency claim.",
+    "Refresh/no-duplicate was verified in the browser for basic-qa: one 99-char answer before and after reload/reopen; narrow 390px keyboard/IME was not re-run for this change.",
+    "Browser data-analysis/tracing runs did not record precise performance.now first paint; native/BFF probes recorded exact timings and screenshots show the visible partial.",
+    "Revocation uses the controlled isolated identity/admin fixture: /auth/me switches to 401 and the publisher authorization probe denies further deltas; this is not the formal Java IAM instance."
+  ]
+}

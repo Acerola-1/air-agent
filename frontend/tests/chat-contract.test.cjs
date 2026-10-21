@@ -79,6 +79,7 @@ function fixture(options = {}) {
     timingAttachAttempt:(id,a)=>timingCalls.push(['attach',id,a]) };
   const acceptedSnapshots = [];
   const { acceptedSnapshot } = load("lib/capability-store.ts", { zustand });
+  const outputStream = load("lib/agent-output-stream.ts", {});
   const capStoreStub = {
     getState: () => ({
       setAcceptedSelection: (value) => acceptedSnapshots.push(value),
@@ -95,7 +96,8 @@ function fixture(options = {}) {
   };
   const module = load('lib/chat-store.ts', { zustand, '@/lib/uuidv7':{ generateUuidV7:()=>`msg${++ids}` },
     '@/lib/user-identity':{getUserIdentity:()=> 'user'}, '@/lib/langgraph-api':api, '@/lib/feedback/client':timingStubs,
-    '@/lib/capability-store': { useCapabilityStore: capStoreStub, acceptedSnapshot } });
+    '@/lib/capability-store': { useCapabilityStore: capStoreStub, acceptedSnapshot },
+    '@/lib/agent-output-stream': outputStream });
   return { ...module, acceptedSnapshots, streams, canceled, stopIntents, navigationStops, state, api, timingCalls, getSubmissionContext: ()=> submissionContext };
 }
 
@@ -513,6 +515,24 @@ test('stop cannot confirm the previous answer while current run metadata is dela
   assert.equal(stopped.confirmed,false,'上一轮完成不能证明本轮提交已经停止');
 });
 
+test('stop after a safe delta keeps partial text as an incomplete answer', async()=>{
+  const f=fixture(), store=f.useChatStore;
+  const running=store.getState().sendMessage('问题','fast'); await tick(); await tick();
+  const h=f.streams[0].handlers;
+  h.onRun('r1');
+  const threadId=store.getState().activeThreadId;
+  h.onCustom({type:'final_output_start',output_protocol_version:1,thread_id:threadId,run_id:'r1',graph_id:'basic-qa',tenant_id:'tenant',output_id:'o1',message_id:'m1',seq:0,delivery_mode:'token'});
+  h.onCustom({type:'final_output_delta',output_protocol_version:1,thread_id:threadId,run_id:'r1',graph_id:'basic-qa',tenant_id:'tenant',output_id:'o1',message_id:'m1',seq:1,message:'部分正文。'});
+  assert.equal(store.getState().streamingText,'部分正文。','delta must be live before stop');
+  const stopped=await store.getState().stopStreaming();
+  f.streams[0].wait.resolve(); await running;
+  const incomplete=store.getState().messages.find((message)=>message.incomplete);
+  assert.equal(stopped.confirmed,true);
+  assert.ok(incomplete, 'partial answer must remain visible');
+  assert.equal(incomplete.content,'部分正文。');
+  assert.equal(store.getState().messages.some((message)=>!message.incomplete && message.role==='assistant' && message.content==='部分正文。'),false);
+});
+
 test('unconfirmed stop keeps the run for late metadata and blocks new submissions', async()=>{
   const f=fixture({listRecentRuns:async()=>[{run_id:'previous-run',status:'success'}]});
   const store=f.useChatStore;
@@ -744,4 +764,22 @@ test('wait确认也必须匹配本次submission，不能接受同attempt另一�
     global.fetch=async()=>Response.json({run_id:'r',metadata:{ledger_request_id:'req',ledger_attempt_id:'a',ledger_submission_id:'current'}});
     assert.equal(await confirmRunWithMarker(input),true);assert.equal(calls[0].submissionId,'current');
   }finally{global.fetch=oldFetch;}
+});
+
+test('tracing done and history share identity even if final reread fails', async()=>{
+  const f=fixture(), store=f.useChatStore;
+  await store.getState().switchGraph('intelligent-tracing');
+  const running=store.getState().sendMessage('分析','fast'); await tick();
+  const h=f.streams[0].handlers; h.onRun('r1');
+  const base={output_protocol_version:1,thread_id:store.getState().activeThreadId,run_id:'r1',graph_id:'intelligent-tracing',output_id:'out1',message_id:'rep1',delivery_mode:'validated_section'};
+  h.onCustom({...base,type:'final_output_start',seq:0});
+  h.onCustom({...base,type:'final_output_delta',seq:1,message:'已验证报告。',section_id:'header'});
+  h.onCustom({...base,type:'final_output_done',seq:2,message:'已验证报告。',report_id:'rep1'});
+  f.state.messages=[{type:'ai',id:'rep1',content:'已验证报告。',additional_kwargs:{ui_visible:true}}];
+  h.onValues(f.state);
+  assert.equal(store.getState().streamingText,'');
+  f.api.getThreadState=async()=>{throw Error('controlled final state fetch failure')};
+  f.streams[0].wait.resolve(); await running;
+  const answers=store.getState().messages.filter(m=>m.role==='assistant');
+  assert.equal(answers.length,1); assert.equal(answers[0].id,'rep1');
 });

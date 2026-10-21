@@ -1,0 +1,38 @@
+{
+  "events": 14,
+  "deltas": 12,
+  "delta_lengths": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+  "sections": [],
+  "done_count": 1,
+  "aborted": false,
+  "validation_errors": [],
+  "answer_chars": 99,
+  "answer_sha256": "aa8b2a7a0aeab5e4757aacc92d8c2e8022a054597c0dd9bd7dfb4afe8630f9b4",
+  "first_delta_source": "new_delta",
+  "t_submit": 90125.702470416,
+  "t_first_safe_delta": 90125.714146125,
+  "t_last_safe_delta": 90125.916615958,
+  "t_stream_end": 90125.91834075,
+  "t_confirmation_end": 90125.91834075,
+  "graph": "data-analysis",
+  "mode": "controlled",
+  "input": "controlled cleanup source (12 fragments)",
+  "barrier": {
+    "source_finished": false,
+    "deltas_at_barrier": 2,
+    "done_at_barrier": 0
+  }
+}

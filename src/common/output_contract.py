@@ -52,7 +52,11 @@ def visible_result(
             "additional_kwargs": {**response.additional_kwargs, "ui_visible": visible},
         }
     )
-    if visible:
+    # 新协议输出已在流式发布器中完成 start/delta/done；旧调用方仍走 done-only。
+    already_streamed = bool(
+        response.additional_kwargs.get("output_protocol_version")
+    )
+    if visible and not already_streamed:
         payload = event_payload(
             run_config,
             "final_output_done",

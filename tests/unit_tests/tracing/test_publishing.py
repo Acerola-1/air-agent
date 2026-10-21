@@ -9,7 +9,7 @@ from fixtures import allow_publication, build_bundle, make_request, make_scope
 from langchain.agents.middleware.types import ModelResponse
 from langchain_core.messages import AIMessage
 
-import intelligent_tracing.publishing as publishing
+import common.output_streaming.publisher as publisher_module
 from intelligent_tracing.claims import fallback_plan
 from intelligent_tracing.evidence import EvidenceRegistry
 from intelligent_tracing.gate import ReportGate
@@ -44,11 +44,13 @@ async def test_publish_uses_validated_report_and_marks_model_prose_invisible(
     monkeypatch,
 ):
     request, scope, analysis, report, registry, gate = await _objects()
-    events: list[tuple[str, dict]] = []
+    events: list[dict] = []
     monkeypatch.setattr(
-        publishing,
+        publisher_module,
         "emit_event",
-        lambda config, event_type, **values: events.append((event_type, values)),
+        lambda config, event_type, **values: events.append(
+            {"type": event_type, **values}
+        ),
     )
     store = InMemoryReportStore()
     await store.save(report)
@@ -85,19 +87,22 @@ async def test_publish_uses_validated_report_and_marks_model_prose_invisible(
     visible = update["messages"][0]
     assert visible.additional_kwargs["ui_visible"] is True
     assert visible.id == report.report_id
-    assert events and events[0][0] == "final_output_done"
-    assert "无法计算贡献率" in events[0][1]["message"]
-    assert "污染主要由某方位工业活动造成" not in events[0][1]["message"]
+    assert events and events[0]["type"] == "final_output_start"
+    assert events[-1]["type"] == "final_output_done"
+    assert "无法计算贡献率" in events[-1]["message"]
+    assert "污染主要由某方位工业活动造成" not in events[-1]["message"]
 
 
 @pytest.mark.anyio
 async def test_tombstone_and_epoch_mismatch_suppress_publication(monkeypatch):
     request, scope, analysis, report, registry, gate = await _objects()
-    events: list[tuple[str, dict]] = []
+    events: list[dict] = []
     monkeypatch.setattr(
-        publishing,
+        publisher_module,
         "emit_event",
-        lambda config, event_type, **values: events.append((event_type, values)),
+        lambda config, event_type, **values: events.append(
+            {"type": event_type, **values}
+        ),
     )
     middleware = TracingPublishMiddleware(
         registry=registry,
@@ -184,11 +189,13 @@ async def test_publish_rebuilds_when_findings_change_after_report(monkeypatch):
         scope=scope,
         policy=DEFAULT_POLICY,
     )
-    events: list[tuple[str, dict]] = []
+    events: list[dict] = []
     monkeypatch.setattr(
-        publishing,
+        publisher_module,
         "emit_event",
-        lambda config, event_type, **values: events.append((event_type, values)),
+        lambda config, event_type, **values: events.append(
+            {"type": event_type, **values}
+        ),
     )
     middleware = TracingPublishMiddleware(
         registry=registry,
@@ -214,7 +221,7 @@ async def test_publish_rebuilds_when_findings_change_after_report(monkeypatch):
     published = update["validated_report"]
     assert published.report_id != report.report_id
     assert "未发现符合当前冻结策略的异常" in published.body_markdown
-    assert events and "未发现符合当前冻结策略的异常" in events[0][1]["message"]
+    assert events and "未发现符合当前冻结策略的异常" in events[-1]["message"]
 
 
 @pytest.mark.anyio
@@ -255,11 +262,13 @@ async def test_canvas_tool_returns_server_rendered_ref_without_db():
 @pytest.mark.anyio
 async def test_lifecycle_probe_denial_or_failure_suppresses_publication(monkeypatch):
     request, scope, analysis, report, registry, gate = await _objects()
-    events: list[tuple[str, dict]] = []
+    events: list[dict] = []
     monkeypatch.setattr(
-        publishing,
+        publisher_module,
         "emit_event",
-        lambda config, event_type, **values: events.append((event_type, values)),
+        lambda config, event_type, **values: events.append(
+            {"type": event_type, **values}
+        ),
     )
     state = {
         "request": request,

@@ -57,6 +57,7 @@ components:
 ## Elevation & Depth
 
 正文保持安静的平面层级，工具卡使用现有 muted 背景和边框。悬浮说明复用 Tooltip，不建立第二套弹层。错误区域固定在对话流中且保留恢复按钮。
+正文增量来自 `agent-output-stream-v1`：服务端在安全单元通过后发送 delta，`done` 合并为同一消息；中断内容以 amber 文案标为未完成，不进入评价。状态栏与正文分离，工具进度不占首正文时间。
 
 ## Shapes
 

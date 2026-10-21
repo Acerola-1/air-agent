@@ -11,6 +11,7 @@ from intelligent_tracing.schemas import (
     ClaimAllowlist,
     EvidenceReview,
     MeteoFindings,
+    PublicationSession,
     RuntimeScope,
     SpatialFindings,
     StationFindings,
@@ -59,6 +60,34 @@ def merge_child_executions(
     return tuple(merged.values())
 
 
+def merge_publication_session(
+    current: PublicationSession | None, incoming: PublicationSession | None
+) -> PublicationSession | None:
+    """Merge a resumable section publication without replaying delivered sections."""
+    if incoming is None:
+        return current
+    if current is None:
+        return incoming
+    if (
+        current.plan_digest == incoming.plan_digest
+        and current.report_id == incoming.report_id
+        and current.analysis_id == incoming.analysis_id
+        and current.revision == incoming.revision
+    ):
+        published = tuple(
+            dict.fromkeys(
+                (*current.published_section_ids, *incoming.published_section_ids)
+            )
+        )
+        return incoming.model_copy(
+            update={
+                "published_section_ids": published,
+                "completed": current.completed or incoming.completed,
+            }
+        )
+    return incoming
+
+
 def latest_report_reducer(
     current: ValidatedReport | None, incoming: ValidatedReport | None
 ) -> ValidatedReport | None:
@@ -93,6 +122,9 @@ class TracingState(DeepAgentState):
     allowlist: NotRequired[Annotated[ClaimAllowlist | None, latest_finding_reducer]]
     validated_report: NotRequired[
         Annotated[ValidatedReport | None, latest_report_reducer]
+    ]
+    publication_session: NotRequired[
+        Annotated[PublicationSession | None, merge_publication_session]
     ]
     budget_exhausted: NotRequired[bool]
     child_executions: NotRequired[

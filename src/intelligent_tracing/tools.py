@@ -36,10 +36,16 @@ from intelligent_tracing.runtime import (
 )
 from intelligent_tracing.schemas import (
     KnowledgeBasisItem,
+    PublicationSession,
     ReportPlan,
     StationMeta,
     TimeWindow,
     TracingRequest,
+)
+from intelligent_tracing.section_publishing import (
+    SectionPublicationError,
+    publication_execution_key,
+    publish_frozen_plan,
 )
 from intelligent_tracing.sources import DataSourceUnavailable
 
@@ -413,6 +419,7 @@ def build_report_tools(
     gate: ReportGate,
     policy: AnalysisPolicy,
     report_store: ReportStore,
+    section_barrier: Any = None,
 ) -> tuple[StructuredTool, StructuredTool]:
     """Build deterministic report construction and canvas publication tools."""
 
@@ -463,40 +470,92 @@ def build_report_tools(
         )
         if isinstance(knowledge_basis, dict):
             return knowledge_basis
-        result = gate.validate_and_render(
-            candidate_plan,
-            allowlist,
-            request,
-            scope,
-            run_id=run_id,
-            knowledge_basis=knowledge_basis,
-        )
+
+        report_id = f"rep_{uuid.uuid4().hex}"
         used_fallback = False
-        if not result.ok:
-            # fallback 只替换 claim 计划，不悄悄丢弃已核验的知识引用.
-            fallback = fallback_plan(allowlist).model_copy(
-                update={
-                    "knowledge_reference_ids": candidate_plan.knowledge_reference_ids
-                }
-            )
-            fallback_result = gate.validate_and_render(
-                fallback,
+
+        async def prepare_publication():
+            nonlocal used_fallback
+            frozen, errors = gate.precheck(
+                candidate_plan,
                 allowlist,
                 request,
                 scope,
+                report_id=report_id,
                 run_id=run_id,
                 knowledge_basis=knowledge_basis,
             )
-            if not fallback_result.ok:
-                return {
-                    "status": "gate_failed",
-                    "errors": list(fallback_result.errors),
+            if frozen is None:
+                # fallback 只替换 claim 计划，不悄悄丢弃已核验的知识引用.
+                fallback = fallback_plan(allowlist).model_copy(
+                    update={
+                        "knowledge_reference_ids": candidate_plan.knowledge_reference_ids
+                    }
+                )
+                frozen, fallback_errors = gate.precheck(
+                    fallback,
+                    allowlist,
+                    request,
+                    scope,
+                    report_id=report_id,
+                    run_id=run_id,
+                    knowledge_basis=knowledge_basis,
+                )
+                if frozen is None:
+                    raise SectionPublicationError(
+                        "precheck_failed", errors=tuple(fallback_errors or errors)
+                    )
+                used_fallback = True
+            return frozen
+
+        writer = getattr(runtime, "stream_writer", None)
+        try:
+            session, report = await publish_frozen_plan(
+                gate=gate,
+                report_store=report_store,
+                prepare=prepare_publication,
+                expected_scope=scope,
+                config=config,
+                writer=writer,
+                session=state.get("publication_session"),
+                section_barrier=section_barrier,
+            )
+        except SectionPublicationError as exc:
+            summary = {
+                "status": "publication_failed",
+                "reason": exc.reason,
+                "errors": list(exc.errors),
+                "report_id": report_id,
+            }
+            failed_session = exc.session or PublicationSession(
+                report_id=report_id,
+                plan_digest="precheck_failed",
+                analysis_id=request.analysis_id,
+                revision=request.revision,
+                scope=scope,
+                section_ids=(),
+            )
+            failed_session = failed_session.model_copy(
+                update={
+                    "failed_reason": exc.reason,
+                    "execution_key": publication_execution_key(config, scope),
                 }
-            result = fallback_result
-            used_fallback = True
-        report = result.report
-        assert report is not None
-        await report_store.save(report)
+            )
+            tool_call_id = getattr(runtime, "tool_call_id", None)
+            messages = (
+                [
+                    ToolMessage(
+                        content=json.dumps(summary, ensure_ascii=False),
+                        tool_call_id=tool_call_id,
+                        name="build_validated_report",
+                    )
+                ]
+                if tool_call_id
+                else []
+            )
+            return Command(
+                update={"publication_session": failed_session, "messages": messages}
+            )
         summary = {
             "status": "validated",
             "report_id": report.report_id,
@@ -505,6 +564,8 @@ def build_report_tools(
             "claim_count": len(report.claim_ids),
             "limitations": list(report.limitations),
             "message_id": report.report_id,
+            "plan_digest": session.plan_digest,
+            "sections_published": len(session.published_section_ids),
         }
         tool_call_id = getattr(runtime, "tool_call_id", None)
         messages = (
@@ -522,6 +583,7 @@ def build_report_tools(
             update={
                 "allowlist": allowlist,
                 "validated_report": report,
+                "publication_session": session,
                 "messages": messages,
             }
         )

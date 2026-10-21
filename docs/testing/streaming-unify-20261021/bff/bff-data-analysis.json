@@ -1,0 +1,60 @@
+{
+  "fixture_state": {
+    "source_finished": true,
+    "started": true,
+    "custom_events": 14,
+    "deltas": 12,
+    "sections_at_barrier": [],
+    "auth_me_hits": 1,
+    "ticket_hits": 1,
+    "admit_hits": 1,
+    "stream_hits": 1,
+    "at_barrier": true
+  },
+  "debug": {
+    "content_type": "text/event-stream; charset=utf-8",
+    "headers": {
+      "vary": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+      "cache-control": "no-store",
+      "content-type": "text/event-stream; charset=utf-8",
+      "date": "Wed, 21 Oct 2026 14:53:32 GMT",
+      "server": "uvicorn",
+      "x-ledger-marker": "lr:req-probe:att-probe",
+      "connection": "keep-alive",
+      "keep-alive": "timeout=5",
+      "transfer-encoding": "chunked"
+    }
+  },
+  "graph": "data-analysis",
+  "entry": "next-bff-controlled-upstream",
+  "events": 14,
+  "deltas": 12,
+  "delta_lengths": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+  "sections": [],
+  "done_count": 1,
+  "first_delta_source": "new_delta",
+  "barrier": {
+    "source_finished": false,
+    "deltas": 2,
+    "sections": []
+  },
+  "answer_chars": 99,
+  "t_submit": 90178.984005541,
+  "t_first_safe_delta": 90179.534780375,
+  "t_last_safe_delta": 90179.651342791,
+  "t_stream_end": 90179.670804666,
+  "t_confirmation_end": 90179.670804666
+}

@@ -79,6 +79,7 @@ export function ChatPanel() {
   const isStreaming = useChatStore((s) => s.isStreaming);
   const stopPending = useChatStore((s) => s.stopPending);
   const streamingText = useChatStore((s) => s.streamingText);
+  const streamingOutputStatus = useChatStore((s) => s.streamingOutputStatus);
   const streamingReasoning = useChatStore((s) => s.streamingReasoning);
   const error = useChatStore((s) => s.error);
   const failedInput = useChatStore((s) => s.failedInput);
@@ -257,6 +258,7 @@ export function ChatPanel() {
             <StreamingAssistantCard
               streamingText={streamingText}
               streamingReasoning={streamingReasoning}
+              status={streamingOutputStatus}
             />
           )}
 
@@ -362,6 +364,11 @@ function MessageItem({
             <Markdown content={message.content} />
           </div>
         )}
+        {message.incomplete && (
+          <p role="status" className="text-[11px] text-amber-600 dark:text-amber-400">
+            未完成 · 生成中断或尚未确认，此内容不是完整终答。
+          </p>
+        )}
 
         {/* 底部轻量操作工具栏 */}
         {message.content && (
@@ -408,12 +415,14 @@ function MessageItem({
                 </span>
               )}
             </div>
-            {/* 评价栏：服务端确认映射才可评价 */}
-            <FeedbackBar
-              mapping={mapping}
-              hasContent={Boolean(message.content)}
-              epoch={feedbackEpoch ?? 0}
-            />
+            {/* 评价栏：服务端确认映射才可评价；未完成正文不开放反馈 */}
+            {!message.incomplete && (
+              <FeedbackBar
+                mapping={mapping}
+                hasContent={Boolean(message.content)}
+                epoch={feedbackEpoch ?? 0}
+              />
+            )}
           </div>
         )}
       </div>
@@ -452,9 +461,11 @@ function useAnswerMapping(message: ChatMessage) {
 function StreamingAssistantCard({
   streamingText,
   streamingReasoning,
+  status,
 }: {
   streamingText: string;
   streamingReasoning: string;
+  status: "idle" | "streaming" | "partial" | "complete" | "aborted";
 }) {
   return (
     <div className="flex gap-3 px-1 animate-in fade-in-50 duration-200">
@@ -463,6 +474,9 @@ function StreamingAssistantCard({
       </div>
 
       <div className="min-w-0 flex-1 space-y-2 text-sm">
+        {status === "streaming" && streamingText && (
+          <p className="text-[11px] text-emerald-600 dark:text-emerald-400">正在生成 · 内容尚未最终确认</p>
+        )}
         {/* 若有流式思考，展示正在思考的动画组件 */}
         {streamingReasoning && (
           <ThinkingBlock content={streamingReasoning} isStreaming />

@@ -19,6 +19,11 @@ import {
   type LgThread, type ContextMetrics, type ProcessingStatus, type ThreadValues,
 } from "@/lib/langgraph-api";
 import { acceptedSnapshot, useCapabilityStore } from "@/lib/capability-store";
+import {
+  AgentOutputStream,
+  isFinalOutputEvent,
+  type FinalOutputEvent,
+} from "@/lib/agent-output-stream";
 
 export type ToolExecution = {
   id: string; name: string; args: unknown; result?: string;
@@ -30,6 +35,8 @@ export type ChatMessage = {
   reasoningContent?: string; reasoningTokens?: number; tools?: ToolExecution[];
   usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
   modelName?: string; timestamp?: number;
+  /** 正文已显示但未获最终确认（中断/失败）：不开放反馈，明确标注未完成。 */
+  incomplete?: boolean;
   /** 产生终答正文的真实 AI 消息 id（台账 answer.message_id 权威映射键） */
   sourceMessageId?: string;
   /** 服务端权威回答关联（映射成功后填充；仅已确认最终回答开放评价/复制） */
@@ -44,6 +51,11 @@ type ChatState = {
   activeTimingMessageId: string | null;
   activeTimingOutputComplete: boolean;
   isStreaming: boolean; streamingText: string; streamingReasoning: string; totalContextTokens: number;
+  /** agent-output-stream-v1: 正文生命周期状态（处理中/已校验部分/完整待确认/中断）。 */
+  streamingOutputStatus: "idle" | "streaming" | "partial" | "complete" | "aborted";
+  streamingOutputMessageId: string | null;
+  streamingDeliveryMode: string | null;
+  firstDeltaSource: "new_delta" | "legacy_done" | null;
   stopPending: boolean;
   contextMetrics: ContextMetrics | null; contextStatus: ProcessingStatus | null; dataStatus: ProcessingStatus | null;
   error: string | null; failedInput: string | null; loadingThreads: boolean; loadingThread: boolean;
@@ -260,6 +272,7 @@ let activeRun: ActiveRun | null = null;
 let pendingStopRun: ActiveRun | null = null;
 let stopPromise: Promise<StopOutcome> | null = null;
 const emptyView = { activeTimingOutputComplete: false, activeTimingMessageId: null as string | null, activeTimingId: null as string | null, messages: [] as ChatMessage[], isStreaming: false, streamingText: "", streamingReasoning: "",
+  streamingOutputStatus: "idle" as const, streamingOutputMessageId: null as string | null, streamingDeliveryMode: null as string | null, firstDeltaSource: null as "new_delta" | "legacy_done" | null,
   totalContextTokens: 0, contextMetrics: null, contextStatus: null, dataStatus: null, error: null, failedInput: null, loadingThread: false };
 
 function cancelActive() {
@@ -375,6 +388,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ messages: [...previous.messages, userMsg], isStreaming: true, streamingText: "", streamingReasoning: "", error: null, failedInput: null,
       contextStatus: null, dataStatus: null, contextMetrics: null });
 
+    let streamedMessageId: string | null = null;
+    let outputStatus: "idle" | "streaming" | "partial" | "complete" | "aborted" = "idle";
+    let outputText = "";
+    let outputMessageId: string | null = null;
+    let output: AgentOutputStream | null = null;
+
     try {
       if (!run.threadId) {
         run.threadId = await createThread(previous.graphId, getUserIdentity(), deriveTitle(trimmed));
@@ -382,7 +401,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         set({ activeThreadId: run.threadId });
       }
       const threadId = run.threadId;
-      let streamedMessageId: string | null = null;
+      output = new AgentOutputStream({ threadId, graphId: previous.graphId });
       run.streamStarted = true;
       await streamRun({ threadId, graphId: previous.graphId,
         messages: [{ id: userMsg.id, type: "human", content: trimmed }],
@@ -391,6 +410,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           onRun: (runId) => {
             run.runId = runId;
             run.phase = "queued";
+            output?.setScope({ runId });
             if (!sameRun(run)) { void cancelRun(threadId, runId).catch(() => {}); return; }
             // 台账受理关联确认：服务端回读平台 run metadata 校验标记后才确认；
             // 失败保持"受理中"，不改写本地终态。
@@ -406,11 +426,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
             run.phase = "processing";
             if (!sameRun(run) || get().activeThreadId !== threadId) return;
             const view = fromValues(values);
-            const confirmed = streamedMessageId && values.messages.some((item) => {
-              const message = item as { id?: string; additional_kwargs?: { ui_visible?: boolean } };
-              return message?.id === streamedMessageId && message.additional_kwargs?.ui_visible !== false;
+            const snapshot = output!.snapshot();
+            const confirmed = Boolean(
+              (streamedMessageId || snapshot.messageId) &&
+              values.messages.some((item) => {
+                const message = item as { id?: string; additional_kwargs?: { ui_visible?: boolean } };
+                return message?.id === (streamedMessageId || snapshot.messageId) && message.additional_kwargs?.ui_visible !== false;
+              })
+            );
+            if (confirmed) outputStatus = "complete";
+            set({
+              ...view,
+              ...(confirmed ? { streamingText: "", streamingOutputStatus: "complete" as const } : {}),
             });
-            set({ ...view, ...(confirmed ? { streamingText: "" } : {}) });
           },
           // messages-tuple 包括工具、内部模型和未确认草稿，绝不追加为正文。
           onMessagesDelta: () => {},
@@ -418,6 +446,69 @@ export const useChatStore = create<ChatState>((set, get) => ({
             if (!sameRun(run) || get().activeThreadId !== threadId) return;
             if (event.thread_id && event.thread_id !== threadId) return;
             if (event.run_id && run.runId && event.run_id !== run.runId) return;
+            if (isFinalOutputEvent(event)) {
+              const action = output!.apply(event as FinalOutputEvent);
+              if (action.action === "start") {
+                outputStatus = "streaming";
+                outputMessageId = action.messageId;
+                outputText = "";
+                set({
+                  streamingText: "",
+                  streamingOutputStatus: "streaming",
+                  streamingOutputMessageId: action.messageId,
+                  streamingDeliveryMode: action.deliveryMode,
+                  firstDeltaSource: null,
+                });
+              } else if (action.action === "append") {
+                outputStatus = "streaming";
+                outputText += action.text;
+                set((state) => ({
+                  streamingText: state.streamingText + action.text,
+                  streamingOutputStatus: "streaming" as const,
+                  firstDeltaSource: output!.snapshot().firstDeltaSource,
+                }));
+              } else if (action.action === "done") {
+                streamedMessageId = action.messageId;
+                outputStatus = "complete";
+                outputText = action.text;
+                set({
+                  activeTimingMessageId: action.messageId,
+                  activeTimingOutputComplete: Boolean(action.messageId),
+                  streamingText: action.text,
+                  streamingOutputStatus: "complete",
+                  streamingOutputMessageId: action.messageId,
+                  firstDeltaSource: output!.snapshot().firstDeltaSource,
+                });
+              } else if (action.action === "abort") {
+                outputStatus = "aborted";
+                outputText = action.text;
+                set({
+                  streamingText: action.text,
+                  streamingOutputStatus: "aborted",
+                  streamingOutputMessageId: output!.snapshot().messageId,
+                });
+              } else if (action.action === "resync") {
+                outputStatus = "partial";
+                set({ streamingOutputStatus: "partial" });
+                void getThreadState(threadId).then((values) => {
+                  if (sameRun(run) && get().activeThreadId === threadId) {
+                    set({ ...fromValues(values), streamingOutputStatus: "partial" });
+                  }
+                }).catch(() => {});
+              } else if (action.action === "legacy") {
+                streamedMessageId = action.messageId || null;
+                outputStatus = "complete";
+                outputText = action.text;
+                set({
+                  activeTimingMessageId: streamedMessageId,
+                  activeTimingOutputComplete: Boolean(streamedMessageId),
+                  streamingText: action.text,
+                  streamingOutputStatus: "complete",
+                  firstDeltaSource: "legacy_done",
+                });
+              }
+              return;
+            }
             if (event.type === "context_metrics") set({ contextMetrics: event as unknown as ContextMetrics, totalContextTokens: Number(event.input_tokens) || 0 });
             if (event.type === "tool_status" && typeof event.tool_call_id === "string") {
               // 工具/进度先到不触发首正文计时（spec：进度不能提前结束计时）
@@ -431,16 +522,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
               run.phase = "processing";
               timingProgressSeen(measurementId);
               set((state) => status.stage === "history" ? { contextStatus: status } : { dataStatus: mergeDataStatus(state.dataStatus, status) });
-            }
-            if (event.type === "final_output_delta" && typeof event.message === "string") {
-
-              set((state) => ({ streamingText: state.streamingText + event.message }));
-            }
-            if (event.type === "final_output_done" && typeof event.message === "string") {
-              streamedMessageId = typeof event.message_id === "string" ? event.message_id : null;
-              set({activeTimingMessageId: streamedMessageId, activeTimingOutputComplete: Boolean(streamedMessageId)});
-
-              set({ streamingText: event.message });
             }
           },
           onTransportDisconnect: () => {
@@ -456,7 +537,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
       if (!sameRun(run)) return;
       try {
         const values = await getThreadState(threadId);
-        if (sameRun(run)) set({ ...fromValues(values), streamingText: "" });
+        if (sameRun(run)) {
+          set({
+            ...fromValues(values),
+            streamingText: "",
+            streamingOutputStatus: (outputStatus as string) === "complete" ? "complete" : outputStatus,
+          });
+        }
       } catch {
         // 完成事件已经确认的正文仍保留；不丢弃已确认答案。
         if (sameRun(run) && get().streamingText && streamedMessageId) {
@@ -471,9 +558,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
         activeRun = null;
         setSubmissionContext(null);
 
-        // 计时收尾在 finally：正常结束/失败都要投递局部事实（未完成原因如实在列）
-
-        set({ isStreaming: false, streamingText: "", streamingReasoning: "" });
+        // 计时收尾在 finally：正常结束/失败都要投递局部事实（未完成原因如实在列）。
+        // 已显示但未获最终确认的正文保留为明确的"未完成"消息，不冒充完整答案。
+        const partial = outputText || get().streamingText;
+        const partialId = outputMessageId || streamedMessageId;
+        if (partial && (outputStatus as string) !== "complete" && (outputStatus as string) !== "idle") {
+          const id = partialId || generateUuidV7();
+          set((state) => ({
+            messages: state.messages.some((message) => message.id === id)
+              ? state.messages
+              : [...state.messages, { id, role: "assistant" as const, content: partial, incomplete: true }],
+            isStreaming: false,
+            streamingText: "",
+            streamingReasoning: "",
+            streamingOutputStatus: outputStatus === "aborted" ? "aborted" : "partial",
+          }));
+        } else {
+          set({ isStreaming: false, streamingText: "", streamingReasoning: "" });
+        }
         void get().loadThreads();
       }
     }
@@ -527,7 +629,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
     const timing = get().activeTimingId;
     if (timing) finishTiming(timing);
-    set({ activeTimingOutputComplete: false, activeTimingId: null, activeTimingMessageId: null, isStreaming: false, stopPending: run !== null, streamingText: "", streamingReasoning: "" });
+    // 停止意图已记录，但服务端取消尚未确认：已显示正文标为未完成，绝不当作完整答案。
+    const partial = get().streamingText;
+    const partialId = get().streamingOutputMessageId;
+    const partialStatus = get().streamingOutputStatus;
+    if (partial && partialStatus !== "complete" && partialStatus !== "idle") {
+      const id = partialId || generateUuidV7();
+      set((state) => ({
+        messages: state.messages.some((message) => message.id === id)
+          ? state.messages
+          : [...state.messages, { id, role: "assistant" as const, content: partial, incomplete: true }],
+      }));
+    }
+    set({ activeTimingOutputComplete: false, activeTimingId: null, activeTimingMessageId: null, isStreaming: false, stopPending: run !== null, streamingText: "", streamingReasoning: "", streamingOutputStatus: "aborted" });
     // R10：等待服务端取消终态确认后才返回；未确认由调用方（企业切换）拒绝继续
     const confirmation = confirmRunStopped(threadId, run);
     stopPromise = confirmation;
@@ -545,7 +659,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
     if (threadId && epoch === generation && get().activeThreadId === threadId) {
       void getThreadState(threadId).then((values) => {
-        if (epoch === generation && get().activeThreadId === threadId) set(fromValues(values));
+        if (epoch === generation && get().activeThreadId === threadId) {
+          // 服务端中止后 state 没有可见终答：保留本地已标"未完成"的部分正文，
+          // 不能被一次空快照刷新抹掉。
+          set((state) => {
+            const view = fromValues(values);
+            const known = new Set(view.messages.map((message) => message.id));
+            const locals = state.messages.filter(
+              (message) => message.incomplete && !known.has(message.id)
+            );
+            return { ...view, messages: [...view.messages, ...locals] };
+          });
+        }
       }).catch((err: unknown) => {
         notifyIfContextConflict(err);
         if (epoch === generation) set({ error: "已请求停止；会话状态暂时无法刷新，请重试。" });

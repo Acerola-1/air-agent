@@ -621,3 +621,23 @@ class ReportValidationResult(StrictModel):
     errors: tuple[str, ...] = ()
     used_fallback: bool = False
     report: ValidatedReport | None = None
+
+
+class PublicationSession(StrictModel):
+    """Recoverable record of a section publication; not a ValidatedReport."""
+
+    report_id: str = Field(min_length=1, max_length=128)
+    plan_digest: str = Field(min_length=1, max_length=128)
+    analysis_id: str
+    revision: int = Field(ge=1)
+    scope: RuntimeScope
+    section_ids: tuple[str, ...]
+    published_section_ids: tuple[str, ...] = ()
+    completed: bool = False
+    failed_reason: str = ""
+    body_sha256: str = ""
+    output_id: str = ""
+    message_id: str = ""
+    last_seq: int = -1
+    published_text: str = ""
+    execution_key: str = ""

@@ -3,14 +3,23 @@
 from __future__ import annotations
 
 import uuid
+from dataclasses import dataclass
 
-from intelligent_tracing.claims import render_report
+from intelligent_tracing.claims import (
+    ReportSection,
+    ReportSectionPlan,
+    plan_section_layout,
+    render_report,
+    render_section_plan,
+    report_plan_digest,
+)
 from intelligent_tracing.evidence import EvidenceRegistry, EvidenceRegistryError
 from intelligent_tracing.policy import AnalysisPolicy
 from intelligent_tracing.schemas import (
     AllowedClaim,
     ClaimAllowlist,
     ClaimType,
+    EvidenceRecord,
     KnowledgeBasisItem,
     ReportPlan,
     ReportValidationResult,
@@ -20,6 +29,33 @@ from intelligent_tracing.schemas import (
 )
 
 
+@dataclass(frozen=True)
+class FrozenPublicationPlan:
+    """Prechecked report plan frozen before the first section is public."""
+
+    request: TracingRequest
+    scope: RuntimeScope
+    allowlist: ClaimAllowlist
+    plan: ReportPlan
+    report_id: str
+    run_id: str
+    knowledge_basis: tuple[KnowledgeBasisItem, ...]
+    sections: tuple[ReportSectionPlan, ...]
+    plan_digest: str
+    evidence_records: tuple[EvidenceRecord, ...] = ()
+
+    @property
+    def section_ids(self) -> tuple[str, ...]:
+        """Ordered section identifiers."""
+        return tuple(section.section_id for section in self.sections)
+
+    def section(self, section_id: str) -> ReportSectionPlan | None:
+        """Look up a frozen section by id."""
+        return next(
+            (item for item in self.sections if item.section_id == section_id), None
+        )
+
+
 class ReportGate:
     """Validate every report plan before any user-visible publication."""
 
@@ -27,6 +63,17 @@ class ReportGate:
         """Bind the gate to the trusted evidence registry and policy."""
         self._registry = registry
         self._policy = policy
+
+    def for_checkpoint(self, frozen: FrozenPublicationPlan) -> ReportGate:
+        """Rebuild gate dependencies from trusted, scoped checkpoint metadata."""
+        registry = EvidenceRegistry()
+        registry.restore_checkpoint(
+            frozen.evidence_records,
+            scope=frozen.scope,
+            analysis_id=frozen.request.analysis_id,
+            revision=frozen.request.revision,
+        )
+        return ReportGate(registry=registry, policy=self._policy)
 
     def validate_and_render(
         self,
@@ -102,6 +149,174 @@ class ReportGate:
         if process_ids and not process_ids.issubset(set(plan.claim_ids)):
             errors.append("process_assessment_missing")
         return errors
+
+    def precheck(
+        self,
+        plan: ReportPlan,
+        allowlist: ClaimAllowlist,
+        request: TracingRequest,
+        scope: RuntimeScope,
+        *,
+        report_id: str,
+        run_id: str = "",
+        knowledge_basis: tuple[KnowledgeBasisItem, ...] = (),
+    ) -> tuple[FrozenPublicationPlan | None, tuple[str, ...]]:
+        """Validate every cross-section requirement before publishing section 1."""
+        errors = self.validate_plan(plan, allowlist)
+        if errors:
+            return None, tuple(errors)
+        resolved_ids = {item.citation_id for item in knowledge_basis}
+        if not set(plan.knowledge_reference_ids) <= resolved_ids:
+            return None, ("knowledge_reference_not_resolved",)
+        claims = {claim.claim_id: claim for claim in allowlist.claims}
+        selected = [claims[claim_id] for claim_id in plan.claim_ids]
+        semantic_errors = self._validate_claim_semantics(selected, request, scope)
+        if semantic_errors:
+            return None, tuple(semantic_errors)
+        fixed = {
+            "trajectory_unavailable",
+            "emission_inventory_missing",
+            "no_chemical_composition",
+        }
+        if not fixed.issubset(set(allowlist.limitations)):
+            return None, ("fixed_limitations_missing",)
+        sections = plan_section_layout(
+            request,
+            allowlist,
+            plan,
+            policy=self._policy,
+            knowledge_basis=knowledge_basis,
+        )
+        # Only fixed server-authored blocks are rendered during precheck. Claim
+        # section text is rendered lazily at publication time.
+        for section in sections:
+            if not section.fixed:
+                continue
+            rendered = render_section_plan(
+                request,
+                allowlist,
+                plan,
+                section,
+                policy=self._policy,
+                knowledge_basis=knowledge_basis,
+            )
+            text_errors = self._validate_section_text(rendered.text, allowlist)
+            if text_errors:
+                return None, tuple(
+                    f"{section.section_id}:{error}" for error in text_errors
+                )
+        digest = report_plan_digest(
+            request, allowlist, plan, sections, knowledge_basis=knowledge_basis
+        )
+        return (
+            FrozenPublicationPlan(
+                request=request,
+                scope=scope,
+                allowlist=allowlist,
+                plan=plan,
+                report_id=report_id,
+                run_id=run_id,
+                knowledge_basis=knowledge_basis,
+                sections=sections,
+                plan_digest=digest,
+                evidence_records=self._registry.get_many(
+                    tuple(
+                        dict.fromkeys(
+                            evidence_id
+                            for claim in selected
+                            for evidence_id in (
+                                *claim.supporting_evidence_ids,
+                                *claim.counter_evidence_ids,
+                            )
+                        )
+                    ),
+                    scope=scope,
+                    analysis_id=request.analysis_id,
+                    revision=request.revision,
+                ),
+            ),
+            (),
+        )
+
+    def render_section(
+        self, frozen: FrozenPublicationPlan, section: ReportSectionPlan
+    ) -> ReportSection:
+        """Render one section from the frozen claim parameters at publish time."""
+        return render_section_plan(
+            frozen.request,
+            frozen.allowlist,
+            frozen.plan,
+            section,
+            policy=self._policy,
+            knowledge_basis=frozen.knowledge_basis,
+        )
+
+    def validate_section(
+        self, frozen: FrozenPublicationPlan, section: ReportSection
+    ) -> list[str]:
+        """Re-check one section immediately before it is published."""
+        errors: list[str] = []
+        if section.section_id not in frozen.section_ids:
+            return ["section_not_in_frozen_plan"]
+        allowed = {claim.claim_id for claim in frozen.allowlist.claims}
+        if not set(section.claim_ids) <= allowed:
+            errors.append("section_claim_not_allowlisted")
+        if not set(section.claim_ids) <= set(frozen.plan.claim_ids):
+            errors.append("section_claim_not_in_plan")
+        claims = {claim.claim_id: claim for claim in frozen.allowlist.claims}
+        selected = [
+            claims[claim_id] for claim_id in section.claim_ids if claim_id in claims
+        ]
+        errors.extend(
+            self._validate_claim_semantics(selected, frozen.request, frozen.scope)
+        )
+        errors.extend(self._validate_section_text(section.text, frozen.allowlist))
+        plan_section = frozen.section(section.section_id)
+        if plan_section is None:
+            return ["section_not_in_frozen_plan"]
+        expected = self.render_section(frozen, plan_section)
+        if expected.text != section.text:
+            errors.append("section_content_drift")
+        return errors
+
+    def confirm(self, frozen: FrozenPublicationPlan) -> ReportValidationResult:
+        """Assemble the final report from the exact frozen sections and revalidate."""
+        recomputed_digest = report_plan_digest(
+            frozen.request,
+            frozen.allowlist,
+            frozen.plan,
+            frozen.sections,
+            knowledge_basis=frozen.knowledge_basis,
+        )
+        if recomputed_digest != frozen.plan_digest:
+            return ReportValidationResult(ok=False, errors=("plan_digest_mismatch",))
+        claims = {claim.claim_id: claim for claim in frozen.allowlist.claims}
+        selected = [
+            claims[claim_id] for claim_id in frozen.plan.claim_ids if claim_id in claims
+        ]
+        semantic_errors = self._validate_claim_semantics(
+            selected, frozen.request, frozen.scope
+        )
+        if semantic_errors:
+            return ReportValidationResult(ok=False, errors=tuple(semantic_errors))
+        rendered = tuple(
+            self.render_section(frozen, section) for section in frozen.sections
+        )
+        report = render_report(
+            frozen.request,
+            frozen.allowlist,
+            frozen.plan,
+            scope=frozen.scope,
+            report_id=frozen.report_id,
+            policy=self._policy,
+            run_id=frozen.run_id,
+            knowledge_basis=frozen.knowledge_basis,
+            sections=rendered,
+        )
+        errors = self._validate_text_boundary(report, frozen.allowlist)
+        if errors:
+            return ReportValidationResult(ok=False, errors=tuple(errors))
+        return ReportValidationResult(ok=True, report=report)
 
     def _validate_claim_semantics(
         self,
@@ -322,6 +537,24 @@ class ReportGate:
         from intelligent_tracing.claims import _LIMITATION_TEXT
 
         return set(_LIMITATION_TEXT)
+
+    def _validate_section_text(self, text: str, allowlist: ClaimAllowlist) -> list[str]:
+        """Section-level text boundary; global requirements stay in confirm()."""
+        errors: list[str] = []
+        scan_body = text
+        for line in scan_body.splitlines():
+            if any(
+                word in line
+                for word in ("已确认企业", "确定是某", "来源概率为", "贡献率为")
+            ):
+                if not any(
+                    safe in line for safe in ("不能", "无法", "不包含", "未", "待核查")
+                ):
+                    errors.append("attribution_overclaim_in_text")
+                    break
+        if "[[" in scan_body and scan_body.count("[[") != scan_body.count("]]"):
+            errors.append("unterminated_citation")
+        return errors
 
     def _validate_text_boundary(
         self, report: ValidatedReport, allowlist: ClaimAllowlist

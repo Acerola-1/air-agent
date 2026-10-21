@@ -15,6 +15,15 @@ LoggingConfigurator.configure()
 logger.info("模型注册表初始化开始")
 
 
+# 模型调用用途（与 observability/invocation_config 的 role 对齐）：
+# - planning: 带工具 schema 的非流式工具规划（供应商兼容模式）
+# - answer:   无工具最终正文，显式 astream，使用真实流式
+# - cleanup:  数据分析最终整理，无工具流式
+# - subagent: DeepAgents 专员，内部输出不进入正文
+# - summary:  内部摘要，永不公开
+MODEL_ROLES = ("planning", "answer", "cleanup", "subagent", "summary")
+
+
 class ModelRegistry:
     """Agent 运行时使用的模型实例."""
 
@@ -39,6 +48,20 @@ class ModelRegistry:
         http_async_client=httpx.AsyncClient(auth=TenantOutboundAuth()),
         http_client=httpx.Client(auth=TenantOutboundAuth()),
     )
+
+    @classmethod
+    def for_role(cls, role: str):
+        """Return the model instance for a call role.
+
+        The shared instance is intentional: ``disable_streaming="tool_calling"``
+        only disables streaming when tools are bound, so the no-tool answer and
+        cleanup roles still stream through an explicit ``astream`` call.
+        """
+        if role not in MODEL_ROLES:
+            raise ValueError(f"unknown model role: {role}")
+        if role == "summary":
+            return cls.summary_llm
+        return cls.main_llm
 
     summary_llm = ChatOpenAI(
         api_key=SecretStr(config.SUMMARY_LLM_API_KEY),

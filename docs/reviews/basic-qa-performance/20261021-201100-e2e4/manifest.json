@@ -1,0 +1,127 @@
+{
+  "schema_version": "basic-qa-perf.v1",
+  "run_id": "20261021-201100-e2e4",
+  "campaign_id": "product-chat-perf-20261021-201100-e2e4",
+  "recorded_at": "2026-10-21T12:50:57.149988+00:00",
+  "layer": "E",
+  "profile": "S",
+  "stage": "end-to-end-baseline",
+  "git": {
+    "branch": "dev",
+    "head": "7711914932a68f283800d9e6e4175e3a4c5bea01",
+    "dirty_files": [
+      "M scripts/unified_campaign/sender.py",
+      "?? docs/reviews/basic-qa-performance/20261021-195900-e2e2/",
+      "?? docs/reviews/basic-qa-performance/20261021-201100-e2e3/",
+      "?? docs/reviews/basic-qa-performance/20261021-201100-e2e4/",
+      "?? docs/testing/product-chat-performance-baseline.md",
+      "?? scripts/product_chat_perf/"
+    ]
+  },
+  "dataset": {
+    "version": "bqa-reference-202605-v1",
+    "measured_questions": 40,
+    "history_user_turns": 50,
+    "selection_mode": "automatic",
+    "model_mode": "fast"
+  },
+  "runtime": {
+    "bff": "http://127.0.0.1:25448",
+    "admin_api": "http://127.0.0.1:25446",
+    "tenant_id": "6c5504f0-2e31-4373-91e0-ec7b95f40971",
+    "context_version": 2,
+    "containers": [
+      "aa-perf-20261021-langgraph",
+      "aa-perf-20261021-pg",
+      "aa-perf-20261021-redis"
+    ],
+    "resource_limits": "每个容器 4 CPU / 1 GiB（apple container 运行参数）",
+    "langgraph_image": "air-agent/langgraph-api:tracing-merge-20261020",
+    "model_requested": "hy3",
+    "model_actual": "hy3",
+    "provider": "openai-compatible gateway (127.0.0.1:7863 via bridge)",
+    "mcp_source": "ipp shared_readonly real MCP (https://www.mapairs.com/product/datacenter/api2/mcp)"
+  },
+  "strategy": {
+    "concurrency_measured": 1,
+    "rounds": 1,
+    "planned_measured": 40,
+    "planned_history": 50,
+    "deadline_seconds": {
+      "Q1": 60,
+      "Q2": 120,
+      "Q3": 180,
+      "Q4": 180
+    },
+    "budget_seconds": 5400,
+    "started_at": "2026-10-21T12:10:34.718289+00:00",
+    "ended_at": "2026-10-21T12:49:48.390004+00:00",
+    "started_at_shanghai": "2026-10-21 20:10:34",
+    "ended_at_shanghai": "2026-10-21 20:49:48",
+    "history_preload": {
+      "concurrency": 10,
+      "turns": 50,
+      "note": "setup only; not part of measured load and not a capacity claim"
+    },
+    "segments": [
+      "Q1-Q3 measured sequential (30) in run 20261021-201100-e2e3",
+      "Q4 history preloaded 10-way parallel (50 user turns)",
+      "Q4 measured sequential (10) after 10s settle"
+    ],
+    "thresholds": "首轮基线未冻结绝对 SLO；P95 为探索值"
+  },
+  "measurement": {
+    "client_first_answer_ms": "BFF 提交前至首个可见 AI 正文增量；排除历史消息、工具、推理",
+    "client_complete_ms": "BFF 提交前至流完整结束；超过冻结截止记晚到",
+    "browser": "未执行；接口值不得当作浏览器首屏",
+    "server_observation": "agent_model_observations / agent_tool_call_attempts",
+    "resources": "仅测量后空闲 8 秒快照；Q1-Q3 测量窗未采集",
+    "history_preload": "历史轮为准备步骤，不计入 40 题分母；并发仅用于缩短准备时间"
+  },
+  "known_limitations": [
+    "顺序执行器在 Q4 历史阶段被中止；Q1-Q3 资源采样缺失",
+    "Q4 历史使用 10 路并发预置，不能与单并发测量窗比较",
+    "无价格表，成本未采集",
+    "未执行浏览器、R/F、隔离与故障注入",
+    "合成 gold 与真实 MCP 数据不可比，质量检查为结构/语义规则"
+  ],
+  "allow_real_models": true,
+  "allow_load": false,
+  "conclusion": "BASELINE_CANDIDATE（含已知依赖缺失与晚到样本）",
+  "browser": "未执行",
+  "targets": [
+    "http://127.0.0.1:25448",
+    "http://127.0.0.1:25446"
+  ],
+  "summary_status": {
+    "headline": "BASELINE_CANDIDATE",
+    "known_blocked": "Q1 knowledge dependency unavailable in isolated stack",
+    "browser": "not executed",
+    "cost": "not collected"
+  },
+  "cleanup": {
+    "containers_removed": [
+      "aa-perf-20261021-langgraph",
+      "aa-perf-20261021-pg",
+      "aa-perf-20261021-redis"
+    ],
+    "processes_stopped": [
+      "IAM 25445",
+      "Admin API 25446",
+      "BFF 25448",
+      "host bridge 25450"
+    ],
+    "ports_released": [
+      25445,
+      25446,
+      25447,
+      25448,
+      25450
+    ],
+    "database": "自建 PostgreSQL 容器随容器删除；未连接 15432/19132 或正式业务库",
+    "sessions_and_dumps": "测试会话、随机凭据、cookie 与临时 env 已删除",
+    "evidence_retained": ".local/perf-20261021/evidence-final/answers.jsonl（受控忽略目录，含回答正文）",
+    "formal_stack_untouched": true,
+    "cleanup_time": "2026-10-21 21:03 CST"
+  }
+}

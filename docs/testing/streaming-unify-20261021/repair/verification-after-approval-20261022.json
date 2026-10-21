@@ -1,0 +1,41 @@
+{
+  "previous_local_evidence": "local-regressions-20261022.json",
+  "official_api_evidence": "official-api-restart-10.json",
+  "official_api_restart": "pass",
+  "permission": "user_explicitly_authorized_development_license_only",
+  "tracing_enabled": false,
+  "versions": {
+    "langgraph-api": "0.16.2",
+    "langgraph": "1.2.16",
+    "deepagents": "0.7.28",
+    "langchain-core": "1.6.12"
+  },
+  "actual_product_graph": true,
+  "checkpoint_backend": "owned_postgres",
+  "controlled_dependencies": [
+    "identity_state",
+    "model",
+    "mcp_data",
+    "report_store"
+  ],
+  "specialists": {
+    "station-data": "succeeded",
+    "grid-data": "succeeded",
+    "meteo-analyst": "succeeded",
+    "evidence-reviewer": "succeeded"
+  },
+  "chapters": 6,
+  "sequences": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "cleanup_verified": true,
+  "full_change_acceptance": "not_claimed",
+  "git_delivery": "not_requested"
+}

@@ -1,0 +1,26 @@
+{
+  "base_head": "7711914932a68f283800d9e6e4175e3a4c5bea01",
+  "working_tree": "uncommitted",
+  "python": {
+    "passed": 154,
+    "seconds": 16.26
+  },
+  "frontend_contracts": {
+    "passed": 66,
+    "nested_output_stream_cases": 9
+  },
+  "typescript": "pass",
+  "ruff": "pass",
+  "openspec_strict": "pass",
+  "diff_check": "pass",
+  "sqlite_checkpoint_pause_close_rebuild_resume": "pass",
+  "resume_revoke_attempt_epoch_negative_controls": "pass",
+  "official_api_restart": "blocked_development_license_authorization",
+  "temporary_container_names_absent": [
+    "aa-streamfix-20261021-pg",
+    "aa-streamfix-20261021-redis",
+    "aa-streamfix-20261021-api"
+  ],
+  "real_model_load_tests": "not_run",
+  "git_delivery": "not_requested"
+}

@@ -1,0 +1,38 @@
+{
+  "events": 14,
+  "deltas": 12,
+  "delta_lengths": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+  "sections": [],
+  "done_count": 1,
+  "aborted": false,
+  "validation_errors": [],
+  "answer_chars": 99,
+  "answer_sha256": "aa8b2a7a0aeab5e4757aacc92d8c2e8022a054597c0dd9bd7dfb4afe8630f9b4",
+  "first_delta_source": "new_delta",
+  "t_submit": 90125.430605208,
+  "t_first_safe_delta": 90125.4839575,
+  "t_last_safe_delta": 90125.686522916,
+  "t_stream_end": 90125.691781875,
+  "t_confirmation_end": 90125.691781875,
+  "graph": "basic-qa",
+  "mode": "controlled",
+  "input": "controlled long answer (12 fragments)",
+  "barrier": {
+    "source_finished": false,
+    "deltas_at_barrier": 2,
+    "done_at_barrier": 0
+  }
+}

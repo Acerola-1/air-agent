@@ -151,6 +151,27 @@ class EvidenceRegistry:
             for evidence_id in evidence_ids
         )
 
+    def restore_checkpoint(
+        self,
+        records: tuple[EvidenceRecord, ...],
+        *,
+        scope: RuntimeScope,
+        analysis_id: str,
+        revision: int,
+    ) -> None:
+        """Restore metadata only from a server-owned publication checkpoint.
+
+        This is not a tool or request-input API. Raw source data is not copied
+        into the publication checkpoint; the gate needs registered metadata.
+        """
+        with self._lock:
+            for record in records:
+                self._assert_scope(record, scope, analysis_id, revision)
+                previous = self._records.get(record.evidence_id)
+                if previous is not None and previous != record:
+                    raise EvidenceRegistryError("恢复证据与已有记录冲突")
+                self._records[record.evidence_id] = record
+
     def raw_payload(self, evidence_id: str, *, scope: RuntimeScope) -> Any:
         """Return a private raw payload only to trusted execution code."""
         record = self._records.get(evidence_id)

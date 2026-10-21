@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://air-agent.local/contracts/agent-output-stream-v1/final-output-stream.schema.json",
+  "title": "agent-output-stream-v1 final output event",
+  "description": "One SSE custom event in the user-visible answer lifecycle. Answer text travels only on this channel; ordinary business events never carry it.",
+  "oneOf": [
+    { "$ref": "#/$defs/start" },
+    { "$ref": "#/$defs/delta" },
+    { "$ref": "#/$defs/done" },
+    { "$ref": "#/$defs/aborted" }
+  ],
+  "$defs": {
+    "base": {
+      "type": "object",
+      "required": [
+        "version",
+        "created_at",
+        "processing_id",
+        "thread_id",
+        "run_id",
+        "graph_id",
+        "tenant_id",
+        "output_id",
+        "message_id",
+        "seq",
+        "output_protocol_version",
+        "type",
+        "delivery_mode"
+      ],
+      "properties": {
+        "version": { "const": 1, "description": "Legacy runtime-event envelope version." },
+        "output_protocol_version": { "const": 1 },
+        "created_at": { "type": "string", "format": "date-time" },
+        "processing_id": { "type": "string" },
+        "thread_id": { "type": "string", "minLength": 1 },
+        "run_id": { "type": "string" },
+        "graph_id": { "enum": ["basic-qa", "data-analysis", "intelligent-tracing"] },
+        "tenant_id": { "type": "string" },
+        "output_id": { "type": "string", "minLength": 1 },
+        "message_id": { "type": "string", "minLength": 1 },
+        "seq": { "type": "integer", "minimum": 0 },
+        "delivery_mode": {
+          "enum": ["token", "validated_section", "single_shot", "policy_bound"]
+        }
+      }
+    },
+    "start": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "final_output_start" },
+            "seq": { "const": 0 }
+          },
+          "required": ["type", "seq"]
+        }
+      ]
+    },
+    "delta": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "final_output_delta" },
+            "message": { "type": "string", "minLength": 1 },
+            "section_id": { "type": "string" },
+            "plan_digest": { "type": "string" },
+            "replay": { "type": "boolean" }
+          },
+          "required": ["type", "message"],
+          "dependentRequired": { "section_id": ["plan_digest"] }
+        }
+      ]
+    },
+    "done": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "final_output_done" },
+            "message": { "type": "string" },
+            "content_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "report_id": { "type": "string" },
+            "revision": { "type": "integer", "minimum": 1 },
+            "plan_digest": { "type": "string" },
+            "report_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          },
+          "required": ["type", "message", "content_sha256"]
+        }
+      ]
+    },
+    "aborted": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "properties": {
+            "type": { "const": "final_output_aborted" },
+            "reason_code": {
+              "enum": [
+                "cancelled",
+                "permission_revoked",
+                "deleted",
+                "policy_blocked",
+                "generation_failed",
+                "superseded",
+                "stream_error",
+                "not_confirmed",
+                "unknown"
+              ]
+            },
+            "partial_chars": { "type": "integer", "minimum": 0 }
+          },
+          "required": ["type", "reason_code", "partial_chars"]
+        }
+      ]
+    }
+  }
+}

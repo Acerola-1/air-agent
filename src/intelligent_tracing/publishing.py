@@ -1,4 +1,10 @@
-"""Chat publication middleware for validated tracing reports."""
+"""Chat publication middleware for validated tracing reports.
+
+The model never writes user-visible prose.  The lead's model output is blanked
+and the report is published only from the frozen, allowlisted plan.  Sections
+are rendered and validated one at a time during the report tool; ``after_agent``
+reuses the same publication session and never resends the body.
+"""
 
 from __future__ import annotations
 
@@ -17,7 +23,8 @@ from langchain_core.messages import AIMessage
 from common.event_ledger.lifecycle import require_ledger_context
 from common.event_ledger.store import fetch_attempt_lifecycle, thread_deletion_exists
 from common.identity.runtime import guard_runtime_call
-from common.runtime_events import emit_event
+from common.output_streaming.controls import publish_control_message
+from common.output_streaming.publisher import runtime_authorization_probe
 from intelligent_tracing.claims import build_claim_allowlist, fallback_plan
 from intelligent_tracing.evidence import EvidenceRegistry
 from intelligent_tracing.gate import ReportGate
@@ -26,10 +33,16 @@ from intelligent_tracing.process_assessment import assess_process
 from intelligent_tracing.report_store import ReportStore
 from intelligent_tracing.schemas import (
     KnowledgeBasisItem,
-    ReportValidationResult,
+    PublicationSession,
+    ReportPlan,
     RuntimeScope,
     TracingRequest,
     ValidatedReport,
+)
+from intelligent_tracing.section_publishing import (
+    SectionPublicationError,
+    publication_execution_key,
+    publish_frozen_plan,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,7 +55,7 @@ _INCOMPLETE_TEXT = "当前尚未完成必要分析，暂不能发布结论；请
 
 
 class TracingPublishMiddleware(AgentMiddleware):
-    """Mark model prose internal and publish only a validated report."""
+    """Mark model prose internal and publish only validated report sections."""
 
     def __init__(
         self,
@@ -150,68 +163,132 @@ class TracingPublishMiddleware(AgentMiddleware):
     async def aafter_agent(
         self, state: Any, runtime: Any = None
     ) -> dict[str, Any] | None:
-        """Publish a validated report or a controlled clarification."""
+        """Confirm/reuse the publication session or publish a controlled fallback."""
         config = self._config(runtime)
         request = state.get("request") if isinstance(state, dict) else None
         scope = state.get("scope") if isinstance(state, dict) else None
         report = state.get("validated_report") if isinstance(state, dict) else None
+        session = state.get("publication_session") if isinstance(state, dict) else None
         if request is None or scope is None:
-            return self._publish_text(config, _CLARIFY_TEXT, "clarify")
+            return await self._publish_text(config, _CLARIFY_TEXT, "clarify")
         if self._should_suppress(config, scope):
             return {}
         if not await self._publication_allowed(config, scope):
             return {}
-        current = await self._current_allowlist(state)
-        run_id = str(config.get("configurable", {}).get("run_id") or "")
-        if current is None:
-            logger.warning(
-                "tracing publication: allowlist unavailable for analysis_id=%s",
-                getattr(request, "analysis_id", ""),
-            )
-        if report is None:
-            report = await self._build_fallback(state, run_id=run_id, config=config)
-        elif current is not None:
-            request_now, scope_now, allowlist_now = current
-            if not await self._report_is_current(
-                report, request_now, scope_now, allowlist_now, state
-            ):
-                report = await self._render_fallback(
-                    request_now,
-                    scope_now,
-                    allowlist_now,
-                    run_id=run_id,
-                    knowledge_basis=await self._fallback_knowledge(
-                        state, request_now, scope_now, allowlist_now, config
-                    ),
-                )
-        if report is None:
-            return self._publish_text(config, _INCOMPLETE_TEXT, "incomplete")
         if (
-            report.analysis_id != request.analysis_id
-            or report.revision != request.revision
-            or report.scope != scope
+            isinstance(session, PublicationSession)
+            and session.failed_reason
+            and session.execution_key == publication_execution_key(config, scope)
         ):
-            return self._publish_text(config, _INCOMPLETE_TEXT, "stale")
-        if report.report_id in self._published_ids:
-            return None
-        published = report.model_copy(update={"published": True})
-        self._published_ids.add(report.report_id)
-        emit_event(
-            config,
-            "final_output_done",
-            message=published.body_markdown,
-            message_id=published.report_id,
+            # A report tool already terminated this publication. Never replace
+            # its public prefix by constructing another report in after_agent.
+            return {}
+        if (
+            isinstance(report, ValidatedReport)
+            and isinstance(session, PublicationSession)
+            and session.completed
+            and session.report_id == report.report_id
+        ):
+            if report.report_id in self._published_ids:
+                return None
+            self._published_ids.add(report.report_id)
+            return self._visible_update(report)
+        current = await self._current_allowlist(state)
+        if current is None:
+            logger.warning("tracing publication: fallback allowlist missing")
+            return await self._publish_text(config, _INCOMPLETE_TEXT, "incomplete")
+        request_now, scope_now, allowlist_now = current
+        run_id = str(config.get("configurable", {}).get("run_id") or "")
+        plan = (
+            ReportPlan(
+                analysis_id=report.analysis_id,
+                revision=report.revision,
+                claim_ids=report.claim_ids,
+                review_claim_ids=(),
+                knowledge_reference_ids=tuple(
+                    item.citation_id for item in report.knowledge_basis
+                ),
+            )
+            if isinstance(report, ValidatedReport)
+            and report.analysis_id == request_now.analysis_id
+            and report.revision == request_now.revision
+            else fallback_plan(allowlist_now)
         )
-        visible = AIMessage(
-            content=published.body_markdown,
-            id=published.report_id,
-            additional_kwargs={
-                "ui_visible": True,
-                "validated_report_ref": published.report_id,
-                "content_sha256": published.content_sha256,
-            },
+        knowledge_basis = await self._resolve_knowledge(
+            plan, request_now, scope_now, allowlist_now, state, config
         )
-        return {"messages": [visible], "validated_report": published}
+        if knowledge_basis is None:
+            return await self._publish_text(config, _INCOMPLETE_TEXT, "incomplete")
+        if knowledge_basis and not plan.knowledge_reference_ids:
+            plan = plan.model_copy(
+                update={
+                    "knowledge_reference_ids": tuple(
+                        item.citation_id for item in knowledge_basis
+                    )
+                }
+            )
+        report_id = (
+            report.report_id
+            if isinstance(report, ValidatedReport)
+            and report.analysis_id == request_now.analysis_id
+            and report.revision == request_now.revision
+            else f"rep_{uuid.uuid4().hex}"
+        )
+        frozen, errors = self._gate.precheck(
+            plan,
+            allowlist_now,
+            request_now,
+            scope_now,
+            report_id=report_id,
+            run_id=run_id,
+            knowledge_basis=knowledge_basis,
+        )
+        if frozen is None:
+            # 报告对应的发现已变化：用当前可信 allowlist 的确定性全量计划重建，
+            # 不沿用旧报告中被删除/降级的 claim；报告身份必须随内容重新分配。
+            report_id = f"rep_{uuid.uuid4().hex}"
+            fallback = fallback_plan(allowlist_now).model_copy(
+                update={
+                    "knowledge_reference_ids": tuple(
+                        item.citation_id for item in knowledge_basis
+                    )
+                }
+            )
+            frozen, errors = self._gate.precheck(
+                fallback,
+                allowlist_now,
+                request_now,
+                scope_now,
+                report_id=report_id,
+                run_id=run_id,
+                knowledge_basis=knowledge_basis,
+            )
+            if frozen is None:
+                logger.warning(
+                    "tracing publication: fallback rejected errors=%s", errors
+                )
+                return await self._publish_text(config, _INCOMPLETE_TEXT, "incomplete")
+        try:
+            new_session, published_report = await publish_frozen_plan(
+                gate=self._gate,
+                report_store=self._report_store,
+                frozen=frozen,
+                config=config,
+                writer=self._stream_writer(),
+                session=session,
+            )
+        except SectionPublicationError as exc:
+            logger.warning(
+                "tracing publication: section publication failed reason=%s", exc.reason
+            )
+            if exc.session is not None:
+                return {"publication_session": exc.session}
+            return await self._publish_text(config, _INCOMPLETE_TEXT, "incomplete")
+        self._published_ids.add(published_report.report_id)
+        return {
+            **self._visible_update(published_report),
+            "publication_session": new_session,
+        }
 
     async def _current_allowlist(self, state: dict[str, Any]):
         """Rebuild the trusted allowlist from the findings present now."""
@@ -248,65 +325,16 @@ class TracingPublishMiddleware(AgentMiddleware):
         )
         return request, scope, allowlist
 
-    async def _render_fallback(
+    async def _resolve_knowledge(
         self,
+        plan: ReportPlan,
         request: TracingRequest,
         scope: RuntimeScope,
         allowlist,
-        *,
-        run_id: str = "",
-        knowledge_basis: tuple[KnowledgeBasisItem, ...] | None = (),
-    ) -> ValidatedReport | None:
-        if knowledge_basis is None:
-            return None
-        plan = fallback_plan(allowlist).model_copy(
-            update={
-                "knowledge_reference_ids": tuple(
-                    item.citation_id for item in knowledge_basis
-                )
-            }
-        )
-        result: ReportValidationResult = self._gate.validate_and_render(
-            plan,
-            allowlist,
-            request,
-            scope,
-            run_id=run_id,
-            knowledge_basis=knowledge_basis,
-        )
-        if not result.ok or result.report is None:
-            logger.warning(
-                "tracing publication: fallback rejected errors=%s",
-                getattr(result, "errors", ()),
-            )
-            return None
-        await self._report_store.save(result.report)
-        return result.report
-
-    async def _build_fallback(
-        self,
         state: dict[str, Any],
-        *,
-        run_id: str = "",
-        config: dict[str, Any] | None = None,
-    ) -> ValidatedReport | None:
-        current = await self._current_allowlist(state)
-        if current is None:
-            logger.warning("tracing publication: fallback allowlist missing")
-            return None
-        request, scope, allowlist = current
-        return await self._render_fallback(
-            request,
-            scope,
-            allowlist,
-            run_id=run_id,
-            knowledge_basis=await self._fallback_knowledge(
-                state, request, scope, allowlist, config or {}
-            ),
-        )
-
-    async def _fallback_knowledge(self, state, request, scope, allowlist, config):
-        """Re-resolve knowledge for fallback; never silently drop old sources."""
+        config: dict[str, Any],
+    ) -> tuple[KnowledgeBasisItem, ...] | None:
+        """Re-resolve citations; never silently drop previously verified sources."""
         from common.knowledge.policy import citation_ids_from_messages
         from intelligent_tracing.tools import _resolve_knowledge_basis
 
@@ -316,59 +344,92 @@ class TracingPublishMiddleware(AgentMiddleware):
             if isinstance(previous, ValidatedReport)
             else ()
         )
-        ids = ids or tuple(citation_ids_from_messages(state.get("messages", [])))
+        ids = (
+            tuple(plan.knowledge_reference_ids)
+            or ids
+            or tuple(citation_ids_from_messages(state.get("messages", [])))
+        )
         if not ids:
             return ()
-        plan = fallback_plan(allowlist).model_copy(
-            update={"knowledge_reference_ids": ids}
+        resolved_plan = plan.model_copy(update={"knowledge_reference_ids": ids})
+        resolved = await _resolve_knowledge_basis(
+            resolved_plan, scope=scope, config=config
         )
-        resolved = await _resolve_knowledge_basis(plan, scope=scope, config=config)
         return None if isinstance(resolved, dict) else resolved
 
-    async def _report_is_current(
-        self,
-        report: ValidatedReport,
-        request: TracingRequest,
-        scope: RuntimeScope,
-        allowlist,
-        state: dict[str, Any],
-    ) -> bool:
-        """Re-check digest, allowlist and evidence before publication."""
-        if (
-            report.analysis_id != request.analysis_id
-            or report.revision != request.revision
-            or report.scope != scope
-            or report.content_sha256 != report.compute_digest()
-        ):
-            return False
-        stored = state.get("allowlist")
-        if stored is None or stored.digest != allowlist.digest:
-            return False
-        try:
-            self._registry.get_many(
-                report.evidence_ids,
-                scope=scope,
-                analysis_id=request.analysis_id,
-                revision=request.revision,
-            )
-        except Exception:  # noqa: BLE001 - missing evidence means re-render
-            return False
-        return True
-
-    def _publish_text(
-        self, config: dict[str, Any], text: str, prefix: str
-    ) -> dict[str, Any]:
-        message_id = f"{prefix}_{uuid.uuid4().hex}"
-        emit_event(config, "final_output_done", message=text, message_id=message_id)
+    def _visible_update(self, report: ValidatedReport) -> dict[str, Any]:
+        """Return the single visible message that backs history for this report."""
         return {
             "messages": [
                 AIMessage(
-                    content=text,
-                    id=message_id,
-                    additional_kwargs={"ui_visible": True, "tracing_status": prefix},
+                    content=report.body_markdown,
+                    id=report.report_id,
+                    additional_kwargs={
+                        "ui_visible": True,
+                        "validated_report_ref": report.report_id,
+                        "content_sha256": report.content_sha256,
+                        "output_protocol_version": 1,
+                    },
                 )
-            ]
+            ],
+            "validated_report": report.model_copy(update={"published": True}),
         }
+
+    async def _render_fallback(
+        self,
+        request: TracingRequest,
+        scope: RuntimeScope,
+        allowlist,
+        *,
+        run_id: str = "",
+        knowledge_basis: tuple[KnowledgeBasisItem, ...] | None = (),
+    ) -> ValidatedReport | None:
+        """Compatibility helper: precheck + confirm a deterministic fallback report."""
+        if knowledge_basis is None:
+            return None
+        plan = fallback_plan(allowlist).model_copy(
+            update={
+                "knowledge_reference_ids": tuple(
+                    item.citation_id for item in knowledge_basis
+                )
+            }
+        )
+        frozen, _errors = self._gate.precheck(
+            plan,
+            allowlist,
+            request,
+            scope,
+            report_id=f"rep_{uuid.uuid4().hex}",
+            run_id=run_id,
+            knowledge_basis=knowledge_basis,
+        )
+        if frozen is None:
+            return None
+        result = self._gate.confirm(frozen)
+        return result.report if result.ok else None
+
+    async def _publish_text(
+        self, config: dict[str, Any], text: str, prefix: str
+    ) -> dict[str, Any]:
+        message = await publish_control_message(
+            config,
+            graph_id="intelligent-tracing",
+            text=text,
+            writer=self._stream_writer(),
+            authorization_probe=runtime_authorization_probe(config),
+            control_code=f"tracing_{prefix}",
+        )
+        if message.additional_kwargs.get("ui_visible") is False:
+            return {}
+        return {"messages": [message]}
+
+    def _stream_writer(self) -> Any:
+        try:
+            from langgraph.config import get_stream_writer
+
+            return get_stream_writer()
+        except Exception:  # pragma: no cover - offline direct calls
+            return None
 
     @staticmethod
     def _config(runtime: Any) -> dict[str, Any]:

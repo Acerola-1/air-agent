@@ -1,0 +1,336 @@
+{
+  "schema_version": "basic-qa-perf.v1",
+  "run_id": "20261021-201100-e2e4",
+  "recorded_at": "2026-10-21T12:53:25.920431+00:00",
+  "layer": "E",
+  "profile": "S",
+  "n_planned_measured": 40,
+  "n_sent_measured": 40,
+  "n_sent_history": 50,
+  "outcomes": {
+    "completed_success": 36,
+    "client_timeout": 4
+  },
+  "history_outcomes": {
+    "stream_completed": 50
+  },
+  "overall": {
+    "planned": 40,
+    "sent": 40,
+    "completed_success": 36,
+    "late_attainment": 0,
+    "late_cases": [],
+    "headline_outcomes": {
+      "completed_success": 36,
+      "client_timeout": 4
+    },
+    "failures": {
+      "client_timeout": 4
+    },
+    "first_answer_p50_ms": 28963.0,
+    "first_answer_p95_ms": 104350.0,
+    "complete_p50_ms": 29139.5,
+    "complete_p95_ms": 104572.25,
+    "complete_min_ms": 4541.0,
+    "complete_max_ms": 160761.0,
+    "first_answer_samples": 36
+  },
+  "by_category": {
+    "Q1": {
+      "planned": 10,
+      "sent": 10,
+      "completed_success": 10,
+      "late_attainment": 0,
+      "late_cases": [],
+      "headline_outcomes": {
+        "completed_success": 10
+      },
+      "failures": {},
+      "first_answer_p50_ms": 11042.0,
+      "first_answer_p95_ms": 29238.94999999999,
+      "complete_p50_ms": 11201.0,
+      "complete_p95_ms": 29444.59999999999,
+      "complete_min_ms": 6976.0,
+      "complete_max_ms": 32906.0,
+      "first_answer_samples": 10,
+      "quality_pass": 2
+    },
+    "Q2": {
+      "planned": 10,
+      "sent": 10,
+      "completed_success": 7,
+      "late_attainment": 0,
+      "late_cases": [],
+      "headline_outcomes": {
+        "completed_success": 7,
+        "client_timeout": 3
+      },
+      "failures": {
+        "client_timeout": 3
+      },
+      "first_answer_p50_ms": 55837.0,
+      "first_answer_p95_ms": 88482.09999999998,
+      "complete_p50_ms": 56017.0,
+      "complete_p95_ms": 88687.79999999999,
+      "complete_min_ms": 29390.0,
+      "complete_max_ms": 98073.0,
+      "first_answer_samples": 7,
+      "quality_pass": 7
+    },
+    "Q3": {
+      "planned": 10,
+      "sent": 10,
+      "completed_success": 10,
+      "late_attainment": 0,
+      "late_cases": [],
+      "headline_outcomes": {
+        "completed_success": 10
+      },
+      "failures": {},
+      "first_answer_p50_ms": 49865.0,
+      "first_answer_p95_ms": 141854.04999999996,
+      "complete_p50_ms": 50060.0,
+      "complete_p95_ms": 142058.99999999994,
+      "complete_min_ms": 25919.0,
+      "complete_max_ms": 160761.0,
+      "first_answer_samples": 10,
+      "quality_pass": 9
+    },
+    "Q4": {
+      "planned": 10,
+      "sent": 10,
+      "completed_success": 9,
+      "late_attainment": 0,
+      "late_cases": [],
+      "headline_outcomes": {
+        "completed_success": 9,
+        "client_timeout": 1
+      },
+      "failures": {
+        "client_timeout": 1
+      },
+      "first_answer_p50_ms": 10769.0,
+      "first_answer_p95_ms": 56327.399999999994,
+      "complete_p50_ms": 10944.0,
+      "complete_p95_ms": 56575.2,
+      "complete_min_ms": 4541.0,
+      "complete_max_ms": 65210.0,
+      "first_answer_samples": 9,
+      "quality_pass": 8
+    }
+  },
+  "quality_pass": 26,
+  "quality_pass_denominator": 40,
+  "quality_reasons_by_category": {
+    "Q1": {
+      "failure_marker": 8,
+      "missing:AQI/指数": 1,
+      "missing:浓度": 2,
+      "missing:PM2.5": 1,
+      "missing:PM10": 1,
+      "missing:直径": 1,
+      "missing:首要污染物": 1,
+      "missing:排放": 1,
+      "missing:综合指数": 1,
+      "missing:AQI": 1,
+      "missing:不同/区别": 1,
+      "missing:微克": 1,
+      "missing:毫克": 1,
+      "missing:1000": 1,
+      "missing:8小时/8 小时/八小时": 1,
+      "missing:平均": 1,
+      "missing:分指数": 1,
+      "missing:100%/百分比/占比": 1,
+      "missing:企业": 1,
+      "missing:来源/排放源": 1
+    },
+    "Q2": {
+      "empty_answer": 3
+    },
+    "Q3": {
+      "failure_marker": 1,
+      "missing:优良": 1,
+      "missing:CO/臭氧": 1,
+      "no_number": 1
+    },
+    "Q4": {
+      "failure_marker": 1,
+      "empty_answer": 1
+    }
+  },
+  "quality_checks": {
+    "total": 40,
+    "pass": 26
+  },
+  "slowest": [
+    {
+      "case_id": "BQA-039",
+      "category": "Q4",
+      "client_first_answer_ms": null,
+      "client_complete_ms": 180406,
+      "deadline_seconds": 180,
+      "headline_result": "client_timeout"
+    },
+    {
+      "case_id": "BQA-030",
+      "category": "Q3",
+      "client_first_answer_ms": 160561,
+      "client_complete_ms": 160761,
+      "deadline_seconds": 180,
+      "headline_result": "completed_success"
+    },
+    {
+      "case_id": "BQA-017",
+      "category": "Q2",
+      "client_first_answer_ms": null,
+      "client_complete_ms": 120359,
+      "deadline_seconds": 120,
+      "headline_result": "client_timeout"
+    },
+    {
+      "case_id": "BQA-019",
+      "category": "Q2",
+      "client_first_answer_ms": null,
+      "client_complete_ms": 120355,
+      "deadline_seconds": 120,
+      "headline_result": "client_timeout"
+    },
+    {
+      "case_id": "BQA-018",
+      "category": "Q2",
+      "client_first_answer_ms": null,
+      "client_complete_ms": 120340,
+      "deadline_seconds": 120,
+      "headline_result": "client_timeout"
+    },
+    {
+      "case_id": "BQA-021",
+      "category": "Q3",
+      "client_first_answer_ms": 118990,
+      "client_complete_ms": 119201,
+      "deadline_seconds": 180,
+      "headline_result": "completed_success"
+    },
+    {
+      "case_id": "BQA-029",
+      "category": "Q3",
+      "client_first_answer_ms": 99470,
+      "client_complete_ms": 99696,
+      "deadline_seconds": 180,
+      "headline_result": "completed_success"
+    },
+    {
+      "case_id": "BQA-016",
+      "category": "Q2",
+      "client_first_answer_ms": 97861,
+      "client_complete_ms": 98073,
+      "deadline_seconds": 120,
+      "headline_result": "completed_success"
+    }
+  ],
+  "model_calls": {
+    "logical_or_observed": 323,
+    "succeeded": 323,
+    "failed": 0,
+    "by_role": {
+      "main": 323
+    },
+    "duration_p50_ms": 6519.0,
+    "duration_p95_ms": 33894.99999999999,
+    "ttft_p50_ms": null,
+    "ttft_p95_ms": null
+  },
+  "tool_calls": {
+    "attempts": 448,
+    "succeeded": 195,
+    "failed": 253,
+    "by_tool": {
+      "mcp_station_analysis_concentration_table": 25,
+      "knowledge_search": 11,
+      "websearch_tool": 1,
+      "mcp_city_common_get_air_quality_realtime_stat": 78,
+      "get_beijing_time": 4,
+      "helper_get_latest_time": 18,
+      "mcp_city_analysis_monitor": 19,
+      "mcp_city_common_area_city_ranking": 5,
+      "text2sql_yesterday_single_index_aqi_route": 9,
+      "mcp_city_common_factor_area_ranking": 4,
+      "mcp_station_analysis_index_ranking": 3,
+      "mcp_station_common_air_data": 132,
+      "mcp_city_common_factor_province_ranking": 6,
+      "cityFactorRankings": 1,
+      "mcp_city_analysis_nationalOrder": 2,
+      "mcp_city_common_area_province_ranking": 5,
+      "text2sql_today_single_city_aqi_route": 2,
+      "mcp_station_base_air_station_list": 42,
+      "mcp_station_analysis_concentration_ranking": 5,
+      "mcp_city_base_get_child_district_by_parent": 1,
+      "mcp_city_common_area_multi_ranking": 1,
+      "mcp_city_analysis_calendar_day": 4,
+      "text2sql_monthly_and_yearly_city_comparison": 5,
+      "concentration_ranking": 2,
+      "mcp_city_analysis_calculations": 4,
+      "broadcastHour": 8,
+      "helper_getLatestTime2": 8,
+      "text2sql_city_indexes_month_and_year": 9,
+      "mcp_station_common_good_days_query": 2,
+      "integratedIndexRatio": 11,
+      "compositeIndexSixFactorRatio": 5,
+      "mcp_weather_forecast_daily_history": 1,
+      "oneIndexManyCityLine": 1,
+      "mcp_weather_forecast_hourly_history": 1,
+      "mcp_city_common_get_air_quality_forecast": 10,
+      "mcp_station_common_air_real_data": 1,
+      "mcp_station_base_get_info_by_code_name": 1,
+      "mcp_station_analysis_broadcast_hour": 1
+    },
+    "duration_p50_ms": 579.0,
+    "duration_p95_ms": 1299.7499999999986
+  },
+  "token_coverage": {
+    "model_observations": 323,
+    "usage_provided": 323,
+    "input_tokens": 7913844,
+    "output_tokens": 300096,
+    "total_tokens": 8213940,
+    "missing_reason": null,
+    "price": null,
+    "cost": null,
+    "cost_note": "未提供价格表，未知价格不记 0"
+  },
+  "resources": {
+    "aa-perf-20261021-langgraph": {
+      "samples": 2,
+      "cpu_mean_percent": 0.18,
+      "cpu_max_percent": 0.18,
+      "memory_mean_bytes": 782784512,
+      "memory_max_bytes": 782909440,
+      "memory_limit_bytes": 1073741824
+    },
+    "aa-perf-20261021-pg": {
+      "samples": 2,
+      "cpu_mean_percent": 0.07,
+      "cpu_max_percent": 0.07,
+      "memory_mean_bytes": 368136192,
+      "memory_max_bytes": 368181248,
+      "memory_limit_bytes": 1073741824
+    },
+    "aa-perf-20261021-redis": {
+      "samples": 2,
+      "cpu_mean_percent": 0.14,
+      "cpu_max_percent": 0.14,
+      "memory_mean_bytes": 15345664,
+      "memory_max_bytes": 15523840,
+      "memory_limit_bytes": 1073741824
+    }
+  },
+  "p95_exploratory": true,
+  "conclusion": "BASELINE_CANDIDATE（含已知依赖缺失与晚到样本）",
+  "call_mapping": {
+    "total": 771,
+    "mapped": 681,
+    "unmapped": 90,
+    "coverage_pct": 88.3,
+    "unmapped_reason": "中止段/预检请求或无 attempt 关联的调用"
+  }
+}

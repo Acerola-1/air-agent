@@ -1,0 +1,46 @@
+{
+  "entry": "official-langgraph-api-http-sse",
+  "thread_id": "01a15f03-f98a-7a71-8ecc-783199fd85ac",
+  "events": 14,
+  "deltas": 12,
+  "delta_seqs": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "delta_lengths": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    8,
+    9,
+    9,
+    9
+  ],
+  "done_count": 1,
+  "first_delta_source": "new_delta",
+  "answer_chars": 99,
+  "answer_sha256": "aa8b2a7a0aeab5e4757aacc92d8c2e8022a054597c0dd9bd7dfb4afe8630f9b4",
+  "barrier": {
+    "native_deltas_at_barrier": 2,
+    "source_finished": false,
+    "source_deltas": 2
+  },
+  "t_first_safe_delta": 0.07,
+  "t_last_safe_delta": 0.2034,
+  "t_stream_end": 0.2539
+}

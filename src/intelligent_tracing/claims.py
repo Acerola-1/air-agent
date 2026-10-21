@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -92,6 +93,31 @@ _SPATIAL_TEXT = {
     "mixed": "混合空间格局",
     "unknown": "空间格局未知",
 }
+
+
+@dataclass(frozen=True)
+class ReportSection:
+    """One deterministically rendered, independently publishable section."""
+
+    section_id: str
+    kind: str
+    claim_ids: tuple[str, ...]
+    blocks: tuple[str, ...]
+
+    @property
+    def text(self) -> str:
+        """Markdown text for this section (same join rule as the full report)."""
+        return "\n\n".join(self.blocks)
+
+
+@dataclass(frozen=True)
+class ReportSectionPlan:
+    """Frozen section descriptor; its text is rendered only at publish time."""
+
+    section_id: str
+    kind: str
+    claim_ids: tuple[str, ...] = ()
+    fixed: str = ""
 
 
 def _fmt(dt: datetime) -> str:
@@ -487,6 +513,319 @@ def _by_id(allowlist: ClaimAllowlist) -> dict[str, AllowedClaim]:
     return {claim.claim_id: claim for claim in allowlist.claims}
 
 
+def _render_claim_blocks(claim: AllowedClaim, profile: Any) -> list[str]:
+    """Render one allowlisted claim into canonical Markdown blocks."""
+    if claim.claim_type == ClaimType.COVERAGE:
+        return [
+            "### 数据覆盖\n"
+            f"数据完整率 {claim.parameters['coverage_ratio'] * 100:.1f}%"
+            f"（有效 {claim.parameters['valid_hours']} / 应有 "
+            f"{claim.parameters['expected_hours']} 小时，最大连续缺口 "
+            f"{claim.parameters['max_gap_hours']} 小时）。"
+        ]
+    if claim.claim_type == ClaimType.ANOMALY_PRESENT:
+        return [
+            "### 异常过程\n"
+            f"发现异常时段：{_fmt(datetime.fromisoformat(claim.parameters['start']))}"
+            f"至{_fmt(datetime.fromisoformat(claim.parameters['end']))}，"
+            f"持续 {claim.parameters['duration_hours']} 小时，"
+            f"峰值 {claim.parameters['peak_value']:.1f} {profile.display_unit}。"
+            "该结论只描述统计异常，不等于法规超标或污染来源确认。"
+        ]
+    if claim.claim_type == ClaimType.NO_ANOMALY:
+        return [
+            "### 异常过程\n"
+            "未发现符合当前冻结策略的异常时段。该结论以数据覆盖与基线充分为前提，"
+            "不代表其他时段或其他污染物无异常。"
+        ]
+    if claim.claim_type == ClaimType.DATA_INSUFFICIENT:
+        return [
+            "### 异常过程\n"
+            "当前数据覆盖或基线不足，无法判断是否存在异常；未把未知当作无异常。"
+        ]
+    if claim.claim_type == ClaimType.PEAK:
+        if claim.parameters.get("peak_value") is None:
+            return []
+        return [
+            "### 峰值\n"
+            f"峰值 {claim.parameters['peak_value']:.1f} {profile.display_unit}，"
+            f"出现在 {_fmt(datetime.fromisoformat(claim.parameters['peak_at']))}。"
+        ]
+    if claim.claim_type == ClaimType.DURATION:
+        return [f"### 持续时间\n异常持续 {claim.parameters['duration_hours']} 小时。"]
+    if claim.claim_type == ClaimType.CHANGE_RATE:
+        return [
+            "### 变化幅度\n"
+            f"时段首末变化率 {claim.parameters['change_rate'] * 100:.1f}%。"
+        ]
+    if claim.claim_type == ClaimType.SPATIAL_PATTERN:
+        pattern = claim.parameters["pattern"]
+        return [
+            "### 空间格局\n"
+            f"空间格局：{_SPATIAL_TEXT.get(pattern, pattern)}"
+            f"（有效邻站 {claim.parameters['valid_neighbor_count']} 个，"
+            f"同步邻站 {claim.parameters['sync_neighbor_count']} 个，"
+            f"连片网格 {claim.parameters['grid_contiguous_cells']} 个）。"
+            "该描述只证明观测到的区域现象，不单独证明传输或来源方向。"
+        ]
+    if claim.claim_type == ClaimType.WIND_SECTOR:
+        return [
+            "### 风场关联\n"
+            f"主导来向扇区 {claim.parameters['sector_start']:.0f}°–"
+            f"{claim.parameters['sector_end']:.0f}°，该扇区平均浓度 "
+            f"{claim.parameters['mean_concentration']:.1f} {profile.display_unit}，"
+            f"样本 {claim.parameters['sample_count']} 个，"
+            f"静风比例 {claim.parameters['calm_ratio'] * 100:.1f}%。"
+            "相关不等于来源或距离，不能据此推导源距离。"
+        ]
+    if claim.claim_type == ClaimType.LAG_ASSOCIATION:
+        return [
+            "### 滞后关联\n"
+            f"邻站 {claim.parameters['neighbor_code']} 领先 "
+            f"{claim.parameters['best_lag_hours']} 小时，"
+            f"r={claim.parameters['r']:.2f}，配对样本 "
+            f"{claim.parameters['pairs']} 个；仅为统计关联，不是因果或概率。"
+        ]
+    if claim.claim_type == ClaimType.EVALUATION:
+        metric_text = (
+            "日最大8小时滑动均值"
+            if claim.parameters["metric"] == "daily_max_8h"
+            else "24小时滑动均值"
+        )
+        suffix = (
+            "；该指标仅作补充统计，不是自然日均或法规评价"
+            if claim.parameters["metric"] == "24h_sliding"
+            else ""
+        )
+        return [
+            "### 评价口径\n"
+            f"{metric_text}：{claim.parameters['value']:.1f} "
+            f"{profile.display_unit}，有效小时 "
+            f"{claim.parameters['valid_hours']}/{claim.parameters['required_hours']}"
+            f"{suffix}。"
+        ]
+    if claim.claim_type == ClaimType.PROCESS_ASSESSMENT:
+        assessment = claim.parameters["assessment"]
+        blocks = [
+            "### 过程解释\n"
+            f"过程判断：{_ASSESSMENT_TEXT.get(assessment, assessment)}。"
+            "支持与反证、替代解释均按冻结策略保留。"
+        ]
+        if claim.parameters.get("transport_components"):
+            blocks.append(
+                "支持组件："
+                + "、".join(claim.parameters["transport_components"])
+                + "。"
+            )
+        if claim.parameters.get("counter_evidence"):
+            blocks.append(
+                "反证/限制：" + "、".join(claim.parameters["counter_evidence"]) + "。"
+            )
+        if claim.parameters.get("alternative_explanations"):
+            blocks.append(
+                "替代解释："
+                + "、".join(claim.parameters["alternative_explanations"])
+                + "。"
+            )
+        return blocks
+    if claim.claim_type == ClaimType.SOURCE_HYPOTHESIS:
+        return [
+            "### 待核查假设\n"
+            f"{claim.parameters['hypothesis']}（未识别源类，待核查；"
+            "不是已识别企业、源类或贡献率）。"
+        ]
+    if claim.claim_type == ClaimType.LIMITATION:
+        code = claim.parameters["code"]
+        return [f"- 限制：{_LIMITATION_TEXT.get(code, code)}"]
+    return []
+
+
+_SECTION_KIND = {
+    ClaimType.COVERAGE: "observation",
+    ClaimType.ANOMALY_PRESENT: "observation",
+    ClaimType.NO_ANOMALY: "observation",
+    ClaimType.DATA_INSUFFICIENT: "observation",
+    ClaimType.PEAK: "observation",
+    ClaimType.DURATION: "observation",
+    ClaimType.CHANGE_RATE: "observation",
+    ClaimType.EVALUATION: "observation",
+    ClaimType.SPATIAL_PATTERN: "spatial",
+    ClaimType.WIND_SECTOR: "spatial",
+    ClaimType.LAG_ASSOCIATION: "spatial",
+    ClaimType.PROCESS_ASSESSMENT: "process",
+    ClaimType.SOURCE_HYPOTHESIS: "process",
+    ClaimType.LIMITATION: "limits",
+    ClaimType.NEXT_STEP: "limits",
+}
+
+
+def plan_section_layout(
+    request: TracingRequest,
+    allowlist: ClaimAllowlist,
+    plan: ReportPlan,
+    *,
+    policy: AnalysisPolicy,
+    knowledge_basis: tuple[KnowledgeBasisItem, ...] = (),
+) -> tuple[ReportSectionPlan, ...]:
+    """Freeze section order/claims without rendering any section text.
+
+    Rendering happens per section in :func:`render_section_plan`, after the
+    preceding section is already public and validated.  This is what makes the
+    section barrier proof meaningful rather than a split of a prebuilt body.
+    """
+    claims = _by_id(allowlist)
+    selected = [claims[claim_id] for claim_id in plan.claim_ids if claim_id in claims]
+    sections: list[ReportSectionPlan] = [
+        ReportSectionPlan(section_id="header", kind="header", fixed="header")
+    ]
+    index = 0
+    current_kind = ""
+    current_ids: list[str] = []
+    for claim in selected:
+        # A claim with no renderable block is still part of the plan; reject it
+        # at precheck rather than silently dropping it.
+        kind = _SECTION_KIND.get(claim.claim_type, "other")
+        if kind != current_kind and current_ids:
+            index += 1
+            sections.append(
+                ReportSectionPlan(
+                    section_id=f"claims-{index}",
+                    kind=current_kind,
+                    claim_ids=tuple(current_ids),
+                )
+            )
+            current_ids = []
+        current_kind = kind
+        current_ids.append(claim.claim_id)
+    if current_ids:
+        index += 1
+        sections.append(
+            ReportSectionPlan(
+                section_id=f"claims-{index}",
+                kind=current_kind,
+                claim_ids=tuple(current_ids),
+            )
+        )
+    if knowledge_basis:
+        sections.append(
+            ReportSectionPlan(
+                section_id="knowledge", kind="knowledge", fixed="knowledge"
+            )
+        )
+    sections.append(
+        ReportSectionPlan(section_id="limits", kind="limits", fixed="limits")
+    )
+    return tuple(sections)
+
+
+def render_section_plan(
+    request: TracingRequest,
+    allowlist: ClaimAllowlist,
+    plan: ReportPlan,
+    section: ReportSectionPlan,
+    *,
+    policy: AnalysisPolicy,
+    knowledge_basis: tuple[KnowledgeBasisItem, ...] = (),
+) -> ReportSection:
+    """Render exactly one frozen section, without touching any other section."""
+    profile = policy.require_supported(request.pollutant)
+    if section.fixed == "header":
+        blocks = (
+            f"## {profile.display_name} 污染过程与来向线索分析",
+            f"分析对象：{request.target.station_name or request.target.station_code}"
+            f"（{request.target.station_code}）  ",
+            f"时间范围：{_fmt(request.time_window.start)}至{_fmt(request.time_window.end)}  ",
+            f"分析策略：{allowlist.policy_version}",
+        )
+    elif section.fixed == "knowledge":
+        blocks = tuple(render_knowledge_lines(knowledge_basis))
+    elif section.fixed == "limits":
+        blocks = (
+            "### 限制与口径",
+            "无法计算贡献率：当前缺少排放清单、化学组分和轨迹证据，"
+            "不能确认具体企业、源类、贡献率或来源概率。",
+            "以上统计百分比仅描述数据覆盖或观测特征，不是源贡献率。",
+            "本报告不包含轨迹/PSCF 分析，轨迹能力当前不可用。",
+        )
+    else:
+        claims = _by_id(allowlist)
+        rendered: list[str] = []
+        for claim_id in section.claim_ids:
+            claim = claims.get(claim_id)
+            if claim is None:
+                continue
+            rendered.extend(_render_claim_blocks(claim, profile))
+        blocks = tuple(rendered)
+    return ReportSection(
+        section_id=section.section_id,
+        kind=section.kind,
+        claim_ids=section.claim_ids,
+        blocks=blocks,
+    )
+
+
+def plan_report_sections(
+    request: TracingRequest,
+    allowlist: ClaimAllowlist,
+    plan: ReportPlan,
+    *,
+    policy: AnalysisPolicy,
+    knowledge_basis: tuple[KnowledgeBasisItem, ...] = (),
+) -> tuple[ReportSection, ...]:
+    """Render every section (compatibility helper for full-report callers)."""
+    return tuple(
+        render_section_plan(
+            request,
+            allowlist,
+            plan,
+            section,
+            policy=policy,
+            knowledge_basis=knowledge_basis,
+        )
+        for section in plan_section_layout(
+            request,
+            allowlist,
+            plan,
+            policy=policy,
+            knowledge_basis=knowledge_basis,
+        )
+    )
+
+
+def report_plan_digest(
+    request: TracingRequest,
+    allowlist: ClaimAllowlist,
+    plan: ReportPlan,
+    sections: tuple[ReportSectionPlan, ...],
+    *,
+    knowledge_basis: tuple[KnowledgeBasisItem, ...] = (),
+) -> str:
+    """Freeze the publication plan identity before the first section is sent."""
+    payload = {
+        "analysis_id": request.analysis_id,
+        "revision": request.revision,
+        "request_digest": request.request_digest or request.canonical_digest(),
+        "allowlist_digest": allowlist.digest,
+        "policy_version": allowlist.policy_version,
+        "claim_ids": list(plan.claim_ids),
+        "knowledge": [item.citation_id for item in knowledge_basis],
+        "sections": [
+            {
+                "id": section.section_id,
+                "kind": section.kind,
+                "claim_ids": list(section.claim_ids),
+                "fixed": section.fixed,
+            }
+            for section in sections
+        ],
+    }
+    return hashlib.sha256(
+        json.dumps(
+            payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 def render_report(
     request: TracingRequest,
     allowlist: ClaimAllowlist,
@@ -498,164 +837,25 @@ def render_report(
     created_at: datetime | None = None,
     run_id: str = "",
     knowledge_basis: tuple[KnowledgeBasisItem, ...] = (),
+    sections: tuple[ReportSection, ...] | None = None,
 ) -> ValidatedReport:
     """Render a controlled Markdown report from allowlisted claims only."""
-    claims = _by_id(allowlist)
-    selected = [claims[claim_id] for claim_id in plan.claim_ids if claim_id in claims]
-    # The renderer reads the pollutant profile from the frozen request; it
-    # never reuses PM2.5 labels for another pollutant.
-    profile = policy.require_supported(request.pollutant)
-    lines: list[str] = [
-        f"## {profile.display_name} 污染过程与来向线索分析",
-        "",
-        f"分析对象：{request.target.station_name or request.target.station_code}（{request.target.station_code}）  ",
-        f"时间范围：{_fmt(request.time_window.start)}至{_fmt(request.time_window.end)}  ",
-        f"分析策略：{allowlist.policy_version}",
-        "",
-    ]
-    for claim in selected:
-        if claim.claim_type == ClaimType.COVERAGE:
-            lines.append(
-                "### 数据覆盖\n"
-                f"数据完整率 {claim.parameters['coverage_ratio'] * 100:.1f}%"
-                f"（有效 {claim.parameters['valid_hours']} / 应有 "
-                f"{claim.parameters['expected_hours']} 小时，最大连续缺口 "
-                f"{claim.parameters['max_gap_hours']} 小时）。"
-            )
-        elif claim.claim_type == ClaimType.ANOMALY_PRESENT:
-            lines.append(
-                "### 异常过程\n"
-                f"发现异常时段：{_fmt(datetime.fromisoformat(claim.parameters['start']))}"
-                f"至{_fmt(datetime.fromisoformat(claim.parameters['end']))}，"
-                f"持续 {claim.parameters['duration_hours']} 小时，"
-                f"峰值 {claim.parameters['peak_value']:.1f} {profile.display_unit}。"
-                "该结论只描述统计异常，不等于法规超标或污染来源确认。"
-            )
-        elif claim.claim_type == ClaimType.NO_ANOMALY:
-            lines.append(
-                "### 异常过程\n"
-                "未发现符合当前冻结策略的异常时段。该结论以数据覆盖与基线充分为前提，"
-                "不代表其他时段或其他污染物无异常。"
-            )
-        elif claim.claim_type == ClaimType.DATA_INSUFFICIENT:
-            lines.append(
-                "### 异常过程\n"
-                "当前数据覆盖或基线不足，无法判断是否存在异常；未把未知当作无异常。"
-            )
-        elif claim.claim_type == ClaimType.PEAK:
-            if claim.parameters.get("peak_value") is not None:
-                lines.append(
-                    "### 峰值\n"
-                    f"峰值 {claim.parameters['peak_value']:.1f} {profile.display_unit}，"
-                    f"出现在 {_fmt(datetime.fromisoformat(claim.parameters['peak_at']))}。"
-                )
-        elif claim.claim_type == ClaimType.DURATION:
-            lines.append(
-                f"### 持续时间\n异常持续 {claim.parameters['duration_hours']} 小时。"
-            )
-        elif claim.claim_type == ClaimType.CHANGE_RATE:
-            lines.append(
-                "### 变化幅度\n"
-                f"时段首末变化率 {claim.parameters['change_rate'] * 100:.1f}%。"
-            )
-        elif claim.claim_type == ClaimType.SPATIAL_PATTERN:
-            pattern = claim.parameters["pattern"]
-            lines.append(
-                "### 空间格局\n"
-                f"空间格局：{_SPATIAL_TEXT.get(pattern, pattern)}"
-                f"（有效邻站 {claim.parameters['valid_neighbor_count']} 个，"
-                f"同步邻站 {claim.parameters['sync_neighbor_count']} 个，"
-                f"连片网格 {claim.parameters['grid_contiguous_cells']} 个）。"
-                "该描述只证明观测到的区域现象，不单独证明传输或来源方向。"
-            )
-        elif claim.claim_type == ClaimType.WIND_SECTOR:
-            lines.append(
-                "### 风场关联\n"
-                f"主导来向扇区 {claim.parameters['sector_start']:.0f}°–"
-                f"{claim.parameters['sector_end']:.0f}°，该扇区平均浓度 "
-                f"{claim.parameters['mean_concentration']:.1f} {profile.display_unit}，"
-                f"样本 {claim.parameters['sample_count']} 个，"
-                f"静风比例 {claim.parameters['calm_ratio'] * 100:.1f}%。"
-                "相关不等于来源或距离，不能据此推导源距离。"
-            )
-        elif claim.claim_type == ClaimType.LAG_ASSOCIATION:
-            lines.append(
-                "### 滞后关联\n"
-                f"邻站 {claim.parameters['neighbor_code']} 领先 "
-                f"{claim.parameters['best_lag_hours']} 小时，"
-                f"r={claim.parameters['r']:.2f}，配对样本 "
-                f"{claim.parameters['pairs']} 个；仅为统计关联，不是因果或概率。"
-            )
-        elif claim.claim_type == ClaimType.EVALUATION:
-            metric_text = (
-                "日最大8小时滑动均值"
-                if claim.parameters["metric"] == "daily_max_8h"
-                else "24小时滑动均值"
-            )
-            suffix = (
-                "；该指标仅作补充统计，不是自然日均或法规评价"
-                if claim.parameters["metric"] == "24h_sliding"
-                else ""
-            )
-            lines.append(
-                "### 评价口径\n"
-                f"{metric_text}：{claim.parameters['value']:.1f} "
-                f"{profile.display_unit}，有效小时 "
-                f"{claim.parameters['valid_hours']}/{claim.parameters['required_hours']}"
-                f"{suffix}。"
-            )
-        elif claim.claim_type == ClaimType.PROCESS_ASSESSMENT:
-            assessment = claim.parameters["assessment"]
-            lines.append(
-                "### 过程解释\n"
-                f"过程判断：{_ASSESSMENT_TEXT.get(assessment, assessment)}。"
-                "支持与反证、替代解释均按冻结策略保留。"
-            )
-            if claim.parameters.get("transport_components"):
-                lines.append(
-                    "支持组件："
-                    + "、".join(claim.parameters["transport_components"])
-                    + "。"
-                )
-            if claim.parameters.get("counter_evidence"):
-                lines.append(
-                    "反证/限制："
-                    + "、".join(claim.parameters["counter_evidence"])
-                    + "。"
-                )
-            if claim.parameters.get("alternative_explanations"):
-                lines.append(
-                    "替代解释："
-                    + "、".join(claim.parameters["alternative_explanations"])
-                    + "。"
-                )
-        elif claim.claim_type == ClaimType.SOURCE_HYPOTHESIS:
-            lines.append(
-                "### 待核查假设\n"
-                f"{claim.parameters['hypothesis']}（未识别源类，待核查；"
-                "不是已识别企业、源类或贡献率）。"
-            )
-        elif claim.claim_type == ClaimType.LIMITATION:
-            code = claim.parameters["code"]
-            text = _LIMITATION_TEXT.get(code, code)
-            lines.append(f"- 限制：{text}")
-    if knowledge_basis:
-        lines.extend(render_knowledge_lines(knowledge_basis))
-    lines.extend(
-        [
-            "",
-            "### 限制与口径",
-            "无法计算贡献率：当前缺少排放清单、化学组分和轨迹证据，"
-            "不能确认具体企业、源类、贡献率或来源概率。",
-            "以上统计百分比仅描述数据覆盖或观测特征，不是源贡献率。",
-            "本报告不包含轨迹/PSCF 分析，轨迹能力当前不可用。",
-        ]
+    resolved_sections = sections or plan_report_sections(
+        request,
+        allowlist,
+        plan,
+        policy=policy,
+        knowledge_basis=knowledge_basis,
     )
     body = "\n\n".join(
-        line if line.startswith("- ") or line.startswith("###") else line
-        for line in lines
-        if line != ""
+        block
+        for section in resolved_sections
+        for block in section.blocks
+        if block != ""
     )
+    profile = policy.require_supported(request.pollutant)
+    claims = _by_id(allowlist)
+    selected = [claims[claim_id] for claim_id in plan.claim_ids if claim_id in claims]
     title = (
         f"{profile.display_name} 污染过程与来向线索分析"
         f"（{request.target.station_name or request.target.station_code}）"

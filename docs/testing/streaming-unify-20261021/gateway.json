@@ -1,0 +1,18 @@
+{
+  "mode": "real_gateway",
+  "model": "hy3",
+  "plain_no_tools": {
+    "chunks": 66,
+    "chars": 41,
+    "first_content_ms": 2230.6,
+    "total_ms": 2451.3,
+    "incremental": true
+  },
+  "tool_bound_stream": {
+    "chunks": 1,
+    "chars": 0,
+    "first_content_ms": null,
+    "total_ms": 1755.6,
+    "incremental": false
+  }
+}

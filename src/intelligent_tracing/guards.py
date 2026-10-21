@@ -13,6 +13,7 @@ from langchain.agents.middleware.types import (
     ModelResponse,
 )
 from langchain_core.messages import AIMessage, ToolMessage
+from langgraph.errors import GraphBubbleUp
 from langgraph.types import Command
 
 from common.identity.runtime import require_identity, revalidate
@@ -183,6 +184,10 @@ class TracingBudgetMiddleware(AgentMiddleware):
         while True:
             try:
                 return await handler(request)
+            except GraphBubbleUp:
+                # Interrupt payloads/IDs may contain words such as "503" or
+                # "timeout". They are control flow, never transport failures.
+                raise
             except Exception as exc:  # noqa: BLE001 - classified below
                 attempts += 1
                 if attempts > self._budget.max_tool_retries or not _is_transient(exc):
@@ -206,6 +211,8 @@ class TracingBudgetMiddleware(AgentMiddleware):
 
 def _is_transient(exc: BaseException) -> bool:
     """Retry only transport-like failures, never auth/validation."""
+    if isinstance(exc, GraphBubbleUp):
+        return False
     text = f"{type(exc).__name__} {exc}".lower()
     if any(
         word in text

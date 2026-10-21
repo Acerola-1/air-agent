@@ -20,8 +20,10 @@ from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import StructuredTool
 from langgraph.types import StreamWriter
 from loguru import logger
+from pydantic import BaseModel
 
 from common.business_graph.intent import (
     INTENT_CHITCHAT,
@@ -49,7 +51,12 @@ from common.model_budget import (
     request_metrics,
 )
 from common.models import ModelRegistry
-from common.output_contract import visible_result
+from common.output_streaming.answer import stream_final_answer, strip_reasoning_text
+from common.output_streaming.controls import publish_control_message
+from common.output_streaming.publisher import (
+    OutputPublisher,
+    runtime_authorization_probe,
+)
 from common.permission.rules import is_conversational
 from common.runtime_events import emit_event
 from common.runtime_tools import get_business_tools, tool_name
@@ -77,6 +84,39 @@ _ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset(
 _SERVICE_UNAVAILABLE_MESSAGE = "抱歉，当前智能问答服务暂时不可用，请稍后再试。"
 _EMPTY_REPLY_NUDGE = "请基于以上工具返回的数据，直接输出分析结论。"
 _FALLBACK_EMPTY_REPLY = "服务暂不可用，请稍后重试。"
+
+# 规划阶段的终止信号：模型用它表示"无需更多工具、可以生成最终正文"。
+# 它由节点拦截，不进入 ToolNode，也不产生业务副作用。
+_FINISH_PLANNING_TOOL_NAME = "finish_planning"
+_PLANNING_ADDENDUM = (
+    "【工具规划阶段】当前阶段只决定是否还需要调用工具。"
+    "如果需要数据或校验，请调用相应工具；如果已具备生成最终回答的材料，"
+    f"请调用 {_FINISH_PLANNING_TOOL_NAME} 工具，不要在本阶段输出最终答案正文。"
+)
+_ANSWER_ADDENDUM = (
+    "【最终回答阶段】现在直接生成面向用户的最终回答。"
+    "不得调用任何工具（本阶段未提供工具），不得复述内部规划或工具参数，"
+    "保留必要的数据、单位、日期、引用与限制说明。"
+)
+
+
+class _EmptyArgs(BaseModel):
+    """No-argument schema for the planning terminator."""
+
+
+def _finish_planning_tool() -> StructuredTool:
+    """Build the zero-side-effect planning terminator tool."""
+
+    async def _finish() -> str:
+        return "planning complete"
+
+    return StructuredTool.from_function(
+        coroutine=_finish,
+        name=_FINISH_PLANNING_TOOL_NAME,
+        description="规划阶段终止信号：当无需更多工具、可以生成最终回答时调用。",
+        args_schema=_EmptyArgs,
+        infer_schema=False,
+    )
 
 
 def _latest_human_content(messages: Sequence[Any]) -> str:
@@ -118,6 +158,7 @@ class BusinessGraphNodes:
         self._base_system_prompt = base_system_prompt
         self._load_skill_tool = load_skill_tool
         self._graph_name = graph_name
+        self._finish_planning_tool = _finish_planning_tool()
 
     # ──── 意图车道节点 ────
 
@@ -338,7 +379,7 @@ class BusinessGraphNodes:
                 skill_rules_content=state.get("skill_rules_content", ""),
                 configurable=configurable,
             )
-        updates: dict[str, Any] = {"system_prompt": system_prompt}
+        updates: dict[str, Any] = {"system_prompt": system_prompt, "planning_draft": ""}
         try:
             curr_tools = self._available_tools(state, config)
         except TypeError:
@@ -350,10 +391,31 @@ class BusinessGraphNodes:
                 tools=curr_tools,
             )
         )
+        updates["needs_planning"] = self._needs_planning(state, config)
         return updates
 
+    def _needs_planning(
+        self,
+        state: BusinessGraphState,
+        config: RunnableConfig | None = None,
+    ) -> bool:
+        """Whether this turn needs a tool-planning stage before the answer.
+
+        Only pure chitchat skips planning. Knowledge questions retain retrieval
+        and artifact tools; streaming the final answer must not remove them.
+        """
+        intent = state.get("intent") or INTENT_DATA_QUERY
+        if intent == INTENT_CHITCHAT:
+            return False
+        try:
+            return bool(self._available_tools(state, config))
+        except TypeError:
+            return bool(self._available_tools(state))
+
     def _available_tools(
-        self, state: BusinessGraphState, config: RunnableConfig | None = None
+        self,
+        state: BusinessGraphState,
+        config: RunnableConfig | None = None,
     ) -> list[Any]:
         """按意图车道与能力选择过滤业务工具.
 
@@ -391,6 +453,20 @@ class BusinessGraphNodes:
             available.append(self._load_skill_tool)
         return available
 
+    def _planning_tools(
+        self,
+        state: BusinessGraphState,
+        config: RunnableConfig | None = None,
+    ) -> list[Any]:
+        """Planning adds only the zero-side-effect terminator on top of lane tools."""
+        try:
+            tools = list(self._available_tools(state, config))
+        except TypeError:
+            tools = list(self._available_tools(state))
+        if tools:
+            tools.append(self._finish_planning_tool)
+        return tools
+
     async def call_model(
         self,
         state: BusinessGraphState,
@@ -398,12 +474,12 @@ class BusinessGraphNodes:
         *,
         writer: StreamWriter,
     ) -> dict[str, Any]:
-        """LLM 推理：决定调工具 / 直接输出.
+        """工具规划阶段：决定调用工具或结束规划（不发布正文）.
 
-        最多重试 3 次；空回复时追加引导消息重试一次。
+        规划调用保留工具 schema 与供应商兼容的非流式模式；最终正文由
+        ``answer_model`` 用无工具流式生成。规划阶段的任何自然语言内容都不进入
+        用户正文，只作为下一阶段的参考材料记录。
         """
-        # F02：企业运行守卫在**每次实际外呼前**执行——首次、代码级重试、
-        # 空回复重试各自复查；授权拒绝转为可读状态，不进入重试、不降级。
         from common.identity.runtime import RuntimeIdentityError, guard_runtime_call
 
         async def _guard_or_message() -> Any:
@@ -413,9 +489,19 @@ class BusinessGraphNodes:
                 return AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}")
             return None
 
+        async def _control(message: AIMessage, code: str) -> dict[str, Any]:
+            published = await publish_control_message(
+                dict(config or {}),
+                graph_id=self._graph_name,
+                text=get_message_content(message),
+                writer=writer,
+                control_code=code,
+            )
+            return {"messages": [published]}
+
         blocked = await _guard_or_message()
         if blocked is not None:
-            return visible_result(blocked, config)
+            return await _control(blocked, "authorization_stopped")
 
         recent = state.get("messages", [])
         last_human = max(
@@ -431,11 +517,11 @@ class BusinessGraphNodes:
             and message.additional_kwargs.get("processing_terminal")
             for message in recent[last_human + 1 :]
         ):
-            return visible_result(
+            return await _control(
                 AIMessage(
                     content="本次全量计算未完成，尚无完整统计结果。请缩小数据范围或重新查询。"
                 ),
-                config,
+                "computation_terminal",
             )
 
         from common.observability.model_adapter import (
@@ -444,17 +530,16 @@ class BusinessGraphNodes:
         )
 
         ensure_model_observability(config)
-        _obs_scope = model_call_scope(config, role="main")
+        _obs_scope = model_call_scope(config, role="planning")
         _obs_metadata = _obs_scope.runtime_metadata()
         model = ModelRegistry.main_llm
         system_prompt = state.get("system_prompt", "")
         try:
-            available = self._available_tools(state, config)
+            available = self._planning_tools(state, config)
         except TypeError:
-            available = self._available_tools(state)
+            available = self._planning_tools(state)
 
         messages = state["messages"]
-        # 模型调用前只读上下文修剪 (注入早期历史摘要 + 保护当期轮次与旧工具治理)
         protected_messages = prepare_model_context(
             messages,
             summary=state.get("summary"),
@@ -464,6 +549,7 @@ class BusinessGraphNodes:
         full_messages: list[Any] = []
         if system_prompt:
             full_messages.append(SystemMessage(content=system_prompt))
+        full_messages.append(SystemMessage(content=_PLANNING_ADDENDUM))
         full_messages.extend(protected_messages)
 
         schemas = fit_tool_schemas(full_messages, available)
@@ -472,7 +558,8 @@ class BusinessGraphNodes:
         except ContextBudgetExceeded as exc:
             metrics = request_metrics(full_messages, schemas)
             emit_event(config, "context_metrics", **metrics)
-            return visible_result(AIMessage(content=str(exc)), config, metrics=metrics)
+            return await _control(AIMessage(content=str(exc)), "context_budget")
+
         emit_event(config, "context_metrics", **metrics)
 
         if available:
@@ -485,7 +572,7 @@ class BusinessGraphNodes:
         for attempt in range(3):
             blocked = await _guard_or_message()
             if blocked is not None:
-                return {**visible_result(blocked, config, metrics=metrics)}
+                return await _control(blocked, "authorization_stopped")
             try:
                 response = await invoke_with_data_deadline(
                     model_with_tools,
@@ -496,10 +583,9 @@ class BusinessGraphNodes:
                 )
                 break
             except RuntimeIdentityError as exc:
-                return visible_result(
+                return await _control(
                     AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}"),
-                    config,
-                    metrics=metrics,
+                    "authorization_stopped",
                 )
             except DataProcessingFailure as exc:
                 status = emit_event(
@@ -510,9 +596,7 @@ class BusinessGraphNodes:
                     message=str(exc),
                 )
                 return {
-                    **visible_result(
-                        AIMessage(content=str(exc)), config, metrics=metrics
-                    ),
+                    **await _control(AIMessage(content=str(exc)), "data_failure"),
                     "data_status": status,
                 }
             except Exception as exc:
@@ -524,10 +608,9 @@ class BusinessGraphNodes:
                 if attempt < 2:
                     await asyncio.sleep(0.5 * (attempt + 1))
                 else:
-                    return visible_result(
+                    return await _control(
                         AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE),
-                        config,
-                        metrics=metrics,
+                        "service_unavailable",
                     )
 
         # 空回复检测：content 为空且无 tool_calls -> 追加引导重试
@@ -539,7 +622,7 @@ class BusinessGraphNodes:
             logger.info("业务图模型空回复，追加引导消息重试")
             blocked = await _guard_or_message()
             if blocked is not None:
-                return {**visible_result(blocked, config, metrics=metrics)}
+                return await _control(blocked, "authorization_stopped")
             nudge_messages = [
                 *full_messages,
                 response,
@@ -565,10 +648,9 @@ class BusinessGraphNodes:
                 else:
                     response = nudge_response
             except RuntimeIdentityError as exc:
-                return visible_result(
+                return await _control(
                     AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}"),
-                    config,
-                    metrics=metrics,
+                    "authorization_stopped",
                 )
             except Exception as exc:
                 logger.warning(
@@ -576,28 +658,194 @@ class BusinessGraphNodes:
                 )
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
-        # 服务端依据门禁：完整答案先判定，未核验的具体法规/限值不先公开。
+        # 服务端依据门禁：带 tool_calls 的草稿正文清空；无工具正文属于规划材料，
+        # 不直接公开，交由 answer 阶段生成。
         from common.knowledge.policy import apply_answer_policy
 
         response = apply_answer_policy(response, messages)
+        calls = list(getattr(response, "tool_calls", []) or [])
+        remaining_calls = [
+            call for call in calls if call.get("name") != _FINISH_PLANNING_TOOL_NAME
+        ]
+        finish_only = bool(calls) and not remaining_calls
+        draft = (
+            ""
+            if remaining_calls
+            else strip_reasoning_text(get_message_content(response))
+        )
+        planning_message = AIMessage(
+            content="",
+            id=response.id,
+            tool_calls=remaining_calls,
+            additional_kwargs={
+                **response.additional_kwargs,
+                "ui_visible": False,
+                "planning": True,
+                "planning_finished": finish_only or not remaining_calls,
+            },
+        )
+        update: dict[str, Any] = {
+            "messages": [planning_message],
+            "data_model_started_at": data_model_started_at,
+            "planning_draft": draft,
+            "context_metrics": {
+                **(metrics or {}),
+                "latest_usage": getattr(response, "usage_metadata", None) or {},
+                "planning_draft_chars": len(draft),
+            },
+        }
+        return update
+
+    async def answer_model(
+        self,
+        state: BusinessGraphState,
+        config: RunnableConfig,
+        *,
+        writer: StreamWriter,
+    ) -> dict[str, Any]:
+        """最终回答阶段：无工具、真实流式生成并通过共享发布器输出."""
+        from common.identity.runtime import RuntimeIdentityError, guard_runtime_call
+        from common.observability.model_adapter import (
+            ensure_model_observability,
+            invocation_config,
+            model_call_scope,
+        )
+
+        async def _abort_visibility(reason: str) -> dict[str, Any]:
+            publisher = OutputPublisher(
+                dict(config or {}),
+                graph_id=self._graph_name,
+            )
+            publisher.start()
+            await publisher.abort(reason)
+            return {
+                "messages": [
+                    AIMessage(
+                        content="",
+                        id=publisher.message_id,
+                        additional_kwargs={
+                            "ui_visible": False,
+                            "output_protocol_version": 1,
+                            "output_id": publisher.output_id,
+                            "output_aborted": reason,
+                        },
+                    )
+                ]
+            }
 
         try:
-            if (
-                not response.tool_calls
-                and response.content
-                and response.content
-                not in (_FALLBACK_EMPTY_REPLY, _SERVICE_UNAVAILABLE_MESSAGE)
-            ):
-                await self.observe_skill_executed(
-                    config,
-                    state.get("skill_rules_content") or "",
-                    metrics.get("elapsed_ms", 0) if isinstance(metrics, dict) else 0,
+            await guard_runtime_call(dict(config or {}))
+        except RuntimeIdentityError:
+            return await _abort_visibility("permission_revoked")
+
+        ensure_model_observability(config)
+        model = ModelRegistry.main_llm
+        system_prompt = state.get("system_prompt", "")
+        messages = state["messages"]
+        protected_messages = prepare_model_context(
+            messages,
+            summary=state.get("summary"),
+            summary_covered_message_id=state.get("summary_covered_message_id"),
+        )
+        full_messages: list[Any] = []
+        if system_prompt:
+            full_messages.append(SystemMessage(content=system_prompt))
+        full_messages.append(SystemMessage(content=_ANSWER_ADDENDUM))
+        if state.get("planning_draft"):
+            full_messages.append(
+                SystemMessage(
+                    content=(
+                        "规划阶段留下的候选材料（仅供整理，不得原样复述内部规划；"
+                        "最终正文必须完整、可独立阅读）：\n"
+                        + str(state.get("planning_draft"))[:4000]
+                    )
                 )
+            )
+        full_messages.extend(protected_messages)
+
+        metrics = request_metrics(full_messages, [])
+        try:
+            metrics = enforce_request_budget(full_messages, [])
+        except ContextBudgetExceeded as exc:
+            emit_event(config, "context_metrics", **metrics)
+            published = await publish_control_message(
+                dict(config or {}),
+                graph_id=self._graph_name,
+                text=str(exc),
+                writer=writer,
+                control_code="context_budget",
+            )
+            return {"messages": [published], "context_metrics": metrics}
+        emit_event(config, "context_metrics", **metrics)
+
+        observed = model_call_scope(config, role="answer")
+        publisher = OutputPublisher(
+            dict(config or {}),
+            graph_id=self._graph_name,
+            writer=writer,
+            authorization_probe=runtime_authorization_probe(dict(config or {})),
+        )
+        result = await stream_final_answer(
+            model,
+            full_messages,
+            invocation_config(config, role="answer"),
+            publisher=publisher,
+            policy_messages=messages,
+            question=_latest_human_content(messages),
+            invocation_metadata=observed.runtime_metadata(),
+        )
+
+        latest_usage = result.usage or {}
+        emit_event(
+            config,
+            "context_metrics",
+            **{**metrics, "latest_usage": latest_usage},
+        )
+        if result.aborted:
+            logger.bind(output_stream=True).warning(
+                "业务图最终正文中断 graph={} output={} reason={}",
+                self._graph_name,
+                publisher.output_id,
+                result.abort_reason,
+            )
+            fallback_text: str | None = None
+            if publisher.total_chars == 0:
+                if result.abort_reason == "policy_blocked" and result.text:
+                    fallback_text = result.text
+                elif result.abort_reason in {
+                    "generation_failed",
+                    "empty_answer",
+                    "json_error_payload",
+                }:
+                    fallback_text = _SERVICE_UNAVAILABLE_MESSAGE
+            if fallback_text:
+                published = await publish_control_message(
+                    dict(config or {}),
+                    graph_id=self._graph_name,
+                    text=fallback_text,
+                    writer=writer,
+                    control_code="answer_fallback",
+                )
+                return {
+                    "messages": [published],
+                    "context_metrics": {**metrics, "latest_usage": latest_usage},
+                }
+            return {
+                "messages": [result.message],
+                "context_metrics": {**metrics, "latest_usage": latest_usage},
+            }
+
+        try:
+            await self.observe_skill_executed(
+                config,
+                state.get("skill_rules_content") or "",
+                metrics.get("elapsed_ms", 0) if isinstance(metrics, dict) else 0,
+            )
         except Exception:  # noqa: BLE001 - 观测失败开放
             pass
         return {
-            **visible_result(response, config, metrics=metrics),
-            "data_model_started_at": data_model_started_at,
+            "messages": [result.message],
+            "context_metrics": {**metrics, "latest_usage": latest_usage},
         }
 
     # ──── 工具过滤 ────

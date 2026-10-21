@@ -1,0 +1,38 @@
+{
+  "events": 6,
+  "deltas": 4,
+  "delta_lengths": [
+    101,
+    44,
+    247,
+    119
+  ],
+  "sections": [
+    "header",
+    "claims-1",
+    "claims-2",
+    "limits"
+  ],
+  "done_count": 1,
+  "aborted": false,
+  "validation_errors": [],
+  "answer_chars": 511,
+  "answer_sha256": "954155b27cd05a55e3fc71f82334a03dd194893ef8c61dd851d00cf05545e55f",
+  "first_delta_source": "new_delta",
+  "t_submit": 90594.50641,
+  "t_first_safe_delta": 90594.614870041,
+  "t_last_safe_delta": 90594.81696775,
+  "t_stream_end": 90594.83127475,
+  "t_confirmation_end": 90594.83127475,
+  "graph": "intelligent-tracing",
+  "mode": "controlled",
+  "input": "four specialist fixture + section barrier",
+  "barrier": {
+    "source_finished": false,
+    "section_ids": [
+      "header",
+      "claims-1"
+    ],
+    "done_at_barrier": 0
+  }
+}

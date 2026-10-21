@@ -1,0 +1,109 @@
+{
+  "entry": "official-api-actual-deepagents",
+  "test_data": "synthetic",
+  "iam": "not_under_test",
+  "passed": false,
+  "phase": "resumed",
+  "versions": {
+    "langgraph-api": "0.16.2",
+    "langgraph": "1.2.16",
+    "deepagents": "0.7.28",
+    "langchain-core": "1.6.12"
+  },
+  "first": [
+    {
+      "type": "final_output_start",
+      "seq": 0,
+      "section_id": null,
+      "output_id": "out_7cffb484411847a38825b4ec51f4b0d2",
+      "message_id": "rep_57f351e5507b450593921097f6424d71",
+      "run_id": "01a15f44-51ce-7ee2-85d9-51a57f9958a2",
+      "reason_code": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 1,
+      "section_id": "header",
+      "output_id": "out_7cffb484411847a38825b4ec51f4b0d2",
+      "message_id": "rep_57f351e5507b450593921097f6424d71",
+      "run_id": "01a15f44-51ce-7ee2-85d9-51a57f9958a2",
+      "reason_code": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 2,
+      "section_id": "claims-1",
+      "output_id": "out_7cffb484411847a38825b4ec51f4b0d2",
+      "message_id": "rep_57f351e5507b450593921097f6424d71",
+      "run_id": "01a15f44-51ce-7ee2-85d9-51a57f9958a2",
+      "reason_code": null
+    }
+  ],
+  "resumed": [
+    {
+      "type": "final_output_delta",
+      "seq": 3,
+      "section_id": "claims-2",
+      "output_id": "out_7cffb484411847a38825b4ec51f4b0d2",
+      "message_id": "rep_57f351e5507b450593921097f6424d71",
+      "run_id": "01a15f44-7e89-7580-8975-efd33f0b42de",
+      "reason_code": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 4,
+      "section_id": "claims-3",
+      "output_id": "out_7cffb484411847a38825b4ec51f4b0d2",
+      "message_id": "rep_57f351e5507b450593921097f6424d71",
+      "run_id": "01a15f44-7e89-7580-8975-efd33f0b42de",
+      "reason_code": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 5,
+      "section_id": "claims-4",
+      "output_id": "out_7cffb484411847a38825b4ec51f4b0d2",
+      "message_id": "rep_57f351e5507b450593921097f6424d71",
+      "run_id": "01a15f44-7e89-7580-8975-efd33f0b42de",
+      "reason_code": null
+    },
+    {
+      "type": "final_output_delta",
+      "seq": 6,
+      "section_id": "limits",
+      "output_id": "out_7cffb484411847a38825b4ec51f4b0d2",
+      "message_id": "rep_57f351e5507b450593921097f6424d71",
+      "run_id": "01a15f44-7e89-7580-8975-efd33f0b42de",
+      "reason_code": null
+    },
+    {
+      "type": "final_output_done",
+      "seq": 7,
+      "section_id": null,
+      "output_id": "out_7cffb484411847a38825b4ec51f4b0d2",
+      "message_id": "rep_57f351e5507b450593921097f6424d71",
+      "run_id": "01a15f44-7e89-7580-8975-efd33f0b42de",
+      "reason_code": null
+    }
+  ],
+  "final_progress": {
+    "failed_reason": "",
+    "completed": true,
+    "published_section_ids": [
+      "header",
+      "claims-1",
+      "claims-2",
+      "claims-3",
+      "claims-4",
+      "limits"
+    ],
+    "last_seq": 7
+  },
+  "pending_tasks": 0,
+  "cleanup_requested": [
+    "aa-streamfix-20261021-pg",
+    "aa-streamfix-20261021-redis",
+    "aa-streamfix-20261021-api"
+  ],
+  "cleanup_verified": true
+}

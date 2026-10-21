@@ -1,0 +1,9 @@
+{
+  "baseline_head": "7711914",
+  "graph": "basic-qa",
+  "controlled_source": "single non-streamed AIMessage (old call_model used ainvoke)",
+  "custom_event_types": ["context_metrics", "final_output_done", "context_metrics"],
+  "deltas": 0,
+  "done": 1,
+  "conclusion": "Old chain never publishes a delta; the source-completion-before-first-delta assertion fails. New chain publishes 2 deltas before the controlled source barrier."
+}

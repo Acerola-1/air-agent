@@ -29,6 +29,8 @@ class BusinessGraphState(TypedDict):
     system_prompt: NotRequired[str]
     summary: NotRequired[str]
     summary_covered_message_id: NotRequired[str]
+    needs_planning: NotRequired[bool]
+    planning_draft: NotRequired[str]
     context_metrics: NotRequired[dict[str, Any]]
     context_status: NotRequired[dict[str, Any]]
     data_status: Annotated[dict[str, Any], merge_processing_status]

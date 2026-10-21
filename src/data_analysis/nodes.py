@@ -28,6 +28,12 @@ from common.model_budget import (
 )
 from common.models import ModelRegistry
 from common.output_contract import visible_result
+from common.output_streaming.answer import stream_final_answer
+from common.output_streaming.controls import publish_control_message
+from common.output_streaming.publisher import (
+    OutputPublisher,
+    runtime_authorization_probe,
+)
 from common.runtime_events import emit_event
 from common.runtime_tools import get_business_tools
 from data_analysis.menu_skill_mapping import match_menu_skill
@@ -388,8 +394,14 @@ async def call_model(
             len(last_human),
             max_input_chars,
         )
-        writer({"type": "final_output_done", "message": overflow_msg})
-        return visible_result(AIMessage(content=overflow_msg), config)
+        published = await publish_control_message(
+            dict(config or {}),
+            graph_id="data-analysis",
+            text=overflow_msg,
+            writer=writer,
+            control_code="input_overflow",
+        )
+        return {"messages": [published]}
 
     # 2. 模型调用前只读上下文修剪 (注入早期历史摘要 + 保护当期轮次与旧工具治理)
     protected_messages = prepare_model_context(
@@ -410,7 +422,14 @@ async def call_model(
     except ContextBudgetExceeded as exc:
         metrics = request_metrics(full_messages, schemas)
         emit_event(config, "context_metrics", **metrics)
-        return visible_result(AIMessage(content=str(exc)), config, metrics=metrics)
+        published = await publish_control_message(
+            dict(config or {}),
+            graph_id="data-analysis",
+            text=str(exc),
+            writer=writer,
+            control_code="context_budget",
+        )
+        return {"messages": [published], "context_metrics": metrics}
     emit_event(config, "context_metrics", **metrics)
 
     if available:
@@ -442,9 +461,17 @@ async def call_model(
                 status="failed",
                 message=str(exc),
             )
+            published = await publish_control_message(
+                dict(config or {}),
+                graph_id="data-analysis",
+                text=str(exc),
+                writer=writer,
+                control_code="data_failure",
+            )
             return {
-                **visible_result(AIMessage(content=str(exc)), config, metrics=metrics),
+                "messages": [published],
                 "data_status": status,
+                "context_metrics": metrics,
             }
         except Exception as exc:
             logger.warning(
@@ -454,17 +481,17 @@ async def call_model(
                 await asyncio.sleep(0.5 * (attempt + 1))
             else:
                 # 3 次重试全部失败，推送兜底消息给前端
-                writer(
-                    {
-                        "type": "final_output_done",
-                        "message": _SERVICE_UNAVAILABLE_MESSAGE,
-                    }
+                published = await publish_control_message(
+                    dict(config or {}),
+                    graph_id="data-analysis",
+                    text=_SERVICE_UNAVAILABLE_MESSAGE,
+                    writer=writer,
+                    control_code="service_unavailable",
                 )
-                return visible_result(
-                    AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE),
-                    config,
-                    metrics=metrics,
-                )
+                return {
+                    "messages": [published],
+                    "context_metrics": metrics,
+                }
 
     # 空回复检测：content 为空且无 tool_calls -> 追加引导重试
     if (
@@ -532,16 +559,12 @@ async def finalize_output(
     *,
     writer: StreamWriter,
 ) -> dict[str, Any]:
-    """收集完整清洗结果后发布唯一终答，失败不暴露半段草稿."""
+    """最终整理：逐段生成、逐段校验、逐段发布；不再缓存全文后才发送."""
     original = _last_answer_message(state)
     if original is not None and original.additional_kwargs.get("ui_visible") is True:
         return visible_result(original, config, writer=writer)
 
     answer = _extract_last_visible_answer(state)
-
-    if not answer:
-        logger.warning("数据分析最终输出未找到可见业务答案，使用兜底回复")
-        answer = _FALLBACK_EMPTY_REPLY
 
     writer(
         {
@@ -550,74 +573,98 @@ async def finalize_output(
         }
     )
 
-    # 调用清洗 LLM 流式生成清洗后的答案
-    from common.observability.model_adapter import ensure_model_observability
+    from common.observability.model_adapter import (
+        ensure_model_observability,
+        invocation_config,
+    )
 
     ensure_model_observability(config)
-    from common.observability.model_adapter import invocation_config
-
-    observed_config = invocation_config(config, role="cleanup")
     model = ModelRegistry.main_llm
-    prompt = _FINAL_OUTPUT_CLEANUP_PROMPT.format(answer=answer)
-    full_cleaned = ""
+    prompt = _FINAL_OUTPUT_CLEANUP_PROMPT.format(answer=answer or _FALLBACK_EMPTY_REPLY)
 
+    publisher = OutputPublisher(
+        dict(config or {}),
+        graph_id="data-analysis",
+        writer=writer,
+        authorization_probe=runtime_authorization_probe(dict(config or {})),
+    )
+    question = ""
+    for message in reversed(state.get("messages", [])):
+        if isinstance(message, HumanMessage):
+            question = get_message_content(message)
+            break
+    timeout = app_config.FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS
     try:
-        async with asyncio.timeout(app_config.FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS):
-            enforce_request_budget([HumanMessage(content=prompt)])
-            async for chunk in model.astream(
-                [HumanMessage(content=prompt)],
-                config={**observed_config, "tags": ["nostream", "internal-cleanup"]},
-            ):
-                if (getattr(chunk, "response_metadata", {}) or {}).get(
-                    "finish_reason"
-                ) in {"length", "content_filter"}:
-                    raise ValueError("终答清洗输出未完整结束")
-                content = getattr(chunk, "content", None)
-                if isinstance(content, list):
-                    content = "".join(str(item) for item in content)
-                elif content is None:
-                    content = ""
-                else:
-                    content = str(content)
-
-                if not content:
-                    continue
-
-                full_cleaned += content
-    except Exception as exc:
+        async with asyncio.timeout(timeout):
+            cleanup_messages = [HumanMessage(content=prompt)]
+            enforce_request_budget(cleanup_messages)
+            result = await stream_final_answer(
+                model,
+                cleanup_messages,
+                invocation_config(config, role="cleanup"),
+                publisher=publisher,
+                policy_messages=state.get("messages", []),
+                question=question,
+            )
+    except (TimeoutError, ContextBudgetExceeded) as exc:
         logger.warning("数据分析最终输出清洗失败: {}", type(exc).__name__)
-        full_cleaned = "分析结果已生成，但最终答案整理未完成。请重试。"
+        if publisher.total_chars:
+            await publisher.abort("generation_failed")
+            from common.observability.skill_adapter import record_loaded_execution
 
-    cleaned = full_cleaned.strip()
+            record_loaded_execution(config, succeeded=False)
+            return {
+                "messages": [
+                    AIMessage(
+                        content=publisher.emitted_text,
+                        id=publisher.message_id,
+                        additional_kwargs={
+                            "ui_visible": False,
+                            "output_id": publisher.output_id,
+                            "output_protocol_version": 1,
+                            "output_aborted": "generation_failed",
+                        },
+                    )
+                ]
+            }
+        result = None
 
-    # 兜底：如果清洗后为空，使用兜底消息
-    if not cleaned:
-        cleaned = _SERVICE_UNAVAILABLE_MESSAGE
-
-    # 服务端依据门禁：原始答案与清洗稿都在公开前检查；清洗若误删引用标记，
-    # 回退到已通过检查的原始答案，而不是放行未核验具体规定或误伤合法引用。
-    from common.knowledge.policy import enforce_answer_policy
-
-    state_messages = state.get("messages", [])
-    published, blocked, _reason = enforce_answer_policy(cleaned, state_messages)
-    if blocked:
-        original_published, original_blocked, _ = enforce_answer_policy(
-            answer, state_messages
+    if result is None or (result.aborted and result.units == 0):
+        # 未公开任何正文时使用固定可读失败；未清洗原稿可能含过程性内容，不直接公开。
+        fallback_text = "分析结果已生成，但最终答案整理未完成。请重试。"
+        control = await publish_control_message(
+            dict(config or {}),
+            graph_id="data-analysis",
+            text=fallback_text,
+            writer=writer,
+            authorization_probe=runtime_authorization_probe(dict(config or {})),
+            control_code="cleanup_fallback",
         )
-        cleaned = published if original_blocked else original_published
-    else:
-        cleaned = published
+        from common.observability.skill_adapter import record_loaded_execution
 
-    original = _last_answer_message(state)
+        record_loaded_execution(
+            config,
+            succeeded=bool(fallback_text)
+            and fallback_text
+            not in {
+                _SERVICE_UNAVAILABLE_MESSAGE,
+                "分析结果已生成，但最终答案整理未完成。请重试。",
+            },
+        )
+        return {"messages": [control]}
+
     from common.observability.skill_adapter import record_loaded_execution
 
     record_loaded_execution(
-        config, succeeded=bool(cleaned) and cleaned != _SERVICE_UNAVAILABLE_MESSAGE
-    )
-    return visible_result(
-        original.model_copy(update={"content": cleaned})
-        if original
-        else AIMessage(content=cleaned),
         config,
-        writer=writer,
+        succeeded=not result.aborted
+        and bool(result.text)
+        and result.text != _SERVICE_UNAVAILABLE_MESSAGE,
     )
+    if result.usage:
+        emit_event(
+            config,
+            "context_metrics",
+            latest_usage=result.usage,
+        )
+    return {"messages": [result.message]}
