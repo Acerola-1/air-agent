@@ -156,6 +156,22 @@ def test_visible_final_message_none_when_only_internal() -> None:
     assert _visible_final_message("not-a-list") is None
 
 
+def test_snapshot_text_excludes_reasoning_tools_and_untyped_blocks() -> None:
+    from common.event_ledger.lifecycle import _visible_text
+
+    message = {
+        "content": [
+            {"type": "text", "text": "可见正文"},
+            {"type": "reasoning", "text": "private-reasoning"},
+            {"type": "tool_result", "text": "private-tool-result"},
+            {"text": "unknown-private-block"},
+            {"type": "output_text", "text": "结尾"},
+        ]
+    }
+    assert _visible_text(message) == "可见正文结尾"
+    assert _visible_text({"content": "普通回答"}) == "普通回答"
+
+
 def test_native_run_payload_extracts_ledger_attempt_id() -> None:
     """原生 create_run 载荷提取：metadata 优先，兼容 kwargs.config.configurable。
 
@@ -196,7 +212,10 @@ def test_ledger_scope_requires_full_trusted_identity() -> None:
 def test_authorization_stop_is_not_a_success_answer() -> None:
     assert authorization_stop_from_messages(
         [
-            {"type": "ai", "content": "授权状态已变化，本次运行已停止：业务使用权限已撤销"},
+            {
+                "type": "ai",
+                "content": "授权状态已变化，本次运行已停止：业务使用权限已撤销",
+            },
         ]
     )
     assert authorization_stop_from_messages(

@@ -129,3 +129,15 @@ Composer以composition生命周期、native isComposing和Safari keyCode=229保�
 ## 知识库引用与原文
 
 来源入口只接受服务端登记的引用 ID。CitationViewer 的弹窗由 shared Dialog 管理焦点、Tab 与 Escape；关闭恢复入口焦点。每次打开、分页、重试都重新核权，使用 no-store；显示当前字符范围。用户、会话、企业、context_version、图或线程变化立即关闭并取消请求，A→B→A 也不复用旧结果。401/403/404/409/410 分别提示登录、无权、不存在、上下文变化、来源失效；503/504 与网络错误提供显式重试，不自动重发。
+
+## Agent 运营后台（2026-10-20，Change 6）
+
+业务来源：`openspec/changes/add-agent-admin-console/**`。页面所有者、共享组件与查询客户端见 DESIGN.md 同名章节；API 协议见该 change 的 `api-contract.md`。
+
+- **权限分区**：统计聚合（`agent:metrics:read`）、企业运行/可识别用户/反馈明细（`agent:operations:read`）、正文（`agent:content:read`）、反馈写（`agent:feedback:manage`）分别判断。菜单隐藏不是授权；直接 API 访问同样返回 401/403/404/409/422/503。
+- **窗口**：总览/用户/运行/反馈/能力/性能/成本共用 `today|last_7_days|last_30_days|custom`；自定义日期字段标注“包含结束日”，转 Asia/Shanghai 半开区间；结束日为今天时截到请求时刻。缺日期不静默回退，服务端明确 422。
+- **分页与截止**：列表使用游标（绑定企业、context_version、过滤、排序与 as_of），翻页沿用原数据截止；跨企业/改过滤/坏游标明确 400。聚合由服务端全窗口计算，不把当前页相加或前 200 项当全集。
+- **异步隔离**：用户、企业、context_version、权限、过滤或请求代次变化时清空旧数据并取消旧请求（AbortController）；A→B→A 不复用旧结果。普通处理 `409 revision_conflict` / `feedback_changed` 保留草稿并提示回读，不触发“企业切换”全局提示；只有会话 `context_changed` 才刷新会话。
+- **反馈处理**：抽屉内保存草稿；同一次提交复用同一 `operation_id`，载荷变化生成新 ID；处理完成必须填写说明（≤1000 字符），有说明需正文权限。按钮按当前状态禁用非法动作；用户新负面修订显示“需要复核”，不自动改写用户评价。
+- **正文**：原问题/回答/意见/说明按需分页（≤8000 字符），回答快照缺失显示未采集/采集失败/过期/受控截断，不从 Trace、checkpoint 或浏览器旧缓存补造。关闭阅读器/对话框恢复触发按钮焦点。
+- **可访问与窄屏**：原生 button/select/input，表格有 caption 与数据表替代；390×844 导航在内容之上、企业选择常驻，表格横向滚动。中文 IME 组合期间搜索不提前提交，300ms 后生效，清除立即生效。

@@ -77,3 +77,9 @@ components:
 ## 知识库来源阅读（2026-10-20）
 
 CitationViewer 复用 shared Dialog / Button；视觉沿用聊天原文阅读区。来源按 8000 字符显式分页，显示当前范围和总量；错误区分登录、无权、失效、上下文变化、服务故障与超时。身份、企业、上下文、图或线程变化立即取消并关闭弹窗，旧响应不得填入新视图。
+
+## Agent 运营后台（2026-10-20，Change 6）
+
+后台沿用 `admin/web` 的灰白语义 tokens、`components/ui` 原语和 `SessionProvider`，不复制聊天页宽度/字体。运营页面所有者：`app/(dashboard)/operations/**`；共享组件所有者：`components/operations/{QueryToolbar,MetricState,DataTable,ContentReader,TrendBars}.tsx`；查询/会话隔离所有者：`lib/operations/{client,query,hooks,types}.ts`。导航按本地静态路由清单与实时 `ctx.permissions` 显示，账号/企业/部门/角色仍跳统一身份管理台。
+
+指标必须区分真实零、未采集、部分缺失与不适用；费用按币种和当前计费修订显示 Decimal 字符串。正文阅读器按 8000 字符分页、纯文本安全呈现、no-store，不执行 HTML/Markdown、不加载远程图片。表格在窄屏使用有界横向滚动，不把列压成逐字换行。

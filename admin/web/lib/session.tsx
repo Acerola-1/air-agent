@@ -98,6 +98,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   // 不继续展示/写入旧企业数据）。
   useEffect(() => {
     onTenantContextConflict(() => {
+      // 在刷新网络完成前撤下旧企业视图；IAM不可用时也不能继续展示旧上下文。
+      setCtx(null);
+      setMenus([]);
+      setTenantRequestClaim(null);
       void refresh().then(() =>
         setError("企业上下文已被其他标签页变更，页面已重新加载；请以当前企业为准继续操作。")
       );

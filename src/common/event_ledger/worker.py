@@ -348,6 +348,10 @@ class OutboxWorker:
         thread_id = task.thread_id
         await conn.execute("SELECT set_config('air_agent.deletion_cleanup','on',true)")
         for table in (
+            "agent_feedback_case_notes",
+            "agent_feedback_case_actions",
+            "agent_feedback_cases",
+            "agent_answer_contents",
             "agent_feedback_current",
             "agent_feedback_comments",
             "agent_feedback_operations",

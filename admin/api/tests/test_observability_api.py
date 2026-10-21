@@ -320,7 +320,7 @@ async def test_price_backfill_revision_is_idempotent_and_currencies_separate(led
         await store.close_pool()
 
 
-async def test_real_queue_overhead_benchmark(ledger_env):
+async def test_real_queue_overhead_benchmark(ledger_env, tmp_path):
     """基准必须实际入队并写入，空队列的零开销不可通过。"""
     import importlib.util
     import json
@@ -336,9 +336,7 @@ async def test_real_queue_overhead_benchmark(ledger_env):
     try:
         result = await module.run_benchmark(ctx)
         assert await count("agent_model_observations", d["attempt_id"]) == 80
-        (root / "docs/reviews/evidence/takeover-03-05/overhead-benchmark.json").write_text(
-            json.dumps(result, indent=2) + "\n"
-        )
+        (tmp_path / "overhead-benchmark.json").write_text(json.dumps(result, indent=2) + "\n")
     finally:
         await c.aclose()
         await store.close_pool()
@@ -485,7 +483,7 @@ async def test_feedback_operation_id_race_across_two_threads(ledger_env):
         await b.aclose()
 
 
-async def test_reprice_over_500_rows_keeps_currencies_and_latest_revision(ledger_env):
+async def test_reprice_over_500_rows_keeps_currencies_and_latest_revision(ledger_env, tmp_path):
     """501条真实事实跨过批次边界；不截断、不混币、不把旧修订重复加总。"""
     c, data, ctx = await fixture(ledger_env)
     try:
@@ -578,12 +576,8 @@ async def test_reprice_over_500_rows_keeps_currencies_and_latest_revision(ledger
                 row["currency"]: Decimal(row["subtotal"]) for row in summary[grouping]
             } == by_currency
         import json
-        from pathlib import Path
 
-        (
-            Path(__file__).resolve().parents[3]
-            / "docs/reviews/evidence/takeover-03-05/cost-501.json"
-        ).write_text(
+        (tmp_path / "cost-501.json").write_text(
             json.dumps(
                 {
                     "recalculated": recalculated.json(),

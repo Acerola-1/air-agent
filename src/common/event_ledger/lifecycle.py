@@ -21,6 +21,10 @@ from typing import Any
 from langchain.agents.middleware.types import AgentMiddleware
 from loguru import logger
 
+from common.event_ledger.answer_content import (
+    capture_answer_content,
+    mark_capture_failed,
+)
 from common.event_ledger.store import (
     LedgerBackendUnavailable,
     LedgerScope,
@@ -263,6 +267,26 @@ def _visible_final_message(messages: Any) -> Any:
     return None
 
 
+def _visible_text(message: Any) -> str:
+    """只提取可见终答的文本块；排除推理/工具/图片等非正文块."""
+    content = _message_field(message, "content")
+    if isinstance(content, str):
+        return content
+    if not isinstance(content, list):
+        return ""
+    parts: list[str] = []
+    for part in content:
+        if isinstance(part, str):
+            parts.append(part)
+            continue
+        if not isinstance(part, dict):
+            continue
+        block_type = part.get("type")
+        if block_type in ("text", "output_text") and isinstance(part.get("text"), str):
+            parts.append(part["text"])
+    return "".join(parts)
+
+
 def _resolve_config(config: Any) -> dict[str, Any] | None:
     """解析运行配置：优先节点入参，缺失时取 `langgraph.config.get_config()`.
 
@@ -388,7 +412,7 @@ async def _on_graph_end(
     ids = ledger_ids_from_config(resolved)
     if scope is None or ids is None:
         return
-    _request_id, attempt_id = ids
+    request_id, attempt_id = ids
     declared = declared_graph_id(resolved)
     if graph_name and declared and graph_name != declared:
         try:
@@ -442,13 +466,58 @@ async def _on_graph_end(
             return
         visible = _visible_final_message(messages)
         if visible is not None:
-            await record_answer(
+            message_id = str(_message_field(visible, "id") or "") or None
+            answer = await record_answer(
                 scope,
                 attempt_id=attempt_id,
-                message_id=str(_message_field(visible, "id") or "") or None,
+                message_id=message_id,
                 content_version=1,
                 confirmed=True,
             )
+            # Change 6：确认后独立写受控正文快照；失败开放，不改变回答/终态。
+            capture_error: str | None = None
+            try:
+                # 终答已产生并不表示之后仍有权持久化受控正文。
+                from common.identity.runtime import guard_runtime_call
+
+                await guard_runtime_call(resolved)
+                captured = await capture_answer_content(
+                    scope,
+                    attempt_id=attempt_id,
+                    request_id=request_id,
+                    answer_id=str(answer.get("answer_id") or ""),
+                    message_id=message_id,
+                    content_version=1,
+                    text_value=_visible_text(visible),
+                )
+                if not captured.get("captured") and captured.get("reason") not in (
+                    None,
+                    "empty",
+                ):
+                    capture_error = str(captured.get("reason"))
+            except Exception as exc:  # noqa: BLE001 - 快照失败不得变成业务失败
+                capture_error = type(exc).__name__
+                logger.bind(event_ledger=True).warning(
+                    "answer content capture failed: class={} attempt={}",
+                    type(exc).__name__,
+                    attempt_id,
+                )
+            if capture_error and answer.get("answer_id"):
+                try:
+                    await mark_capture_failed(
+                        scope,
+                        attempt_id=attempt_id,
+                        request_id=request_id,
+                        answer_id=str(answer["answer_id"]),
+                        content_version=1,
+                        reason=capture_error,
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    logger.bind(event_ledger=True).warning(
+                        "answer content failure mark unavailable: class={} attempt={}",
+                        type(exc).__name__,
+                        attempt_id,
+                    )
         await observe_state(
             scope,
             attempt_id=attempt_id,

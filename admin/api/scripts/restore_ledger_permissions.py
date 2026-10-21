@@ -82,6 +82,19 @@ def main() -> int:
             statements.extend(
                 module_for("0011_feedback.py").feedback_grant_statements(role_checker=role_exists)
             )
+        if "agent_answer_contents" in tables:
+            statements.extend(
+                module_for("0024_console_read_model.py").console_grant_statements(
+                    role_checker=role_exists
+                )
+            )
+        if "agent_answer_content_metadata" in tables:
+            statements.extend(
+                module_for("0025_console_integrity.py").console_integrity_statements()
+            )
+            statements.extend(
+                module_for("0026_console_lineage_record.py").lineage_record_statements()
+            )
         if "agent_capability_selections" in tables:
             statements.extend(
                 module_for("0013s_capability_selection.py").selection_grant_statements()

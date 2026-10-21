@@ -67,6 +67,8 @@ PERMISSION_TREE: list[tuple[str, str, int, str | None, str | None, str | None, i
     ("agent:replay:manage", "重放与清理运维", BUTTON, "business:runs", None, None, 40, False),
     ("agent:thread:delete", "删除任意会话", BUTTON, "business:runs", None, None, 50, False),
     ("agent:pricing:manage", "配置模型价格与重算", BUTTON, "business:runs", None, None, 60, True),
+    # Change 6：反馈处理写权限（本地目录用于 local 模式/测试；remote 以 IAM 注册为准）
+    ("agent:feedback:manage", "处理用户反馈", BUTTON, "business:runs", None, None, 70, True),
 ]
 
 

@@ -28,10 +28,17 @@ let tenantClaim: TenantClaim | null = null;
 export function setTenantRequestClaim(next: TenantClaim | null): void {
   tenantClaim = next;
 }
+/** 运营查询客户端复用同一页面企业声明；不从 URL/表单拼造企业。 */
+export function getTenantRequestClaim(): TenantClaim | null {
+  return tenantClaim;
+}
 
 let conflictListener: (() => void) | null = null;
 export function onTenantContextConflict(fn: (() => void) | null): void {
   conflictListener = fn;
+}
+export function notifyTenantContextConflict(): void {
+  conflictListener?.();
 }
 
 /** 管理功能已迁出本服务（用户/企业/部门/角色/权限/审计）。 */
@@ -65,6 +72,11 @@ export class ApiError extends Error {
 function extractMessage(body: unknown, status: number): string {
   const detail = (body as { detail?: unknown } | null)?.detail;
   if (typeof detail === "string") return detail;
+  if (detail && typeof detail === "object" && !Array.isArray(detail)) {
+    const nested = detail as { error?: unknown; message?: unknown };
+    if (typeof nested.error === "string") return nested.error;
+    if (typeof nested.message === "string") return nested.message;
+  }
   if (Array.isArray(detail)) {
     const parts = detail.map((item) => {
       if (item && typeof item === "object" && "msg" in item) {
@@ -108,9 +120,23 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   if (!res.ok) {
     const message = extractMessage(body, res.status);
-    const payload = body as { code?: unknown; iam_url?: unknown } | null;
-    const code = typeof payload?.code === "string" ? payload.code : undefined;
-    const iamUrl = typeof payload?.iam_url === "string" ? payload.iam_url : undefined;
+    const payload = body as { code?: unknown; iam_url?: unknown; detail?: unknown } | null;
+    const nested =
+      payload?.detail && typeof payload.detail === "object" && !Array.isArray(payload.detail)
+        ? (payload.detail as { code?: unknown; iam_url?: unknown })
+        : null;
+    const code =
+      typeof payload?.code === "string"
+        ? payload.code
+        : typeof nested?.code === "string"
+          ? nested.code
+          : undefined;
+    const iamUrl =
+      typeof payload?.iam_url === "string"
+        ? payload.iam_url
+        : typeof nested?.iam_url === "string"
+          ? nested.iam_url
+          : undefined;
 
     // 只有真正的会话企业上下文冲突才刷新会话；功能迁移（410/management_moved）
     // 与普通业务冲突（409 conflict）不得触发"其他标签页变更"提示。

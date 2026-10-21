@@ -19,6 +19,7 @@ from app.db import engine_dispose_all, runtime_engine
 from app.routers import (
     audit,
     auth,
+    console,
     departments,
     feedback,
     ledger,
@@ -148,6 +149,8 @@ app.include_router(regions.router, prefix="/regions")
 app.include_router(audit.router, prefix="/audit-logs")
 app.include_router(ledger.router, prefix="/agent")
 app.include_router(feedback.router, prefix="/agent")
+# change add-agent-admin-console：运营读模型与轻量反馈处理（本域新增，旧端点不变）
+app.include_router(console.router, prefix="/agent")
 # change complete-agent-observability：观测查询/价格管理（本域新增；不改既有 19 路径）
 from app.routers import observability as observability_router  # noqa: E402
 
