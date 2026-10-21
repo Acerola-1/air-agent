@@ -99,6 +99,14 @@ def main() -> int:
             statements.extend(
                 module_for("0013s_capability_selection.py").selection_grant_statements()
             )
+        if "agent_insight_profiles" in tables:
+            statements.extend(
+                module_for("0028_demand_insights.py").insight_grant_statements(
+                    role_checker=role_exists
+                )
+            )
+        if "agent_question_sources" in tables:
+            statements.extend(module_for("0029_insight_retention.py").retention_statements())
         if "agent_model_observations" in tables:
             module = module_for("0012_observability.py")
 

@@ -87,6 +87,11 @@ export function AppSidebar() {
       permissions: ["agent:operations:read"],
     },
     {
+      href: "/operations/insights",
+      label: "需求洞察",
+      permissions: ["agent:metrics:read"],
+    },
+    {
       href: "/operations/capabilities",
       label: "业务能力",
       permissions: ["agent:metrics:read"],

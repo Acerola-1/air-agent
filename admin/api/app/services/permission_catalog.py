@@ -69,6 +69,8 @@ PERMISSION_TREE: list[tuple[str, str, int, str | None, str | None, str | None, i
     ("agent:pricing:manage", "配置模型价格与重算", BUTTON, "business:runs", None, None, 60, True),
     # Change 6：反馈处理写权限（本地目录用于 local 模式/测试；remote 以 IAM 注册为准）
     ("agent:feedback:manage", "处理用户反馈", BUTTON, "business:runs", None, None, 70, True),
+    # Change 7：需求洞察作业/纠错/合并拆分/重算（必须另有 ops+content）
+    ("agent:insights:manage", "运营需求洞察", BUTTON, "business:runs", None, None, 80, True),
 ]
 
 

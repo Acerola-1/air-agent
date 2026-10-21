@@ -17,6 +17,11 @@
                                  创建/同步 `air_agent_ledger_worker`（非 BYPASSRLS、
                                  无正文列权限）。未提供则不创建——worker 默认不启用。
     TENANT_LEDGER_WORKER_ROLE    调度角色名（默认 air_agent_ledger_worker）
+    TENANT_INSIGHTS_WORKER_DB_PASSWORD
+                                 可选：需求洞察分析 worker 的受限角色密码；提供即
+                                 幂等创建/同步 `air_agent_insights_worker`（非
+                                 BYPASSRLS、只读来源/反馈/墓碑，仅写本域表）。
+    TENANT_INSIGHTS_WORKER_ROLE  分析角色名（默认 air_agent_insights_worker）
 """
 
 from __future__ import annotations
@@ -69,6 +74,13 @@ async def main() -> int:
     if worker_password and not _valid_role(worker_role):
         print("TENANT_LEDGER_WORKER_ROLE 含非法字符", file=sys.stderr)
         return 2
+    insights_worker_role = os.environ.get(
+        "TENANT_INSIGHTS_WORKER_ROLE", "air_agent_insights_worker"
+    )
+    insights_worker_password = os.environ.get("TENANT_INSIGHTS_WORKER_DB_PASSWORD", "")
+    if insights_worker_password and not _valid_role(insights_worker_role):
+        print("TENANT_INSIGHTS_WORKER_ROLE 含非法字符", file=sys.stderr)
+        return 2
 
     uri = get_settings().sqlalchemy_uri
     engine = create_async_engine(uri)
@@ -83,6 +95,14 @@ async def main() -> int:
                 print(
                     f"未提供 TENANT_LEDGER_WORKER_DB_PASSWORD：跳过 {worker_role}"
                     "（台账投递 worker 保持未启用）"
+                )
+            if insights_worker_password:
+                print(await _sync_role(conn, insights_worker_role, insights_worker_password))
+                await conn.commit()
+            else:
+                print(
+                    f"未提供 TENANT_INSIGHTS_WORKER_DB_PASSWORD：跳过 {insights_worker_role}"
+                    "（需求洞察 worker 保持未启用）"
                 )
     finally:
         await engine.dispose()
