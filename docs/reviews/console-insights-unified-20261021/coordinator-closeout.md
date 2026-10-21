@@ -17,7 +17,7 @@
 - 管理端类型检查及前后台生产构建（Next webpack选项）通过；默认Turbopack在本机报内部端口EPERM，前端构建另有Edge Runtime和外部网络重试警告。不修改项目默认构建命令，也不把替代构建写成Turbopack通过。
 - IAM：KnowledgeDelegationServiceTest、CrossLanguageVectorTest定向测试及编译通过；未运行要求独立iam_test库的全量集成套件，不连接正式19132。
 - Ruff、Change7及联合验证计划OpenSpec strict通过；候选提交文件已扫描本机已知私密值，无命中。
-- 发现并修复 JobItem 新增字段缺少生成副本：同步需求洞察OpenAPI及管理端TS；修复固定公开代表题被通用data/忽略规则遗漏的问题。
+- 发现并修复 JobItem 新增字段缺少生成副本：同步需求洞察OpenAPI及管理端TS；修复固定公开40题、合成数据和三图代表题被通用data/忽略规则遗漏的问题，三份JSON一并交付。
 
 ## 清理与后续
 
