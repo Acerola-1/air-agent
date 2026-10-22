@@ -27,7 +27,7 @@
 
 面向空气质量业务的多租户 Agent 应用，提供问答、分析、报告与研究能力。Python 服务使用 LangGraph API，聊天前端使用 Next.js；当前管理 API 通过独立 Java IAM 提供身份门面，并管理 Agent 业务数据，管理页面位于 `admin/web/`。
 
-本仓库正在分阶段建设企业运营后台。运行台账、反馈、观测、能力选择和需求洞察已有业务实现；真实 IAM 全链、质量工作台和完整运营看板仍按 [企业化路线图](docs/enterprise-agent-roadmap.md)推进。
+企业运营后台仍在持续建设：运行台账、反馈、观测、能力选择和需求洞察已经落地，后续范围见 [企业化路线图](docs/enterprise-agent-roadmap.md)。
 
 ## 核心能力
 
@@ -63,7 +63,7 @@ flowchart LR
 
 浏览器使用 HttpOnly 不透明会话，Next 服务端换取运行票据后调用 Agent。授权同时在服务端与数据库落实，历史搜索的 metadata 过滤不构成安全边界。身份唯一权威已切换至独立 Java IAM（19100、`iam_identity`），本仓 `admin/api/` 只保留消费门面和业务数据（`air_agent_business`）。
 
-独立 IAM 已采用 **Spring Boot + Sa-Token + MyBatis + Vue**；本仓两个前端仍为 Next.js。当前运行清单见 [正式环境](docs/CURRENT-RUNTIME.md)，历史抽取计划不再是启动说明。
+独立 IAM 已采用 **Spring Boot + Sa-Token + MyBatis + Vue**；本仓两个前端仍为 Next.js。本机运行态清单见 [运行态说明](docs/CURRENT-RUNTIME.md)，历史抽取计划不再是启动说明。
 
 ## 技术栈
 
@@ -136,7 +136,7 @@ npm --prefix admin/web ci
 
 ## 启动顺序
 
-已有正式数据已完成I4切换和旧环境清理。唯一启动入口：
+本地完整栈使用统一启动器：
 
 ```bash
 .venv/bin/python deployment/run_separated_local.py start
@@ -145,9 +145,7 @@ npm --prefix admin/web ci
 ./run-local.sh
 ```
 
-不要重新seed本地root、连接已删除的`air_agent`库，或为日常重启执行全量compose。启动器复用正式PG/Redis，只按需重建原生应用并刷新受限桥IP。旧评测端口501xx–505xx已退役。账号/成员/角色在IAM 19101维护；数据库恢复、初始化与隔离测试须另行明确指定资源。
-
-详情与官方数据/容器白名单见 [正式环境](docs/CURRENT-RUNTIME.md) 及 [启动器说明](deployment/SEPARATED_LOCAL.md)。
+启动器会复用已有 PostgreSQL/Redis，只按需重建原生应用；首次使用前请按 `.env.example` 配置数据库、模型与 IAM 连接。完整运行态、端口与容器白名单见 [运行态说明](docs/CURRENT-RUNTIME.md) 及 [启动器说明](deployment/SEPARATED_LOCAL.md)。
 
 ## 检查与验收
 
@@ -161,7 +159,7 @@ npm --prefix admin/web run lint
 
 管理端数据库测试需先配置**专用测试库与非 owner 角色**，在 `admin/api/` 使用上述联调环境执行 `python -m pytest tests/`；不要指向共享业务库。UI 的真实浏览器检查、实际模型/MCP联调、恢复演练与单元测试分别提供证据。
 
-[Change4最终验收](docs/reviews/skill-tool-selection-final-acceptance.md)记录了六图运行、权限边界、性能和逐项基线。根/集成套件仍有已识别的历史失败；本次归档接受保留系统中文输入法候选窗抽查，未将其写成实测通过。正式生产的企业 MCP 和负载验证仍需实际环境。
+仓库保留各阶段独立验收与原始证据，见 [验收与证据](docs/reviews/)。单元测试、契约测试、真实模型/MCP 联调与浏览器验收分别记录；历史失败不会被写成通过。
 
 ## 文档
 
@@ -169,7 +167,6 @@ npm --prefix admin/web run lint
 |---|---|
 | [AGENTS.md](AGENTS.md) | 开发边界、不可回退约束与验收要求 |
 | [UX-CONTRACT.md](UX-CONTRACT.md) / [DESIGN.md](DESIGN.md) | 聊天交互、状态与视觉约定 |
-| [正式环境](docs/CURRENT-RUNTIME.md) | 三仓唯一运行态清单 |
 | [业务授权与 MCP 连接](docs/developer/business-authorization.md) | 企业开通、角色授权与工具白名单 |
 | [企业化路线图](docs/enterprise-agent-roadmap.md) | 运营后台后续阶段与依赖 |
 | [事件契约](docs/contracts/agent-events-v1/) | 台账事件、样本与接口快照 |
@@ -180,6 +177,10 @@ npm --prefix admin/web run lint
 - 修改前先读 [AGENTS.md](AGENTS.md)、相关主规格及活动 change。
 - UI 行为与设计约定见 [UX-CONTRACT.md](UX-CONTRACT.md)、[DESIGN.md](DESIGN.md)。
 - 后台后续范围和依赖见 [企业化路线图](docs/enterprise-agent-roadmap.md)；归档表示该阶段验收关闭，不表示整个企业后台已完成。
+
+## 维护者说明
+
+本机正式运行态、端口、容器与数据库清单以 [docs/CURRENT-RUNTIME.md](docs/CURRENT-RUNTIME.md) 为准；README 只保留公开使用与开发说明。
 
 ## License
 
