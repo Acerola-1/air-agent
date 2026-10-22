@@ -182,18 +182,23 @@ async function handleRequest(req: NextRequest, method: string) {
         | "initial" | "retry" | "regenerate" | "resume";
       const userMessageId = req.headers.get("x-user-message-id");
       const firstUserMessage = extractFirstUserContent(body.input);
+      const graphId = String(body.assistant_id ?? "");
+      // 基础问答不提供技能/MCP 选择入口；旧页面或手工请求携带的选择一律
+      // 丢弃，由后台强制归为系统自动路由。
       const rawCapabilitySelection =
-        (body.capability_selection as Record<string, unknown> | undefined) ??
-        (cfg?.configurable?.capability_selection as Record<string, unknown> | undefined) ??
-        (req.headers.get("x-capability-selection")
-          ? (() => {
-              try {
-                return JSON.parse(req.headers.get("x-capability-selection")!);
-              } catch {
-                return undefined;
-              }
-            })()
-          : undefined);
+        graphId === "basic-qa"
+          ? undefined
+          : ((body.capability_selection as Record<string, unknown> | undefined) ??
+            (cfg?.configurable?.capability_selection as Record<string, unknown> | undefined) ??
+            (req.headers.get("x-capability-selection")
+              ? (() => {
+                  try {
+                    return JSON.parse(req.headers.get("x-capability-selection")!);
+                  } catch {
+                    return undefined;
+                  }
+                })()
+              : undefined));
       try {
         // F06：正常提交必须留下**按 request 可精确回读**的原问题来源——否则刷新/
         // 后续提问/重新生成之后，热门问题分析只剩可变 thread 指针与摘要。
@@ -208,7 +213,7 @@ async function handleRequest(req: NextRequest, method: string) {
           cookie: store,
           threadId: threadId as string,
           submissionKey,
-          graphId: String(body.assistant_id ?? ""),
+          graphId,
           operationKind,
           sourceAttemptId: req.headers.get("x-source-attempt-id"),
           content: firstUserMessage,
@@ -287,7 +292,7 @@ async function handleRequest(req: NextRequest, method: string) {
         ledger_submission_id: ledgerAdmission.submissionId,
         ledger_submission_key: submissionKey,
         ledger_operation_kind: operationKind,
-        ledger_graph_id: String(body.assistant_id ?? ""),
+        ledger_graph_id: graphId,
         ledger_marker: marker,
         ...capMeta,
       };

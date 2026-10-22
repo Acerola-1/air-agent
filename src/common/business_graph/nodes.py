@@ -13,7 +13,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any
@@ -60,21 +59,18 @@ from common.output_streaming.publisher import (
 from common.permission.rules import is_conversational
 from common.runtime_events import emit_event
 from common.runtime_tools import get_business_tools, tool_name
-from common.skill_router import SkillRouteCandidate, SkillSemanticRouter
+from common.skill_router import SkillSemanticRouter
 
 # 始终可见的本地工具名集合 (不被 skill allowed-tools 过滤掉).
 # knowledge_search 是三图共享的受管本地 HTTP 工具：纯问候轮次也保持 schema 可见，
 # 但不主动调用；关闭 MCP 不会移除它，任何 Skill 过滤也不能隐藏它。
 # 始终可见的工具：时间工具 + create_artifact 画布工具 + 知识检索.
-# load_skill 始终可见：多候选时模型可自主加载更匹配的 skill 规则，
-# 单候选/零候选时模型无理由调用，不会产生副作用。
 # create_artifact 是跨技能的通用画布输出能力，不受技能 allowed_tools 限制，
 # 保证 Agent 在任何技能命中场景下都能自主产出 HTML/Markdown/SVG 画布内容.
 _ALWAYS_VISIBLE_TOOL_NAMES: frozenset[str] = frozenset(
     {
         "get_beijing_time",
         "create_artifact",
-        "load_skill",
         "compute_artifact",
         "knowledge_search",
     }
@@ -128,21 +124,6 @@ def _latest_human_content(messages: Sequence[Any]) -> str:
         if isinstance(message, HumanMessage):
             return get_message_content(message)
     return ""
-
-
-def _candidate_summaries(
-    candidates: Sequence[SkillRouteCandidate],
-) -> list[dict[str, Any]]:
-    """构造多候选摘要（除 top1 外的其他候选）."""
-    return [
-        {
-            "skill_name": candidate.name,
-            "description": candidate.description,
-            "similarity_score": candidate.similarity_score,
-            "allowed_tools": list(candidate.allowed_tools),
-        }
-        for candidate in candidates[1:]
-    ]
 
 
 class BusinessGraphNodes:
@@ -212,10 +193,10 @@ class BusinessGraphNodes:
         state: BusinessGraphState,
         config: RunnableConfig,
     ) -> dict[str, Any]:
-        """语义路由前置节点：替代 find_skill 工具往返.
+        """语义路由前置节点：由向量路由器唯一决定业务 Skill.
 
-        单命中：完整规则直接内联到 skill_rules_content；
-        多命中：内联 top1 完整规则 + 其他候选摘要，模型可按需调用 load_skill。
+        只内联 top1 完整规则；不向模型披露候选摘要，也不提供 load_skill
+        二次选择入口，保证全自动路由可解释、可复现。
         """
         configurable = config.get("configurable", {}) or {}
         mode = get_routing_context(configurable).mode
@@ -279,21 +260,6 @@ class BusinessGraphNodes:
 
         top = candidates[0]
         skill_rules = load_skill_rules(self._router, top.name, mode)
-
-        if len(candidates) > 1:
-            summaries = json.dumps(
-                _candidate_summaries(candidates),
-                ensure_ascii=False,
-            )
-            skill_rules = "\n\n=====\n\n".join(
-                part
-                for part in (
-                    skill_rules,
-                    "以下为其他候选 Skill 摘要（仅当其明显更匹配用户问题时，"
-                    f"调用 load_skill 工具加载完整规则后再执行）：\n{summaries}",
-                )
-                if part
-            )
 
         logger.info(
             "业务图 Skill 命中: graph={}，skill={}，候选数={}，score={}",
@@ -424,8 +390,8 @@ class BusinessGraphNodes:
 
         - chitchat 车道：仅保留 knowledge_search 的 schema（不主动调用）；
         - knowledge 车道：始终可见的本地工具（时间 + create_artifact + 知识检索）；
-        - data_query 车道：业务工具（按已受理 MCP 白名单收窄）+ 可选 load_skill；
-        - 显式单选 Skill 时无需披露 load_skill 工具。
+        - data_query 车道：业务工具（按语义路由 top1 Skill 的 allowed_tools 收窄）。
+        本图不向模型披露 load_skill，Skill 只能由 resolve_skill 的向量路由决定。
         """
         intent = state.get("intent") or INTENT_DATA_QUERY
         if intent == INTENT_CHITCHAT:
@@ -456,11 +422,6 @@ class BusinessGraphNodes:
             list(business), config, business_code=self._graph_name
         )
 
-        configurable = config.get("configurable", {}) or {} if config else {}
-        skill_mode = configurable.get("capability_skill_mode") or "auto"
-        # 显式单选时无需披露 load_skill 工具
-        if skill_mode != "explicit":
-            available.append(self._load_skill_tool)
         from common.business_graph.tool_recovery import recoverable_tools
 
         return recoverable_tools(available, state.get("messages", []))

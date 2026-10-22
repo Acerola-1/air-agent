@@ -68,10 +68,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 variant="outline"
                 onClick={() => {
                   dismissMoved();
-                  router.replace("/");
+                  router.replace("/operations");
                 }}
               >
-                返回概览
+                返回运营总览
               </Button>
             </div>
           </CardContent>

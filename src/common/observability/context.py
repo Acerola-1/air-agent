@@ -115,8 +115,7 @@ def current_observation_config(runtime: Any = None) -> dict[str, Any]:
         from langgraph.config import get_config
 
         config = dict(get_config() or {})
-        if identity_from_config(config) is not None:
-            return config
+        return config
     except RuntimeError:
         pass
     config = getattr(runtime, "config", None)

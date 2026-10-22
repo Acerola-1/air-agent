@@ -19,6 +19,7 @@ const TABS = [
     label: "反馈处理",
     permissions: ["agent:operations:read"],
   },
+  { href: "/operations/insights", label: "需求洞察", permissions: ["agent:metrics:read"] },
   { href: "/operations/capabilities", label: "业务能力", permissions: ["agent:metrics:read"] },
   { href: "/operations/performance", label: "性能", permissions: ["agent:metrics:read"] },
   { href: "/operations/costs", label: "成本", permissions: ["agent:metrics:read"] },
@@ -35,7 +36,7 @@ export default function OperationsLayout({ children }: { children: React.ReactNo
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">Agent 运营后台</h1>
         <p className="text-muted-foreground text-sm">
-          当前企业范围内的事实查询与反馈处理；账号、企业、部门与角色仍在统一身份管理后台维护。
+          当前企业范围内的事实查询与反馈处理。
         </p>
       </header>
       {!allowed ? (

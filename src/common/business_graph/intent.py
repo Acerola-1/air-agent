@@ -19,6 +19,7 @@ from common.permission.rules import (
     _CHAT_GREETING_PATTERN,
     _KNOWLEDGE_PATTERN,
     _LOCATION_PATTERN,
+    _SELF_IDENTITY_PATTERN,
     _TIME_PATTERN,
 )
 
@@ -41,9 +42,15 @@ def classify_intent_rule(question: str) -> tuple[str, str]:
     if _CHAT_GREETING_PATTERN.search(normalized):
         return INTENT_CHITCHAT, "greeting_whitelist"
 
-    # 知识问答：命中知识关键词且不含时间/行政区（与权限 no_check 口径一致）
+    # 自我介绍/能力询问优先于数据查询：避免“你好，请问你是谁”
+    # 落入 data_query 后被语义路由器误配到某个业务 Skill。
+    # 带时间/地点的真实数据问题仍走全流程。
     has_time = bool(_TIME_PATTERN.search(normalized))
     has_location = bool(_LOCATION_PATTERN.search(normalized))
+    if _SELF_IDENTITY_PATTERN.search(normalized) and not has_time and not has_location:
+        return INTENT_CHITCHAT, "self_identity"
+
+    # 知识问答：命中知识关键词且不含时间/行政区（与权限 no_check 口径一致）
     if _KNOWLEDGE_PATTERN.search(normalized) and not has_time and not has_location:
         return INTENT_KNOWLEDGE, "knowledge_pattern"
 

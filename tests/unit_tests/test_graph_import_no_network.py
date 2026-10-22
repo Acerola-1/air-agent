@@ -7,10 +7,10 @@ import sys
 from pathlib import Path
 
 
-def test_public_graphs_import_without_any_network_attempt():
+def test_public_graphs_import_without_any_network_attempt(tmp_path):
     root = Path(__file__).resolve().parents[2]
     script = r"""
-import importlib,json,socket,time,traceback
+import importlib,inspect,json,socket,time,traceback
 attempts=[]
 def deny(*args,**kwargs):
     attempts.append([f'{frame.filename}:{frame.name}' for frame in traceback.extract_stack(limit=40)])
@@ -22,6 +22,8 @@ modules=['basic_qa','data_analysis','intelligent_tracing']
 loaded=[]
 for name in modules:
     graph=importlib.import_module(name+'.graph').graph
+    if inspect.isfunction(graph):
+        graph=graph({})
     assert callable(getattr(graph,'ainvoke',None)),name
     loaded.append(name)
 # 给任何误启动的后台线程机会执行；不是仅检查导入主线程。
@@ -59,7 +61,7 @@ print('IMPORT_PROOF='+json.dumps({'graphs':loaded,'network_attempts':len(attempt
     )
     parsed = json.loads(proof)
     assert len(parsed["graphs"]) == 3 and parsed["network_attempts"] == 0
-    evidence_dir = root / "docs/reviews/evidence/three-graph-import-20261019"
+    evidence_dir = tmp_path / "three-graph-import"
     evidence_dir.mkdir(parents=True, exist_ok=True)
     (evidence_dir / "import-network-guard.json").write_text(
         json.dumps(parsed, indent=2) + "\n"

@@ -125,7 +125,7 @@ def build_business_graph(
     builder.add_node(
         "execute_tools",
         ToolNode(
-            tools=[*get_business_tools(include_computation=True), load_skill_tool],
+            tools=[*get_business_tools(include_computation=True)],
             handle_tool_errors=False,
             awrap_tool_call=composed_tool_wrapper,
         ),

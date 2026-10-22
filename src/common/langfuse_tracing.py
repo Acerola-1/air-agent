@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import json
 import os
-import re
-import uuid
 from typing import Any, TypeVar
 
 from langchain_core.runnables import Runnable
@@ -15,137 +12,19 @@ InputT = TypeVar("InputT")
 OutputT = TypeVar("OutputT")
 
 
-def privacy_mask(*, data: Any) -> Any:
-    """Langfuse统一出口：只允许可校验标识和计数，不保留正文或任意嵌套配置.
+def _configure_existing_sdk_capture(client):
+    """Restore full capture when a prompt lookup already created the SDK client.
 
-    同时作用于现有自动CallbackHandler的input/output/metadata。
+    A previously configured singleton may still carry the old content masks and
+    exception-span filter. Clear those at both SDK and exporter boundaries.
     """
-    if not isinstance(data, dict):
-        return None
-    safe = {}
-    for key in (
-        "tenant_id",
-        "user_id",
-        "membership_id",
-        "request_id",
-        "attempt_id",
-        "submission_id",
-        "observation_id",
-        "logical_call_id",
-    ):
-        value = data.get(key)
-        try:
-            safe[key] = str(uuid.UUID(str(value)))
-        except (ValueError, TypeError):
-            pass
-    for key in ("input_tokens", "output_tokens", "total_tokens", "duration_ms"):
-        value = data.get(key)
-        if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
-            safe[key] = value
-    if data.get("graph_id") in {
-        "basic-qa",
-        "data-analysis",
-        "intelligent-tracing",
-    }:
-        safe["graph_id"] = data["graph_id"]
-    return safe or None
-
-
-def privacy_otel_mask(*, params):
-    """在SDK支持的导出钩子覆盖原生OTel跨度，删除任意正文与自由元数据."""
-    from langfuse.types import MaskOtelSpansResult, OtelSpanPatch
-
-    patches = {}
-    safe_scalar = {
-        "langfuse.observation.type",
-        "langfuse.observation.level",
-        "langfuse.observation.model.name",
-    }
-    for identifier, span in params.spans.items():
-        attributes = dict(span.attributes)
-        keep = {}
-        for key, value in attributes.items():
-            if (
-                key in safe_scalar
-                and isinstance(value, str)
-                and re.fullmatch(r"[A-Za-z0-9_./:-]{1,128}", value)
-            ):
-                keep[key] = value
-            elif key.startswith(
-                ("langfuse.observation.metadata.", "langfuse.trace.metadata.")
-            ):
-                field = key.rsplit(".", 1)[-1]
-                canonical = field.removeprefix("ledger_")
-                if canonical in {
-                    "tenant_id",
-                    "user_id",
-                    "membership_id",
-                    "request_id",
-                    "attempt_id",
-                    "submission_id",
-                    "observation_id",
-                    "logical_call_id",
-                    "thread_id",
-                    "run_id",
-                }:
-                    try:
-                        keep[key] = str(uuid.UUID(str(value)))
-                    except (ValueError, TypeError):
-                        pass
-                elif canonical == "graph_id" and value in {
-                    "basic-qa",
-                    "data-analysis",
-                    "intelligent-tracing",
-                }:
-                    keep[key] = value
-            elif key in {"langfuse.observation.metadata", "langfuse.trace.metadata"}:
-                try:
-                    parsed = json.loads(value) if isinstance(value, str) else value
-                except (ValueError, TypeError):
-                    parsed = {}
-                safe = privacy_mask(data=parsed)
-                if safe:
-                    keep[key] = json.dumps(safe)
-            elif key == "langfuse.observation.usage_details":
-                try:
-                    parsed = json.loads(value) if isinstance(value, str) else value
-                except (ValueError, TypeError):
-                    parsed = {}
-                if isinstance(parsed, dict):
-                    safe = {
-                        k: v
-                        for k, v in parsed.items()
-                        if k
-                        in {
-                            "input",
-                            "output",
-                            "total",
-                            "input_cached_tokens",
-                            "output_reasoning_tokens",
-                            "cache_read_input_tokens",
-                            "cache_creation_input_tokens",
-                        }
-                        and isinstance(v, int)
-                        and not isinstance(v, bool)
-                        and v >= 0
-                    }
-                    if safe:
-                        keep[key] = json.dumps(safe)
-        patches[identifier] = OtelSpanPatch(
-            delete_attributes=tuple(attributes), set_attributes=keep
-        )
-    return MaskOtelSpansResult(span_patches=patches)
-
-
-def _configure_existing_sdk_privacy(client):
-    # Native LangGraph may initialize this project's SDK singleton before graphs.
-    # Configure the installed SDK's documented transforming-exporter hook as well.
     from langfuse._client.span_exporter import LangfuseTransformingSpanExporter
     from langfuse._client.span_processor import LangfuseSpanProcessor
 
     resources = client._resources
-    resources.mask = privacy_mask
-    resources.mask_otel_spans = privacy_otel_mask
+    client._mask = None
+    resources.mask = None
+    resources.mask_otel_spans = None
     for processor in resources.tracer_provider._active_span_processor._span_processors:
         if (
             not isinstance(processor, LangfuseSpanProcessor)
@@ -154,26 +33,17 @@ def _configure_existing_sdk_privacy(client):
             continue
         exporter = processor.span_exporter
         if isinstance(exporter, LangfuseTransformingSpanExporter):
-            exporter._mask_otel_spans = privacy_otel_mask
-            previous = getattr(
-                processor, "_aa_original_export_filter", processor._should_export_span
-            )
-            processor._aa_original_export_filter = previous
-            # Attribute mask cannot rewrite OTel events/status descriptions. Drop such
-            # spans before export so raw exception bodies cannot bypass the masker.
-            processor._should_export_span = lambda span, allow=previous: (
-                not getattr(span, "events", ())
-                and not getattr(getattr(span, "status", None), "description", None)
-                and allow(span)
-            )
-        else:
-            # Unsupported exporter fails closed for observation export, never for answers.
-            processor._should_export_span = lambda span: False
-            logger.warning("Langfuse export disabled: privacy hook unavailable")
+            exporter._mask_otel_spans = None
+        previous = getattr(processor, "_aa_original_export_filter", None)
+        if previous is not None:
+            processor._should_export_span = previous
+            del processor._aa_original_export_filter
 
 
 def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
     runnable: Runnable[InputT, OutputT],
+    *,
+    config: dict[str, Any] | None = None,
 ) -> Runnable[InputT, OutputT]:
     """Bind a Langfuse callback to a runnable when credentials are available.
 
@@ -204,22 +74,57 @@ def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
     from langfuse import Langfuse
     from langfuse.langchain import CallbackHandler
 
-    # SDK singleton may already exist for prompt lookup. Always mask this callback's
-    # client too; only the installed SDK's masking seam is used, never monkeypatch export.
+    trace_context = None
+    trace_metadata = {}
+    if config is not None:
+        from common.observability.context import observation_context_from_config
+
+        ctx = observation_context_from_config(config)
+        if ctx is None:
+            return runnable
+        # A thread contains multiple questions. Only the server-admitted attempt
+        # (including its resume submissions) owns this distributed trace.
+        trace_context = {
+            "trace_id": Langfuse.create_trace_id(
+                seed=f"air-agent:{ctx.tenant_id}:{ctx.attempt_id}"
+            )
+        }
+        trace_metadata = {
+            "langfuse_trace_name": ctx.graph_id,
+            "langfuse_user_id": ctx.user_id,
+            "langfuse_session_id": ctx.thread_id,
+        }
+
+    # Capture all graph/model/tool content in the configured Langfuse project.
     os.environ.setdefault("OTEL_BSP_MAX_QUEUE_SIZE", "1000")
     os.environ.setdefault("OTEL_BSP_MAX_EXPORT_BATCH_SIZE", "100")
     Langfuse(
-        mask=privacy_mask,
-        mask_otel_spans=privacy_otel_mask,
         timeout=2,
         flush_at=100,
         flush_interval=2,
     )
 
-    class PrivacyCallbackHandler(CallbackHandler):
+    class RunCallbackHandler(CallbackHandler):
         def _log_debug_event(self, *args, **kwargs):
-            # SDK debug messages contain unmasked prompts before the export masker.
+            # Full trace content belongs in Langfuse, not local SDK debug logs.
             return None
+
+        def _parse_langfuse_trace_attributes(self, *, metadata=None, tags=None):
+            if config is None:
+                return super()._parse_langfuse_trace_attributes(
+                    metadata=metadata, tags=tags
+                )
+            # Never let invoke-time/browser metadata replace the trusted factory
+            # binding. The SDK propagates these attributes from the root span.
+            attributes = super()._parse_langfuse_trace_attributes(
+                metadata=metadata, tags=tags
+            )
+            attributes.update(
+                trace_name=trace_metadata["langfuse_trace_name"],
+                user_id=trace_metadata["langfuse_user_id"],
+                session_id=trace_metadata["langfuse_session_id"],
+            )
+            return attributes
 
         def _notify(self, run_id):
             from common.observability.model_adapter import notify_langfuse_trace
@@ -236,18 +141,13 @@ def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
             super().on_llm_start(serialized, prompts, run_id=run_id, **kwargs)
             self._notify(run_id)
 
-        def on_llm_error(self, error, **kwargs):
-            super().on_llm_error(RuntimeError("model_call_failed"), **kwargs)
-
-        def on_tool_error(self, error, **kwargs):
-            super().on_tool_error(RuntimeError("tool_call_failed"), **kwargs)
-
-        def on_chain_error(self, error, **kwargs):
-            super().on_chain_error(RuntimeError("chain_call_failed"), **kwargs)
-
-    handler = PrivacyCallbackHandler(public_key=os.environ["LANGFUSE_PUBLIC_KEY"])
-    handler._langfuse_client._mask = privacy_mask
-    _configure_existing_sdk_privacy(handler._langfuse_client)
+    handler = RunCallbackHandler(
+        public_key=os.environ["LANGFUSE_PUBLIC_KEY"], trace_context=trace_context
+    )
+    # Keep OTel context changes in the invoking task, not callback executor threads.
+    if config is not None:
+        handler.run_inline = True
+    _configure_existing_sdk_capture(handler._langfuse_client)
     try:
         # 观测域（change complete-agent-observability）反查真实 Langfuse trace id：
         # 同一 run_id 在所有 handler 间共享，注册表只存弱引用（不延长生命周期）。
@@ -257,4 +157,10 @@ def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
         register_langfuse_handler(handler)
     except Exception:  # noqa: BLE001 - 注册失败不影响追踪绑定
         pass
-    return runnable.with_config(callbacks=[handler])
+    if config is None:
+        return runnable.with_config(callbacks=[handler])
+
+    # LangGraph merges these defaults with the worker's invocation callbacks,
+    # preserving its callback manager and parent. Copying worker callbacks into
+    # both places would deliver events twice when callbacks are a plain list.
+    return runnable.with_config(callbacks=[handler], metadata=trace_metadata)

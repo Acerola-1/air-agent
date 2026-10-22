@@ -1,12 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
   Database,
-  ExternalLink,
   History,
   KeyRound,
   LayoutDashboard,
@@ -20,7 +18,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { getBackendConfig, type BackendConfig } from "@/lib/config";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { PERMISSION_MENU, type PermissionNode } from "@/lib/types";
@@ -33,6 +30,7 @@ const RETIRED_PREFIXES = [
   "/system/audit",
   "/platform/tenants",
   "/enterprise/",
+  "/business/",
 ];
 
 function isRetired(path: string): boolean {
@@ -60,14 +58,7 @@ function iconFor(name: string | null): LucideIcon {
 export function AppSidebar() {
   const { menus, user, logout, can } = useSession();
   const pathname = usePathname();
-  const [config, setConfig] = useState<BackendConfig | null>(null);
 
-  useEffect(() => {
-    void getBackendConfig().then(setConfig);
-  }, []);
-
-  const remote = config?.identityBackend === "remote";
-  const iamAdminUrl = config?.iamAdminUrl ?? null;
   // 运营页面由本地静态路由清单 + 实时权限显示；IAM 菜单表不要求包含 Agent 页面。
   const operations = [
     { href: "/operations", label: "运营总览", permissions: ["agent:metrics:read"] },
@@ -116,29 +107,6 @@ export function AppSidebar() {
       </div>
 
       <nav aria-label="后台导航" className="flex max-h-[60vh] flex-wrap items-start gap-2 overflow-y-auto p-3 md:block md:max-h-none md:flex-1 md:space-y-4">
-        <Link
-          href="/"
-          className={cn(
-            "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-            pathname === "/" && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-          )}
-        >
-          <LayoutDashboard className="size-4" />
-          概览
-        </Link>
-
-        {remote && iamAdminUrl && (
-          <a
-            href={iamAdminUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
-          >
-            <ExternalLink className="size-4" />
-            统一身份管理
-          </a>
-        )}
-
         {operations.length > 0 && (
           <div className="space-y-1">
             <div className="text-muted-foreground px-3 py-1 text-xs font-medium tracking-wide">
@@ -170,7 +138,7 @@ export function AppSidebar() {
             (child) =>
               child.type === PERMISSION_MENU &&
               child.path &&
-              !(remote && isRetired(child.path))
+              !isRetired(child.path)
           );
           if (!items.length) return null;
           return (

@@ -1,0 +1,30 @@
+{
+  "items": [
+    {
+      "id": "agent-observability-access",
+      "type": "spec",
+      "valid": true,
+      "issues": [],
+      "durationMs": 4
+    }
+  ],
+  "summary": {
+    "totals": {
+      "items": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "byType": {
+      "spec": {
+        "items": 1,
+        "passed": 1,
+        "failed": 0
+      }
+    }
+  },
+  "version": "1.0",
+  "root": {
+    "path": "/Users/acerola/Dev/Python/air_agent",
+    "source": "nearest"
+  }
+}

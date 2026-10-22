@@ -581,9 +581,11 @@ _LANGFUSE_LOCK = threading.Lock()
 
 
 def register_langfuse_handler(handler: Any) -> None:
-    """with_langfuse_tracing 绑定时注册旧 CallbackHandler（弱引用，去重）."""
-    if not any(ref() is handler for ref in _LANGFUSE_HANDLERS):
-        _LANGFUSE_HANDLERS.append(weakref.ref(handler))
+    """注册 CallbackHandler；执行期绑定时回收已经结束运行的弱引用."""
+    with _LANGFUSE_LOCK:
+        _LANGFUSE_HANDLERS[:] = [ref for ref in _LANGFUSE_HANDLERS if ref() is not None]
+        if not any(ref() is handler for ref in _LANGFUSE_HANDLERS):
+            _LANGFUSE_HANDLERS.append(weakref.ref(handler))
 
 
 def _find_langfuse_trace_id(run_id: str) -> str:

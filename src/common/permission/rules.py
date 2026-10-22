@@ -21,6 +21,15 @@ _CHAT_GREETING_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+# 自我介绍 / 能力询问：允许“你好，请问…”“你能做什么工作”等自然说法，
+# 不要求整句等于固定问候词。
+_SELF_IDENTITY_PATTERN = re.compile(
+    r"(你是谁|你叫什么|你叫啥|介绍一下你自己|你是什么(助手|模型|系统)|"
+    r"你能做什么|你可以做什么|你会什么|你的能力(范围)?|"
+    r"怎么使用你|如何使用你)",
+    re.IGNORECASE,
+)
+
 # 知识问答关键词（不涉及数据查询）
 _KNOWLEDGE_PATTERN = re.compile(
     r"(什么是|是什[么麽]|什么意思|含义|定义|概念|原理|"
@@ -107,6 +116,9 @@ async def classify_permission_need(
 
     # 第一层：正则白名单
     if _CHAT_GREETING_PATTERN.search(normalized):
+        return "no_check"
+
+    if _SELF_IDENTITY_PATTERN.search(normalized):
         return "no_check"
 
     if _DATA_METRIC_PATTERN.search(normalized):

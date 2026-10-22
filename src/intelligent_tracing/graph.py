@@ -13,6 +13,8 @@ from deepagents.profiles import (
     register_harness_profile,
 )
 from langchain.agents.middleware.types import AgentMiddleware
+from langchain_core.runnables import RunnableConfig
+from loguru import logger
 
 from common.event_ledger.lifecycle import LedgerLifecycleMiddleware
 from common.knowledge.tool import build_knowledge_tool
@@ -255,4 +257,19 @@ def build_tracing_graph(
         restore_profile()
 
 
-graph = with_langfuse_tracing(build_tracing_graph(checkpointer=None))
+_graph = build_tracing_graph(checkpointer=None)
+
+
+def graph(config: RunnableConfig):
+    """Attach one attempt-scoped handler after the native worker restores config.
+
+    Auth hooks persist JSON only; Python callback objects belong at this execution
+    boundary. Schema/state reads reuse the compiled graph without starting traces.
+    """
+    if not (config.get("configurable") or {}).get("__is_for_execution__"):
+        return _graph
+    try:
+        return with_langfuse_tracing(_graph, config=config)
+    except Exception as exc:  # noqa: BLE001 - observation failure cannot fail answers
+        logger.warning("Langfuse run tracing unavailable: {}", type(exc).__name__)
+        return _graph

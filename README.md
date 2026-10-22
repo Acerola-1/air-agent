@@ -130,6 +130,8 @@ npm --prefix admin/web ci
 | `MAIN_LLM_*`、Embedding/检索配置 | 模型网关与能力所需服务；地址须能从实际运行环境访问 |
 | MCP 连接 | `AGENT_MCP_CONNECTIONS_JSON`/`FILE` 的受保护部署配置；业务注册表与 `approved_query_tools` 双白名单；浏览器不能指定地址或凭据 |
 
+启用 `LANGFUSE_ENABLED=true` 后，Langfuse 完整采集 SDK 可见的图/节点输入输出、系统提示与对话、模型响应、工具定义及参数结果、元数据和实际异常。2026-10-22 已按用户要求移除统一正文过滤；普通业务台账和本地日志仍按各自字段规则记录。此前已过滤的历史内容不能补回。
+
 宿主`.env`由dotenv读取；原生`.env.langgraph`使用完整literal key=value（不带shell外层引号），不要混用两套文件。
 
 `AUTH_SECRET` 仅保留旧会话迁移用途；当前登录不再使用旧 HMAC cookie 或 `data/users.json`。Next 服务端的 `ADMIN_API_URL`、`LANGGRAPH_API_URL`、内部令牌和归档密钥需要在进程环境或私有 `.env.local` 中配置；`admin/web` 的 `ADMIN_API_URL` 默认指向本机8100。

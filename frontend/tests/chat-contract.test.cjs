@@ -691,36 +691,24 @@ test('官方 interrupt 的权威状态确认本次已停止执行，不冒充业
 });
 
 
-test('确认回读采用服务端真实选择，运行结束后的同代次迟到确认仍可关联', async () => {
-  const gate = deferred();
-  const f = fixture({ confirmRunAdmission: async (_t, _r, callback) => {
-    const body = await gate.promise;
-    callback(body.attempt_id, body.capability_selection);
-    return body;
-  }});
-  const work = f.useChatStore.getState().sendMessage('问题', 'fast'); await tick();
-  f.streams[0].handlers.onRun('run'); f.streams[0].wait.resolve(); await work;
-  gate.resolve({ confirmed: true, attempt_id: 'attempt', capability_selection: {
-    selection_id: 'server-uuid', selection_digest: 'server-digest',
-    skill: { mode: 'explicit', skill_id: 'skill:basic-qa:s1' }, mcp: { mode: 'allowlist', tool_ids: [] },
-  }}); await tick();
-  const actual = f.acceptedSnapshots.at(-1);
-  assert.equal(actual.id, 'server-uuid'); assert.equal(actual.selection_digest, 'server-digest');
-  assert.equal(actual.skill_id, 'skill:basic-qa:s1'); assert.equal(actual.mcp_mode, 'allowlist');
+test('基础问答提交不携带技能/MCP选择，统一由服务端自动路由', async () => {
+  const f = fixture();
+  const work = f.useChatStore.getState().sendMessage('问题', 'fast');
+  await tick();
+  const ctx = f.getSubmissionContext();
+  assert.ok(ctx && ctx.submissionKey);
+  assert.equal('capabilitySelection' in ctx, false);
+  assert.equal(ctx.operationKind, 'initial');
+  f.streams[0].wait.resolve();
+  await work;
 });
 
-test('换会话后迟到的确认回调不能污染新会话的已受理选择', async () => {
-  const gate = deferred();
-  const f = fixture({ confirmRunAdmission: async (_t, _r, callback) => {
-    const body = await gate.promise; callback('old-attempt', body); return { confirmed: true };
-  }});
-  const work = f.useChatStore.getState().sendMessage('旧问题', 'fast'); await tick();
-  f.streams[0].handlers.onRun('old-run'); f.useChatStore.getState().newThread();
-  const count = f.acceptedSnapshots.length;
-  gate.resolve({ id: 'old-selection', selection_digest: 'old-digest' }); await tick();
-  assert.equal(f.acceptedSnapshots.length, count);
-  assert.equal(f.acceptedSnapshots.at(-1), null);
+test('确认回读不再向前端暴露能力选择，自动路由状态由服务端保存', async () => {
+  const f = fixture();
+  const work = f.useChatStore.getState().sendMessage('问题', 'fast'); await tick();
+  f.streams[0].handlers.onRun('run');
   f.streams[0].wait.resolve(); await work;
+  assert.equal(f.acceptedSnapshots.length, 0);
 });
 
 test('停止首条 metadata 丢失后按本次提交键找回已 interrupted 的运行', async()=>{

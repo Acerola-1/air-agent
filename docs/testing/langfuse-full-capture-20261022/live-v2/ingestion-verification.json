@@ -1,0 +1,59 @@
+[
+  {
+    "trace_id": "56f0bd1101aca517b0edb65cd666b028",
+    "spans": 65,
+    "app_roots": 1,
+    "missing_parents": 0,
+    "scripted_models": 8,
+    "scripted_models_with_io": 8,
+    "tasks": 4,
+    "tasks_with_io": 4,
+    "graph_has_full_io": 1,
+    "chat_full_input": 0,
+    "chat_output_exact": 0,
+    "tool_input_exact": 0,
+    "tool_output_exact": 0,
+    "original_error_kept": 0,
+    "environments": [
+      "full-capture-validation-20261022"
+    ]
+  },
+  {
+    "trace_id": "07d67a7cd5c3a0891f56acd75d203a0a",
+    "spans": 65,
+    "app_roots": 1,
+    "missing_parents": 0,
+    "scripted_models": 8,
+    "scripted_models_with_io": 8,
+    "tasks": 4,
+    "tasks_with_io": 4,
+    "graph_has_full_io": 1,
+    "chat_full_input": 0,
+    "chat_output_exact": 0,
+    "tool_input_exact": 0,
+    "tool_output_exact": 0,
+    "original_error_kept": 0,
+    "environments": [
+      "full-capture-validation-20261022"
+    ]
+  },
+  {
+    "trace_id": "6ade63f867de0c9bcb746fdc45b14868",
+    "spans": 5,
+    "app_roots": 1,
+    "missing_parents": 0,
+    "scripted_models": 0,
+    "scripted_models_with_io": 0,
+    "tasks": 0,
+    "tasks_with_io": 0,
+    "graph_has_full_io": 0,
+    "chat_full_input": 0,
+    "chat_output_exact": 0,
+    "tool_input_exact": 0,
+    "tool_output_exact": 0,
+    "original_error_kept": 1,
+    "environments": [
+      "full-capture-validation-20261022"
+    ]
+  }
+]

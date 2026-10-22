@@ -1,0 +1,29 @@
+[
+  {
+    "trace_id": "56f0bd1101aca517b0edb65cd666b028",
+    "spans": 65,
+    "app_roots": 1,
+    "missing_parents": 0,
+    "environments": [
+      "full-capture-validation-20261022"
+    ]
+  },
+  {
+    "trace_id": "07d67a7cd5c3a0891f56acd75d203a0a",
+    "spans": 65,
+    "app_roots": 1,
+    "missing_parents": 0,
+    "environments": [
+      "full-capture-validation-20261022"
+    ]
+  },
+  {
+    "trace_id": "6ade63f867de0c9bcb746fdc45b14868",
+    "spans": 5,
+    "app_roots": 1,
+    "missing_parents": 0,
+    "environments": [
+      "full-capture-validation-20261022"
+    ]
+  }
+]

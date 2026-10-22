@@ -7,6 +7,7 @@ never performs database migration, and records only sanitized lifecycle metadata
 from __future__ import annotations
 
 import argparse
+import ast
 import copy
 import ipaddress
 import json
@@ -720,6 +721,67 @@ def _backup_native_env(path: Path) -> None:
     raise LaunchError("无法为既有原生环境文件分配唯一备份名。")
 
 
+def _expected_alembic_head(agent_root: Path) -> str:
+    """Return the single Alembic head declared by admin API migration files."""
+    versions_dir = agent_root / "admin" / "api" / "migrations" / "versions"
+    revisions: set[str] = set()
+    down_revisions: set[str] = set()
+    for path in versions_dir.glob("*.py"):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            raise LaunchError("无法读取 admin API 迁移文件。") from exc
+
+        def literal(name: str) -> Any:
+            match = re.search(rf"^{name}\s*=\s*(.+)$", text, re.M)
+            if not match:
+                return None
+            try:
+                return ast.literal_eval(match.group(1).strip())
+            except (ValueError, SyntaxError) as exc:
+                raise LaunchError(
+                    f"admin API 迁移文件 {path.name} 的 {name} 无法解析。"
+                ) from exc
+
+        revision = literal("revision")
+        parent = literal("down_revision")
+        if isinstance(revision, str):
+            revisions.add(revision)
+        if isinstance(parent, str):
+            down_revisions.add(parent)
+        elif isinstance(parent, tuple):
+            down_revisions.update(item for item in parent if isinstance(item, str))
+    heads = revisions - down_revisions
+    if len(heads) != 1:
+        raise LaunchError("admin API 迁移链不存在唯一 head。")
+    return next(iter(heads))
+
+
+def _verify_admin_schema(agent_root: Path, agent_env: dict[str, str]) -> None:
+    """Fail before starting if the business database is not at the code head."""
+    uri = agent_env.get("DATABASE_URI", "").strip()
+    if not uri:
+        raise LaunchError("缺少 DATABASE_URI，无法校验业务库迁移版本。")
+    expected = _expected_alembic_head(agent_root)
+    try:
+        import psycopg
+
+        with psycopg.connect(uri, connect_timeout=5) as connection:
+            row = connection.execute(
+                "SELECT version_num FROM alembic_version"
+            ).fetchone()
+            current = str(row[0]) if row else ""
+    except Exception as exc:  # noqa: BLE001 - deployment preflight
+        raise LaunchError(
+            "无法读取业务库迁移版本；请确认 PostgreSQL 已启动并已执行 admin API 迁移。"
+        ) from exc
+    if current != expected:
+        raise LaunchError(
+            f"业务库迁移未到代码 head：当前 {current or '无'}，期望 {expected}；"
+            "请先在 admin/api 执行 alembic upgrade head。"
+        )
+
+
 def _write_native_environment(
     source_path: Path, i4_dir: Path, postgres_ip: str, redis_ip: str
 ) -> Path:
@@ -1221,6 +1283,7 @@ def _start(args: argparse.Namespace) -> int:
     iam_env, agent_env, rag_env = _validate_host_env(iam_root, agent_root, rag_root)
     graph_path = agent_root / ".env.langgraph"
     _validate_graph_env(graph_path)
+    _verify_admin_schema(agent_root, agent_env)
     native_env_path = agent_root / ".local" / "i4-live" / "native.env"
     native_descriptor = _native_service_descriptor(
         agent_root / "docker-compose.yaml",

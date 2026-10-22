@@ -1,0 +1,32 @@
+[
+  {
+    "trace_id": "53d9b8212b0ae3688b72bd8a3dad1357",
+    "spans": 65,
+    "roots": 1,
+    "missing_parents": 0,
+    "model_calls": 8,
+    "tasks": 4,
+    "freezes": 1,
+    "orphan_critical": 0,
+    "correct_root": 1,
+    "leaked_body": 0,
+    "trace_names": [
+      "intelligent-tracing"
+    ]
+  },
+  {
+    "trace_id": "a1dc9723fd9c887ba06338fbcce5a71e",
+    "spans": 65,
+    "roots": 1,
+    "missing_parents": 0,
+    "model_calls": 8,
+    "tasks": 4,
+    "freezes": 1,
+    "orphan_critical": 0,
+    "correct_root": 1,
+    "leaked_body": 0,
+    "trace_names": [
+      "intelligent-tracing"
+    ]
+  }
+]

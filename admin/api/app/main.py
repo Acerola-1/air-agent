@@ -100,13 +100,17 @@ if os.environ.get("AGENT_IDENTITY_BACKEND", "").strip().lower() == "remote":
     async def identity_dependency_unavailable(request, exc):
         return JSONResponse(status_code=503, content={"detail": "身份依赖暂不可用，请稍后重试"})
 
+    async def data_dependency_unavailable(request, exc):
+        # 数据库迁移/连接失败不能被伪装成 IAM 故障，否则会把运维问题导向错误方向。
+        return JSONResponse(status_code=503, content={"detail": "后台数据服务暂不可用，请稍后重试"})
+
     for error_type in (
         IdentityBackendUnavailable,
         IdentityBackendConfigError,
         RemoteProtocolError,
-        SQLAlchemyError,
     ):
         app.add_exception_handler(error_type, identity_dependency_unavailable)
+    app.add_exception_handler(SQLAlchemyError, data_dependency_unavailable)
 
     @app.middleware("http")
     async def remote_identity_routes(request, call_next):
@@ -134,7 +138,11 @@ if os.environ.get("AGENT_IDENTITY_BACKEND", "").strip().lower() == "remote":
                 content={
                     "code": "management_moved",
                     "detail": "用户、企业与权限请在统一身份管理后台操作",
-                    "iam_url": os.environ.get("IAM_BASE_URL", "") + "/admin",
+                    "iam_url": (
+                        os.environ.get("IAM_ADMIN_URL", "").strip().rstrip("/")
+                        or "http://127.0.0.1:19101"
+                    )
+                    + "/admin",
                 },
             )
         return await call_next(request)

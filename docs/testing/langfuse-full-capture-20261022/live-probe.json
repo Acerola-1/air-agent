@@ -1,0 +1,27 @@
+{
+  "environment": "full-capture-validation-20261022",
+  "model": "ScriptedChatModel (controlled)",
+  "data": "FixtureDataSource (controlled)",
+  "langfuse": "real local server",
+  "business_database": "blocked by probe",
+  "runs": [
+    {
+      "mode": "invoke",
+      "trace_id": "b1e5f8fe9ffb6d03dc2d706144455154",
+      "attempt_id": "851c56b0-1c8d-4aff-95ef-0c60ca802ca6",
+      "duration_seconds": 1.054
+    },
+    {
+      "mode": "stream",
+      "trace_id": "7b648ed40f2a74089ab5470776509b4d",
+      "attempt_id": "18826bdd-301c-4b24-b597-19a3d8ab53f9",
+      "duration_seconds": 0.126
+    },
+    {
+      "mode": "ChatOpenAI+tool+error",
+      "trace_id": "b1e5f8fe9ffb6d03dc2d706144455154",
+      "body_characters": 8228,
+      "body_sha256": "28ed12d8580dd583c78fc45d8add988665e92603a994110526314653341918cd"
+    }
+  ]
+}

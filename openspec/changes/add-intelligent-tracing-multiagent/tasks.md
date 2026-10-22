@@ -39,6 +39,10 @@
 - [ ] 3.5 移除unrestricted GP、轨迹专员和轨迹/PSCF工具；限制默认文件/execute，检查最终schema及真实dispatch（装配/fake model schema 已覆盖；真实模型 dispatch 与真实 MCP 零调用未验收）
 - [ ] 3.6 将复合工具内部依赖纳入现行受理选择和实时权限交集；被排除依赖/轨迹工具真实外呼为零
 - [ ] 3.7 主/子/摘要模型守卫与观测、确定性工具观测逐项接线；验证身份撤销、IAM不可用和缓存命中失败关闭
+
+  2026-10-22：已补修 Langfuse 按 attempt 的执行期回调、父链继承及应用根节点隐私白名单；固定模型/数据经真实 Langfuse 的同步与流式入库复验均为 65 跨度、1 应用根、0 子节点缺父。证据见 `docs/testing/langfuse-trace-tree-20261022/report.md`。未复跑截图原业务问题，不以本次 trace 验证勾选整个守卫/撤销/缓存验收项。
+
+  后续需求修订：用户明确撤销上述正文过滤限制，要求 Langfuse 全量数据；已将现行规格调整为完整采集，相关实施和实测另见 `docs/testing/langfuse-full-capture-20261022/report.md`。此前 trace 修复报告保留为历史证据，不再代表当前正文采集策略。
 - [ ] 3.8 子任务标识关联已有attempt/run和工具终态；不伪造新用户请求/顶层attempt，核对实际委派覆盖（G0 用注入 attempt/run 验证 child execution；平台真实终态未验收）
 - [ ] 3.9 实现有界task/补查/并发/超时/重试；预算耗尽降级，权限或参数错误不盲目重试（task/并发/超时/模型调用/重试已实现；max_supplemental_queries 补查计数待接）
 

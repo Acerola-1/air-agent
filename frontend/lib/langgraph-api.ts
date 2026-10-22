@@ -50,7 +50,6 @@ export type SubmissionContext = {
   submissionKey: string;
   userMessageId?: string | null;
   operationKind?: "initial" | "retry" | "regenerate" | "resume";
-  capabilitySelection?: Record<string, unknown> | null;
 };
 let submissionContext: SubmissionContext | null = null;
 
@@ -73,9 +72,6 @@ function tenantHeaders(): Record<string, string> {
     headers["x-submission-key"] = submissionContext.submissionKey;
     if (submissionContext.userMessageId) headers["x-user-message-id"] = submissionContext.userMessageId;
     if (submissionContext.operationKind) headers["x-operation-kind"] = submissionContext.operationKind;
-    if (submissionContext.capabilitySelection) {
-      headers["x-capability-selection"] = JSON.stringify(submissionContext.capabilitySelection);
-    }
   }
   return headers;
 }

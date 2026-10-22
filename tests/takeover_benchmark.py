@@ -324,7 +324,7 @@ async def main():
     )
     tracing_module = importlib.import_module("intelligent_tracing.graph")
     importlib.reload(tracing_module)
-    tracing_graph = tracing_module.graph
+    tracing_graph = tracing_module.graph({})
 
     async def run_graph_controlled():
         with patch(

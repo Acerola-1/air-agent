@@ -2,7 +2,6 @@
 
 import { create } from "zustand";
 import type { AdminSessionContext } from "@/lib/admin-api-contract";
-import { useCapabilityStore } from "@/lib/capability-store";
 import { useChatStore } from "@/lib/chat-store";
 import { onTenantContextConflict, setTenantRequestContext } from "@/lib/langgraph-api";
 import { setFeedbackScope } from "@/lib/feedback/client";
@@ -42,7 +41,6 @@ function applyCtx(ctx: AdminSessionContext | null) {
   const previous = useSessionStore.getState().ctx;
   if (previous?.user.id !== ctx?.user.id || previous?.current_tenant?.id !== ctx?.current_tenant?.id || previous?.context_version !== ctx?.context_version) {
     useChatStore.getState().clearForTenant();
-    useCapabilityStore.getState().clearForScopeSwitch(useChatStore.getState().graphId, ctx?.current_tenant?.id);
   }
   if (ctx) {
     try {

@@ -1,0 +1,1 @@
+[{"graph": "basic-qa", "handler": "RunCallbackHandler", "body_mask_disabled": true, "otel_mask_disabled": true}, {"graph": "data-analysis", "handler": "RunCallbackHandler", "body_mask_disabled": true, "otel_mask_disabled": true}, {"graph": "intelligent-tracing", "execution_factory": true, "read_graph_type": "CompiledStateGraph"}]

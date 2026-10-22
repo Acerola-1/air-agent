@@ -18,7 +18,6 @@ import {
   recordNavigationStopBeacon,
   type LgThread, type ContextMetrics, type ProcessingStatus, type ThreadValues,
 } from "@/lib/langgraph-api";
-import { acceptedSnapshot, useCapabilityStore } from "@/lib/capability-store";
 import {
   AgentOutputStream,
   isFinalOutputEvent,
@@ -87,7 +86,6 @@ type ActiveRun = {
   streamStarted?: boolean;
   phase?: "queued" | "processing" | "unknown";
   admitted?: boolean;
-  submittedSelection?: Record<string, unknown>;
   graphId?: string;
 };
 
@@ -314,7 +312,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
   analysisMenuName: "CityHourBroadcast",
   setAnalysisMenu: (menuName) => {
     if (get().isStreaming || get().stopPending || get().graphId !== "data-analysis") return;
-    useCapabilityStore.getState().setSkillMode("auto");
     set({ analysisMenuName: menuName });
   },
   graphId: "basic-qa", threads: [], activeThreadId: null, ...emptyView, loadingThreads: false, stopPending: false,
@@ -324,13 +321,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
     listRequest += 1;
     pendingStopRun = null;
     stopPromise = null;
-    useCapabilityStore.getState().clearForScopeSwitch(get().graphId);
     set({ threads: [], activeThreadId: null, ...emptyView, stopPending: false, analysisMenuName: "CityHourBroadcast" });
   },
   switchGraph: async (graphId) => {
     generation++; cancelActive();
-    useCapabilityStore.getState().clearForScopeSwitch(graphId);
-    void useCapabilityStore.getState().fetchCatalog(graphId);
     set({ graphId, activeThreadId: null, threads: [], ...emptyView });
     await get().loadThreads();
   },
@@ -348,16 +342,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
   openThread: async (threadId) => {
     const epoch = ++generation; cancelActive();
-    useCapabilityStore.getState().setAcceptedSelection(null);
     set({ activeThreadId: threadId, ...emptyView, loadingThread: true });
     try {
       const values = await getThreadState(threadId);
       if (generation === epoch && get().activeThreadId === threadId) set(fromValues(values));
-      const res = await fetch(`/api/agent-runs/confirm?thread_id=${encodeURIComponent(threadId)}`, { cache: "no-store" });
-      const body = res.ok ? await res.json() : null;
-      if (generation === epoch && get().activeThreadId === threadId) {
-        useCapabilityStore.getState().setAcceptedSelection(acceptedSnapshot(body?.capability_selection));
-      }
+      await fetch(`/api/agent-runs/confirm?thread_id=${encodeURIComponent(threadId)}`, { cache: "no-store" }).catch(() => {});
     } catch (error) {
       notifyIfContextConflict(error);
       if (generation === epoch) set({ loadingThread: false,
@@ -366,19 +355,16 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
   newThread: () => {
     generation++; cancelActive();
-    useCapabilityStore.getState().setAcceptedSelection(null);
     set({ activeThreadId: null, ...emptyView });
   },
   sendMessage: async (text, chatMode, operationKind = "initial") => {
     const previous = get(); const trimmed = text.trim();
     if (previous.isStreaming || previous.stopPending || !trimmed) return;
-    const capabilitySelection = useCapabilityStore.getState().toPayload();
     const run: ActiveRun = {
       generation: ++generation,
       controller: new AbortController(),
       threadId: previous.activeThreadId,
       runId: null,
-      submittedSelection: capabilitySelection,
       graphId: previous.graphId,
     };
     activeRun = run;
@@ -387,8 +373,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const submissionKey = newSubmissionKey();
     run.submissionKey = submissionKey;
     // 操作类型参与台账受理：initial/retry/regenerate。retry/regenerate 由服务端
-    // 解析来源尝试并关联原 request（提问量不增加）。
-    setSubmissionContext({ submissionKey, userMessageId: userMsg.id, operationKind, capabilitySelection });
+    // 解析来源尝试并关联原 request（提问量不增加）。技能/MCP 由服务端自动路由。
+    setSubmissionContext({ submissionKey, userMessageId: userMsg.id, operationKind });
     // 浏览器单调计时：同页面同测量段（页面重开新 ID，不跨页相减）。
     if (previous.activeTimingId) finishTiming(previous.activeTimingId);
     const measurementId = startTiming(run.generation);
@@ -423,12 +409,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
             if (!sameRun(run)) { void cancelRun(threadId, runId).catch(() => {}); return; }
             // 台账受理关联确认：服务端回读平台 run metadata 校验标记后才确认；
             // 失败保持"受理中"，不改写本地终态。
-            void confirmRunAdmission(threadId, runId, (attemptId, serverSelection) => {
+            void confirmRunAdmission(threadId, runId, (attemptId) => {
               // 回调在任何状态写入前先核对本次运行，防切图/换企业的迟到响应。
               if (generation !== run.generation || get().activeThreadId !== threadId || get().graphId !== run.graphId) return;
               timingAttachAttempt(measurementId, attemptId);
               run.admitted = true;
-              useCapabilityStore.getState().setAcceptedSelection(acceptedSnapshot(serverSelection));
             }).catch(() => {});
           },
           onValues: (values) => {

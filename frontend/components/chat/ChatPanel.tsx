@@ -26,7 +26,6 @@ import { useSessionStore } from "@/lib/session-client";
 import { Markdown } from "@/components/chat/Markdown";
 import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
-import { CapabilitySelector } from "@/components/chat/CapabilitySelector";
 import { AnalysisMenuSelector } from "@/components/chat/AnalysisMenuSelector";
 import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
 import { ContextMeter } from "@/components/chat/ContextMeter";
@@ -555,7 +554,6 @@ function Composer({
           <GraphSwitcher />
           <AnalysisMenuSelector />
           <ModeSwitcher />
-          <CapabilitySelector />
 
           {/* 上下文容量监控胶囊指示器 */}
           <ContextMeter />

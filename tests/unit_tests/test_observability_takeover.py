@@ -12,7 +12,6 @@ import pytest
 from langchain_core.messages import AIMessage, AIMessageChunk
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, LLMResult
 
-from common.langfuse_tracing import privacy_mask
 from common.observability.collector import ObservabilityCollector, WorkItem
 from common.observability.context import ObservationContext
 from common.observability.model_adapter import (
@@ -112,19 +111,6 @@ def test_negative_and_impossible_usage_do_not_become_measured():
 )
 def test_tool_business_result(payload, status):
     assert classify_tool_output(payload) == status
-
-
-def test_mask_removes_nested_credentials_and_body():
-    marker = "SAFE_TEST_PRIVATE_MARKER"
-    safe = privacy_mask(
-        data={
-            "input": marker,
-            "metadata": {"secret": marker},
-            "tenant_id": str(uuid.uuid4()),
-        }
-    )
-    assert marker not in str(safe) and "tenant_id" in safe
-    assert privacy_mask(data=marker) is None
 
 
 def test_price_precision_and_reasoning_subsets():

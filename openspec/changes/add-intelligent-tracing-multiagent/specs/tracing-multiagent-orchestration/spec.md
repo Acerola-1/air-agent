@@ -98,6 +98,12 @@ lead、LLM 专员及摘要外呼 SHALL 执行实时身份守卫与独立角色�
 - **THEN** MUST 逐个关联 child execution/observation、已有 attempt/run、实际工具与终态
 - **AND** MUST NOT 为每次 task 伪造新顶层 request/submission/attempt
 
+#### Scenario: Langfuse 主子链路完整
+- **WHEN** 一个已受理 attempt 经原生 worker 执行主图、模型、工具与并行专员
+- **THEN** 这些观测 MUST 归入同一个由服务端 attempt 决定的 trace，子跨度关联本次运行内真实父跨度
+- **AND** 同一 thread 的其他 attempt MUST 使用不同 trace，客户端 metadata 不得覆盖可信关联
+- **AND** 系统 MUST 保留 SDK 应用根节点标记及完整输入输出，真实入库的完整执行只有一个应用根节点
+
 #### Scenario: 运行预算耗尽
 - **WHEN** 达到版本化的 task/模型/补查/时间预算
 - **THEN** MUST 停止追加调查并发布允许的部分结果或受限状态

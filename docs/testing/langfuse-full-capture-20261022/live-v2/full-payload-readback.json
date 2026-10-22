@@ -1,0 +1,186 @@
+[
+  {
+    "mode": "invoke",
+    "trace_id": "56f0bd1101aca517b0edb65cd666b028",
+    "observations": 65,
+    "verified_content": [
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 10347,
+        "output_chars": 126
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 9566,
+        "output_chars": 133
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 750,
+        "output_chars": 372
+      },
+      {
+        "name": "task",
+        "input_chars": 81,
+        "output_chars": 1951
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 9015,
+        "output_chars": 194
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 914,
+        "output_chars": 235
+      },
+      {
+        "name": "task",
+        "input_chars": 77,
+        "output_chars": 2525
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 8609,
+        "output_chars": 190
+      },
+      {
+        "name": "task",
+        "input_chars": 76,
+        "output_chars": 3639
+      },
+      {
+        "name": "task",
+        "input_chars": 73,
+        "output_chars": 3213
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 5299,
+        "output_chars": 323
+      },
+      {
+        "name": "freeze_tracing_request",
+        "input_chars": 349,
+        "output_chars": 1909
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 4572,
+        "output_chars": 484
+      },
+      {
+        "name": "intelligent-tracing",
+        "input_chars": 145,
+        "output_chars": 51542
+      }
+    ]
+  },
+  {
+    "mode": "stream",
+    "trace_id": "07d67a7cd5c3a0891f56acd75d203a0a",
+    "observations": 65,
+    "verified_content": [
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 10347,
+        "output_chars": 126
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 9566,
+        "output_chars": 133
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 750,
+        "output_chars": 372
+      },
+      {
+        "name": "task",
+        "input_chars": 81,
+        "output_chars": 1951
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 9015,
+        "output_chars": 194
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 914,
+        "output_chars": 235
+      },
+      {
+        "name": "task",
+        "input_chars": 77,
+        "output_chars": 2525
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 8609,
+        "output_chars": 190
+      },
+      {
+        "name": "task",
+        "input_chars": 76,
+        "output_chars": 3639
+      },
+      {
+        "name": "task",
+        "input_chars": 73,
+        "output_chars": 3213
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 5299,
+        "output_chars": 323
+      },
+      {
+        "name": "freeze_tracing_request",
+        "input_chars": 349,
+        "output_chars": 1909
+      },
+      {
+        "name": "ScriptedChatModel",
+        "input_chars": 4572,
+        "output_chars": 484
+      },
+      {
+        "name": "intelligent-tracing",
+        "input_chars": 145,
+        "output_chars": 51542
+      }
+    ]
+  },
+  {
+    "mode": "ChatOpenAI+tool+error",
+    "trace_id": "6ade63f867de0c9bcb746fdc45b14868",
+    "observations": 5,
+    "verified_content": [
+      {
+        "name": "full_capture_error",
+        "input_chars": 55,
+        "output_chars": 0,
+        "actual_error_preserved": true
+      },
+      {
+        "name": "full_capture_echo",
+        "input_chars": 49203,
+        "output_chars": 49227,
+        "input_characters": 8228,
+        "input_hash_matches": true,
+        "output_characters": 8228,
+        "output_hash_matches": true
+      },
+      {
+        "name": "ChatOpenAI",
+        "input_chars": 49274,
+        "output_chars": 49264,
+        "system_and_full_input": true,
+        "output_characters": 8228,
+        "output_hash_matches": true
+      }
+    ]
+  }
+]

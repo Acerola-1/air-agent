@@ -417,3 +417,19 @@ async def test_compiled_knowledge_graph_reaches_actual_tool_before_streamed_answ
     ]
     assert len(visible) == 1 and visible[0].content == "臭氧由光化学过程形成。"
     assert model.ainvoke.await_count == 2
+
+
+def test_self_identity_questions_use_chitchat_lane() -> None:
+    from common.business_graph.intent import classify_intent_rule
+
+    for question in (
+        "你好，请问你是谁？",
+        "你能做什么工作？",
+        "你是什么模型？",
+        "介绍一下你自己",
+    ):
+        intent, reason = classify_intent_rule(question)
+        assert intent == "chitchat", (question, intent, reason)
+
+    # 带真实数据诉求的问题仍进入全流程，不能被身份规则吞掉。
+    assert classify_intent_rule("你好，帮我查保定今天空气质量")[0] == "data_query"

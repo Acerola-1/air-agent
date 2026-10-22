@@ -1,0 +1,21 @@
+{
+  "environment": "trace-wiring-validation-20261022",
+  "model": "ScriptedChatModel (controlled)",
+  "data": "FixtureDataSource (controlled)",
+  "langfuse": "real local server",
+  "business_database": "blocked by probe",
+  "runs": [
+    {
+      "mode": "invoke",
+      "trace_id": "53d9b8212b0ae3688b72bd8a3dad1357",
+      "attempt_id": "b7a7a8a3-5f5f-410a-9f96-1e89c0701575",
+      "duration_seconds": 1.173
+    },
+    {
+      "mode": "stream",
+      "trace_id": "a1dc9723fd9c887ba06338fbcce5a71e",
+      "attempt_id": "0ed6e6ef-2dd6-4b37-866b-c1faabc025d5",
+      "duration_seconds": 0.083
+    }
+  ]
+}

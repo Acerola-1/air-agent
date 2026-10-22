@@ -668,6 +668,10 @@ async def admit_request(
     grant = _business_grant(identity, graph_id)
 
     norm_sel = normalize_capability_selection(capability_selection)
+    if graph_id == "basic-qa" and norm_sel["selection_source"] == "user_explicit":
+        # 基础问答不提供技能/MCP 选择入口，统一由系统性路由决定；
+        # 旧客户端或手工请求即使带了显式选择也降级为自动，避免误报 409。
+        norm_sel = normalize_capability_selection(None)
     settings = get_settings()
     if (
         norm_sel["selection_source"] == "user_explicit"

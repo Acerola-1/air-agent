@@ -8,10 +8,12 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export function GET() {
-  const base = (process.env.IAM_BASE_URL ?? "").trim().replace(/\/+$/, "");
+  const adminBase = (process.env.IAM_ADMIN_URL ?? "http://127.0.0.1:19101")
+    .trim()
+    .replace(/\/+$/, "");
   const remote = (process.env.AGENT_IDENTITY_BACKEND ?? "").trim().toLowerCase() === "remote";
   return NextResponse.json({
     identityBackend: remote ? "remote" : "local",
-    iamAdminUrl: remote && base ? `${base}/admin` : null,
+    iamAdminUrl: remote && adminBase ? `${adminBase}/admin` : null,
   });
 }
