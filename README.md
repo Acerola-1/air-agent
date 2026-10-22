@@ -132,6 +132,8 @@ npm --prefix admin/web ci
 
 启用 `LANGFUSE_ENABLED=true` 后，Langfuse 完整采集 SDK 可见的图/节点输入输出、系统提示与对话、模型响应、工具定义及参数结果、元数据和实际异常。2026-10-22 已按用户要求移除统一正文过滤；普通业务台账和本地日志仍按各自字段规则记录。此前已过滤的历史内容不能补回。
 
+运行观测仅使用 Langfuse，直接采用官方 `langfuse.langchain.CallbackHandler`，在顶层绑定后由模型、工具和子代理继承，不重写 SDK 父链或 exporter。`LANGSMITH_TRACING`、`LANGCHAIN_TRACING_V2`、`LANGCHAIN_TRACING` 均设为 `false`，正式启动预检拒绝启用追踪的配置。`langsmith` 库是框架依赖，保留安装；当前 licensed 原生服务仍需私有 `.env.langgraph` 中的 `LANGSMITH_API_KEY` 进行开发启动授权，该 key 不用于启用追踪，宿主 Agent `.env` 不需要配置它。
+
 宿主`.env`由dotenv读取；原生`.env.langgraph`使用完整literal key=value（不带shell外层引号），不要混用两套文件。
 
 `AUTH_SECRET` 仅保留旧会话迁移用途；当前登录不再使用旧 HMAC cookie 或 `data/users.json`。Next 服务端的 `ADMIN_API_URL`、`LANGGRAPH_API_URL`、内部令牌和归档密钥需要在进程环境或私有 `.env.local` 中配置；`admin/web` 的 `ADMIN_API_URL` 默认指向本机8100。

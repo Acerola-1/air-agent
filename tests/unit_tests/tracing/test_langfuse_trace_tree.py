@@ -68,6 +68,7 @@ def sdk(monkeypatch):
         "LANGFUSE_BASE_URL": "http://127.0.0.1:1",
         "AGENT_OBSERVABILITY_ENABLED": "false",
         "LANGCHAIN_TRACING_V2": "false",
+        "LANGSMITH_TRACING": "false",
     }.items():
         monkeypatch.setenv(k, v)
     exporter = InMemorySpanExporter()
@@ -94,6 +95,7 @@ def test_ambient_callbacks_survive_without_business_identity():
 
 
 def test_factory_isolates_attempts_and_skips_reads(sdk):
+    from langfuse.langchain import CallbackHandler
     from langgraph_api._factory_utils import _classify_factory
 
     assert _classify_factory(graph_module.graph) is not None
@@ -102,6 +104,8 @@ def test_factory_isolates_attempts_and_skips_reads(sdk):
     b = run_config(thread=a["configurable"]["thread_id"])
     ga, gb = graph_module.graph(a), graph_module.graph(b)
     ha, hb = ga.config["callbacks"][0], gb.config["callbacks"][0]
+    assert type(ha) is CallbackHandler and type(hb) is CallbackHandler
+    assert ha.run_inline and hb.run_inline
     assert ha is not hb
     assert ha._trace_context != hb._trace_context
     resumed = graph_module.graph(a).config["callbacks"][0]
@@ -140,11 +144,20 @@ async def export_run(monkeypatch, config, *, streaming):
     monkeypatch.setattr(graph_module, "_graph", compiled)
     graph = graph_module.graph(config)
     payload = {"messages": [HumanMessage(content="PRIVATE_TRACE_FIXTURE")]}
-    # Invoke-time metadata must not override the trusted grouping attributes.
+    # The trusted native auth boundary replaces browser-supplied trace attributes.
     config = {
         **config,
         "metadata": {"langfuse_trace_name": "forged", "langfuse_user_id": _uuid()},
     }
+    from common.identity.langgraph_auth import _pin_langfuse_metadata
+
+    admitted = {"kwargs": {"config": config}}
+    _pin_langfuse_metadata(
+        admitted,
+        graph_id="intelligent-tracing",
+        user_id=config["configurable"]["langgraph_auth_user"]["identity"],
+        thread_id=config["configurable"]["thread_id"],
+    )
     if streaming:
         source = graph.astream(
             payload,
@@ -163,6 +176,8 @@ async def export_run(monkeypatch, config, *, streaming):
         assert result["validated_report"] is not None
     handler = graph.config["callbacks"][0]
     assert not handler._runs
+    assert not handler._run_states
+    assert not handler._root_run_states
     return handler._trace_context["trace_id"]
 
 
@@ -309,3 +324,91 @@ def test_platform_callbacks_receive_each_event_once(sdk, monkeypatch, manager):
     assert counter.names.count("intelligent-tracing") == 1
     assert counter.names.count("child") == 1
     assert config["callbacks"] is callbacks
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize("streaming", [False, True])
+async def test_official_handler_never_starts_langsmith_client(
+    sdk, monkeypatch, streaming
+):
+    from langsmith import Client
+
+    calls = []
+
+    def forbid(*args, **kwargs):
+        calls.append(True)
+        raise AssertionError("LangSmith must remain disabled")
+
+    monkeypatch.setattr(Client, "__init__", forbid)
+    monkeypatch.setattr(Client, "create_run", forbid)
+    monkeypatch.setattr(Client, "update_run", forbid)
+    await export_run(monkeypatch, run_config(), streaming=streaming)
+    assert not calls
+
+
+@pytest.mark.parametrize("kwargs", [None, {}, {"config": {"metadata": None}}])
+def test_trace_attributes_are_pinned_at_auth_boundary(kwargs):
+    from common.identity.langgraph_auth import _pin_langfuse_metadata
+
+    value = {
+        "metadata": {"langfuse_user_id": "forged", "custom": "preserved"},
+        "config": {"metadata": {"langfuse_session_id": "forged"}},
+        "kwargs": kwargs,
+    }
+    _pin_langfuse_metadata(
+        value,
+        graph_id="intelligent-tracing",
+        user_id="trusted-user",
+        thread_id="thread",
+    )
+    for metadata in (
+        value["metadata"],
+        value["config"]["metadata"],
+        value["kwargs"]["config"]["metadata"],
+    ):
+        assert metadata["langfuse_trace_name"] == "intelligent-tracing"
+        assert metadata["langfuse_user_id"] == "trusted-user"
+        assert metadata["langfuse_session_id"] == "thread"
+    assert value["metadata"]["custom"] == "preserved"
+
+
+@pytest.mark.anyio
+async def test_official_handler_preserves_local_trace_links(sdk, monkeypatch):
+    from types import SimpleNamespace
+
+    from fake_model import ScriptedChatModel
+
+    import common.observability.model_adapter as adapter
+    import common.observability.store as store
+    from common.langfuse_tracing import with_langfuse_tracing
+    from common.observability.context import observation_context_from_config
+
+    monkeypatch.setenv("AGENT_OBSERVABILITY_ENABLED", "true")
+    queued = []
+    monkeypatch.setattr(
+        adapter, "get_collector", lambda: SimpleNamespace(enqueue=queued.append)
+    )
+    record_link = AsyncMock(return_value={"reason": "fixture"})
+    monkeypatch.setattr(store, "record_trace_link", record_link)
+    monkeypatch.setattr(adapter, "record_model_observation", AsyncMock())
+    config = run_config()
+    local = adapter.ModelObservabilityHandler(observation_context_from_config(config))
+    config["callbacks"] = [local]
+    model = with_langfuse_tracing(
+        ScriptedChatModel(responses=[AIMessage(content="full-content")]), config=config
+    )
+    await model.ainvoke([HumanMessage(content="input")], config)
+    for item in queued:
+        await item.fn()
+    client, exporter = sdk
+    client.flush()
+    span = next(
+        s for s in exporter.get_finished_spans() if s.name == "ScriptedChatModel"
+    )
+    record_link.assert_awaited_once()
+    assert record_link.call_args.kwargs["trace_id"] == format(
+        span.context.trace_id, "032x"
+    )
+    assert record_link.call_args.kwargs["remote_observation_id"] == format(
+        span.context.span_id, "016x"
+    )

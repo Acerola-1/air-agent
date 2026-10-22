@@ -7,7 +7,6 @@ import pytest
 from langchain_core.runnables import RunnableLambda
 from langchain_core.tools import tool
 from langfuse import Langfuse, get_client
-from langfuse._client.span_processor import LangfuseSpanProcessor
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
@@ -25,28 +24,14 @@ def full_capture(monkeypatch):
         monkeypatch.setenv(key, value)
     exporter = InMemorySpanExporter()
 
-    # Simulate a client previously initialized by prompt lookup with the old masks.
-    def old_mask(**kwargs):
-        raise AssertionError("legacy body mask must not be called")
-
-    client = Langfuse(
-        tracer_provider=TracerProvider(),
-        span_exporter=exporter,
-        mask=old_mask,
-        mask_otel_spans=old_mask,
-    )
-    processors = (
-        client._resources.tracer_provider._active_span_processor._span_processors
-    )
-    processor = next(p for p in processors if isinstance(p, LangfuseSpanProcessor))
-    processor._aa_original_export_filter = processor._should_export_span
-    processor._should_export_span = lambda span: False
-    yield client, exporter, processor
+    # Prompt lookup can create the official SDK client before graph execution.
+    client = Langfuse(tracer_provider=TracerProvider(), span_exporter=exporter)
+    yield client, exporter
     client.shutdown()
 
 
-def test_full_graph_and_tool_payloads_survive_preexisting_sdk_masks(full_capture):
-    client, exporter, processor = full_capture
+def test_full_graph_and_tool_payloads_with_preexisting_sdk_client(full_capture):
+    client, exporter = full_capture
     body = "完整开头" + "正文" * 4096 + "完整结尾"
     payload = {
         "messages": [{"role": "user", "content": body}],
@@ -81,13 +66,10 @@ def test_full_graph_and_tool_payloads_survive_preexisting_sdk_masks(full_capture
     )
     assert json.loads(tool_span.attributes["langfuse.observation.output"]) == result
     assert "FULL_METADATA_MARKER" in str(root.attributes)
-    assert client._resources.mask is None
-    assert client._resources.mask_otel_spans is None
-    assert not hasattr(processor, "_aa_original_export_filter")
 
 
 def test_tool_error_keeps_actual_error_content(full_capture):
-    client, exporter, _ = full_capture
+    client, exporter = full_capture
 
     @tool
     def fail_tool(value: str) -> str:
@@ -106,7 +88,7 @@ def test_tool_error_keeps_actual_error_content(full_capture):
 
 
 def test_native_otel_exception_span_is_not_dropped(full_capture):
-    client, exporter, _ = full_capture
+    client, exporter = full_capture
     with_langfuse_tracing(RunnableLambda(lambda value: value))
     current_client = get_client(public_key=client._resources.public_key)
     with pytest.raises(RuntimeError, match="NATIVE_ERROR_MARKER"):
@@ -126,7 +108,7 @@ def test_chatopenai_records_system_user_and_assistant_messages(full_capture):
     from langchain_core.messages import HumanMessage, SystemMessage
     from langchain_openai import ChatOpenAI
 
-    client, exporter, _ = full_capture
+    client, exporter = full_capture
 
     def respond(request):
         request_body = json.loads(request.content)

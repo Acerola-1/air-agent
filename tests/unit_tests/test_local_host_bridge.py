@@ -297,6 +297,26 @@ def test_bridge_bind_host_accepts_private_gateway_and_rejects_unspecified():
     assert not bridge._allowed_bind_host("not-an-ip")
 
 
+def test_main_supervises_unless_running_as_the_managed_child(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Any
+) -> None:
+    calls: list[tuple[str, Any]] = []
+    monkeypatch.setattr(
+        bridge, "_supervise", lambda path: calls.append(("supervise", path)) or 0
+    )
+    monkeypatch.setattr(
+        bridge, "_serve", lambda path: calls.append(("serve", path)) or 0
+    )
+    config = tmp_path / "bridge.json"
+
+    monkeypatch.delenv("LOCAL_HOST_BRIDGE_CHILD", raising=False)
+    assert bridge.main(["--config", str(config)]) == 0
+    monkeypatch.setenv("LOCAL_HOST_BRIDGE_CHILD", "1")
+    assert bridge.main(["--config", str(config)]) == 0
+
+    assert calls == [("supervise", config), ("serve", config)]
+
+
 def test_optional_upstream_stays_on_loopback() -> None:
     base = {
         "bind_host": "127.0.0.1",

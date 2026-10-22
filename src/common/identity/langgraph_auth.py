@@ -356,6 +356,35 @@ def _run_input_content(value: Any) -> str:
     return text.strip()
 
 
+def _pin_langfuse_metadata(value, *, graph_id, user_id, thread_id):
+    """Bind official SDK trace attributes at the trusted admission boundary."""
+    attributes = {
+        "langfuse_trace_name": graph_id,
+        "langfuse_user_id": user_id,
+        "langfuse_session_id": thread_id,
+    }
+    metadata = value.get("metadata")
+    value["metadata"] = {
+        **(metadata if isinstance(metadata, dict) else {}),
+        **attributes,
+    }
+    kwargs = value.get("kwargs")
+    if not isinstance(kwargs, dict):
+        kwargs = {}
+        value["kwargs"] = kwargs
+    config = kwargs.get("config")
+    if not isinstance(config, dict):
+        config = {}
+        kwargs["config"] = config
+    for candidate in (config, value.get("config")):
+        if isinstance(candidate, dict):
+            metadata = candidate.get("metadata")
+            candidate["metadata"] = {
+                **(metadata if isinstance(metadata, dict) else {}),
+                **attributes,
+            }
+
+
 def _pin_ledger_ids(
     value: Any,  # noqa: ANN401 - 平台注入的运行创建载荷
     *,
@@ -1238,6 +1267,9 @@ async def on_thread_create_run(
     # 元数据缺失也必须注入可信身份；否则平台运行列表过滤会隐藏合法的
     # metadata-only 运行，补偿无法定位。客户端同名声明在这里无条件覆盖。
     value["metadata"].update({key: ids[key] for key in _TRUSTED_METADATA_KEYS})
+    _pin_langfuse_metadata(
+        value, graph_id=actual_graph, user_id=ids["user_id"], thread_id=thread_id
+    )
     # 运行中不再信任任何客户端身份字段；平台随后注入 auth user
     return
 

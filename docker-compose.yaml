@@ -90,8 +90,10 @@ services:
       DB_MIGRATION_BY_CORE_API: "false"
 
       # --- API keys（从 .env 注入）---
-      LANGCHAIN_TRACING_V2: "${LANGCHAIN_TRACING_V2}"
-      LANGCHAIN_API_KEY:    "${LANGCHAIN_API_KEY}"
+      # LangSmith is a framework dependency; tracing/upload are disabled.
+      LANGSMITH_TRACING: "false"
+      LANGCHAIN_TRACING_V2: "false"
+      LANGCHAIN_TRACING: "false"
       LANGFUSE_ENABLED:     "${LANGFUSE_ENABLED:-false}"
       LANGFUSE_BASE_URL:    "${LANGFUSE_BASE_URL:-http://192.168.64.1:3001}"
       LANGFUSE_PUBLIC_KEY:  "${LANGFUSE_PUBLIC_KEY}"

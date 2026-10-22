@@ -195,7 +195,6 @@ class ModelObservabilityHandler(BaseCallbackHandler):
         self._lock = threading.Lock()
         self._by_run: dict[str, _AttemptState] = {}
         self._logical_attempts: dict[str, int] = {}
-        register_observation_handler(self)
 
     # ------------------------------------------------------- 逻辑调用声明
 
@@ -755,34 +754,6 @@ def invocation_config(
         "obs_logical_call_id": logical_call_id or new_id(),
     }
     return result
-
-
-_OBSERVATION_HANDLERS: list[weakref.ref[Any]] = []
-_OBSERVATION_LOCK = threading.Lock()
-
-
-def register_observation_handler(handler):
-    """弱引用注册实际运行回调，不使已结束请求的状态持续积累."""
-    with _OBSERVATION_LOCK:
-        _OBSERVATION_HANDLERS[:] = [
-            ref for ref in _OBSERVATION_HANDLERS if ref() is not None
-        ]
-        _OBSERVATION_HANDLERS.append(weakref.ref(handler))
-        del _OBSERVATION_HANDLERS[:-1000]
-
-
-def notify_langfuse_trace(run_id, trace_id, remote_observation_id=None):
-    """SDK创建真实generation之后通知观察者，消除回调顺序竞争."""
-    with _OBSERVATION_LOCK:
-        handlers = [ref() for ref in _OBSERVATION_HANDLERS]
-    for handler in handlers:
-        if handler is not None:
-            state = handler._state_for(str(run_id))
-            if state is not None:
-                state.langfuse_trace_id = str(trace_id)
-                state.langfuse_observation_id = (
-                    str(remote_observation_id) if remote_observation_id else None
-                )
 
 
 _MODEL_CALL_DECLARATION: ContextVar[tuple[str, str] | None] = ContextVar(

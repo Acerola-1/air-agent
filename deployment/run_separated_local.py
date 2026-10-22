@@ -113,6 +113,21 @@ def _required(env: dict[str, str], name: str, label: str) -> str:
     return value
 
 
+def _validate_langfuse_only(env: dict[str, str], label: str) -> None:
+    """Keep the configured observability provider independent of SDK dependencies."""
+    enabled = any(
+        env.get(key, "").strip().lower() in {"1", "true", "yes", "on"}
+        for key in (
+            "LANGSMITH_TRACING",
+            "LANGSMITH_TRACING_V2",
+            "LANGCHAIN_TRACING_V2",
+            "LANGCHAIN_TRACING",
+        )
+    )
+    if enabled:
+        raise LaunchError(f"{label}仅使用 Langfuse；请关闭 LangSmith 追踪。")
+
+
 def _out(message: str) -> None:
     sys.stdout.write(f"{message}\n")
 
@@ -179,6 +194,7 @@ def _validate_host_env(
 
     agent_file_env = _read_dotenv(agent_dotenv)
     agent_env = _merged_env(agent_dotenv, agent_root / "admin" / "api" / ".env")
+    _validate_langfuse_only(agent_env, "Agent 有效运行环境")
     for config, label in (
         (agent_file_env, "Agent host .env"),
         (agent_env, "Agent 有效运行环境"),
@@ -229,6 +245,7 @@ def _validate_host_env(
 
 def _validate_graph_env(path: Path) -> dict[str, str]:
     values = _parse_literal_env(path)
+    _validate_langfuse_only(values, "LangGraph dotenv")
     if values.get("AGENT_IDENTITY_BACKEND") != "remote":
         raise LaunchError("LangGraph 必须使用 remote IAM 模式。")
     for key in ("DATABASE_URI", "POSTGRES_URI", "RUNTIME_DATABASE_URI"):

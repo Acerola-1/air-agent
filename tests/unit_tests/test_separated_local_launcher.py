@@ -35,6 +35,38 @@ def native_values():
     }
 
 
+@pytest.mark.parametrize(
+    "key,value",
+    [
+        ("LANGSMITH_TRACING", "true"),
+        ("LANGSMITH_TRACING_V2", "yes"),
+        ("LANGCHAIN_TRACING_V2", "1"),
+        ("LANGCHAIN_TRACING", "on"),
+    ],
+)
+def test_langsmith_cannot_be_enabled_by_deployment_env(tmp_path, key, value):
+    env = native_values() | {key: value}
+    path = tmp_path / "native.env"
+    path.write_text("".join(f"{k}={v}\n" for k, v in env.items()))
+    with pytest.raises(launcher.LaunchError, match="仅使用 Langfuse"):
+        launcher._validate_graph_env(path)
+
+
+def test_disabled_langsmith_preserves_langfuse_configuration():
+    env = {
+        "LANGSMITH_TRACING": "false",
+        "LANGCHAIN_TRACING_V2": "false",
+        "LANGCHAIN_TRACING": "false",
+        "LANGFUSE_ENABLED": "true",
+        "LANGFUSE_PUBLIC_KEY": "pk-lf-fixture",
+        # The licensed native server still requires an authentication key.
+        "LANGSMITH_API_KEY": "synthetic-license-key",
+    }
+    before = env.copy()
+    launcher._validate_langfuse_only(env, "fixture")
+    assert env == before
+
+
 def test_native_network_rewrite_preserves_store_shape_and_secrets(tmp_path):
     values = native_values()
     raw = "".join(f"{key}={value}\n" for key, value in values.items()).encode()

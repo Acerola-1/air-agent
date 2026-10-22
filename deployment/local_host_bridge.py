@@ -12,9 +12,13 @@ import hmac
 import ipaddress
 import json
 import os
+import signal
 import socket
 import stat
+import subprocess
 import sys
+import threading
+import time
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -564,13 +568,36 @@ class BridgeHandler(BaseHTTPRequestHandler):
                     pass
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Load a private config and serve the loopback/private-bridge listener."""
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--config", required=True, type=Path)
-    args = parser.parse_args(argv)
+def _bridge_log_path(config_path: Path) -> Path:
+    """Keep bridge crash evidence beside the managed service lifecycle log."""
+    return config_path.parent / "services" / "local-host-bridge.out.log"
+
+
+def _write_bridge_log(handle: Any, message: str) -> None:
+    stamp = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    handle.write(f"{stamp} {message}\n".encode())
+    handle.flush()
+
+
+def _exit_if_orphaned(parent_pid: int) -> None:
+    """Stop a supervised child when its supervisor disappears unexpectedly."""
+    while True:
+        time.sleep(2.0)
+        if os.getppid() != parent_pid:
+            os._exit(0)
+
+
+def _serve(config_path: Path) -> int:
+    """Run the actual HTTP bridge process."""
+    if os.environ.get("LOCAL_HOST_BRIDGE_CHILD") == "1":
+        threading.Thread(
+            target=_exit_if_orphaned,
+            args=(os.getppid(),),
+            daemon=True,
+            name="bridge-parent-watchdog",
+        ).start()
     try:
-        config = load_config(args.config)
+        config = load_config(config_path)
         with BridgeHTTPServer(
             (config.bind_host, config.bind_port), BridgeHandler, config
         ) as server:
@@ -581,6 +608,77 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.write("local host bridge unavailable\n")
         return 2
     return 0
+
+
+def _supervise(config_path: Path) -> int:
+    """Restart the bridge after an unexpected exit and preserve crash logs."""
+    log_path = _bridge_log_path(config_path)
+    try:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        log_handle: Any = log_path.open("ab", buffering=0)
+    except OSError:
+        log_handle = None
+
+    stop = threading.Event()
+    child: subprocess.Popen[bytes] | None = None
+
+    def _handle_stop(_signum: int, _frame: Any) -> None:
+        stop.set()
+        if child is not None and child.poll() is None:
+            child.terminate()
+
+    signal.signal(signal.SIGTERM, _handle_stop)
+    signal.signal(signal.SIGINT, _handle_stop)
+    try:
+        while not stop.is_set():
+            if log_handle is not None:
+                _write_bridge_log(
+                    log_handle, f"supervisor starting bridge pid={os.getpid()}"
+                )
+            child = subprocess.Popen(
+                [
+                    sys.executable,
+                    str(Path(__file__).resolve()),
+                    "--config",
+                    str(config_path),
+                ],
+                stdin=subprocess.DEVNULL,
+                stdout=log_handle if log_handle is not None else subprocess.DEVNULL,
+                stderr=subprocess.STDOUT
+                if log_handle is not None
+                else subprocess.DEVNULL,
+                env={**os.environ, "LOCAL_HOST_BRIDGE_CHILD": "1"},
+                close_fds=True,
+            )
+            if log_handle is not None:
+                _write_bridge_log(log_handle, f"bridge child pid={child.pid}")
+            code = child.wait()
+            if stop.is_set():
+                break
+            if log_handle is not None:
+                _write_bridge_log(log_handle, f"bridge exited code={code}; restarting")
+            stop.wait(1.0)
+    finally:
+        if child is not None and child.poll() is None:
+            child.terminate()
+            try:
+                child.wait(timeout=3.0)
+            except subprocess.TimeoutExpired:
+                child.kill()
+        if log_handle is not None:
+            _write_bridge_log(log_handle, "supervisor stopped")
+            log_handle.close()
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Load a private config and serve the loopback/private-bridge listener."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", required=True, type=Path)
+    args = parser.parse_args(argv)
+    if os.environ.get("LOCAL_HOST_BRIDGE_CHILD") == "1":
+        return _serve(args.config)
+    return _supervise(args.config)
 
 
 if __name__ == "__main__":
