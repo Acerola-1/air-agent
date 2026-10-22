@@ -85,6 +85,7 @@ function fixture(options = {}) {
       setAcceptedSelection: (value) => acceptedSnapshots.push(value),
       clearForScopeSwitch: () => {},
       fetchCatalog: async () => {},
+      setSkillMode: () => {},
       toPayload: () => ({
         schema_version: 'agent.capability-selection.v1',
         skill: { mode: 'auto', skill_id: null },
@@ -100,6 +101,20 @@ function fixture(options = {}) {
     '@/lib/agent-output-stream': outputStream });
   return { ...module, acceptedSnapshots, streams, canceled, stopIntents, navigationStops, state, api, timingCalls, getSubmissionContext: ()=> submissionContext };
 }
+
+test('分析菜单进入正常运行配置且运行中不能变更', async()=>{
+  const f=fixture(), store=f.useChatStore;
+  store.setState({graphId:'data-analysis'});
+  store.getState().setAnalysisMenu('concentrationranking');
+  const running=store.getState().sendMessage('比较城市浓度','fast');
+  await tick();
+  assert.equal(f.streams[0].config.configurable.menu_name,'concentrationranking');
+  store.getState().setAnalysisMenu('CityHourBroadcast');
+  assert.equal(store.getState().analysisMenuName,'concentrationranking');
+  f.streams[0].wait.resolve(); await running;
+  store.getState().clearForTenant();
+  assert.equal(store.getState().analysisMenuName,'CityHourBroadcast');
+});
 
 test('every intermediate frame excludes tool JSON and internal summaries from body', async()=>{
   const f=fixture(), store=f.useChatStore;

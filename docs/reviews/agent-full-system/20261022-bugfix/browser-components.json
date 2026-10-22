@@ -1,0 +1,15 @@
+{
+  "scope": "真实组件；合成状态；不是全栈登录验收",
+  "searchFallback": true,
+  "searchClear": true,
+  "menuSelection": true,
+  "locked": true,
+  "metricsOnly": true,
+  "noPermissionDenied": true,
+  "narrow": {
+    "width": 390,
+    "scrollWidth": 390
+  },
+  "screenshot": "blocked",
+  "physicalKeyboard": "未通过本轮验证：原生菜单未能以自动键盘操作切换，不冒充通过"
+}

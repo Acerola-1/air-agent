@@ -1,0 +1,11 @@
+{
+  "role": "air_agent_runtime",
+  "table": "agent_requests",
+  "tenant_a": "38a37a3d-2691-4d2b-8fd4-564618587b72",
+  "tenant_b": "93b4d87a-b9b3-4dc0-9fc5-361553d15c29",
+  "tenant_a_rows": 199,
+  "tenant_b_rows": 0,
+  "tenant_a_rows_seen_from_b": 0,
+  "tenant_a_user_only": 199,
+  "tenant_b_user_only": 0
+}

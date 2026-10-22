@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 from typing import Any
 from unittest.mock import AsyncMock, patch
@@ -112,3 +113,48 @@ async def test_local_tool_failure_no_retry() -> None:
     assert '"code": 500' in str(result.content)
     assert handler.await_count == 1
     sleep_mock.assert_not_awaited()
+
+
+async def test_parameter_error_is_actionable_without_leaking_input() -> None:
+    from pydantic import BaseModel, ValidationError
+
+    class Args(BaseModel):
+        city_id: int
+
+    try:
+        Args(city_id="private-input-do-not-echo")
+    except ValidationError as exc:
+        error = exc
+    handler = AsyncMock(side_effect=error)
+    result, sleep_mock = await _run(_request("local_query"), handler)
+    payload = json.loads(result.content)
+    assert payload["code"] == 422
+    assert payload["fields"][0]["field"] == "city_id"
+    assert "private-input-do-not-echo" not in result.content
+    handler.assert_awaited_once()
+    sleep_mock.assert_not_awaited()
+
+
+async def test_exhausted_tool_does_not_reach_handler_or_network() -> None:
+    from langchain_core.messages import HumanMessage
+
+    request = _request("local_query")
+    request.state = {
+        "messages": [
+            HumanMessage(content="查询"),
+            *[
+                ToolMessage(
+                    name="local_query",
+                    content='{"code":422,"success":false}',
+                    tool_call_id=f"failed-{i}",
+                    status="error",
+                )
+                for i in range(2)
+            ],
+        ]
+    }
+    handler = AsyncMock()
+    result, _ = await _run(request, handler)
+    assert result.status == "error"
+    assert "耗尽" in result.content
+    handler.assert_not_awaited()

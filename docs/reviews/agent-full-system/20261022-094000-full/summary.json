@@ -1,0 +1,265 @@
+{
+  "schema_version": "agent-full-system-test.v1",
+  "run_id": "20261022-094000-full",
+  "conclusion": "PARTIAL / NOT_ACCEPTED for capacity; baseline candidate for E/S",
+  "p_s": {
+    "run_id": "20261022-013308-5a659c",
+    "planned": 40,
+    "sent": 40,
+    "outcomes": {
+      "stream_completed": 40
+    },
+    "all_rows": 92,
+    "first_answer_p50_ms": 2361.0,
+    "first_answer_p95_ms": 3637.7999999999993,
+    "complete_p50_ms": 2672.0,
+    "complete_p95_ms": 3921.4999999999995,
+    "controlled_chat_calls": 184,
+    "controlled_mcp_calls": 0,
+    "observation": "not_collected (observability enabled after this run)",
+    "browser_samples": 0
+  },
+  "e_s": {
+    "run_id": "20261022-es-full",
+    "planned": 40,
+    "sent": 40,
+    "outcomes": {
+      "completed_success": 32,
+      "runtime_aborted": 6,
+      "client_timeout": 2
+    },
+    "history_sent": 50,
+    "history_outcomes": {
+      "stream_completed": 50
+    },
+    "overall": {
+      "planned": 40,
+      "sent": 40,
+      "completed_success": 32,
+      "late_attainment": 0,
+      "late_cases": [],
+      "headline_outcomes": {
+        "completed_success": 32,
+        "runtime_aborted": 6,
+        "client_timeout": 2
+      },
+      "failures": {
+        "runtime_aborted": 6,
+        "client_timeout": 2
+      },
+      "first_answer_p50_ms": 13950.5,
+      "first_answer_p95_ms": 67074.5,
+      "complete_p50_ms": 17660.0,
+      "complete_p95_ms": 69109.15,
+      "complete_min_ms": 7879.0,
+      "complete_max_ms": 99812.0,
+      "first_answer_samples": 32
+    },
+    "by_category": {
+      "Q1": {
+        "planned": 10,
+        "sent": 10,
+        "completed_success": 7,
+        "late_attainment": 0,
+        "late_cases": [],
+        "headline_outcomes": {
+          "completed_success": 7,
+          "runtime_aborted": 3
+        },
+        "failures": {
+          "runtime_aborted": 3
+        },
+        "first_answer_p50_ms": 10790.0,
+        "first_answer_p95_ms": 18019.899999999994,
+        "complete_p50_ms": 14069.0,
+        "complete_p95_ms": 21211.099999999995,
+        "complete_min_ms": 10468.0,
+        "complete_max_ms": 22787.0,
+        "first_answer_samples": 7,
+        "quality_pass": 7
+      },
+      "Q2": {
+        "planned": 10,
+        "sent": 10,
+        "completed_success": 7,
+        "late_attainment": 0,
+        "late_cases": [],
+        "headline_outcomes": {
+          "completed_success": 7,
+          "client_timeout": 2,
+          "runtime_aborted": 1
+        },
+        "failures": {
+          "client_timeout": 2,
+          "runtime_aborted": 1
+        },
+        "first_answer_p50_ms": 27575.0,
+        "first_answer_p95_ms": 53418.299999999996,
+        "complete_p50_ms": 28736.0,
+        "complete_p95_ms": 54139.6,
+        "complete_min_ms": 12377.0,
+        "complete_max_ms": 55009.0,
+        "first_answer_samples": 7,
+        "quality_pass": 5
+      },
+      "Q3": {
+        "planned": 10,
+        "sent": 10,
+        "completed_success": 9,
+        "late_attainment": 0,
+        "late_cases": [],
+        "headline_outcomes": {
+          "completed_success": 9,
+          "runtime_aborted": 1
+        },
+        "failures": {
+          "runtime_aborted": 1
+        },
+        "first_answer_p50_ms": 17382.0,
+        "first_answer_p95_ms": 84120.0,
+        "complete_p50_ms": 20567.0,
+        "complete_p95_ms": 88588.4,
+        "complete_min_ms": 11878.0,
+        "complete_max_ms": 99812.0,
+        "first_answer_samples": 9,
+        "quality_pass": 8
+      },
+      "Q4": {
+        "planned": 10,
+        "sent": 10,
+        "completed_success": 9,
+        "late_attainment": 0,
+        "late_cases": [],
+        "headline_outcomes": {
+          "completed_success": 9,
+          "runtime_aborted": 1
+        },
+        "failures": {
+          "runtime_aborted": 1
+        },
+        "first_answer_p50_ms": 10647.0,
+        "first_answer_p95_ms": 47515.600000000006,
+        "complete_p50_ms": 11992.0,
+        "complete_p95_ms": 49675.4,
+        "complete_min_ms": 7879.0,
+        "complete_max_ms": 50039.0,
+        "first_answer_samples": 9,
+        "quality_pass": 8
+      }
+    },
+    "quality_pass": 28,
+    "quality_denominator": 40,
+    "model_calls": {
+      "logical_or_observed": 373,
+      "succeeded": 367,
+      "failed": 6,
+      "by_role": {
+        "other": 348,
+        "main": 25
+      },
+      "duration_p50_ms": 3998.0,
+      "duration_p95_ms": 19014.19999999999,
+      "ttft_p50_ms": 1143.0,
+      "ttft_p95_ms": 2031.5000000000005
+    },
+    "tool_calls": {
+      "attempts": 352,
+      "succeeded": 105,
+      "failed": 247,
+      "by_tool": {
+        "knowledge_search": 4,
+        "websearch_tool": 5,
+        "mcp_city_common_get_air_quality_realtime_stat": 86,
+        "mcp_city_analysis_monitor": 22,
+        "helper_get_latest_time": 20,
+        "helper_getLatestTime2": 6,
+        "text2sql_yesterday_single_index_aqi_route": 7,
+        "mcp_city_common_area_province_ranking": 10,
+        "text2sql_today_single_city_aqi_route": 4,
+        "mcp_city_common_factor_province_ranking": 7,
+        "mcp_city_analysis_nationalOrder": 6,
+        "mcp_city_common_factor_area_ranking": 4,
+        "mcp_city_base_get_child_district_by_parent": 3,
+        "parse_region_tool": 1,
+        "text2sql_city_indexes_month_and_year": 19,
+        "mcp_station_base_air_station_list": 25,
+        "mcp_station_common_air_data": 41,
+        "compute_artifact": 18,
+        "mcp_station_analysis_concentration_ranking": 4,
+        "mcp_city_common_area_city_ranking": 5,
+        "cityFactorRankings": 3,
+        "broadcastHour": 5,
+        "mcp_station_common_good_days_query": 4,
+        "get_beijing_time": 3,
+        "mcp_city_analysis_calendar_month": 1,
+        "integratedIndexRatio": 7,
+        "create_artifact": 1,
+        "mcp_weather_forecast_hourly_history": 2,
+        "text2sql_monthly_and_yearly_city_comparison": 4,
+        "mcp_station_analysis_concentration_table": 5,
+        "mcp_station_analysis_index_ranking": 2,
+        "mcp_station_analysis_index_stations_24h_avg": 2,
+        "mcp_city_common_get_air_quality_forecast": 3,
+        "mcp_weather_forecast_hourly": 1,
+        "mcp_city_analysis_calendar_day": 3,
+        "mcp_station_common_air_real_data": 1,
+        "concentration_ranking": 3,
+        "mcp_city_analysis_nationalOrderCompareBar": 2,
+        "compositeIndexSixFactorRatio": 2,
+        "mcp_station_analysis_broadcast_hour": 1
+      },
+      "duration_p50_ms": 484.0,
+      "duration_p95_ms": 935.8499999999966
+    },
+    "token_usage": {
+      "usage_provided": 367,
+      "model_observations": 373,
+      "input_tokens": 7109847,
+      "output_tokens": 222861,
+      "total_tokens": 7332708,
+      "cost": null,
+      "price": null
+    }
+  },
+  "backend": {
+    "rls_isolation": "PASS (tenant A rows visible with ops GUC, tenant B 0)",
+    "no_grant": "PASS (capabilities 403, run 403)",
+    "permission_separation": "PARTIAL (metrics 200/ops 403; UI metrics page blocked)",
+    "feedback": "PASS (submit/replay/CAS/change/resolve)",
+    "cross_tenant_content": "NOT_RUN (no tenant-B request created); cross-user content 404 while owner 200"
+  },
+  "change6_7": {
+    "overview": "PASS",
+    "feedback": "PASS",
+    "insights_job": "PASS (5 sources completed)",
+    "insights_rename_merge": "PASS",
+    "insights_assign_split_delete": "NOT_RUN",
+    "worker_lease_cancel": "NOT_RUN"
+  },
+  "browser": {
+    "login": "PASS",
+    "tenant_selection": "PASS",
+    "three_graph_switch": "PASS",
+    "basic_chat_stream": "PASS (controlled, first visible 6905.9ms, complete 7471.2ms)",
+    "stop": "PASS (incomplete marker)",
+    "feedback_ui": "PASS (like/dislike/comment/save)",
+    "narrow": "PASS 390x844",
+    "history_search": "FAIL (no matches for existing titled thread)",
+    "ime_clipboard": "NOT_RUN",
+    "markdown_table_citation": "NOT_RUN",
+    "tracing_report_canvas": "NOT_RUN"
+  },
+  "load": {
+    "p_r": "NOT_RUN",
+    "e_r": "NOT_RUN",
+    "f": "NOT_RUN",
+    "reason": "E/S failure rate 8/40=20% exceeded stop rule; load harness absent; budget exceeded",
+    "harness": "scripts/product_chat_perf/load.py ready; not executed"
+  },
+  "cleanup": {
+    "status": "PASS",
+    "containers_remaining": 0,
+    "ports_checked": "25541-25551 all closed",
+    "record": "cleanup.md"
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "schema_version": "agent-full-system-test.v1",
+  "run_id": "20261022-094000-full",
+  "generated_at": "2026-10-22T01:37:17.902835+00:00",
+  "actual_window": {
+    "start": "2026-10-22T01:19:41+08:00",
+    "end": "2026-10-22T09:42:00+08:00",
+    "wall_clock": "about 8h20m (including 7h17m browser-control pause)",
+    "active_execution": "about 1h12m",
+    "budget_limit": "4h",
+    "budget_status": "EXCEEDED; no new load after E/S, P/R/F not started"
+  },
+  "git": {
+    "agent": {
+      "branch": "dev",
+      "head": "52da2499f5ee6b60b6c771d1b6e8fe426600a8f9",
+      "status": [
+        "M scripts/product_chat_perf/run_baseline.py",
+        " M scripts/unified_campaign/cli.py",
+        " M scripts/unified_campaign/sender.py",
+        "?? docs/reviews/agent-full-system/",
+        "?? docs/reviews/basic-qa-performance/20261022-es-full/",
+        "?? docs/reviews/basic-qa-performance/20261022-ps-full/",
+        "?? tests/unit_tests/test_perf_tool_calibration.py"
+      ]
+    },
+    "iam": {
+      "head": "954f0226efa8befc734ed413d31b9873a4ee85b6",
+      "branch": "dev"
+    },
+    "rag": {
+      "head": "6a44e44a0f06b78926b3a0b74ac8bb4d593b0544",
+      "branch": "dev"
+    }
+  },
+  "dependencies": {
+    "python": "Python 3.13.3",
+    "node": "v26.12.0",
+    "container": "container CLI version 1.6.0 (build: release, commit: ca4884f)",
+    "uv_lock_sha256": "0cb0b87e7c67cc49d138974c03b8acda8f4b682b77f4a05966ca6407d4100ec9",
+    "frontend_package_lock_sha256": "eff129f48b648ad9b4806f00498e69e64f5bc3d159b76c839bd21451c0c99213",
+    "admin_web_package_lock_sha256": "de928d2c7dfdb0a12ca247043f3cd7ba0e2112b7af7ccce389b188bd08310186"
+  },
+  "images": {
+    "langgraph_api": "air-agent/langgraph-api:tracing-merge-20261020",
+    "postgres": "postgres:17-alpine",
+    "redis": "redis:7-alpine"
+  },
+  "resources": {
+    "aa-full-20261022-iam-pg": {
+      "ip": "192.168.64.95",
+      "ownership": "this-task temporary",
+      "state": "cleaned"
+    },
+    "aa-full-20261022-iam-redis": {
+      "ip": "192.168.64.97",
+      "ownership": "this-task temporary",
+      "state": "cleaned"
+    },
+    "aa-full-20261022-biz-pg": {
+      "ip": "192.168.64.96",
+      "ownership": "this-task temporary",
+      "state": "cleaned"
+    },
+    "aa-full-20261022-graph-redis": {
+      "ip": "192.168.64.98",
+      "ownership": "this-task temporary",
+      "state": "cleaned"
+    },
+    "aa-full-20261022-langgraph": {
+      "ip": "192.168.64.102",
+      "ownership": "this-task temporary",
+      "state": "cleaned"
+    }
+  },
+  "ports": {
+    "iam_pg": 25541,
+    "iam_redis": 25542,
+    "biz_pg": 25543,
+    "graph_redis": 25544,
+    "iam_http": 25545,
+    "admin_api": 25546,
+    "langgraph": 25547,
+    "bff": 25548,
+    "controlled": 25549,
+    "bridge": 25550,
+    "admin_web": 25551
+  },
+  "database": {
+    "iam_migration": "V28",
+    "business_migration": "0029",
+    "iam_db": "iam_identity",
+    "business_db": "full_business",
+    "runtime_role": "air_agent_runtime (NOSUPERUSER/NOBYPASSRLS)"
+  },
+  "model": {
+    "requested": "hy3",
+    "actual_label": "hy3 (configured; provider not independently identified)",
+    "gateway": "local OpenAI-compatible 127.0.0.1:7863",
+    "real_model_budget_minutes": 90,
+    "real_model_used_minutes": 41
+  },
+  "mcp": {
+    "server_key": "ipp",
+    "scope": "shared_readonly",
+    "url": "https://www.mapairs.com/product/datacenter/api2/mcp",
+    "auth_mode": "none"
+  },
+  "dataset": {
+    "version": "bqa-reference-202605-v1",
+    "cases_sha256": "235a659c8a415962f92a90ad348f180439a1844ca26bc8de7b9da61c3f63189b",
+    "fixtures_sha256": "f5f10592777b02230497ed08403930b179b1173d4f3d6c0db7920002f004be2e",
+    "representatives_sha256": "36e4b71c543f32d0e979cedfbd0000a4ccda063f865e792e7c7fbee7242ceeff"
+  },
+  "runs": {
+    "ps": "20261022-013308-5a659c",
+    "es": "20261022-es-full",
+    "ps_path": "docs/reviews/basic-qa-performance/20261022-ps-full",
+    "es_path": "docs/reviews/basic-qa-performance/20261022-es-full"
+  },
+  "browser": {
+    "controlled_chat_first_visible_ms": 6905.9,
+    "controlled_chat_display_complete_ms": 7471.2,
+    "stop_incomplete": "PASS (marker shown, stop control removed)",
+    "narrow_viewport": "390x844",
+    "screenshots": "screenshots/"
+  },
+  "limitations": [
+    "knowledge/RAG service was not started; Q1 knowledge route degraded",
+    "P/R and F not executed; E/S 8/40 failure rate exceeded the 10% stop rule and the load harness does not exist",
+    "browser IME and physical clipboard verification not performed",
+    "price table absent; cost unknown",
+    "real-model browser timing not measured; browser timing is controlled-model only",
+    "cross-tenant tenant-B API request flow not executed; RLS verified directly",
+    "insights assign/split/delete and worker lease/cancel not executed; rename+merge verified with 5 sources"
+  ],
+  "deliverables": [
+    "report.md",
+    "defect-list.md",
+    "scenario-matrix.md",
+    "commands.md",
+    "summary.json"
+  ],
+  "cleanup": {
+    "status": "PASS",
+    "containers_remaining": 0,
+    "ports_checked": "25541-25551 all closed",
+    "record": "cleanup.md"
+  },
+  "test_tools": {
+    "new_load_runner": "scripts/product_chat_perf/load.py (P/R controlled concurrency; not executed)",
+    "sender_thread_deadline": "threading.Timer + abort event; test_deadline_is_enforced_in_worker_threads",
+    "load_runner_verified": "scripts/product_chat_perf/load.py exercised with monkeypatched sender and warmed worker pool; 5 load tests pass"
+  }
+}

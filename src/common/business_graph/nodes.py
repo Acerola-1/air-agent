@@ -92,6 +92,9 @@ _PLANNING_ADDENDUM = (
     "【工具规划阶段】当前阶段只决定是否还需要调用工具。"
     "如果需要数据或校验，请调用相应工具；如果已具备生成最终回答的材料，"
     f"请调用 {_FINISH_PLANNING_TOOL_NAME} 工具，不要在本阶段输出最终答案正文。"
+    "Skill 说明可能引用当前不可用工具：唯一可调用名单是本次提供的工具 schema，"
+    "未提供的名称不得尝试或猜测替代名称。权限拒绝不重试；参数拒绝仅允许修正一次。"
+    "无法取得的数据必须说明缺失，不得为补齐模板而编造。"
 )
 _ANSWER_ADDENDUM = (
     "【最终回答阶段】现在直接生成面向用户的最终回答。"
@@ -434,24 +437,33 @@ class BusinessGraphNodes:
 
         business = get_business_tools(include_computation=True)
         if intent == INTENT_KNOWLEDGE:
-            return [
-                t
-                for t in business
-                if (name := tool_name(t)) is not None
-                and name in _ALWAYS_VISIBLE_TOOL_NAMES
-            ]
+            from common.business_graph.tool_recovery import recoverable_tools
+
+            return recoverable_tools(
+                [
+                    t
+                    for t in business
+                    if (name := tool_name(t)) is not None
+                    and name in _ALWAYS_VISIBLE_TOOL_NAMES
+                ],
+                state.get("messages", []),
+            )
 
         # data_query 车道：全量业务工具
         from common.capabilities import filter_capability_mcp_tools
 
-        available = filter_capability_mcp_tools(list(business), config)
+        available = filter_capability_mcp_tools(
+            list(business), config, business_code=self._graph_name
+        )
 
         configurable = config.get("configurable", {}) or {} if config else {}
         skill_mode = configurable.get("capability_skill_mode") or "auto"
         # 显式单选时无需披露 load_skill 工具
         if skill_mode != "explicit":
             available.append(self._load_skill_tool)
-        return available
+        from common.business_graph.tool_recovery import recoverable_tools
+
+        return recoverable_tools(available, state.get("messages", []))
 
     def _planning_tools(
         self,
@@ -502,6 +514,16 @@ class BusinessGraphNodes:
         blocked = await _guard_or_message()
         if blocked is not None:
             return await _control(blocked, "authorization_stopped")
+
+        from common.business_graph.tool_recovery import planning_exhausted
+
+        if planning_exhausted(state.get("messages", [])):
+            return {
+                "messages": [
+                    AIMessage(content="", additional_kwargs={"ui_visible": False})
+                ],
+                "planning_draft": "查询尝试已达本轮上限；只能根据已取得的数据回答，明确说明未取得的数据，不得编造。",
+            }
 
         recent = state.get("messages", [])
         last_human = max(

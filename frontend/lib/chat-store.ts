@@ -44,6 +44,8 @@ export type ChatMessage = {
 };
 
 type ChatState = {
+  analysisMenuName: string;
+  setAnalysisMenu: (menuName: string) => void;
   graphId: string; threads: LgThread[]; activeThreadId: string | null; messages: ChatMessage[];
   /** 企业切换：丢弃当前视图与列表缓存（不得残留旧企业数据） */
   clearForTenant: () => void;
@@ -309,6 +311,12 @@ function sameRun(run: ActiveRun) {
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
+  analysisMenuName: "CityHourBroadcast",
+  setAnalysisMenu: (menuName) => {
+    if (get().isStreaming || get().stopPending || get().graphId !== "data-analysis") return;
+    useCapabilityStore.getState().setSkillMode("auto");
+    set({ analysisMenuName: menuName });
+  },
   graphId: "basic-qa", threads: [], activeThreadId: null, ...emptyView, loadingThreads: false, stopPending: false,
   clearForTenant: () => {
     cancelActive();
@@ -317,7 +325,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     pendingStopRun = null;
     stopPromise = null;
     useCapabilityStore.getState().clearForScopeSwitch(get().graphId);
-    set({ threads: [], activeThreadId: null, ...emptyView, stopPending: false });
+    set({ threads: [], activeThreadId: null, ...emptyView, stopPending: false, analysisMenuName: "CityHourBroadcast" });
   },
   switchGraph: async (graphId) => {
     generation++; cancelActive();
@@ -405,7 +413,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       run.streamStarted = true;
       await streamRun({ threadId, graphId: previous.graphId,
         messages: [{ id: userMsg.id, type: "human", content: trimmed }],
-        config: { configurable: { chat_mode: chatMode } }, signal: run.controller.signal,
+        config: { configurable: { chat_mode: chatMode,
+          ...(previous.graphId === "data-analysis" ? { menu_name: previous.analysisMenuName } : {}) } }, signal: run.controller.signal,
         handlers: {
           onRun: (runId) => {
             run.runId = runId;

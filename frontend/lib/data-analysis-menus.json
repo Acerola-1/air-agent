@@ -1,0 +1,132 @@
+[
+  {
+    "value": "CityHourBroadcast",
+    "label": "小时播报",
+    "skillId": "skill:data-analysis:broadcast-hour"
+  },
+  {
+    "value": "concentrationranking",
+    "label": "浓度排名",
+    "skillId": "skill:data-analysis:concentration-ranking"
+  },
+  {
+    "value": "cityMonitoringData",
+    "label": "监测数据",
+    "skillId": "skill:data-analysis:monitoring-data"
+  },
+  {
+    "value": "SingleIndexMultiCity",
+    "label": "单指标对比分析",
+    "skillId": "skill:data-analysis:single-indicator-comparison"
+  },
+  {
+    "value": "SingleCityMultiIndex",
+    "label": "多指标对比分析",
+    "skillId": "skill:data-analysis:multi-indicator-comparison"
+  },
+  {
+    "value": "datastatistics_urbanaircalendar_day",
+    "label": "空气质量日历（日）",
+    "skillId": "skill:data-analysis:air-quality-calendar"
+  },
+  {
+    "value": "datastatistics_urbanaircalendar_month",
+    "label": "空气质量日历（月）",
+    "skillId": "skill:data-analysis:air-quality-calendar"
+  },
+  {
+    "value": "datastatistics_urbanaircalendar_year",
+    "label": "空气质量日历（年）",
+    "skillId": "skill:data-analysis:air-quality-calendar"
+  },
+  {
+    "value": "proportionComprehensive",
+    "label": "综合指数占比分析",
+    "skillId": "skill:data-analysis:integrated-index-ratio"
+  },
+  {
+    "value": "ProportionPrimaryPollutants",
+    "label": "首要污染物占比分析",
+    "skillId": "skill:data-analysis:primary-pollutant-ratio"
+  },
+  {
+    "value": "airQualityGrade",
+    "label": "空气质量等级分析",
+    "skillId": "skill:data-analysis:air-quality-level-analysis"
+  },
+  {
+    "value": "CityBoundaryDisplay",
+    "label": "城市边界",
+    "skillId": "skill:data-analysis:city-boundary"
+  },
+  {
+    "value": "PM25AndPM10Ratio",
+    "label": "浓度比值分析",
+    "skillId": "skill:data-analysis:concentration-ratio"
+  },
+  {
+    "value": "ConcentrationBoxDiagram",
+    "label": "浓度箱线图",
+    "skillId": "skill:data-analysis:concentration-boxplot"
+  },
+  {
+    "value": "anomalyMap",
+    "label": "区域距平图",
+    "skillId": "skill:data-analysis:regional-anomaly-map"
+  },
+  {
+    "value": "RegionalRadarMap",
+    "label": "区域特征雷达",
+    "skillId": "skill:data-analysis:regional-feature-radar"
+  },
+  {
+    "value": "TimeRadarCart",
+    "label": "时间特征雷达",
+    "skillId": "skill:data-analysis:temporal-feature-radar"
+  },
+  {
+    "value": "CorrelationAnalysisDiagram",
+    "label": "污染相关性分析",
+    "skillId": "skill:data-analysis:pollutant-correlation"
+  },
+  {
+    "value": "MeanMap",
+    "label": "24小时均值对比分析",
+    "skillId": "skill:data-analysis:rolling-24h-average-comparison"
+  },
+  {
+    "value": "statistics_region",
+    "label": "区域排名分析",
+    "skillId": "skill:data-analysis:regional-ranking"
+  },
+  {
+    "value": "CityMonthlyAssess",
+    "label": "月考核排名",
+    "skillId": "skill:data-analysis:monthly-assessment-ranking"
+  },
+  {
+    "value": "AirQualityCalculator",
+    "label": "空气质量计算器",
+    "skillId": "skill:data-analysis:air-quality-calculator"
+  },
+  {
+    "value": "AQIDailyComplianceControl",
+    "label": "AQI 达标控制",
+    "skillId": "skill:data-analysis:aqi-attainment-control"
+  },
+  {
+    "value": "todayTargetAnalysis",
+    "label": "今日目标分析",
+    "skillId": "skill:data-analysis:today-target-analysis"
+  },
+  {
+    "value": "UrbanobjectiveControl",
+    "label": "城市考核目标控制",
+    "skillId": "skill:data-analysis:city-assessment-target-control"
+  },
+  {
+    "value": "analysisOfUrbanDust",
+    "label": "城市沙尘判定",
+    "skillId": "skill:data-analysis:city-dust-assessment"
+  }
+]

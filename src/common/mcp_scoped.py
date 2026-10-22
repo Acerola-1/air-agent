@@ -110,7 +110,14 @@ class ScopedMCPToolFactory:
         resolved = self._resolve(identity, server_key)
         with mcp_identity_scope(identity):
             state = await self._ensure_discovered(resolved, force_retry=force_retry)
-        return list(state.tools)
+        # 发现缓存可共享服务 schema，但披露必须与逐发送检查取相同交集。
+        # 否则模型看得到不属于当前业务的工具，只能在执行时反复碰到 403。
+        return [
+            tool
+            for tool in state.tools
+            if resolved.business_scope.allows(tool.name)
+            and resolved.connection.allows_tool(tool.name)
+        ]
 
     async def _ensure_discovered(
         self, resolved: ResolvedConnection, *, force_retry: bool = False

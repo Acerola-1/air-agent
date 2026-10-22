@@ -1,0 +1,17 @@
+{
+  "account": "full-a-nogrant",
+  "permissions": [],
+  "capabilities_status": 403,
+  "capabilities_body": {
+    "detail": {
+      "code": "business_not_permitted",
+      "error": "当前企业未开通或未授予「基础问答」业务使用权限"
+    }
+  },
+  "thread_status": 200,
+  "run_status": 403,
+  "run_body": {
+    "error": "台账受理失败",
+    "code": "ledger_admission_failed"
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "schema_version": "agent-full-system-evidence.v1",
+  "run_id": "20261022-094000-full",
+  "generated_at": "2026-10-22T09:45:00+08:00",
+  "files": [
+    {
+      "path": "calibration.md",
+      "sha256": "869b57c11ea2f6bb2c5a847fd78990c2c2108451348b9d2dbdb75d4263e48b0c",
+      "bytes": 3294
+    },
+    {
+      "path": "cleanup.md",
+      "sha256": "8f363db9a0c44424c25aec7c8912bfd278eaf26cbf615e9c210e314fe0561252",
+      "bytes": 1587
+    },
+    {
+      "path": "commands.md",
+      "sha256": "bd1af20be6ae5aeea0c84b664202bf493ba76f84fa93665925ce7f8d89d840b5",
+      "bytes": 6372
+    },
+    {
+      "path": "defect-list.md",
+      "sha256": "042d14fdfe851d85c781d22e3546a3e6a164c3b5f9d6d708ddde8dfd62f87723",
+      "bytes": 6168
+    },
+    {
+      "path": "evidence/browser-ui.json",
+      "sha256": "32ae961bbc61c31e4e618afdfa3582292b2d26290cc4e39ead4620182ec5a2ad",
+      "bytes": 690
+    },
+    {
+      "path": "evidence/e-s-summary.json",
+      "sha256": "1a9cf1b7cda3c3f3282b1bce7d235b3096652c91f952b4f3ac539a80d4859895",
+      "bytes": 9528
+    },
+    {
+      "path": "evidence/feedback-cas.json",
+      "sha256": "6c5bf478b06566c908463fe8808c106db7859db7d9c5ce6077a66812f5becaf0",
+      "bytes": 372
+    },
+    {
+      "path": "evidence/no-grant.json",
+      "sha256": "87c0b6d8354e3928b0002dd6eef01964b90c1b13f59e506d914b221076cf1a3c",
+      "bytes": 402
+    },
+    {
+      "path": "evidence/p-s-summary.json",
+      "sha256": "bbea9f8909a3faafa5ae86cfd168c513cf1e6b95cc316b02ac910a6bf69c7ab5",
+      "bytes": 820
+    },
+    {
+      "path": "evidence/permission-separation.json",
+      "sha256": "0d4f3ee29144b17f036f37f56556f6a7ced041585e658c97d905ff38fbea759a",
+      "bytes": 651
+    },
+    {
+      "path": "evidence/permission-separation2.json",
+      "sha256": "b9319fe7a8f8a0a4da3cfe3a3829b4b4ce0e78ba01d55d881a4db7df94af7a3d",
+      "bytes": 512
+    },
+    {
+      "path": "evidence/rls-isolation.json",
+      "sha256": "d0789e1a6f834d634c60259e0f0a3dc7a6b5af653484d0515b26af7beedaf6c5",
+      "bytes": 306
+    },
+    {
+      "path": "manifest.json",
+      "sha256": "38e21b540dac1508df05306cc1f6db72812e386708469ca85ad0d7eb95258e11",
+      "bytes": 5343
+    },
+    {
+      "path": "report.md",
+      "sha256": "5566645b9ef4eeba215aabbf492a2af0ce86e8b00b6e871e908ac4551861fad4",
+      "bytes": 12091
+    },
+    {
+      "path": "scenario-matrix.md",
+      "sha256": "c808eb5395d45689f1068a1fa513bc46439d4b0b418245230cd8a9c4be6dbe6f",
+      "bytes": 4670
+    },
+    {
+      "path": "screenshots/admin-feedback-resolved.png",
+      "sha256": "0964588b14ad4e8daef2945949c031c327582c8a73b357c690fa9b43470f43d4",
+      "bytes": 128964
+    },
+    {
+      "path": "screenshots/admin-feedback.png",
+      "sha256": "a85b1e8abbf7715297bd699d7c35509ebfa25092b76dda9fa69b0026b818cac0",
+      "bytes": 102348
+    },
+    {
+      "path": "screenshots/admin-insights.png",
+      "sha256": "f9ec12340f530504a6df8e1a749843e03691cd41669592ef1af74d03a864de28",
+      "bytes": 145232
+    },
+    {
+      "path": "screenshots/admin-overview.png",
+      "sha256": "118d70777c8cf4a16b210448886cd6c467882efa800bb5119c8cb8a6d0d93685",
+      "bytes": 130527
+    },
+    {
+      "path": "screenshots/chat-answer.png",
+      "sha256": "216867f094df0633f5dbbc8e5230265fcda5b43e24404e8e77d2207d3c77ebed",
+      "bytes": 90671
+    },
+    {
+      "path": "screenshots/chat-data-analysis.png",
+      "sha256": "89d94c73304d2dbd1b1118c2748a4edc8c1ec762cc5fb243b7a1da6afb4836d0",
+      "bytes": 71892
+    },
+    {
+      "path": "screenshots/chat-home.png",
+      "sha256": "353aeb76b212eaf5b7c1372f97dcf34367a3b0f1f873e69139e8019bbe6b3f3f",
+      "bytes": 122470
+    },
+    {
+      "path": "screenshots/chat-narrow-390x844.png",
+      "sha256": "c87563634f63544f5b88bf3042d975d32b7dc20b5896c7f1ba6ffd970546dfaa",
+      "bytes": 51209
+    },
+    {
+      "path": "screenshots/chat-stop-incomplete.png",
+      "sha256": "650ee00d31b7a00b59cf31f735c518fb148d82ae1d8f05c01d4a6cb0e39a4b0d",
+      "bytes": 96532
+    },
+    {
+      "path": "screenshots/chat-streaming.png",
+      "sha256": "b38b01a7194753fd235ed18f8bc8ae4c51cdba344b54dd0b5dffab14112f4f2a",
+      "bytes": 90305
+    },
+    {
+      "path": "screenshots/chat-tracing.png",
+      "sha256": "63053fd00d0bf3d10871131b9b1cc6c49fee0ed60566544307916841cc3f615f",
+      "bytes": 88172
+    },
+    {
+      "path": "summary.json",
+      "sha256": "26afceaac44c46663d86051d88c1763a4bf7a08f80f013d82b2937ca8cead7d3",
+      "bytes": 8272
+    }
+  ],
+  "coverage": {
+    "p_s": "docs/reviews/basic-qa-performance/20261022-ps-full",
+    "e_s": "docs/reviews/basic-qa-performance/20261022-es-full",
+    "raw_answers": ".local/full-20261022/evidence-ps/answers.jsonl, .local/full-20261022/evidence-es/answers.jsonl",
+    "not_collected": [
+      "real-model browser first-visible",
+      "price/cost",
+      "P/R,E/R,F"
+    ]
+  }
+}

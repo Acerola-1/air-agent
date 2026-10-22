@@ -22,6 +22,7 @@ from langchain_core.messages import HumanMessage, ToolMessage
 from langgraph.errors import GraphBubbleUp
 from langgraph.types import Command
 from loguru import logger
+from pydantic import ValidationError
 
 from common.artifact_scope import runtime_scope
 from common.business_graph.subagent_summarizer import summarize_large_tool_output
@@ -373,6 +374,40 @@ async def composed_tool_wrapper(
             status="error",
         )
 
+    # 模型即使忽略更新后的 schema，也不能重复发送已确定失败的工具。
+    from common.business_graph.tool_recovery import exhausted_tools
+
+    state = getattr(request, "state", None) or {}
+    name = str(request.tool_call.get("name") or "")
+    if name in exhausted_tools(state.get("messages", [])):
+        ctx = observation_context_from_config(_runtime_config)
+        if ctx is not None:
+            try:
+                await record_tool_result(
+                    ctx,
+                    logical_call_id=str(request.tool_call.get("id") or "") or None,
+                    tool_name=name,
+                    service_key=_obs_service_key(_is_mcp_tool(request), name),
+                    status="validation_rejected",
+                    error_category="turn_retry_budget",
+                    network_attempted=False,
+                )
+            except Exception:  # noqa: BLE001 - 观测失败开放
+                pass
+        return ToolMessage(
+            content=json.dumps(
+                {
+                    "code": 422,
+                    "success": False,
+                    "message": "本轮该工具已被拒绝或参数修正次数已耗尽，请使用已有数据并说明缺失。",
+                },
+                ensure_ascii=False,
+            ),
+            tool_call_id=str(request.tool_call.get("id") or ""),
+            name=name,
+            status="error",
+        )
+
     # 2. 执行工具
     #    MCP 工具走企业授权执行层（每次调用重新解析绑定，重试前复查授权）；
     #    本地工具维持原 handler 路径。
@@ -434,7 +469,31 @@ async def composed_tool_wrapper(
                 )
             except Exception:  # noqa: BLE001 - 观测失败开放
                 pass
-        if (
+        if isinstance(exc, ValidationError):
+            # 字段位置/类型足以帮助修正，不回传输入值或异常原文中的凭据。
+            result = ToolMessage(
+                content=json.dumps(
+                    {
+                        "code": 422,
+                        "success": False,
+                        "message": "参数校验未通过，请按工具 schema 修正一次。",
+                        "fields": [
+                            {
+                                "field": ".".join(map(str, error["loc"])),
+                                "type": error["type"],
+                            }
+                            for error in exc.errors(
+                                include_input=False, include_url=False
+                            )
+                        ],
+                    },
+                    ensure_ascii=False,
+                ),
+                tool_call_id=obs_tool_call_id,
+                name=obs_tool_name,
+                status="error",
+            )
+        elif (
             mcp
             and not isinstance(exc, (ValueError, TypeError))
             and getattr(exc, "status_code", 500) >= 500

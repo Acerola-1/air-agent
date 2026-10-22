@@ -227,6 +227,53 @@ async def test_unlisted_business_tool_rejected(
     assert await fixture_server.call_count("subject-a") == 0
 
 
+async def test_disclosure_and_execution_share_business_scope_without_transient_config(
+    factory, fixture_server, monkeypatch
+) -> None:
+    """节点间未保留临时目录时也不泄露其它业务工具；有真实网络正向对照."""
+    from dataclasses import replace
+
+    from common import business_registry as registry
+    from common.capabilities import filter_capability_mcp_tools
+    from common.mcp_scoped import build_proxy_tools
+
+    monkeypatch.setenv("FIXTURE_TOK_A", "tok-tenant-a")
+    _configure(monkeypatch)
+    narrow = replace(
+        registry.BUSINESSES[BUSINESS],
+        connections=(
+            BusinessConnection(
+                server_key=SERVER_KEY, allowed_tools=frozenset({"query_air"})
+            ),
+        ),
+    )
+    monkeypatch.setitem(registry.BUSINESSES, BUSINESS, narrow)
+    identity = _identity()
+    tools = await factory.tools_for(identity, SERVER_KEY)
+    assert [tool.name for tool in tools] == ["query_air"]
+    cfg = _run_config(identity)
+    cfg["configurable"]["capability_authorized_servers"] = [SERVER_KEY]
+    visible = filter_capability_mcp_tools(build_proxy_tools(), cfg)
+    assert [tool.name for tool in visible] == ["query_air"]
+    assert await fixture_server.call_count("subject-a") == 0
+    with pytest.raises(McpAuthorizationError):
+        await execute_mcp_tool(SERVER_KEY, "query", {}, cfg)
+    assert await fixture_server.call_count("subject-a") == 0
+    result = json.loads(
+        await execute_mcp_tool(
+            SERVER_KEY,
+            "query_air",
+            {
+                "user_id": "synthetic",
+                "region": "杭州市",
+            },
+            cfg,
+        )
+    )
+    assert result["auth_subject"] == "subject-a"
+    assert await fixture_server.call_count("subject-a") == 1
+
+
 async def test_real_bearer_auth_and_no_user_id_spoofing(
     factory, fixture_server, monkeypatch
 ) -> None:

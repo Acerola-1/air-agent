@@ -371,7 +371,17 @@ async def call_model(
     available = filter_business_tools(all_tools, allowed)
     from common.capabilities import filter_capability_mcp_tools
 
-    available = filter_capability_mcp_tools(available, config)
+    available = filter_capability_mcp_tools(
+        available, config, business_code="data-analysis"
+    )
+    from common.business_graph.tool_recovery import (
+        planning_exhausted,
+        recoverable_tools,
+    )
+
+    available = recoverable_tools(available, state.get("messages", []))
+    if planning_exhausted(state.get("messages", [])):
+        available = []
 
     messages = state["messages"]
     # 1. 检查最新用户提问长度

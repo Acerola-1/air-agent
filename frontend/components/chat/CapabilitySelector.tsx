@@ -21,9 +21,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import analysisMenus from "@/lib/data-analysis-menus.json";
 
 export function CapabilitySelector() {
   const graphId = useChatStore((s) => s.graphId);
+  const analysisMenu = useChatStore((s) => s.analysisMenuName);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const ctx = useSessionStore((s) => s.ctx);
   const currentTenant = ctx?.current_tenant;
@@ -40,6 +42,9 @@ export function CapabilitySelector() {
   const [activeTab, setActiveTab] = useState<"skills" | "mcp">("skills");
 
   const selection = open ? draft : committedSelection;
+  const menuSkillId = graphId === "data-analysis"
+    ? analysisMenus.find((menu) => menu.value === analysisMenu)?.skillId : null;
+  const skills = (catalog?.skills ?? []).filter((skill) => !menuSkillId || skill.id === menuSkillId);
   const setSkillMode = (mode: "auto" | "explicit", skillId: string | null = null) =>
     setDraft((s) => ({ ...s, skillMode: mode, selectedSkillId: skillId }));
   const setMcpMode = (mode: "auto" | "allowlist", ids: string[] = []) =>
@@ -154,7 +159,7 @@ export function CapabilitySelector() {
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             )}
           >
-            技能选择 ({catalog?.skills.length ?? 0})
+            技能选择 ({skills.length})
           </button>
           <button
             type="button"
@@ -217,7 +222,7 @@ export function CapabilitySelector() {
               </div>
 
               {/* Skill 列表 */}
-              {catalog?.skills.map((skill) => {
+              {skills.map((skill) => {
                 const isSelected =
                   selection.skillMode === "explicit" &&
                   selection.selectedSkillId === skill.id;
@@ -270,7 +275,7 @@ export function CapabilitySelector() {
                 );
               })}
 
-              {catalog?.skills.length === 0 && !loading && (
+              {skills.length === 0 && !loading && (
                 <div className="py-6 text-center text-xs text-muted-foreground">
                   当前图暂无可用技能
                 </div>

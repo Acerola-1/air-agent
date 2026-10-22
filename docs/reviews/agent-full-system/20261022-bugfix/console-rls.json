@@ -1,0 +1,14 @@
+{
+  "runtime": {
+    "role": "air_agent_runtime",
+    "superuser": false,
+    "bypassrls": false
+  },
+  "owner": 200,
+  "same_tenant_operator": 200,
+  "other_tenant_operator": 404,
+  "metrics_only": 403,
+  "ops_without_content": 403,
+  "legacy_personal_endpoint_other_user": 404,
+  "after_deletion": 404
+}

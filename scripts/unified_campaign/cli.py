@@ -117,6 +117,9 @@ def _smoke(args: argparse.Namespace) -> int:
     expectations = build_expectations(samples)
     campaign_id = _campaign_id(digests["cases_sha256"])
     run_id = datetime.now(SHANGHAI).strftime("%Y%m%d-%H%M%S") + "-" + campaign_id[-6:]
+    # Create the evidence directory before any measurement so an existing
+    # directory cannot waste a complete run at the write-out step.
+    args.evidence_out.mkdir(parents=True, exist_ok=False)
     cookie = os.environ.get(config["cookie_env"], "")
     reachable = bool(cookie) and _reachable(config["bff_base_url"])
     sent: list[dict[str, Any]] = []
@@ -225,7 +228,6 @@ def _smoke(args: argparse.Namespace) -> int:
         conclusion = "冒烟链路完成，质量与浏览器未验收"
     else:
         conclusion = "FAIL"
-    args.evidence_out.mkdir(parents=True, exist_ok=False)
     (args.evidence_out / "expectations.json").write_text(
         json.dumps(expectations, ensure_ascii=False, indent=2) + "\n"
     )

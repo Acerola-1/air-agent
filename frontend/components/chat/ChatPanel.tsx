@@ -27,6 +27,7 @@ import { Markdown } from "@/components/chat/Markdown";
 import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
 import { CapabilitySelector } from "@/components/chat/CapabilitySelector";
+import { AnalysisMenuSelector } from "@/components/chat/AnalysisMenuSelector";
 import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
 import { ContextMeter } from "@/components/chat/ContextMeter";
 import { TenantBadge } from "@/components/chat/TenantBadge";
@@ -552,6 +553,7 @@ function Composer({
         {/* 控制与上下文监控顶栏 */}
         <div className="flex flex-wrap items-center gap-2 px-1 pt-0.5">
           <GraphSwitcher />
+          <AnalysisMenuSelector />
           <ModeSwitcher />
           <CapabilitySelector />
 

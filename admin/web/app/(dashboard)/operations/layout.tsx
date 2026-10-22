@@ -28,7 +28,7 @@ export default function OperationsLayout({ children }: { children: React.ReactNo
   const { can } = useSession();
   const pathname = usePathname();
   const visible = TABS.filter((tab) => can(...tab.permissions));
-  const allowed = can("agent:metrics:read", "agent:operations:read");
+  const allowed = can("agent:metrics:read") || can("agent:operations:read");
 
   return (
     <div className="space-y-4">

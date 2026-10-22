@@ -6,7 +6,7 @@ import asyncio
 import json
 
 import pytest
-from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage
+from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, ToolMessage
 
 from common.output_streaming.answer import stream_final_answer
 from common.output_streaming.contract import (
@@ -175,7 +175,7 @@ async def test_unknown_citation_aborts_before_publication():
 
 
 @pytest.mark.anyio
-async def test_mid_stream_specific_regulation_text_aborts_without_done():
+async def test_mid_stream_unverified_claim_becomes_explicit_refusal_without_leaking():
     recorder = Recorder()
     model = SlowModel(["背景说明。", "浓度限值为 35 微克/立方米。"], barrier_after=99)
     publisher = _publisher(recorder)
@@ -187,11 +187,72 @@ async def test_mid_stream_specific_regulation_text_aborts_without_done():
         policy_messages=[HumanMessage(content="介绍一下这个指标")],
         question="介绍一下这个指标",
     )
-    assert result.aborted is True
-    assert recorder.of(EVENT_DONE) == []
+    assert result.aborted is False
+    assert recorder.of(EVENT_DONE)
+    assert recorder.of(EVENT_ABORTED) == []
+    assert result.message.additional_kwargs["policy_limited"] is True
+    assert "未取得可核验的知识库依据" in result.text
+    assert result.text.startswith("背景说明。")
+    assert "35" not in result.text
     assert all(
         "35" not in event.get("message", "") for event in recorder.of(EVENT_DELTA)
     )
+
+
+@pytest.mark.anyio
+async def test_mid_stream_verified_claim_uses_exact_source_and_closes_model():
+    cite = "00000000-0000-4000-8000-000000000001"
+    question = HumanMessage(content="介绍 AQI")
+    context = [
+        question,
+        ToolMessage(
+            name="knowledge_search",
+            tool_call_id="lookup",
+            content=json.dumps(
+                {
+                    "outcome": "ok",
+                    "retrieval_status": "retrieved",
+                    "references": [
+                        {
+                            "citation_id": cite,
+                            "verified": True,
+                            "doc_name": "受控标准",
+                            "excerpt": "本标准适用于室内场所。",
+                        }
+                    ],
+                }
+            ),
+        ),
+    ]
+    closed = asyncio.Event()
+
+    class Source:
+        async def astream(self, messages, config=None):
+            try:
+                yield AIMessageChunk(content="背景说明。")
+                yield AIMessageChunk(content="参照《受控标准》。")
+                raise AssertionError("guarded completion must not consume later text")
+            finally:
+                closed.set()
+
+    recorder = Recorder()
+    result = await stream_final_answer(
+        Source(),
+        context,
+        {},
+        publisher=_publisher(recorder),
+        policy_messages=context,
+        question=question.content,
+    )
+    assert not result.aborted
+    assert "本标准适用于室内场所。" in result.text
+    assert f"[[cite:{cite}]]" in result.text
+    assert closed.is_set()
+    validator = OutputStreamValidator()
+    for event in recorder.events:
+        validator.accept(event)
+    assert validator.state.errors == []
+    assert validator.state.text == result.text
 
 
 @pytest.mark.anyio

@@ -1,0 +1,8 @@
+{
+  "owned_container": "aa-bugfix-20261022-pg",
+  "container_stopped_and_deleted": true,
+  "component_http_server_stopped": true,
+  "private_pg_credentials_deleted": true,
+  "browser_task_finished": true,
+  "shared_resources_modified": false
+}

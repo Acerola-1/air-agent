@@ -1,0 +1,13 @@
+{
+  "answer_id": "be76076f-6bf4-462c-977c-ff65ca22092c",
+  "submit_status": 200,
+  "replay_status": 200,
+  "replay_replayed": true,
+  "stale_status": 409,
+  "stale_code": "revision_conflict",
+  "policy": {
+    "enabled": true,
+    "enabled_at": "2026-10-22T00:00:00+08:00"
+  },
+  "note": "同一 operation_id 重放不追加修订；旧 expected_revision 被 409 拒绝"
+}

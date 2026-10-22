@@ -1064,6 +1064,8 @@ class BoundedSkillsBackend(FilesystemBackend):
 def filter_capability_mcp_tools(
     tools: list[Any],
     config: Any = None,
+    *,
+    business_code: str | None = None,
 ) -> list[Any]:
     """按已受理 capability_selection 过滤披露给模型的 MCP 工具（任务 4.3 披露层）.
 
@@ -1094,6 +1096,49 @@ def filter_capability_mcp_tools(
 
     factory = get_factory()
     mcp_tool_names = set(get_mcp_tool_names())
+
+    # prepare_model 对 config 的就地修改不会跨 LangGraph 节点持久化。
+    # 不能仅依赖那个节点临时写入的 authorized_tool_ids；每次披露都重新
+    # 使用服务端图对应业务（或 Auth 冻结的业务码）收窄共享 schema 目录。
+    code = business_code or configurable.get("ledger_business_code")
+    if code:
+        from common.business_registry import business_allows_tool
+        from common.identity.runtime import identity_from_config
+        from common.mcp_authorization import McpAuthorizationError, resolve_connection
+
+        identity = identity_from_config(cfg)
+        connections: dict[str, Any] = {}
+
+        scoped = []
+        for tool in tools:
+            meta = getattr(tool, "metadata", None) or {}
+            name = tool_name(tool) or ""
+            server = meta.get("server_key") or factory.server_of(name)
+            if not (server or meta.get("is_mcp") or name in mcp_tool_names):
+                scoped.append(tool)
+                continue
+            stable_id = str(meta.get("stable_id") or "")
+            raw_name = stable_id.split(":", 2)[-1] if stable_id else name
+            if not server or not business_allows_tool(str(code), str(server), raw_name):
+                continue
+            if identity is not None:
+                if server not in connections:
+                    try:
+                        connections[server] = resolve_connection(
+                            business_code=str(code),
+                            tenant_id=identity.tenant_id,
+                            server_key=str(server),
+                            require_credential=True,
+                        )
+                    except McpAuthorizationError:
+                        connections[server] = None
+                connection = connections[server]
+                if connection is None or not connection.connection.allows_tool(
+                    raw_name
+                ):
+                    continue
+            scoped.append(tool)
+        tools = scoped
 
     authorized_ids = configurable.get("capability_authorized_tool_ids")
     if authorized_ids is not None:

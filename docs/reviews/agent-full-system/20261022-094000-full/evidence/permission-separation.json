@@ -1,0 +1,31 @@
+{
+  "full-a-metrics": {
+    "permissions": [
+      "agent:metrics:read"
+    ],
+    "metrics": 200,
+    "operations": 403,
+    "insights": 403
+  },
+  "full-a-legal": {
+    "permissions": [
+      "agent:business:basic-qa:use",
+      "agent:business:data-analysis:use",
+      "agent:business:intelligent-tracing:use",
+      "agent:content:read",
+      "agent:feedback:manage",
+      "agent:insights:manage",
+      "agent:metrics:read",
+      "agent:operations:read"
+    ],
+    "metrics": 200,
+    "operations": 200,
+    "insights": 200
+  },
+  "full-a-nogrant": {
+    "permissions": [],
+    "metrics": 403,
+    "operations": 403,
+    "insights": 403
+  }
+}

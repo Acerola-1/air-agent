@@ -1,0 +1,18 @@
+{
+  "browser_first_visible_ms": 6905.9,
+  "browser_display_complete_ms": 7471.2,
+  "answer_text": "受控依赖已收到请求。",
+  "model": "controlled",
+  "viewport": "1855x939",
+  "stop_test": {
+    "incomplete_marker": "未完成 · 生成中断或尚未确认，此内容不是完整终答。",
+    "final_text": "受控依赖已收到请求。",
+    "stop_button_after": "absent"
+  },
+  "narrow_viewport": "390x844",
+  "notes": [
+    "browser timing uses page MutationObserver and performance.now, independent from interface clocks",
+    "copy button showed 已复制 but clipboard read was not verified",
+    "history search returned no matches for an existing titled thread"
+  ]
+}

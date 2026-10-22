@@ -1,0 +1,28 @@
+{
+  "full-a-contentops": {
+    "permissions": [
+      "agent:content:read",
+      "agent:operations:read"
+    ],
+    "content": 404,
+    "feedback_ops": 200,
+    "metrics": 403
+  },
+  "full-a-feedbackops": {
+    "permissions": [
+      "agent:feedback:manage",
+      "agent:operations:read"
+    ],
+    "content": 403,
+    "feedback_ops": 200,
+    "metrics": 403
+  },
+  "full-a-metrics": {
+    "permissions": [
+      "agent:metrics:read"
+    ],
+    "content": 403,
+    "feedback_ops": 403,
+    "metrics": 200
+  }
+}

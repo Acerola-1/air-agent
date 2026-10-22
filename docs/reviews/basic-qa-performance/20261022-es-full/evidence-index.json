@@ -1,0 +1,20 @@
+{
+  "schema_version": "basic-qa-perf.v1",
+  "run_id": "20261022-es-full",
+  "files": [
+    "browser.jsonl",
+    "calls.jsonl",
+    "checks.jsonl",
+    "manifest.json",
+    "report.md",
+    "requests.jsonl",
+    "resources.jsonl",
+    "summary.json"
+  ],
+  "restricted_evidence": {
+    "answers": ".local/full-20261022/evidence-es/answers.jsonl",
+    "note": "回答正文只保存在受控忽略目录，不进入性能 bundle"
+  },
+  "question_text_stored": false,
+  "browser_missing_reason": "本轮未执行浏览器；接口首正文不能替代浏览器首屏"
+}

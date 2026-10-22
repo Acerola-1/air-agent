@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { PlusIcon, SearchIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, SearchIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useChatStore } from "@/lib/chat-store";
 import { useSessionStore } from "@/lib/session-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { threadTitle } from "@/lib/thread-title";
 
 /** 左侧线程列表：按 graph_id + user_id 过滤（由 chat-store.loadThreads 处理），
  *  支持新建 / 切换 / 删除。搜索为客户端过滤（MVP 够用）。 */
@@ -27,12 +28,13 @@ export function ThreadSidebar({ onNavigate }: { onNavigate?: () => void }) {
   // 切换 graph 后自动重新加载（store.switchGraph 已触发；此处兜底首次挂载）
   useEffect(() => {
     if (currentTenantId) void loadThreads();
+    setSearch("");
   }, [graphId, currentTenantId, loadThreads]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return threads;
-    return threads.filter((t) => (t.metadata?.title ?? "").toLowerCase().includes(q));
+    return threads.filter((t) => threadTitle(t).toLowerCase().includes(q));
   }, [threads, search]);
 
   const hasThreads = threads.length > 0;
@@ -58,8 +60,11 @@ export function ThreadSidebar({ onNavigate }: { onNavigate?: () => void }) {
             onChange={(e) => setSearch(e.target.value)}
             placeholder="搜索会话"
             aria-label="搜索会话"
-            className="border-border/60 focus:border-ring bg-muted/40 h-9 w-full rounded-lg border pl-8 pr-3 text-sm outline-none"
+            className="border-border/60 focus:border-ring bg-muted/40 h-9 w-full rounded-lg border pl-8 pr-9 text-sm outline-none"
           />
+          {search && <button type="button" aria-label="清空会话搜索"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground focus-visible:ring-2"
+            onClick={() => setSearch("")}><XIcon className="size-3.5" /></button>}
         </div>
       )}
 
@@ -74,7 +79,7 @@ export function ThreadSidebar({ onNavigate }: { onNavigate?: () => void }) {
           filtered.map((t) => {
             const threadId = t.thread_id;
             const active = threadId === activeThreadId;
-            const title = (t.metadata?.title as string | undefined) || "新会话";
+            const title = threadTitle(t);
             return (
               <div
                 key={threadId}

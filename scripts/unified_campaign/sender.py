@@ -174,6 +174,10 @@ class _StreamState:
         self.done_message: str | None = None
         self.done_sha256: str | None = None
         self.last_seq: int | None = None
+        self.seq_status: str = "not_applicable"
+        self.delta_text: str = ""
+        self.done_hash_match: bool | None = None
+        self.output_started: bool = False
         self.stream_end_ms: int | None = None
         self.confirmation_end_ms: int | None = None
 
@@ -229,7 +233,10 @@ class _StreamState:
             self.output_protocol_version = int(version)
         output_type = str(payload.get("type") or "")
         if output_type == "final_output_start":
-            self.output_id = str(payload.get("output_id") or self.output_id or "") or None
+            self.output_started = True
+            self.output_id = (
+                str(payload.get("output_id") or self.output_id or "") or None
+            )
             self.output_message_id = (
                 str(payload.get("message_id") or self.output_message_id or "") or None
             )
@@ -239,7 +246,14 @@ class _StreamState:
             if not isinstance(text, str) or not text:
                 return
             self.delta_count += 1
-            self.last_seq = payload.get("seq") if isinstance(payload.get("seq"), int) else self.last_seq
+            self.delta_text += text
+            seq = payload.get("seq")
+            if isinstance(seq, int):
+                if self.last_seq is not None and seq != self.last_seq + 1:
+                    self.seq_status = "gap_or_replay"
+                elif self.last_seq is None:
+                    self.seq_status = "contiguous"
+                self.last_seq = seq
             self.first_delta_source = self.first_delta_source or "new_delta"
             if self.first_safe_delta_ms is None:
                 self.first_safe_delta_ms = int((self.clock() - self.started) * 1000)
@@ -257,6 +271,11 @@ class _StreamState:
                     self.final_text = cleaned
                     self.done_message = cleaned
                     self.done_sha256 = payload.get("content_sha256")
+                    if isinstance(self.done_sha256, str) and self.delta_text:
+                        self.done_hash_match = (
+                            hashlib.sha256(self.delta_text.encode()).hexdigest()
+                            == self.done_sha256
+                        )
                     if self.first_safe_delta_ms is None:
                         # Legacy or single-shot: complete text arrived in one event.
                         self.first_delta_source = (
@@ -351,6 +370,7 @@ def send_sample(
     submission_key: str | None = None,
     clock: Callable[[], float] = time.monotonic,
     include_answer_text: bool = False,
+    abort_event: threading.Event | None = None,
 ) -> dict[str, Any]:
     """Create or reuse a thread, stream one run, and confirm the ledger association."""
     base = bff_base_url.rstrip("/")
@@ -387,6 +407,13 @@ def send_sample(
     http_status: int | None = None
     old_handler = None
     timer_armed = False
+    deadline_event = abort_event or threading.Event()
+    deadline_timer = threading.Timer(
+        max(0.2, float(sample.deadline_seconds) - (clock() - started)),
+        deadline_event.set,
+    )
+    deadline_timer.daemon = True
+    deadline_timer.start()
     try:
         if threading.current_thread() is threading.main_thread():
             old_handler = signal.signal(signal.SIGALRM, _raise_deadline)
@@ -410,7 +437,11 @@ def send_sample(
                     stream_status = "completed"
                 else:
                     for event_name, data in _iter_sse(response.iter_lines()):
+                        if deadline_event.is_set():
+                            raise _ClientDeadline()
                         state.consume(event_name, data)
+                    if deadline_event.is_set():
+                        raise _ClientDeadline()
                     state.stream_end_ms = int((clock() - started) * 1000)
                     stream_status = "completed"
     except _ClientDeadline:
@@ -418,8 +449,9 @@ def send_sample(
     except httpx.TimeoutException:
         stream_status = "timeout"
     except httpx.TransportError:
-        stream_status = "transport_failed"
+        stream_status = "timeout" if deadline_event.is_set() else "transport_failed"
     finally:
+        deadline_timer.cancel()
         if timer_armed:
             signal.setitimer(signal.ITIMER_REAL, 0)
             if old_handler is not None:
@@ -485,7 +517,14 @@ def send_sample(
 
     state.confirmation_end_ms = int((clock() - started) * 1000)
     answer = state.answer_text()
-    complete_ms = int((clock() - started) * 1000)
+    # Completion is the end of the answer stream, not the later ledger confirm.
+    # Keeping confirm latency in a separate clock prevents a slow confirm call
+    # from inflating the user-visible completion metric.
+    complete_ms = (
+        state.stream_end_ms
+        if state.stream_end_ms is not None
+        else state.confirmation_end_ms
+    )
     if http_status is not None and http_status >= 400:
         primary = "admission_failed"
     elif stream_status == "timeout":
@@ -496,6 +535,20 @@ def send_sample(
         primary = "runtime_failed"
     elif state.error_code:
         primary = "runtime_failed"
+    elif state.aborted_reason:
+        primary = "runtime_aborted"
+    elif state.seq_status == "gap_or_replay":
+        primary = "protocol_error"
+    elif state.done_hash_match is False:
+        primary = "protocol_error"
+    elif (
+        state.output_protocol_version is not None
+        and state.output_started
+        and state.final_text is None
+    ):
+        # New protocol started but never produced final_output_done. Values or
+        # an earlier assistant message must not be promoted to a completed run.
+        primary = "stream_incomplete"
     elif association == "mismatch":
         primary = "association_mismatch"
     elif not confirmed:
@@ -532,6 +585,9 @@ def send_sample(
             "stream_status": stream_status,
             "business_status": "confirmed" if confirmed else "unconfirmed",
             "stream_error_code": state.error_code,
+            "seq_status": state.seq_status,
+            "done_hash_match": state.done_hash_match,
+            "output_started": state.output_started,
             "answer_sha256": None
             if answer is None
             else hashlib.sha256(answer.encode()).hexdigest(),

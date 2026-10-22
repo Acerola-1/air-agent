@@ -60,6 +60,10 @@ CSS 变量／Tailwind 运行时为 tokens 所有者，DESIGN.md 记录语义与�
 - 旧 done-only 事件仍显示完整答案，但计时与来源标为 legacy，不计新协议流式。
 - 停止待确认、刷新、切换企业与 A→B→A 的旧输出不得复活或写入当前正文。
 
+普通说明生成中遇到尚未公开的具体条款时，服务端可停止模型并追加已核验原文或明确的缺依据拒答，以受限答复结束；不得公开该模型断言，不把拒答算成业务问题已解决。未知引用、已公开内容校验冲突、撤权、取消、超时仍按未完成处理。来源：`openspec/changes/unify-user-visible-answer-streaming/specs/agent-visible-output-streaming/spec.md`。
+
+数据分析的“分析项目”由 `AnalysisMenuSelector` 使用原生 select 提供，菜单定义与 `src/data_analysis/menu_skill_mapping.py` 同步并以契约回归校验。选项弹层由系统负责；选择传入本轮 `configurable.menu_name`，运行及停止待确认时锁定。切换项目重置显式技能，技能选择列表只展示该菜单映射的技能。会话搜索仅过滤已加载的最多 50 条，显示标题与搜索标题共用 `threadTitle`，切图或企业时清除旧搜索词。
+
 ## Accessibility and layout
 
 详情切换为原生 button，aria-expanded 与视图一致。公开状态用 live region，错误说明用 alert。只在接近底部时跟随回答增长，用户上翻时保留阅读位置。输入法保护沿用现有 Composer，动态区域不改动输入框宽度。归档原文有局部滚动容器，保持滚动条可见并可操作。

@@ -1,0 +1,16 @@
+{
+  "src/common/output_streaming/answer.py": "dd399fec0b09731dcdacc5f28c0c4d4677da7779d4fa1efc94985eeb397299fd",
+  "src/common/mcp_scoped.py": "debe615fb701e9a6b13ce627bcbfd94bf6fca3259cea8ee4e1e703a8b80eeb2b",
+  "src/common/capabilities.py": "849ab6560fe71b14338215ea01705eadcf3bc1f3132944627e5df065a06ce8a4",
+  "src/common/business_graph/nodes.py": "845c0fcb0c1677ac01d4af7ba1b5df31035e9bbfd5ce26ac21b68919bb3bfc85",
+  "src/common/business_graph/tool_recovery.py": "92e78809347300b9c735bc919a0c495dc1b5df0378976e911a7b91208afabf55",
+  "src/common/business_graph/tool_wrappers.py": "caa315421c3e08e17b2ba7023de9fc376b5b7a4c9211a2ccd65b9b6288bedcda",
+  "src/data_analysis/nodes.py": "33d31780698a5758f03b35b12c8365ac1c14948c9f06597f5fba34a8f61480ea",
+  "frontend/components/chat/AnalysisMenuSelector.tsx": "f351961102b26fe9be652388b352a63bcdb6c518be87caa32dd4ee4710792182",
+  "frontend/components/chat/CapabilitySelector.tsx": "2b632e1cccda49787319343c9d269bffd232145f59dc0ed4a09125b711e14bbd",
+  "frontend/components/chat/ThreadSidebar.tsx": "139ccb1360b4b8abf467db32e864cb9c345914e84e0e3f7fab75e0c62a0237e4",
+  "frontend/lib/thread-title.ts": "e1e0fb31f59753da5556ea3c2198dccb09696db49b3d647edec3cd44e82a2458",
+  "frontend/lib/chat-store.ts": "ec1c56cee5b723387d1324839d0cfbc045cf194e7adc4e897a4025c257afc6ad",
+  "frontend/lib/data-analysis-menus.json": "bcd68496d8abfb08f50a451a65c6456c356fd1299a7ebd9da085788da87e9ad9",
+  "admin/web/app/(dashboard)/operations/layout.tsx": "1a6998495566ae0ee4888aa538a74f434753c95c44e388505dea7857fbe93331"
+}

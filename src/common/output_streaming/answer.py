@@ -4,9 +4,10 @@ This module is the only place where a business graph turns model output into
 public answer text.  Tool planning stays non-streaming and internal; the final
 answer role is invoked without tool schemas and is explicitly streamed.
 
-Policy equivalence: the complete answer still passes the existing knowledge
-policy.  If that final check would rewrite text that was already public, the
-stream is aborted instead of pretending the rewrite was a validation.  Questions
+Ordinary streams retain the complete-answer knowledge check. An unpublished
+concrete claim switches to exact source quotations or
+an explicit evidence refusal; it is never published first. If the final check
+would rewrite text that was already public, the stream is aborted. Questions
 that require concrete regulation/limit handling are detected before generation
 and use a single policy-bound unit, never streamed model paraphrases.
 """
@@ -110,7 +111,7 @@ def _validate_public_unit(unit: str, policy_messages: list[AnyMessage]) -> str |
     if is_specific_regulation_text(unit):
         # The complete-answer policy replaces such paragraphs with verified
         # source quotations.  Publishing the model wording first would be a
-        # retraction, so a mid-stream concrete claim is a hard stop.
+        # retraction, so stop the source and complete with a controlled response.
         return "policy_requires_complete_answer"
     return None
 
@@ -152,8 +153,10 @@ async def stream_final_answer(
     units = 0
     published_text = ""
 
+    source = None
     try:
-        async for chunk in model.astream(messages, config={**config, **extra_config}):
+        source = model.astream(messages, config={**config, **extra_config})
+        async for chunk in source:
             if isinstance(chunk, AIMessageChunk):
                 usage = _usage_from_chunk(chunk, usage)
             metadata = getattr(chunk, "response_metadata", None) or {}
@@ -182,6 +185,10 @@ async def stream_final_answer(
             text = chunk_text(chunk)
             for unit in safety.feed(text):
                 reason = _validate_public_unit(unit, policy_context)
+                if reason == "policy_requires_complete_answer":
+                    return await _complete_guarded_answer(
+                        publisher, unit, policy_context, usage, units
+                    )
                 if reason:
                     await publisher.abort(reason, detail="unit_policy")
                     return _aborted_result(
@@ -198,6 +205,10 @@ async def stream_final_answer(
                     units += 1
         for unit in safety.flush():
             reason = _validate_public_unit(unit, policy_context)
+            if reason == "policy_requires_complete_answer":
+                return await _complete_guarded_answer(
+                    publisher, unit, policy_context, usage, units
+                )
             if reason:
                 await publisher.abort(reason, detail="tail_policy")
                 return _aborted_result(
@@ -229,6 +240,12 @@ async def stream_final_answer(
         )
         await publisher.abort("generation_failed", detail=type(exc).__name__)
         return _aborted_result(publisher, "", usage, units, "generation_failed")
+    finally:
+        # 提前转入受控答复时立即关闭上游，避免继续生成和计费。
+        close = getattr(source, "aclose", None)
+        if close:
+            with contextlib.suppress(Exception):
+                await asyncio.wait_for(close(), timeout=2)
 
     # Complete-answer policy: the published prefix may only be extended.  A
     # rewrite is a failed stream, never a silent replacement.
@@ -278,6 +295,52 @@ async def stream_final_answer(
         delivery_mode=DELIVERY_MODE_TOKEN,
         usage=usage,
         units=units,
+    )
+
+
+async def _complete_guarded_answer(
+    publisher: OutputPublisher,
+    unpublished_unit: str,
+    policy_context: list[AnyMessage],
+    usage: dict[str, int],
+    units: int,
+) -> StreamAnswerResult:
+    """对尚未公开的具体条款应用原有策略，并以明确受限答复结束.
+
+    不发布模型的具体断言，也不撤回已校验的普通说明。有依据时只给出
+    原文引用；无依据时明确拒绝给出确定条款，不能冒充检索成功。
+    """
+    controlled = apply_answer_policy(
+        AIMessage(content=unpublished_unit), policy_context
+    )
+    text = str(controlled.content)
+    prefix = publisher.emitted_text
+    prefix_check = apply_answer_policy(AIMessage(content=prefix), policy_context)
+    if prefix_check.content != prefix or prefix_check.additional_kwargs.get(
+        "knowledge_policy_blocked"
+    ):
+        # 受限答复不能掩盖此前公开内容的校验冲突。
+        await publisher.abort("policy_blocked", detail="published_prefix_conflict")
+        return _aborted_result(publisher, prefix, usage, units, "policy_blocked")
+    final_text = await publisher.finish(prefix + ("\n\n" if prefix else "") + text)
+    message = AIMessage(
+        content=final_text,
+        id=publisher.message_id,
+        additional_kwargs={
+            "ui_visible": True,
+            "output_protocol_version": 1,
+            "output_id": publisher.output_id,
+            "policy_limited": True,
+            **controlled.additional_kwargs,
+        },
+        usage_metadata=usage or None,
+    )
+    return StreamAnswerResult(
+        message=message,
+        text=final_text,
+        delivery_mode=DELIVERY_MODE_TOKEN,
+        usage=usage,
+        units=units + 1,
     )
 
 

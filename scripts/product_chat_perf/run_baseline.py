@@ -35,7 +35,6 @@ from scripts.unified_campaign.sender import send_sample
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 SCHEMA = "basic-qa-perf.v1"
 ROOT = Path(__file__).resolve().parents[2]
-STORE_SECRETS = Path(".local/perf-20261021/secrets.json")
 
 Q1_TERMS: dict[str, list[list[str]]] = {
     "BQA-001": [["AQI", "指数"], ["浓度"], ["不能", "区别", "不同"]],
@@ -87,12 +86,6 @@ FAILURE_MARKERS = ("暂时不可用", "无法查询", "查询失败", "服务不
 
 def _now_utc() -> str:
     return datetime.now(UTC).isoformat()
-
-
-def _read_secret() -> str:
-    if not STORE_SECRETS.exists():
-        return ""
-    return json.loads(STORE_SECRETS.read_text()).get("", "")
 
 
 def _git_state() -> dict[str, Any]:
@@ -185,16 +178,26 @@ class ResourceSampler(threading.Thread):
 
 
 def _psql_json(sql: str) -> list[dict[str, Any]]:
+    """Read observations from the campaign's own PostgreSQL container only.
+
+    The container and database are supplied by the frozen endpoint manifest;
+    there is no historical hard-coded performance database fallback.
+    """
+    container = os.environ.get("PERF_PG_CONTAINER", "").strip()
+    database = os.environ.get("PERF_PG_DATABASE", "").strip()
+    if not container or not database:
+        return []
     completed = subprocess.run(
         [
             "container",
             "exec",
-            "aa-perf-20261021-pg",
+            container,
             "psql",
+            "-X",
             "-U",
             "postgres",
             "-d",
-            "air_agent_business",
+            database,
             "-tAc",
             sql,
         ],
