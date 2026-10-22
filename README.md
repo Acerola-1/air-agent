@@ -1,10 +1,35 @@
+<p align="center">
+  <img src=".github/assets/banner.svg" alt="Air Agent — 面向空气质量业务的多租户 Agent 平台" width="100%">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.13">
+  <img src="https://img.shields.io/badge/LangGraph-1.2-1C3C3C?style=flat-square&logo=langchain&logoColor=white" alt="LangGraph">
+  <img src="https://img.shields.io/badge/DeepAgents-0.7-38BDF8?style=flat-square" alt="DeepAgents">
+  <img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white" alt="Next.js 16">
+  <img src="https://img.shields.io/badge/PostgreSQL-17-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL 17">
+  <img src="https://img.shields.io/badge/license-MIT-22C55E?style=flat-square" alt="MIT License">
+</p>
+
+<p align="center">
+  面向空气质量业务的多租户 Agent 平台：三张业务图、可信运行台账、MCP 能力治理与企业运营后台。
+</p>
+
+<p align="center">
+  <a href="#核心能力">核心能力</a> ·
+  <a href="#架构">架构</a> ·
+  <a href="#技术栈">技术栈</a> ·
+  <a href="#快速开始">快速开始</a> ·
+  <a href="#文档">文档</a>
+</p>
+
 # Air Agent
 
 面向空气质量业务的多租户 Agent 应用，提供问答、分析、报告与研究能力。Python 服务使用 LangGraph API，聊天前端使用 Next.js；当前管理 API 通过独立 Java IAM 提供身份门面，并管理 Agent 业务数据，管理页面位于 `admin/web/`。
 
 本仓库正在分阶段建设企业运营后台。运行台账、反馈、观测、能力选择和需求洞察已有业务实现；真实 IAM 全链、质量工作台和完整运营看板仍按 [企业化路线图](docs/enterprise-agent-roadmap.md)推进。
 
-## 当前能力
+## 核心能力
 
 - **三张业务图**：基础问答、菜单驱动的数据分析，以及受控的四专员污染溯源（冻结请求 + 确定性证据/门禁 + 统一发布）。
 - **企业与访问控制**：账号、企业、部门、成员、角色、权限和审计；服务端会话可撤销，企业切换带上下文版本校验。
@@ -18,25 +43,46 @@
 
 能力目录不会授予额外权限。MCP 连接由平台部署配置管理（共享只读或企业连接），不再使用成员绑定；外部服务的数据范围仍需以该服务真实能力为准，受控模拟服务通过不代表生产全数据隔离完成。详见 [业务授权与 MCP 连接](docs/developer/business-authorization.md)。
 
-## 架构与身份链路
+## 架构
 
-```text
-聊天页 frontend/                 管理页 admin/web/
-       │ 同源BFF                         │ 同源代理
-       ├────────── admin/api/ ──────────┘
-       │           会话、企业权限、业务台账
-       │           内部签发短期运行票据
-       ▼
-LangGraph API：custom auth + 资源归属 + 实时身份复查
-       ├── 三张业务图 → 模型 / 按企业身份授权的 MCP
-       ├── PostgreSQL：线程、归档、业务台账与观测
-       ├── Redis：官方运行时所需的协调与队列
-       └── Langfuse：AI 链路观测与评测
+```mermaid
+flowchart LR
+  Chat["Next.js 聊天页"] --> BFF["同源 BFF"]
+  Admin["Next.js 运营后台"] --> API["FastAPI 管理 API"]
+  BFF --> Runtime["LangGraph API<br/>custom auth + 实时身份复查"]
+  API --> IAM["独立 Java IAM<br/>19100 / iam_identity"]
+  Runtime --> IAM
+  Runtime --> QA["basic-qa"]
+  Runtime --> DA["data-analysis"]
+  Runtime --> TR["intelligent-tracing"]
+  Runtime --> PG[("PostgreSQL 17<br/>线程 / 台账 / 归档")]
+  Runtime --> Redis[("Redis")]
+  Runtime --> LF["Langfuse"]
+  Runtime --> MCP["MCP 连接<br/>部署配置 + 双白名单"]
 ```
 
 浏览器使用 HttpOnly 不透明会话，Next 服务端换取运行票据后调用 Agent。授权同时在服务端与数据库落实，历史搜索的 metadata 过滤不构成安全边界。身份唯一权威已切换至独立 Java IAM（19100、`iam_identity`），本仓 `admin/api/` 只保留消费门面和业务数据（`air_agent_business`）。
 
 独立 IAM 已采用 **Spring Boot + Sa-Token + MyBatis + Vue**；本仓两个前端仍为 Next.js。当前运行清单见 [正式环境](docs/CURRENT-RUNTIME.md)，历史抽取计划不再是启动说明。
+
+## 技术栈
+
+| 层 | 选型 | 说明 |
+|---|---|---|
+| Agent 运行时 | LangGraph 1.2 · DeepAgents 0.7 · LangChain 1.4 | 三张业务图、受控调度与统一流式发布 |
+| 服务端 | Python 3.13 · FastAPI · PostgreSQL 17 · Redis | 管理 API、运行台账、归档与观测 |
+| 前端 | Next.js 16 · TypeScript · Tailwind CSS | 聊天、能力选择、反馈、画布与运营后台 |
+| 身份与授权 | 独立 Java IAM · Sa-Token · PostgreSQL RLS | 企业开通 ∩ 角色授权，逐请求实时复查 |
+| 工具与观测 | MCP · Langfuse · 事件台账 v1 | 工具白名单、Trace 关联与用量/价格观测 |
+| 部署 | Apple Container · container-compose | 本地三仓统一启动，无 Docker Desktop 依赖 |
+
+## 三仓关系
+
+| 仓库 | 职责 |
+|---|---|
+| **air-agent**（本仓） | Agent 运行时、聊天前端、运营后台与业务数据 |
+| [env-rag](https://github.com/Acerola-1/env-rag) | 环境标准/公报知识库与 8099 检索网关 |
+| [air_agent_iam](https://github.com/Acerola-1/air_agent_iam) | 多租户身份、会话、企业与业务授权 |
 
 ## 目录导航
 
@@ -55,7 +101,7 @@ LangGraph API：custom auth + 资源归属 + 实时身份复查
 
 公开 Graph ID 以 [`langgraph.json`](langgraph.json) 为准：`basic-qa`、`data-analysis`、`intelligent-tracing`。
 
-## 本地准备
+## 快速开始
 
 需要 Python 3.13、uv、Node.js/npm，以及 macOS 上的 [Apple Container](https://github.com/apple/container) 和 [container-compose](https://github.com/Mcrich23/Container-Compose)。项目不使用 Docker Desktop。当前 compose 是本地开发栈，部分端口映射未限制为回环；对外部署应单独配置网络、密钥和暴露面。
 
@@ -117,8 +163,24 @@ npm --prefix admin/web run lint
 
 [Change4最终验收](docs/reviews/skill-tool-selection-final-acceptance.md)记录了六图运行、权限边界、性能和逐项基线。根/集成套件仍有已识别的历史失败；本次归档接受保留系统中文输入法候选窗抽查，未将其写成实测通过。正式生产的企业 MCP 和负载验证仍需实际环境。
 
+## 文档
+
+| 文档 | 内容 |
+|---|---|
+| [AGENTS.md](AGENTS.md) | 开发边界、不可回退约束与验收要求 |
+| [UX-CONTRACT.md](UX-CONTRACT.md) / [DESIGN.md](DESIGN.md) | 聊天交互、状态与视觉约定 |
+| [正式环境](docs/CURRENT-RUNTIME.md) | 三仓唯一运行态清单 |
+| [业务授权与 MCP 连接](docs/developer/business-authorization.md) | 企业开通、角色授权与工具白名单 |
+| [企业化路线图](docs/enterprise-agent-roadmap.md) | 运营后台后续阶段与依赖 |
+| [事件契约](docs/contracts/agent-events-v1/) | 台账事件、样本与接口快照 |
+| [验收与证据](docs/reviews/) | 各阶段独立验收、失败基线与原始证据 |
+
 ## 继续开发
 
 - 修改前先读 [AGENTS.md](AGENTS.md)、相关主规格及活动 change。
 - UI 行为与设计约定见 [UX-CONTRACT.md](UX-CONTRACT.md)、[DESIGN.md](DESIGN.md)。
 - 后台后续范围和依赖见 [企业化路线图](docs/enterprise-agent-roadmap.md)；归档表示该阶段验收关闭，不表示整个企业后台已完成。
+
+## License
+
+[MIT](LICENSE)。项目源自 LangChain starter template，原始版权声明保留在 LICENSE 中。

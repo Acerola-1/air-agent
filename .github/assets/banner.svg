@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070D18"/>
+      <stop offset="0.55" stop-color="#0B1424"/>
+      <stop offset="1" stop-color="#111C30"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2DD4BF"/>
+      <stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.45" r="0.55">
+      <stop offset="0" stop-color="#2DD4BF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#2DD4BF" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#8BA3C7" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+  <rect width="1280" height="320" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="320" rx="24" fill="url(#grid)"/>
+  <rect width="1280" height="320" rx="24" fill="url(#glow)"/>
+  <rect x="1" y="1" width="1278" height="318" rx="23" fill="none" stroke="#FFFFFF" stroke-opacity="0.10"/>
+  <g>
+    <text x="72" y="82" fill="#2DD4BF" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="13" letter-spacing="3.2">AIR QUALITY  /  MULTI-TENANT AGENT</text>
+    <text x="72" y="146" fill="#F7FAFF" font-family="Inter, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="58" font-weight="700" letter-spacing="-1.2">Air Agent</text>
+    <rect x="72" y="166" width="74" height="4" rx="2" fill="url(#accent)"/>
+    <text x="72" y="204" fill="#D8E5F7" font-family="Inter, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="21" font-weight="500">面向空气质量业务的多租户 Agent 平台</text>
+    <text x="72" y="232" fill="#8FA6C4" font-family="Inter, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="14">三张业务图 · 可信运行台账 · MCP 能力治理 · 运营后台</text>
+    <rect x="72.0" y="258" width="116.8" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.055" stroke="#FFFFFF" stroke-opacity="0.12"/>
+  <circle cx="86.0" cy="273" r="3" fill="#2DD4BF"/>
+  <text x="96.0" y="277.5" fill="#C7D6EC" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="12.5" letter-spacing="0.3">LangGraph 1.2</text>
+  <rect x="198.8" y="258" width="124.4" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.055" stroke="#FFFFFF" stroke-opacity="0.12"/>
+  <circle cx="212.8" cy="273" r="3" fill="#38BDF8"/>
+  <text x="222.8" y="277.5" fill="#C7D6EC" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="12.5" letter-spacing="0.3">DeepAgents 0.7</text>
+  <rect x="333.2" y="258" width="94.0" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.055" stroke="#FFFFFF" stroke-opacity="0.12"/>
+  <circle cx="347.2" cy="273" r="3" fill="#E5E7EB"/>
+  <text x="357.2" y="277.5" fill="#C7D6EC" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="12.5" letter-spacing="0.3">Next.js 16</text>
+  <rect x="437.2" y="258" width="124.4" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.055" stroke="#FFFFFF" stroke-opacity="0.12"/>
+  <circle cx="451.2" cy="273" r="3" fill="#A78BFA"/>
+  <text x="461.2" y="277.5" fill="#C7D6EC" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="12.5" letter-spacing="0.3">PostgreSQL RLS</text>
+  <rect x="571.6" y="258" width="84.0" height="30" rx="15" fill="#FFFFFF" fill-opacity="0.055" stroke="#FFFFFF" stroke-opacity="0.12"/>
+  <circle cx="585.6" cy="273" r="3" fill="#F59E0B"/>
+  <text x="595.6" y="277.5" fill="#C7D6EC" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="12.5" letter-spacing="0.3">MCP</text>
+  </g>
+  <g>
+    <g filter="url(#soft)" opacity="0.55">
+      <circle cx="1034" cy="158" r="58" fill="#2DD4BF" opacity="0.35"/>
+    </g>
+    <g stroke="#2DD4BF" stroke-opacity="0.45" stroke-width="1.5">
+      <path d="M1034 158 L906 88"/><path d="M1034 158 L1162 88"/><path d="M1034 158 L1034 262"/>
+    </g>
+    <circle cx="1034" cy="158" r="46" fill="#0B1A28" stroke="url(#accent)" stroke-width="2"/>
+    <text x="1034" y="153" text-anchor="middle" fill="#E9FFFF" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="11" letter-spacing="1.5">AGENT</text>
+    <text x="1034" y="170" text-anchor="middle" fill="#7FE7D7" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="9" letter-spacing="1.2">RUNTIME</text>
+    <g>
+      <circle cx="906" cy="88" r="25" fill="#0B1625" stroke="#38BDF8" stroke-opacity="0.65" stroke-width="1.5"/>
+      <circle cx="906" cy="88" r="4" fill="#38BDF8"/>
+      <text x="906" y="131" text-anchor="middle" fill="#AFC3DC" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="10" letter-spacing="1">QA</text>
+    </g>
+    <g>
+      <circle cx="1162" cy="88" r="25" fill="#0B1625" stroke="#A78BFA" stroke-opacity="0.65" stroke-width="1.5"/>
+      <circle cx="1162" cy="88" r="4" fill="#A78BFA"/>
+      <text x="1162" y="131" text-anchor="middle" fill="#AFC3DC" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="10" letter-spacing="1">DATA</text>
+    </g>
+    <g>
+      <circle cx="1034" cy="262" r="25" fill="#0B1625" stroke="#F59E0B" stroke-opacity="0.65" stroke-width="1.5"/>
+      <circle cx="1034" cy="262" r="4" fill="#F59E0B"/>
+      <text x="1034" y="305" text-anchor="middle" fill="#AFC3DC" font-family="'JetBrains Mono', 'SFMono-Regular', Consolas, monospace" font-size="10" letter-spacing="1">TRACE</text>
+    </g>
+  </g>
+</svg>
