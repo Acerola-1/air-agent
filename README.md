@@ -61,7 +61,7 @@ flowchart LR
   Runtime --> MCP["MCP 连接<br/>部署配置 + 双白名单"]
 ```
 
-浏览器使用 HttpOnly 不透明会话，Next 服务端换取运行票据后调用 Agent。授权同时在服务端与数据库落实，历史搜索的 metadata 过滤不构成安全边界。身份唯一权威已切换至独立 Java IAM（19100、`iam_identity`），本仓 `admin/api/` 只保留消费门面和业务数据（`air_agent_business`）。
+浏览器使用 HttpOnly 不透明会话，Next 服务端换取运行票据后调用 Agent。授权同时在服务端与数据库落实，历史搜索的 metadata 过滤不构成安全边界。身份唯一权威是独立 Java IAM；本仓 `admin/api/` 只保留消费门面和业务数据。
 
 独立 IAM 已采用 **Spring Boot + Sa-Token + MyBatis + Vue**；本仓两个前端仍为 Next.js。本机运行态清单见 [运行态说明](docs/CURRENT-RUNTIME.md)，历史抽取计划不再是启动说明。
 
