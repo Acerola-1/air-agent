@@ -12,12 +12,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import queue
 import sys
 import threading
-import time
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -40,26 +37,9 @@ def _outcomes(rows: list[dict[str, Any]]) -> dict[str, int]:
 
 def _stop_rule(rows: list[dict[str, Any]], window_seconds: int = 60) -> bool:
     """Return true when a 60s window has >=20 ended/cutoff samples and >10% non-success."""
-    ended = [
-        row
-        for row in rows
-        if row.get("primary_result") not in {None, "unknown"}
-        and row.get("client_complete_ms") is not None
-    ]
-    if len(ended) < 20:
-        return False
-    times = sorted(int(row["client_complete_ms"]) for row in ended)
-    for index in range(len(times) - 19):
-        low, high = times[index], times[index + 19]
-        if high - low > window_seconds * 1000:
-            continue
-        window = [row for row in ended if low <= int(row["client_complete_ms"]) <= high]
-        failed = sum(
-            1 for row in window if row.get("primary_result") != "stream_completed"
-        )
-        if len(window) >= 20 and failed / len(window) > 0.10:
-            return True
-    return False
+    from scripts.product_chat_perf.scheduling import error_window_tripped
+
+    return error_window_tripped(rows, window_seconds)
 
 
 def _stats(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -153,98 +133,93 @@ def _run_round(
     output: Path,
     evidence: Path,
 ) -> list[dict[str, Any]]:
+    from dataclasses import replace
+
+    from scripts.product_chat_perf.scheduling import Budget, run_stage
+
     measured = [sample for sample in samples if sample.cohort == "measured"]
-    warmup = [sample for sample in measured if sample.category in {"Q1", "Q2"}][:8]
-    if len(warmup) < 8:
-        warmup = measured[:8]
-    rows: list[dict[str, Any]] = []
-    lock = threading.Lock()
-    queue_in: queue.Queue[PlannedSample] = queue.Queue()
-    stop_warmup = threading.Event()
+    histories = [sample for sample in samples if sample.cohort == "history"]
+    if not measured:
+        raise ValueError("无测量样本")
+    budget_config = config.get("budgets")
+    if not budget_config:
+        raise ValueError("P/R 也必须冻结 max_seconds/max_requests/max_tokens 预算")
+    budget = Budget(**budget_config)
+    counter = 0
+    history_rows: list[dict[str, Any]] = []
+    history_lock = threading.Lock()
 
-    def worker() -> None:
-        with httpx.Client(timeout=None) as client:
-            while True:
-                try:
-                    sample = queue_in.get(timeout=0.2)
-                except queue.Empty:
-                    if stop_warmup.is_set():
-                        return
-                    continue
-                row = _send_one(client, sample, config, cookie)
-                with lock:
-                    rows.append(row)
-
-    # Warm-up: at least eight distinct questions for at least two minutes.
-    with ThreadPoolExecutor(max_workers=int(config["concurrency"])) as pool:
-        for _ in range(int(config["concurrency"])):
-            pool.submit(worker)
-        start = time.monotonic()
-        sent_warmup = 0
-        while True:
-            elapsed = time.monotonic() - start
-            if elapsed >= float(config["warmup_seconds"]) and sent_warmup >= 8:
-                break
-            if queue_in.qsize() < max(2, int(config["concurrency"]) * 2):
-                for sample in warmup:
-                    queue_in.put(sample)
-                    sent_warmup += 1
-            time.sleep(0.05)
-        stop_warmup.set()
-        pool.shutdown(wait=True)
-
-    # Measurement: one fresh thread per question, Q4 history preloaded once.
-    with httpx.Client(timeout=None) as client:
-        q4_threads = _load_measured_threads(
-            client, samples, {**config, "concurrency": 1}, cookie
+    def send(index: int) -> dict[str, Any]:
+        nonlocal counter
+        with history_lock:
+            counter += 1
+            unique = counter
+        sample = measured[index % len(measured)]
+        sample = replace(
+            sample, sample_id=f"{config['round_id']}:{unique}:{sample.case_id}:measured"
         )
-    stop = threading.Event()
-    queue_in = queue.Queue()
-    rows = []
-
-    def measure_worker() -> None:
+        thread_id = None
         with httpx.Client(timeout=None) as client:
-            while not stop.is_set():
-                try:
-                    sample = queue_in.get(timeout=0.2)
-                except queue.Empty:
-                    continue
-                row = _send_one(
-                    client,
-                    sample,
-                    config,
-                    cookie,
-                    thread_id=q4_threads.get(sample.case_id)
-                    if sample.category == "Q4"
-                    else None,
-                )
-                with lock:
-                    rows.append(row)
+            if sample.category == "Q4":
+                for history in histories:
+                    if history.case_id != sample.case_id:
+                        continue
+                    if not budget.reserve(1):
+                        return {
+                            "sample_id": sample.sample_id,
+                            "sent": False,
+                            "primary_result": "history_blocked",
+                            "reason": budget.stopped_reason,
+                        }
+                    turn = replace(
+                        history,
+                        sample_id=f"{config['round_id']}:{unique}:{sample.case_id}:history:{history.history_index}",
+                    )
+                    row = _send_one(client, turn, config, cookie, thread_id=thread_id)
+                    budget.settle(1, row.get("total_tokens"))
+                    row["cohort"] = "history"
+                    row["stage"] = "history"
+                    with history_lock:
+                        history_rows.append(row)
+                    if row.get("primary_result") != "stream_completed":
+                        return {
+                            "sample_id": sample.sample_id,
+                            "sent": False,
+                            "primary_result": "history_blocked",
+                            "cohort": "measured",
+                        }
+                    thread_id = row.get("thread_id")
+            return _send_one(client, sample, config, cookie, thread_id=thread_id)
 
-    start = time.monotonic()
-    workers = [
-        threading.Thread(target=measure_worker, daemon=True)
-        for _ in range(int(config["concurrency"]))
-    ]
-    for worker_thread in workers:
-        worker_thread.start()
-    sent = 0
-    cycles = 0
-    while time.monotonic() - start < float(config["measure_seconds"]) or sent < 40:
-        if queue_in.qsize() < max(4, int(config["concurrency"]) * 3):
-            for sample in measured:
-                queue_in.put(sample)
-                sent += 1
-            cycles += 1
-        time.sleep(0.05)
-        if _stop_rule(rows):
-            stop.set()
-            break
-    stop.set()
-    for worker_thread in workers:
-        worker_thread.join(timeout=30)
-    with open(output / "requests.partial.jsonl", "a", encoding="utf-8") as stream:
+    common = {
+        "concurrency": int(config["concurrency"]),
+        "arrival": "closed",
+        "token_ceiling_per_request": 1,
+    }
+    warm = {
+        **common,
+        "stage_id": f"{config['round_id']}:warmup",
+        "duration_seconds": float(config["warmup_seconds"]),
+        "min_samples": min(8, len(measured)),
+    }
+    run_stage(warm, send, budget=budget)
+    stage = {
+        **common,
+        "stage_id": config["round_id"],
+        "duration_seconds": float(config["measure_seconds"]),
+        "min_samples": max(40, len(measured)),
+    }
+    result = run_stage(stage, send, budget=budget)
+    rows = result["rows"]
+    for row in rows:
+        row["measurement_scope"] = "legacy_P_R_includes_Q4_preparation_in_slot"
+    # This legacy entry stays P/R exploratory. The v2 capacity runner prepares
+    # independent Q4 pools before measurement and never inherits this scope.
+    with (output / "requests.partial.jsonl").open("a", encoding="utf-8") as stream:
         for row in rows:
+            stream.write(json.dumps(row, ensure_ascii=False) + "\n")
+    with (output / "history.jsonl").open("a", encoding="utf-8") as stream:
+        for row in history_rows:
             stream.write(json.dumps(row, ensure_ascii=False) + "\n")
     return rows
 
@@ -262,6 +237,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--enable-load", action="store_true")
     args = parser.parse_args(argv)
     config = json.loads(args.endpoints.read_text())
+    if (
+        config.get("layer", "P") != "P"
+        or config.get("profile", "R") != "R"
+        or config.get("allow_real_models")
+    ):
+        sys.stderr.write(
+            "旧 load 入口仅支持受控 P/R；真实模型容量请使用 capacity 运行计划\n"
+        )
+        return 2
+    if not config.get("budgets"):
+        sys.stderr.write("缺少冻结预算；发送前拒绝\n")
+        return 2
     if not args.enable_load or not config.get("allow_load"):
         sys.stderr.write("P/R 未显式启用；拒绝执行\n")
         return 2

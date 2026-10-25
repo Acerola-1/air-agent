@@ -13,6 +13,10 @@
 3. `docs/testing/basic-qa-reference-questions.md`、`docs/testing/data/basic-qa-reference-cases.v1.json`及fixtures文件。
 4. Changes6/7的proposal/design/tasks及`docs/reviews/insights-business-acceptance-20261021.md`，核实当前实现与未执行事项，不以历史报告代替本次验证。
 
+## 性能任务 v2 补充（2026-10-25）
+
+如果本轮目标是模型并发容量，先读 `docs/testing/model-capacity-v2.md` 和活动性能 change。正文输出 change 已被用户撤回，禁止在性能任务中重新引入。使用 capacity 的有版本计划，分别测 HY3 与 `cn:deepseek-v4.1-flash` 的 U 层，完整依赖就绪后再测 E；Change6/7 的 SQL/API 结果与 S 档冒烟均不能代替模型容量。冻结预算与每类 SLO，缺条件先交 BLOCKED 计划，不启动收费长测。首有效正文与首 finding 分开，工具进度不能计入。现有主规范全部 F 门槛、故障隔离与独立复核仍必须执行，新 CLI 的离线通过不能替代。
+
 ## 本次启动范围
 
 默认实施统一工具并执行A阶段与P层S档（受控依赖、单请求40题冒烟），不开展规模压测。A中少量并发竞态是正确性检查，不能升级为持续加压。E层真实配置冒烟和B阶段真实案例，仅在会话已有明确的服务/案例/外发/费用范围时执行；否则完成独立部分并列明缺少的条件，不能自行导出历史。

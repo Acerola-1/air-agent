@@ -9,6 +9,7 @@ def _row(ms: int, result: str = "stream_completed") -> dict:
     return {
         "primary_result": result,
         "client_complete_ms": ms,
+        "ended_at_offset_ms": ms,
         "client_first_answer_ms": max(1, ms - 100),
         "sent": True,
     }
@@ -77,6 +78,7 @@ def test_run_round_loop_terminates_with_monkeypatched_sender(
         "round_id": "c2-r1",
         "warmup_seconds": 0.05,
         "measure_seconds": 0.05,
+        "budgets": {"max_seconds": 10, "max_requests": 1000, "max_tokens": 1000},
     }
     rows = load._run_round(config, samples, "session=test", tmp_path, tmp_path)
     assert rows

@@ -2,6 +2,8 @@
 
 本工具把 Basic QA 固定题库、BFF 发送、性能 schema、真实观测/资源采集和 Change6/7 核对放在同一个 campaign 里。离线计划和单测不代表隔离环境已经跑通。
 
+容量测试的新入口和能力边界见 [model-capacity-v2.md](model-capacity-v2.md)。本文件的 `smoke` 仍只处理 P/S；不要给它一个 F 计划就认为已经持续加压。
+
 ## 默认关闭
 
 - 只接受 P 层、S 档。R/F、真实模型、后台规模和组合负载即使写进端点文件也不会启动。

@@ -127,12 +127,12 @@ class ResourceSampler(threading.Thread):
         self.names = names
         self.interval = interval
         self.rows: list[dict[str, Any]] = []
-        self._stop = threading.Event()
+        self._stop_event = threading.Event()
         self._previous: dict[str, dict[str, Any]] = {}
         self._previous_at: dict[str, float] = {}
 
     def run(self) -> None:  # noqa: D401
-        while not self._stop.wait(self.interval):
+        while not self._stop_event.wait(self.interval):
             self.sample()
 
     def sample(self) -> None:
@@ -143,18 +143,31 @@ class ResourceSampler(threading.Thread):
             prev = self._previous.get(name)
             prev_at = self._previous_at.get(name)
             cpu_pct = None
+            core_equivalents = None
+            cpu_count = row.get("cpuCount")
             if prev and prev_at is not None and now > prev_at:
                 cpu_us = int(row.get("cpuUsageUsec") or 0) - int(
                     prev.get("cpuUsageUsec") or 0
                 )
-                cpu_pct = cpu_us / 1_000_000.0 / (now - prev_at) / 4.0 * 100.0
+                core_equivalents = cpu_us / 1_000_000.0 / (now - prev_at)
+                if isinstance(cpu_count, (int, float)) and cpu_count > 0:
+                    cpu_pct = core_equivalents / cpu_count * 100.0
             self.rows.append(
                 {
                     "schema_version": SCHEMA,
                     "component": name,
                     "instance_id": name,
                     "sampled_at": wall,
-                    "cpu_definition": "container cpuUsageUsec delta / interval / 4 assigned cores",
+                    "cpu_definition": "container cpuUsageUsec delta / actual interval / observed cpuCount",
+                    "cpu_limit_cores": cpu_count,
+                    "cpu_core_equivalents": core_equivalents,
+                    "cpu_missing_reason": None
+                    if cpu_pct is not None
+                    else "observed_cpu_count_or_previous_sample_missing",
+                    "sample_interval_seconds": now - prev_at
+                    if prev_at is not None
+                    else None,
+                    "configured_sample_interval_seconds": self.interval,
                     "cpu_percent": round(cpu_pct, 3) if cpu_pct is not None else None,
                     "memory_definition": "container memoryUsageBytes",
                     "memory_usage_bytes": row.get("memoryUsageBytes"),
@@ -167,26 +180,42 @@ class ResourceSampler(threading.Thread):
                     "pool_in_use": None,
                     "pool_waiters": None,
                     "queue_depth": None,
+                    "missing_metrics": [
+                        "application_pool_capacity",
+                        "application_pool_in_use",
+                        "application_pool_waiters",
+                        "application_queue_depth",
+                        "host_process_metrics",
+                    ],
                 }
             )
             self._previous[name] = row
             self._previous_at[name] = now
 
     def stop(self) -> None:
-        self._stop.set()
+        self._stop_event.set()
         self.join(timeout=5)
 
 
-def _psql_json(sql: str) -> list[dict[str, Any]]:
+def _psql_json(
+    sql: str, *, source: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     """Read observations from the campaign's own PostgreSQL container only.
 
     The container and database are supplied by the frozen endpoint manifest;
     there is no historical hard-coded performance database fallback.
     """
-    container = os.environ.get("PERF_PG_CONTAINER", "").strip()
-    database = os.environ.get("PERF_PG_DATABASE", "").strip()
+    container = str(
+        (source or {}).get("container") or os.environ.get("PERF_PG_CONTAINER", "")
+    ).strip()
+    database = str(
+        (source or {}).get("database") or os.environ.get("PERF_PG_DATABASE", "")
+    ).strip()
     if not container or not database:
         return []
+    from scripts.unified_campaign.guard import assert_target_allowed
+
+    assert_target_allowed(database)
     completed = subprocess.run(
         [
             "container",
@@ -215,7 +244,10 @@ def _psql_json(sql: str) -> list[dict[str, Any]]:
 
 
 def _collect_calls(
-    run_started_at: str, attempt_map: dict[str, str]
+    run_started_at: str,
+    attempt_map: dict[str, str],
+    *,
+    source: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     models = _psql_json(
         "SELECT coalesce(json_agg(row_to_json(t)), '[]')::text FROM ("
@@ -225,7 +257,8 @@ def _collect_calls(
         " measurement_status, usage_source, retry_index, started_at, ended_at"
         " FROM agent_model_observations"
         f" WHERE created_at >= '{run_started_at}'::timestamptz"
-        " ORDER BY started_at) t"
+        " ORDER BY started_at) t",
+        source=source,
     )
     tools = _psql_json(
         "SELECT coalesce(json_agg(row_to_json(t)), '[]')::text FROM ("
@@ -235,7 +268,8 @@ def _collect_calls(
         " JOIN agent_tool_calls tc ON tc.tenant_id = ta.tenant_id"
         " AND tc.logical_call_id = ta.logical_call_id"
         f" WHERE ta.created_at >= '{run_started_at}'::timestamptz"
-        " ORDER BY ta.created_at) t"
+        " ORDER BY ta.created_at) t",
+        source=source,
     )
     rows: list[dict[str, Any]] = []
     for item in models:
@@ -245,6 +279,9 @@ def _collect_calls(
                 "schema_version": SCHEMA,
                 "sample_id": attempt_map.get(attempt),
                 "kind": "model",
+                "attempt_id": attempt,
+                "request_id": item.get("request_id"),
+                "platform_run_id": item.get("platform_run_id"),
                 "role": item.get("role"),
                 "model": item.get("model"),
                 "provider": item.get("provider"),
@@ -275,6 +312,7 @@ def _collect_calls(
                 "schema_version": SCHEMA,
                 "sample_id": attempt_map.get(attempt),
                 "kind": "tool",
+                "attempt_id": attempt,
                 "service": item.get("service_key"),
                 "tool_name": item.get("tool_name"),
                 "status": item.get("status"),
@@ -663,6 +701,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--round-id", default="round-1")
     args = parser.parse_args(argv)
     config = json.loads(args.endpoints.read_text())
+    if (
+        config.get("objective") == "capacity"
+        or config.get("concurrency", 1) != 1
+        or config.get("allow_load")
+    ):
+        sys.stderr.write("单并发 E/S 入口不能执行容量任务；发送前拒绝\n")
+        return 2
     if config.get("layer") != "E" or config.get("profile") != "S":
         sys.stderr.write("本工具只执行 E/S\n")
         return 2
@@ -819,8 +864,16 @@ def main(argv: list[str] | None = None) -> int:
             "langgraph_image": "air-agent/langgraph-api:tracing-merge-20261020",
             "python": sys.version.split()[0],
             "model_requested": config.get("model_requested", "hy3"),
-            "model_actual": "hy3",
-            "provider": "openai-compatible gateway (127.0.0.1:7863 via bridge)",
+            "model_actual": config.get("model_requested", "hy3"),
+            "provider": config.get(
+                "model_provider",
+                "openai-compatible gateway (127.0.0.1:7863 via bridge)",
+            ),
+            "knowledge_dependency": config.get(
+                "knowledge_dependency",
+                "未配置 KNOWLEDGE_API_URL；知识检索依赖缺失，检索失败关闭",
+            ),
+            "langfuse": config.get("langfuse_mode", "关闭（隔离栈不写共享观测实例）"),
             "mcp_source": config.get("mcp_source", "ipp shared_readonly real MCP"),
         },
         "strategy": {

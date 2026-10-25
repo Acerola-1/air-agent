@@ -4,6 +4,8 @@
 台账受理与冻结选择 → 官方 LangGraph API → 真实模型/真实 MCP → 流式回答。它不执行 R/F
 并发、开放到达、长稳、故障注入或浏览器渲染，也不把后台 SQL 或直接 LLM 调用当作产品结果。
 
+当前需要并发/两模型容量测试时，转用 [v2 容量入口](model-capacity-v2.md)，不要把本工具的 40 题单并发结果当成容量。HY3 与 DeepSeek 分别运行、分别留证，先测 U，再在完整依赖就绪后测 E。
+
 ## 与统一活动工具的关系
 
 - `scripts/unified_campaign` 保留默认关闭的真实模型/负载保护；`smoke` 仍只做 P/S。
@@ -48,7 +50,7 @@ Q4 的 50 条历史用户轮必须先通过同一 BFF/受理路径预置；可�
 
 ## 测量口径
 
-- `client_first_answer_ms`：BFF 提交前至增量 SSE 中第一段可展示 AI 正文；排除历史助手消息、
+- `client_first_answer_ms`：语义流按 `meaningful-body-v1` 统计第一段有效正文；首 finding 另记 `client_first_verified_result_ms`，静默另记 `max_answer_gap_ms`。旧流标 legacy，不能混合比较。排除历史助手消息、
   工具 JSON、推理块和 `<think>` 内容。
 - `client_complete_ms`：提交前至流完整结束；超过题库冻结截止时间（Q1 60s、Q2 120s、
   Q3/Q4 180s）记为晚到，不回填按时成功。

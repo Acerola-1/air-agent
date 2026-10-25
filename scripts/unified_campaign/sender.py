@@ -180,10 +180,26 @@ class _StreamState:
         self.output_started: bool = False
         self.stream_end_ms: int | None = None
         self.confirmation_end_ms: int | None = None
+        self.public_unit_version: int | None = None
+        self.first_verified_result_ms: int | None = None
+        self.last_effective_ms: int | None = None
+        self.max_answer_gap_ms: int | None = None
+        self.max_inter_unit_gap_ms: int | None = None
+        self.answer_tail_silence_ms: int | None = None
+        self.public_units: list[dict[str, Any]] = []
+        self.effective_chars = 0
+        self.output_frames: dict[int, str] = {}
 
     def _mark_first(self) -> None:
         if self.first_answer_ms is None:
             self.first_answer_ms = int((self.clock() - self.started) * 1000)
+
+    def finish_observation(self, ended_ms: int) -> None:
+        """Include silence after the last useful unit through stream end."""
+        if self.public_unit_version == 1 and self.last_effective_ms is not None:
+            tail = max(0, ended_ms - self.last_effective_ms)
+            self.answer_tail_silence_ms = tail
+            self.max_answer_gap_ms = max(self.max_answer_gap_ms or 0, tail)
 
     def _absorb_ledger(self, payload: dict[str, Any]) -> None:
         for field in (
@@ -233,7 +249,14 @@ class _StreamState:
             self.output_protocol_version = int(version)
         output_type = str(payload.get("type") or "")
         if output_type == "final_output_start":
+            if self.output_started:
+                return
             self.output_started = True
+            if payload.get("public_unit_version") == 1:
+                self.public_unit_version = 1
+                # Earlier untyped raw messages must not win the new metric.
+                self.first_answer_ms = None
+                self.first_delta_source = None
             self.output_id = (
                 str(payload.get("output_id") or self.output_id or "") or None
             )
@@ -245,6 +268,14 @@ class _StreamState:
             text = payload.get("message")
             if not isinstance(text, str) or not text:
                 return
+            seq = payload.get("seq")
+            if isinstance(seq, int):
+                fingerprint = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+                if seq in self.output_frames:
+                    if self.output_frames[seq] != fingerprint:
+                        self.seq_status = "gap_or_replay"
+                    return
+                self.output_frames[seq] = fingerprint
             self.delta_count += 1
             self.delta_text += text
             seq = payload.get("seq")
@@ -254,9 +285,54 @@ class _StreamState:
                 elif self.last_seq is None:
                     self.seq_status = "contiguous"
                 self.last_seq = seq
-            self.first_delta_source = self.first_delta_source or "new_delta"
             if self.first_safe_delta_ms is None:
                 self.first_safe_delta_ms = int((self.clock() - self.started) * 1000)
+            if self.public_unit_version == 1:
+                from scripts.product_chat_perf.quality import is_effective_body
+
+                kind = payload.get("unit_kind")
+                unit_id = payload.get("unit_id")
+                valid = (
+                    payload.get("public_unit_version") == 1
+                    and kind in {"explanation", "finding", "conclusion"}
+                    and isinstance(unit_id, str)
+                    and bool(unit_id)
+                    and payload.get("fragment_kind") in {"context", "answer", "report"}
+                    and isinstance(payload.get("fragment_id"), str)
+                    and bool(payload.get("fragment_id"))
+                    and is_effective_body(text)
+                )
+                if valid:
+                    now_ms = int((self.clock() - self.started) * 1000)
+                    self._mark_first()
+                    self.first_delta_source = (
+                        self.first_delta_source or "public_unit_v1"
+                    )
+                    if kind == "finding" and self.first_verified_result_ms is None:
+                        self.first_verified_result_ms = now_ms
+                    if self.last_effective_ms is not None:
+                        gap = now_ms - self.last_effective_ms
+                        self.max_answer_gap_ms = max(self.max_answer_gap_ms or 0, gap)
+                        self.max_inter_unit_gap_ms = max(
+                            self.max_inter_unit_gap_ms or 0, gap
+                        )
+                    self.last_effective_ms = now_ms
+                    self.effective_chars += len(text)
+                    self.public_units.append(
+                        {
+                            "unit_id": unit_id,
+                            "unit_kind": kind,
+                            "fragment_kind": payload.get("fragment_kind"),
+                            "fragment_id": payload.get("fragment_id"),
+                            "received_ms": now_ms,
+                            "chars": len(text),
+                            "sha256": hashlib.sha256(text.encode()).hexdigest(),
+                        }
+                    )
+            else:
+                self.first_delta_source = (
+                    self.first_delta_source or "legacy_untyped_delta"
+                )
                 self._mark_first()
             self.last_safe_delta_ms = int((self.clock() - self.started) * 1000)
             self.output_message_id = (
@@ -276,7 +352,10 @@ class _StreamState:
                             hashlib.sha256(self.delta_text.encode()).hexdigest()
                             == self.done_sha256
                         )
-                    if self.first_safe_delta_ms is None:
+                    if (
+                        self.first_safe_delta_ms is None
+                        and self.public_unit_version != 1
+                    ):
                         # Legacy or single-shot: complete text arrived in one event.
                         self.first_delta_source = (
                             "legacy_done"
@@ -314,7 +393,9 @@ class _StreamState:
             self.answer_by_id[""] = _merge_text(self.answer_by_id.get("", ""), text)
             if "" not in self.answer_order:
                 self.answer_order.append("")
-        self._mark_first()
+        if self.public_unit_version != 1:
+            self.first_delta_source = self.first_delta_source or "legacy_message"
+            self._mark_first()
 
     def _consume_values(self, payload: object) -> None:
         """Use full-state frames only as a fallback, never for history text.
@@ -344,7 +425,10 @@ class _StreamState:
                 continue
             self.values_answer_id = message_id
             self.values_answer = text
-            if not self.answer_by_id:
+            if not self.answer_by_id and self.public_unit_version != 1:
+                self.first_delta_source = (
+                    self.first_delta_source or "legacy_state_fallback"
+                )
                 self._mark_first()
 
     def answer_text(self) -> str | None:
@@ -381,6 +465,7 @@ def send_sample(
             f"{base}/api/threads",
             headers=_headers(cookie, tenant_id, context_version, key),
             json={"metadata": {"graph_id": sample.graph_id}},
+            timeout=min(10, sample.deadline_seconds),
         )
         if created.status_code != 200:
             return _failed(
@@ -487,6 +572,7 @@ def send_sample(
                 f"{base}/api/agent-runs/confirm",
                 headers=_headers(cookie, tenant_id, context_version, key),
                 json={"thread_id": thread_id, "run_id": run_id},
+                timeout=5,
             )
         except httpx.HTTPError:
             confirm = None
@@ -525,6 +611,7 @@ def send_sample(
         if state.stream_end_ms is not None
         else state.confirmation_end_ms
     )
+    state.finish_observation(complete_ms)
     if http_status is not None and http_status >= 400:
         primary = "admission_failed"
     elif stream_status == "timeout":
@@ -573,6 +660,30 @@ def send_sample(
             "client_stream_end_ms": state.stream_end_ms,
             "client_confirmation_end_ms": state.confirmation_end_ms,
             "client_complete_ms": complete_ms,
+            "public_unit_version": state.public_unit_version,
+            "answer_rule_version": "meaningful-body-v1"
+            if state.public_unit_version == 1
+            else "legacy-untyped",
+            "client_first_verified_result_ms": state.first_verified_result_ms,
+            "client_last_effective_answer_ms": state.last_effective_ms,
+            "max_answer_gap_ms": state.max_answer_gap_ms,
+            "max_inter_unit_gap_ms": state.max_inter_unit_gap_ms,
+            "answer_tail_silence_ms": state.answer_tail_silence_ms,
+            "answer_gap_status": "measured"
+            if state.last_effective_ms is not None
+            else "insufficient_effective_units",
+            "answer_gap_right_censored": state.aborted_reason is not None
+            or state.done_message is None
+            or stream_status != "completed",
+            "effective_chars": state.effective_chars
+            if state.public_unit_version == 1
+            else None,
+            "visible_tokens_per_second": None,
+            "visible_tokens_missing_reason": "no_verified_visible_token_timestamps",
+            "public_units": state.public_units,
+            "first_result_missing_reason": "no_finding_unit"
+            if state.first_verified_result_ms is None
+            else None,
             "first_delta_source": state.first_delta_source,
             "delta_count": state.delta_count,
             "output_id": state.output_id,
