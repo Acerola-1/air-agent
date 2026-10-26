@@ -15,6 +15,7 @@ from langgraph.graph.message import add_messages
 from common.middleware.tenant_runtime_guard_middleware import (
     TenantRuntimeGuardMiddleware,
 )
+from common.model_capacity import ModelCapacity
 from common.observability.middleware import ObservabilityModelMiddleware
 from intelligent_tracing.evidence import EvidenceRegistry
 from intelligent_tracing.meteo_analysis import analyze_meteo
@@ -419,6 +420,7 @@ def build_meteo_subagent(
     registry: EvidenceRegistry,
     policy: AnalysisPolicy,
     backend: Any,
+    capacity: ModelCapacity | None = None,
 ) -> dict[str, Any]:
     """Return a compiled meteo-analyst subagent that receives the parent state.
 
@@ -447,9 +449,10 @@ def build_meteo_subagent(
         state_schema=TracingSubgraphState,
         middleware=[
             NoFilesystemToolsMiddleware(),
-            TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
             ObservabilityModelMiddleware(role="meteo"),
-            guarded_summarization(model, backend),
+            guarded_summarization(model, backend, capacity=capacity, role="meteo"),
+            # Inside summarization: the SDK's overflow retry revalidates too.
+            TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
             MeteoDeterministicMiddleware(
                 source=source, registry=registry, policy=policy
             ),
@@ -466,7 +469,9 @@ def build_meteo_subagent(
     }
 
 
-def build_reviewer_subagent(*, model: Any) -> dict[str, Any]:
+def build_reviewer_subagent(
+    *, model: Any, capacity: ModelCapacity | None = None
+) -> dict[str, Any]:
     """Return the isolated evidence-reviewer spec with no data/file tools."""
     from deepagents.backends import StateBackend
 
@@ -492,9 +497,12 @@ def build_reviewer_subagent(*, model: Any) -> dict[str, Any]:
         "response_format": EvidenceReview,
         "middleware": [
             NoFilesystemToolsMiddleware(),
-            TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
             ObservabilityModelMiddleware(role="reviewer"),
-            guarded_summarization(model, StateBackend()),
+            guarded_summarization(
+                model, StateBackend(), capacity=capacity, role="reviewer"
+            ),
+            # Inside summarization: the SDK's overflow retry revalidates too.
+            TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
             ReviewerChildExecutionMiddleware(),
         ],
     }

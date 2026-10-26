@@ -30,10 +30,18 @@ from data_analysis.nodes import (
     finalize_output,
     prepare_model,
     resolve_skill,
+    validate_input,
 )
 from data_analysis.state import DataAnalysisState
 
 SKILLS_DIR = Path(__file__).parent / "skills"
+
+
+def _route_after_input(
+    state: DataAnalysisState,
+) -> Literal["continue", "stop"]:
+    """入口长度校验：超限直达台账收尾，不进入 Skill/MCP/模型路径."""
+    return "stop" if state.get("input_overflow") else "continue"
 
 
 def _build_tool_node() -> ToolNode:
@@ -94,14 +102,23 @@ def build_graph(*, checkpointer: Any = None):
     builder = StateGraph(DataAnalysisState)
 
     # 添加节点
+    builder.add_node("validate_input", validate_input)
     builder.add_node("resolve_skill", resolve_skill)
     builder.add_node("prepare_model", prepare_model)
     builder.add_node("call_model", call_model)
     builder.add_node("execute_tools", _build_tool_node())
     builder.add_node("finalize_output", finalize_output)
 
-    # 入口
-    builder.add_edge(START, "resolve_skill")
+    # 入口：先做服务端权威长度校验
+    builder.add_edge(START, "validate_input")
+    builder.add_conditional_edges(
+        "validate_input",
+        _route_after_input,
+        {
+            "continue": "resolve_skill",
+            "stop": "ledger_finalize",
+        },
+    )
 
     # 确定性链
     builder.add_edge("resolve_skill", "prepare_model")

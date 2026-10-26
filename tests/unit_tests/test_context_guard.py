@@ -1,4 +1,4 @@
-"""历史投影与完整请求预算回归."""
+"""历史投影、容量边界与旧配置迁移回归."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from common.model_budget import (
     fit_tool_schemas,
     request_metrics,
 )
+from common.model_capacity import ModelCapacityError, capacity_from_window
 
 
 def history():
@@ -24,6 +25,22 @@ def history():
         AIMessage(content="新答案", id="a2"),
         HumanMessage(content="本轮", id="h3"),
     ]
+
+
+def capacity(
+    window: int = 192000,
+    *,
+    output: int = 8192,
+    safety: int = 4096,
+    provider: int | None = None,
+):
+    return capacity_from_window(
+        window,
+        role="main",
+        output_reserved_tokens=output,
+        safety_tokens=safety,
+        provider_input_limit_tokens=provider,
+    )
 
 
 def test_projection_requires_valid_watermark():
@@ -61,15 +78,16 @@ def test_watermark_does_not_move_implicitly():
     assert any(m.id == "h3" for m in result)
 
 
-def test_current_tool_overflow_is_rejected(monkeypatch):
-    monkeypatch.setattr(config, "MODEL_CONTEXT_BUDGET_TOKENS", 1000)
+def test_current_tool_overflow_is_rejected():
     messages = [
         HumanMessage(content="统计"),
         AIMessage(content="", tool_calls=[{"id": "c", "name": "data", "args": {}}]),
         ToolMessage(content="x" * 10000, tool_call_id="c"),
     ]
     with pytest.raises(ContextBudgetExceeded):
-        enforce_request_budget(prepare_model_context(messages))
+        enforce_request_budget(
+            prepare_model_context(messages), capacity=capacity(provider=1000)
+        )
     assert len(messages[-1].content) == 10000
 
 
@@ -100,20 +118,74 @@ def test_system_args_schema_and_reasoning_are_counted():
     assert sum(parts.values()) == result["input_tokens"]
 
 
-def test_window_and_output_reserve(monkeypatch):
-    monkeypatch.setattr(config, "MODEL_MAX_CONTEXT_TOKENS", 10000)
-    monkeypatch.setattr(config, "MAIN_LLM_MAX_OUTPUT_TOKENS", 2000)
-    monkeypatch.setattr(config, "MODEL_CONTEXT_SAFETY_TOKENS", 1000)
-    monkeypatch.setattr(config, "MODEL_CONTEXT_BUDGET_TOKENS", 9000)
-    assert request_metrics([HumanMessage(content="a")])["input_budget_tokens"] == 7000
-    monkeypatch.setattr(config, "SUMMARY_MODEL_CONTEXT_TOKENS", 8000)
-    monkeypatch.setattr(config, "SUMMARY_MODEL_OUTPUT_TOKENS", 1000)
-    monkeypatch.setattr(config, "SUMMARY_MODEL_SAFETY_TOKENS", 500)
+def test_window_output_and_provider_limit_are_separate():
+    main = capacity(10000, output=2000, safety=1000)
+    assert main.input_budget_tokens == 7000
+    assert main.trigger_tokens == 8000
+    limited = capacity(10000, output=2000, safety=1000, provider=5000)
+    assert limited.input_budget_tokens == 5000
+    summary = capacity_from_window(
+        8000,
+        role="summary",
+        output_reserved_tokens=1000,
+        safety_tokens=500,
+    )
+    metrics = request_metrics(
+        [HumanMessage(content="a")], summary_model=True, capacity=summary
+    )
+    assert metrics["input_budget_tokens"] == 6500
+
+
+def test_130k_allowed_under_192k_window():
+    """旧 120K 应用上限不再拒绝 130K 输入."""
+    metrics = capacity(192000)
+    assert metrics.input_budget_tokens == 179712
+    assert metrics.trigger_tokens == 153600
+    text = "x" * (130000 * 3)
+    result = request_metrics([HumanMessage(content=text)], capacity=metrics)
+    assert result["input_tokens"] > 120000
+    assert enforce_request_budget([HumanMessage(content=text)], capacity=metrics)
+
+
+def test_million_window_has_no_old_fixed_limit(monkeypatch):
+    million = capacity(1_000_000)
+    assert million.trigger_tokens == 800_000
+    assert million.input_budget_tokens == 987_712
+    monkeypatch.setattr(config, "MODEL_MAX_CONTEXT_TOKENS", 1_000_000)
     assert (
-        request_metrics([HumanMessage(content="a")], summary_model=True)[
-            "input_budget_tokens"
-        ]
-        == 6500
+        request_metrics([HumanMessage(content="a")])["summary_trigger_tokens"]
+        == 800_000
+    )
+
+
+def test_invalid_ratio_rejected():
+    with pytest.raises(ModelCapacityError):
+        capacity_from_window(
+            1000,
+            role="main",
+            output_reserved_tokens=10,
+            safety_tokens=10,
+            trigger_ratio=1.0,
+        )
+
+
+def test_artifact_raw_payload_is_not_counted_as_model_input():
+    plain = [ToolMessage(content="目录", tool_call_id="c")]
+    archived = [
+        ToolMessage(
+            content="目录",
+            tool_call_id="c",
+            artifact={
+                "storage_type": "database",
+                "storage_status": "stored",
+                "artifact_id": "art_1",
+                "raw": "x" * 1_000_000,
+            },
+        )
+    ]
+    assert (
+        request_metrics(archived)["input_tokens"]
+        <= request_metrics(plain)["input_tokens"] + 5
     )
 
 
@@ -207,7 +279,6 @@ def test_explicit_tokenizer_and_estimate_margin(monkeypatch):
 
 def test_expert_query_with_many_tools_leaves_room_for_results(monkeypatch):
     monkeypatch.setattr(config, "MAIN_LLM_MODEL", "unknown-test-alias")
-    monkeypatch.setattr(config, "MODEL_CONTEXT_BUDGET_TOKENS", 120000)
     monkeypatch.setattr(config, "MODEL_TOOL_SCHEMA_BUDGET_PERCENT", 40)
     messages = [
         SystemMessage(content="查询城市空气质量，保留单位日期。" * 1100),
@@ -256,3 +327,18 @@ def test_expert_query_with_many_tools_leaves_room_for_results(monkeypatch):
         ],
         schemas,
     )
+
+
+def test_legacy_keys_are_reported_but_never_used(monkeypatch):
+    from common.config.settings import deprecated_context_setting_keys
+
+    monkeypatch.setenv("MODEL_CONTEXT_BUDGET_TOKENS", "120000")
+    monkeypatch.setenv("CONVERSATION_SUMMARY_THRESHOLD_TOKENS", "30000")
+    assert deprecated_context_setting_keys() == (
+        "MODEL_CONTEXT_BUDGET_TOKENS",
+        "CONVERSATION_SUMMARY_THRESHOLD_TOKENS",
+    )
+    # 旧值残留不改变百万窗口的水位与边界。
+    million = capacity(1_000_000)
+    assert million.trigger_tokens == 800_000
+    assert million.input_budget_tokens == 987_712

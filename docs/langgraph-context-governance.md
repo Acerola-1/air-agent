@@ -1,6 +1,6 @@
 # LangGraph 上下文与资料治理运行说明
 
-适用 `basic-qa`、`intelligent-analysis`、`data-analysis`。三个 DeepAgents 图的内部流程与工具注册保持原有方式。
+适用 `basic-qa`、`data-analysis` 与 `intelligent-tracing`。前两个显式节点图使用统一准备入口；溯源图保留 DeepAgents 自身摘要实现，并绑定各模型的触发水位、有效输入边界和近期原文预算。
 
 ## 模型容量配置
 
@@ -9,27 +9,33 @@
 | 配置 | 默认值 | 含义 |
 |---|---:|---|
 | `MODEL_MAX_CONTEXT_TOKENS` | 192000 | 主模型实际上下文窗口 |
-| `MODEL_CONTEXT_BUDGET_TOKENS` | 120000 | 主模型输入预算上限 |
+| `CONVERSATION_SUMMARY_TRIGGER_RATIO` | 0.8 | 常规摘要水位 = 窗口 × 比例 |
+| `MODEL_PROVIDER_INPUT_LIMIT_TOKENS` | 0（未声明） | 明确的服务商输入上限，可更紧 |
 | `MAIN_LLM_MAX_OUTPUT_TOKENS` | 8192 | 主模型生成预留 |
 | `MODEL_CONTEXT_SAFETY_TOKENS` | 4096 | 主模型安全余量 |
 | `SUMMARY_MODEL_CONTEXT_TOKENS` | 192000 | 摘要模型实际窗口 |
 | `SUMMARY_MODEL_OUTPUT_TOKENS` | 4096 | 每次摘要输出预算 |
 | `SUMMARY_MODEL_SAFETY_TOKENS` | 2048 | 摘要安全余量 |
-| `CONVERSATION_SUMMARY_THRESHOLD_TOKENS` | 30000 | 尚未覆盖的早期历史触发阈值 |
-| `CONVERSATION_SUMMARY_KEEP_TURNS` | 3 | 保留的完整最近轮次，含当前轮 |
+| `SUMMARY_MODEL_PROVIDER_INPUT_LIMIT_TOKENS` | 0（未声明） | 摘要通道服务商输入上限 |
+| `CONVERSATION_SUMMARY_KEEP_TURNS` | 3 | 默认保留的完整最近轮次，容量不足可继续收缩 |
 | `SUMMARY_MAX_BATCHES` | 256 | 完整文本分批上限 |
+| `MAX_INPUT_CHARS` | 8000 | 单次用户文本上限（Unicode 码点，独立于 token 窗口） |
 
-主请求可用输入为 `min(输入预算上限, 模型窗口 - 生成预留 - 安全余量)`。请求计量包含系统提示、消息正文、工具调用参数和工具定义。工具说明按当前预算逐级精简，参数类型、必填项、枚举和校验约束保持完整；能精简时以 `MODEL_TOOL_SCHEMA_BUDGET_PERCENT=40` 为工具定义的目标占比，给后续查询结果留出空间。该比例是精简目标，不能为达标删掉参数约束；完整请求仍超限时返回明确说明。页面提示分别显示系统规则、聊天与工具结果、工具定义和请求开销。有本次提供商 usage 时仪表优先显示实际主模型输入；准备阶段显示带 ≈ 的估算。
+主模型常规水位为 `floor(窗口 × 比例)`；192000 对应 153600，1000000 对应 800000。有效输入边界为 `min(窗口 - 生成预留 - 安全余量, 服务商输入上限)`，192000 窗口默认是 179712。达到水位触发常规整理；超过有效边界时先做容量治理。旧的固定 120000 应用上限和 30000 早期历史阈值已停用；环境里仍保留这两个旧键时只在启动日志报告键名，不读取其值，也不影响工具 schema 配额或页面分母。
 
-更换模型时同时更新相应窗口、输出预留与预算配置。服务不会根据模型名称猜测远端窗口。已知分词模型采用对应 tokenizer，也可分别通过 `MODEL_TOKENIZER_ENCODING`／`SUMMARY_TOKENIZER_ENCODING` 指定匹配的 tiktoken 编码。未知别名采用无需下载词表的多语言估算：ASCII 约三字符一个 token、中日韩约每字符 1.5 token，其他 Unicode 保留字节估算，并乘以 `MODEL_TOKEN_ESTIMATE_MARGIN`（默认 1.25）。这是带余量的近似值，不是严格上界；界面用 `≈` 标明，并将提供商实际 usage 单独显示。不能将 UTF-8 字节数直接当 token 数用于拒绝普通查询。
+请求计量包含系统提示、消息正文、工具调用参数和工具定义。工具说明按当前预算逐级精简，参数类型、必填项、枚举和校验约束保持完整；能精简时以 `MODEL_TOOL_SCHEMA_BUDGET_PERCENT=40` 为工具定义的目标占比，给后续查询结果留出空间。该比例是精简目标，不能为达标删掉参数约束；完整请求仍超限时返回明确说明。页面提示分别显示系统规则、聊天与工具结果、工具定义和请求开销。有本次提供商 usage 时仪表优先显示实际主模型输入；准备阶段显示带 ≈ 的估算。
 
-完整非结构化文本会按摘要模型的可用输入动态分批并分层合并，字符范围连续覆盖原文。`120000` 是默认主模型输入预算，已经没有“只读原文前 12 万字符”的处理。提高摘要窗口后批次容量会相应变化；任意批次失败不推进摘要水位，也不返回伪完整的前缀摘要。
+更换模型时只需更新 `MODEL_MAX_CONTEXT_TOKENS` 与 `CONVERSATION_SUMMARY_TRIGGER_RATIO`；输出预留、安全余量和明确的服务商上限仍按真实通道填写。服务不会根据模型名称猜测远端窗口。已知分词模型采用对应 tokenizer，也可分别通过 `MODEL_TOKENIZER_ENCODING`／`SUMMARY_TOKENIZER_ENCODING` 指定匹配的 tiktoken 编码。未知别名采用无需下载词表的多语言估算：ASCII 约三字符一个 token、中日韩约每字符 1.5 token，其他 Unicode 保留字节估算，并乘以 `MODEL_TOKEN_ESTIMATE_MARGIN`（默认 1.25）。这是带余量的近似值，不是严格上界；界面用 `≈` 标明，并将提供商实际 usage 单独显示。不能将 UTF-8 字节数直接当 token 数用于拒绝普通查询。
+
+完整非结构化文本会按摘要模型的可用输入动态分批并分层合并，字符范围连续覆盖原文。摘要通道按自己的窗口和预留分块，不能用主窗口放大摘要请求后再声称完整处理；任意批次失败不推进摘要水位，也不返回伪完整的前缀摘要。
 
 ## 历史与页面
 
-checkpoint 保留完整聊天／工具调用记录。成功摘要保存覆盖水位；模型调用时投影为内部摘要及未覆盖轮次。摘要失败、无效水位和旧线程不会造成静默丢历史。当前实现采用只读投影，不删除用于页面回看的历史消息。
+checkpoint 保留完整聊天／工具调用记录。成功摘要保存覆盖水位；模型调用时投影为内部摘要及未覆盖轮次。默认保留最近三轮；容量不足时按完整轮次继续收缩到两轮或一轮，当前用户问题和工具调用／结果配对保持完整。摘要失败、无效水位和旧线程不会造成静默丢历史。当前实现采用只读投影，不删除用于页面回看的历史消息。
 
-页面显示历史整理／资料处理的进行中、完成、失败状态。历史整理完成显示输入前后变化和保留轮次；内部摘要没有展示或编辑入口。容量显示最近准备的模型输入，刷新读取后端保存的指标。工具 JSON 与内部调用草稿不会进入回答正文，诊断由用户主动展开。终答确认后一次发布；这会增加首字等待时间，等待期间显示处理状态。
+每次业务模型发送前都会重新构造并计量完整请求，包括工具循环回来的请求、规划补充、最终回答和最终清洗。服务商明确报上下文超限时，恢复从本次已成功整理的摘要与覆盖位置继续，仅对输入确实减小的请求重发一次；不重放已完成工具、整图、用户受理或已发布正文。恢复耗尽不会重新进入通用重试，成功整理的状态仍由节点持久化。
+
+页面显示历史整理／资料处理的进行中、完成、失败状态。历史整理完成显示输入前后变化和实际保留轮次；内部摘要没有展示或编辑入口。容量显示最近准备的模型输入，刷新读取后端保存的指标。工具 JSON 与内部调用草稿不会进入回答正文，诊断由用户主动展开。终答通过现有流式发布协议输出，已发布部分正文时不自动重放。
 
 停止会发起服务端 interrupt 并取消当前连接；过期回调受运行代次隔离。用户上翻时停止自动跟随。会话回读显示加载状态，失败有重新读取入口；发送失败保留重新发送入口。
 
@@ -57,14 +63,10 @@ PG 配置存在但不可用时明确失败，禁止静默切换 SQLite。SQLite 
 
 ## 本地运行与验证
 
-1. 同步锁定依赖：`uv sync --all-extras`。新增显式 `psycopg[binary]==3.3.4`，解决宿主验收环境缺少 libpq；已有锁定包版本未升级。
-2. 确认后端 `.env` 与 `frontend/.env.local` 的 `AUTH_SECRET` 一致且保密。测试登录凭据由操作者本地输入，不写入计划、文档、测试文件或截图。
-3. 使用 Apple Container 与现有 `run-local.sh` 启动；修改 `src/` 后通过 `container-compose up -d --profile prod langgraph-api` 重新加载。保留 PG 命名卷，等待 `/ok` 和六个助手发现接口就绪再验收。
-4. 本机模型网关地址应采用当前容器默认网关。网桥可能变化；本次实际地址为 `192.168.65.1`，已修正本地 `.env` 的旧模型地址。示例 `192.168.64.1` 不能当作所有运行的固定地址。
-5. 前端代理验证登录和线程归属，并注入签名资料作用域。原有 LangGraph API 使用 `noop`、定位为受信本地后端；本次 Web 授权验证不等于将 2024 端口直接暴露给不受信网络时已具备生产鉴权。
+当前环境以 [正式运行清单](CURRENT-RUNTIME.md) 为准。唯一启动／状态入口为 `.venv/bin/python deployment/run_separated_local.py start/status`，公开图以 `langgraph.json` 为准。身份只来自独立Java IAM，失败关闭；不使用历史本地账号、noop鉴权、旧网桥地址或全量compose重建环境。
 
-针对性 Python 验证见 `tests/unit_tests/test_{context_guard,conversation_summarizer,artifact_db,subagent_summarizer,business_graph_nodes,bounded_computation}.py` 和 `tests/integration_tests/test_governance_toolnode.py`。前端运行 `npm --prefix frontend run test:contracts` 与 TypeScript 检查；生产构建已通过 `npm --prefix frontend run build -- --webpack`。
+针对性Python验证见 `tests/unit_tests/test_{context_guard,conversation_summarizer,context_recovery,compaction_boundaries,model_capacity,input_limits,turn_tool_governance}.py`，以及相关业务节点和溯源测试。前端运行 `npm --prefix frontend run test:contracts`、TypeScript检查与生产构建。
 
-真实联调显式运行 `AIR_AGENT_LIVE_TESTS=1 .venv/bin/python -m pytest tests/integration_tests/test_governance_live.py -q`。它只创建验收专用线程，使用本地已有测试用户和签名配置，包含真实模型、真实 MCP 400、PG 全量尾部计算、历史压缩、三个图、归档授权／到期／删除。成功计算和压缩线程留作页面回看；测试输出不保存授权 token。
+PostgreSQL检查点验证入口为 `tests/integration_tests/test_window_compaction_checkpoint.py`，仅接受显式配置的自建临时库，不读取正式DSN。其他真实模型／浏览器联调同样使用自有资源，结束后回收；不保留测试聊天或复用退役验收环境。
 
-最新验证结果、截图与完整套件的既有失败见 [实施验收报告](reviews/2026-10-11-langgraph-governance-acceptance.md)。
+当前修复结果、复跑命令和未完成验收见 [验收记录](testing/model-window-compaction/acceptance.md)。

@@ -23,6 +23,11 @@ import {
 import { useChatStore, type ChatMessage } from "@/lib/chat-store";
 import { useChatMode } from "@/lib/chat-mode-store";
 import { useSessionStore } from "@/lib/session-client";
+import {
+  countUnicodeCodePoints,
+  fetchChatConfig,
+  type ChatConfig,
+} from "@/lib/chat-config";
 import { Markdown } from "@/components/chat/Markdown";
 import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
@@ -513,20 +518,65 @@ function Composer({
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const composingRef = useRef(false);
-  const canSend = text.trim().length > 0 && !disabled;
+  const graphId = useChatStore((s) => s.graphId);
+  const session = useSessionStore((s) => s.ctx);
+  const sessionEpoch = useSessionStore((s) => s.sessionEpoch);
+  const scope = JSON.stringify([
+    graphId, session?.user?.id, session?.current_tenant?.id,
+    session?.context_version, sessionEpoch,
+  ]);
+  const [loadedConfig, setLoadedConfig] = useState<{ scope: string; value: ChatConfig } | null>(null);
+  const config = loadedConfig?.scope === scope ? loadedConfig.value : null;
+  const [configError, setConfigError] = useState<string | null>(null);
+  const [configLoading, setConfigLoading] = useState(true);
+  const [configEpoch, setConfigEpoch] = useState(0);
+  const submitted = text.trim();
+  const characterCount = countUnicodeCodePoints(submitted);
+  const overLimit = config !== null && characterCount > config.max_input_chars;
+  const canSend =
+    submitted.length > 0 &&
+    !disabled &&
+    config !== null &&
+    !configLoading &&
+    !overLimit;
   const username = useSessionStore((s) => s.username);
   const logout = useSessionStore((s) => s.logout);
   const logoutPending = useSessionStore((s) => s.logoutPending);
   const sessionError = useSessionStore((s) => s.error);
   const refreshSession = useSessionStore((s) => s.refreshSession);
 
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    setConfigLoading(true);
+    setConfigError(null);
+    setLoadedConfig(null);
+    fetchChatConfig(graphId, controller.signal)
+      .then((next) => {
+        if (cancelled) return;
+        setLoadedConfig({ scope, value: next });
+        setConfigLoading(false);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setLoadedConfig(null);
+        setConfigLoading(false);
+        setConfigError(
+          error instanceof Error ? error.message : "聊天配置加载失败"
+        );
+      });
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [graphId, scope, configEpoch]);
+
   const submit = useCallback(() => {
-    const t = text.trim();
-    if (!t || disabled) return;
-    onSend(t);
+    if (!canSend) return;
+    onSend(submitted);
     setText("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
-  }, [text, disabled, onSend]);
+  }, [submitted, canSend, onSend]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey && !composingRef.current && !e.nativeEvent.isComposing && e.nativeEvent.keyCode !== 229) {
@@ -547,6 +597,12 @@ function Composer({
           <div role="alert" className="flex items-center gap-2 px-1 text-xs text-destructive">
             <span>{sessionError}</span>
             <button type="button" className="underline" onClick={() => void (username ? logout() : refreshSession())}>重试</button>
+          </div>
+        )}
+        {configError && (
+          <div role="alert" className="flex items-center gap-2 px-1 text-xs text-destructive">
+            <span>{configError}；取得可信限制前无法发送。</span>
+            <button type="button" className="underline" onClick={() => setConfigEpoch((value) => value + 1)}>重试</button>
           </div>
         )}
         {/* 控制与上下文监控顶栏 */}
@@ -600,9 +656,19 @@ function Composer({
         />
 
         {/* 底部发送 / 停止按钮区 */}
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[11px] text-muted-foreground/60">
-            按 Enter 发送
+        <div className="flex items-center justify-between gap-3 px-1">
+          <span
+            aria-live="polite"
+            className={cn(
+              "text-[11px] tabular-nums",
+              overLimit ? "text-destructive" : "text-muted-foreground/60"
+            )}
+          >
+            {config
+              ? `${characterCount.toLocaleString()} / ${config.max_input_chars.toLocaleString()} 字符${overLimit ? " · 已超出上限，草稿保留" : " · Enter 发送"}`
+              : configLoading
+                ? "正在读取输入限制…"
+                : "输入限制不可用"}
           </span>
 
           {disabled ? (

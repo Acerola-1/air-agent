@@ -141,6 +141,8 @@ export async function createThread(
 export type ContextMetrics = {
   model: string; window_tokens: number; input_budget_tokens: number; input_tokens: number;
   output_reserved_tokens: number; safety_tokens: number; measurement_source: string;
+  provider_input_limit_tokens?: number | null;
+  summary_trigger_ratio?: number; summary_trigger_tokens?: number; capacity_fingerprint?: string;
   input_breakdown_tokens?: { system: number; conversation: number; tools: number; framing: number };
   tool_count?: number;
   latest_usage?: { input_tokens?: number; output_tokens?: number; total_tokens?: number };
@@ -148,6 +150,8 @@ export type ContextMetrics = {
 export type ProcessingStatus = {
   type: string; stage: "history" | "data"; status: "started" | "completed" | "failed";
   thread_id?: string; run_id?: string; input_before?: number; input_after?: number; kept_turns?: number; message?: string;
+  window_tokens?: number; summary_trigger_ratio?: number; summary_trigger_tokens?: number;
+  measurement_source?: string; reason?: "window" | "forced" | string;
   processing_id?: string; artifact_id?: string;
   artifacts?: Record<string, { status: "started" | "completed" | "failed"; message?: string }>;
 };

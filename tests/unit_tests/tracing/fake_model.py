@@ -16,6 +16,9 @@ class ScriptedChatModel(BaseChatModel):
 
     responses: list[AIMessage]
     model_name: str = "scripted-tracing"
+    # Trusted SDK profile: tests bind an explicit window so subagent capacities
+    # are exercised without inheriting the parent graph.
+    profile: dict[str, Any] | None = {"max_input_tokens": 192000}
     _index: int = PrivateAttr(default=0)
     _bound_tools: dict[str, str] = PrivateAttr(default_factory=dict)
 

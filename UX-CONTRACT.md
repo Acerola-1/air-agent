@@ -24,7 +24,8 @@ CSS 变量／Tailwind 运行时为 tokens 所有者，DESIGN.md 记录语义与�
 | 能力 | 所有者 | 约定 | 验证 |
 |---|---|---|---|
 | 按钮与说明 | components/ui/button、tooltip | 复用 shared primitive | 类型检查／实际键盘 |
-| 正文输入 | ChatPanel Composer | Enter 提交；输入法组合期间不提交 | 实际浏览器 |
+| 正文输入 | ChatPanel Composer | Enter 提交；输入法组合期间不提交；读取受信字符上限后才允许发送，超限保留草稿 | 实际浏览器 |
+| 输入长度提示 | ChatPanel Composer | 显示 Unicode 码点计数／服务端上限；超限或配置未就绪禁止发送；按用户、企业、会话代次及图丢弃旧配置 | 契约／实际浏览器 |
 | 滚动 | globals.css、ChatPanel 消息区 | 独立阅读滚动条；上翻暂停跟随 | 实际浏览器 |
 | 整理反馈 | ProcessingNotice | 开始／完成／失败，共享组件 | 流事件回归／实际运行 |
 | 归档资料 | ArchiveReader | 显式加载、上一段／下一段，8000 字符每页 | API 授权／实际回读 |

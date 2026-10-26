@@ -151,12 +151,18 @@ class Config:
 
     # ==================== 模型上下文与工具治理 ====================
     MODEL_MAX_CONTEXT_TOKENS: int = _get_env_int("MODEL_MAX_CONTEXT_TOKENS", 192000)
+    # 常规摘要水位 = 模型窗口 × 比例。普通部署只需理解窗口和比例，
+    # 不再维护另一组绝对 token 触发值或应用输入上限。
+    CONVERSATION_SUMMARY_TRIGGER_RATIO: float = _get_env_float(
+        "CONVERSATION_SUMMARY_TRIGGER_RATIO", 0.8
+    )
+    # 明确的服务商输入上限（0 表示未单独声明，不构造新的固定上限）。
+    MODEL_PROVIDER_INPUT_LIMIT_TOKENS: int = _get_env_int(
+        "MODEL_PROVIDER_INPUT_LIMIT_TOKENS", 0
+    )
     MAX_INPUT_CHARS: int = _get_env_int("MAX_INPUT_CHARS", 8000)
     TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS: int = _get_env_int(
         "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000
-    )
-    MODEL_CONTEXT_BUDGET_TOKENS: int = _get_env_int(
-        "MODEL_CONTEXT_BUDGET_TOKENS", 120000
     )
     SUMMARY_LLM: str | None = os.getenv("SUMMARY_LLM") or None
     MODEL_TOOL_DESCRIPTION_CHARS: int = _get_env_int(
@@ -181,6 +187,9 @@ class Config:
     )
     SUMMARY_MODEL_OUTPUT_TOKENS: int = _get_env_int("SUMMARY_MODEL_OUTPUT_TOKENS", 4096)
     SUMMARY_MODEL_SAFETY_TOKENS: int = _get_env_int("SUMMARY_MODEL_SAFETY_TOKENS", 2048)
+    SUMMARY_MODEL_PROVIDER_INPUT_LIMIT_TOKENS: int = _get_env_int(
+        "SUMMARY_MODEL_PROVIDER_INPUT_LIMIT_TOKENS", 0
+    )
     DATA_PROCESSING_TIMEOUT_SECONDS: int = _get_env_int(
         "DATA_PROCESSING_TIMEOUT_SECONDS", 90
     )
@@ -196,9 +205,6 @@ class Config:
     FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS: int = _get_env_int(
         "FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS", 45
     )
-    CONVERSATION_SUMMARY_THRESHOLD_TOKENS: int = _get_env_int(
-        "CONVERSATION_SUMMARY_THRESHOLD_TOKENS", 30000
-    )
     CONVERSATION_SUMMARY_KEEP_TURNS: int = _get_env_int(
         "CONVERSATION_SUMMARY_KEEP_TURNS", 3
     )
@@ -208,3 +214,31 @@ class Config:
 
 
 config = Config()
+
+# 旧版固定阈值已停用：只报告键名，不打印值，也不在任何计算路径继续读取。
+_DEPRECATED_CONTEXT_KEYS = (
+    "MODEL_CONTEXT_BUDGET_TOKENS",
+    "CONVERSATION_SUMMARY_THRESHOLD_TOKENS",
+)
+
+
+def deprecated_context_setting_keys() -> tuple[str, ...]:
+    """返回仍出现在环境中的旧上下文配置键名（无秘密、无取值）."""
+    return tuple(key for key in _DEPRECATED_CONTEXT_KEYS if os.getenv(key))
+
+
+def warn_deprecated_context_settings() -> tuple[str, ...]:
+    """对旧配置残留给出明确、无秘密的弃用提示."""
+    present = deprecated_context_setting_keys()
+    if present:
+        from loguru import logger
+
+        logger.warning(
+            "检测到已停用的上下文配置键：{}；请改用 MODEL_MAX_CONTEXT_TOKENS 与 "
+            "CONVERSATION_SUMMARY_TRIGGER_RATIO，旧值不再参与请求或工具配额。",
+            ", ".join(present),
+        )
+    return present
+
+
+warn_deprecated_context_settings()

@@ -13,6 +13,7 @@ from langchain_core.messages import BaseMessage
 from langchain_core.utils.function_calling import convert_to_openai_tool
 
 from common.config import config
+from common.model_capacity import ModelCapacity, capacity_for_role
 
 
 class ContextBudgetExceeded(ValueError):
@@ -119,32 +120,20 @@ def request_metrics(
     tools: Sequence[Any] = (),
     *,
     summary_model: bool = False,
+    capacity: ModelCapacity | None = None,
 ) -> dict[str, Any]:
-    """构造可持久化指标，费用 usage 与工作输入分开."""
-    if summary_model:
-        window = config.SUMMARY_MODEL_CONTEXT_TOKENS
-        output = config.SUMMARY_MODEL_OUTPUT_TOKENS
-        safety = config.SUMMARY_MODEL_SAFETY_TOKENS
-        name = config.SUMMARY_LLM or config.MAIN_LLM_MODEL
-        encoding = config.SUMMARY_TOKENIZER_ENCODING
-        limit = window - output - safety
-    else:
-        window = config.MODEL_MAX_CONTEXT_TOKENS
-        output = config.MAIN_LLM_MAX_OUTPUT_TOKENS
-        safety = config.MODEL_CONTEXT_SAFETY_TOKENS
-        name = config.MAIN_LLM_MODEL
-        encoding = config.MODEL_TOKENIZER_ENCODING
-        limit = min(config.MODEL_CONTEXT_BUDGET_TOKENS, window - output - safety)
-    if min(window, output, limit) <= 0 or safety < 0:
-        raise ValueError("模型窗口、输出预留和安全余量配置无效")
+    """构造可持久化指标，费用 usage 与工作输入分开.
+
+    ``input_budget_tokens`` 是从真实窗口、输出预留、安全余量和明确的服务商
+    输入上限派生的有效边界；它不再是独立的 120K 应用上限。
+    """
+    resolved = capacity or capacity_for_role("summary" if summary_model else "main")
+    name = resolved.model_name
+    encoding = resolved.tokenizer_encoding
     tokens, source, parts = _request_parts(messages, tools, name, encoding)
     return {
-        "model": name,
-        "window_tokens": window,
-        "input_budget_tokens": limit,
+        **resolved.metrics_fields(),
         "input_tokens": tokens,
-        "output_reserved_tokens": output,
-        "safety_tokens": safety,
         "measurement_source": source,
         "input_breakdown_tokens": parts,
         "tool_count": len(tools),
@@ -156,12 +145,16 @@ def enforce_request_budget(
     tools: Sequence[Any] = (),
     *,
     summary_model: bool = False,
+    capacity: ModelCapacity | None = None,
 ) -> dict[str, Any]:
     """校验完整模型请求，超限拒绝调用."""
-    metrics = request_metrics(messages, tools, summary_model=summary_model)
+    metrics = request_metrics(
+        messages, tools, summary_model=summary_model, capacity=capacity
+    )
     if metrics["input_tokens"] > metrics["input_budget_tokens"]:
         raise ContextBudgetExceeded(
-            "本次资料超出模型可用输入容量，尚未完成处理。请缩小数据范围或调整模型容量配置。"
+            "本次资料超出当前模型可用输入容量，尚未完成处理。"
+            "请缩小数据范围，或改由完整资料计算后重试。"
         )
     return metrics
 
@@ -206,7 +199,10 @@ def compact_tool_schemas(
 
 
 def fit_tool_schemas(
-    messages: Sequence[BaseMessage], tools: Sequence[Any]
+    messages: Sequence[BaseMessage],
+    tools: Sequence[Any],
+    *,
+    capacity: ModelCapacity | None = None,
 ) -> list[dict[str, Any]]:
     """按实际可用预算缩短说明，参数约束始终完整；仍超限由调用方拒绝."""
     schemas: list[dict[str, Any]] = []
@@ -221,7 +217,7 @@ def fit_tool_schemas(
                 24, config.MODEL_TOOL_PARAMETER_DESCRIPTION_CHARS // divisor
             ),
         )
-        metrics = request_metrics(messages, schemas)
+        metrics = request_metrics(messages, schemas, capacity=capacity)
         # 工具定义可精简时优先给结果／后续 ReAct 留空间，避免首轮刚好卡线。
         if (
             metrics["input_tokens"] <= metrics["input_budget_tokens"] * 0.85

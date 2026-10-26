@@ -400,6 +400,40 @@ async def observability_health(request: Request) -> dict[str, Any]:
     return collector_health()
 
 
+@app.get("/chat/config")
+async def get_chat_config(request: Request, graph_id: str) -> JSONResponse:
+    """受保护的只读输入限制配置；不返回凭据、模型规则或容量细节."""
+    actor = await _authenticate_custom(request)
+    if actor.get("is_migration") or actor.get("is_reconcile"):
+        raise HTTPException(status_code=403, detail="内部凭据不允许读取聊天配置")
+    if not actor.get("tenant_id") or not actor.get("membership_id"):
+        raise HTTPException(status_code=403, detail="缺少有效企业成员身份")
+
+    from common.identity.business_access import BusinessAccessError, grant_for_graph
+    from common.identity.runtime import identity_from_auth_user
+    from common.input_limits import current_input_limit
+
+    identity = identity_from_auth_user(actor)
+    if identity is None:
+        raise HTTPException(status_code=401, detail="运行身份无效")
+    try:
+        grant_for_graph(graph_id=graph_id, identity=identity)
+    except BusinessAccessError as exc:
+        raise HTTPException(
+            status_code=exc.status_code,
+            detail={"code": exc.code, "error": exc.message},
+        ) from exc
+    limit = current_input_limit()
+    return JSONResponse(
+        {
+            "graph_id": graph_id,
+            "max_input_chars": limit.max_chars,
+            "character_count_mode": limit.character_count_mode,
+        },
+        headers={"Cache-Control": "no-store"},
+    )
+
+
 @app.get("/capabilities")
 async def get_capabilities(
     request: Request,

@@ -20,6 +20,7 @@ from common.event_ledger.lifecycle import LedgerLifecycleMiddleware
 from common.knowledge.tool import build_knowledge_tool
 from common.langfuse_tracing import with_langfuse_tracing
 from common.middleware import TenantRuntimeGuardMiddleware, TimeContextMiddleware
+from common.model_capacity import ModelCapacity, capacity_for_model, main_capacity
 from common.models import ModelRegistry
 from common.observability.middleware import ObservabilityModelMiddleware
 from intelligent_tracing.data_access import (
@@ -30,6 +31,7 @@ from intelligent_tracing.data_access import (
 from intelligent_tracing.evidence import EvidenceRegistry
 from intelligent_tracing.gate import ReportGate
 from intelligent_tracing.guards import (
+    InputLimitMiddleware,
     NoFilesystemToolsMiddleware,
     TracingBudgetMiddleware,
     guarded_summarization,
@@ -155,6 +157,9 @@ def build_tracing_graph(
     model: Any = None,
     meteo_model: Any = None,
     reviewer_model: Any = None,
+    model_capacity: ModelCapacity | None = None,
+    meteo_capacity: ModelCapacity | None = None,
+    reviewer_capacity: ModelCapacity | None = None,
     data_source: TracingDataSource | None = None,
     station_catalog: StationCatalog | tuple[StationMeta, ...] | None = None,
     policy: AnalysisPolicy = DEFAULT_POLICY,
@@ -169,6 +174,21 @@ def build_tracing_graph(
     resolved_model = model or ModelRegistry.main_llm
     resolved_meteo_model = meteo_model or resolved_model
     resolved_reviewer_model = reviewer_model or resolved_model
+    main_budget = model_capacity or main_capacity()
+    meteo_budget = (
+        meteo_capacity
+        if meteo_capacity is not None
+        else main_budget
+        if resolved_meteo_model is resolved_model
+        else capacity_for_model(resolved_meteo_model, role="meteo")
+    )
+    reviewer_budget = (
+        reviewer_capacity
+        if reviewer_capacity is not None
+        else main_budget
+        if resolved_reviewer_model is resolved_model
+        else capacity_for_model(resolved_reviewer_model, role="reviewer")
+    )
     catalog: StationCatalog = (
         station_catalog if station_catalog is not None else StationCatalogProvider()
     )
@@ -216,19 +236,29 @@ def build_tracing_graph(
             registry=registry,
             policy=policy,
             backend=backend,
+            capacity=meteo_budget,
         ),
     ]
     if enable_reviewer:
-        subagents.append(build_reviewer_subagent(model=resolved_reviewer_model))
+        subagents.append(
+            build_reviewer_subagent(
+                model=resolved_reviewer_model, capacity=reviewer_budget
+            )
+        )
 
     middleware: list[AgentMiddleware[Any, Any, Any]] = [
         TimeContextMiddleware(),
+        InputLimitMiddleware(),
         # Replace the default filesystem stack: no read/write/execute tools for
         # the lead.  The only lead tools are the tracing-specific ones below.
         NoFilesystemToolsMiddleware(backend=backend),
-        TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
         ObservabilityModelMiddleware(role="main"),
-        guarded_summarization(resolved_model, backend),
+        guarded_summarization(
+            resolved_model, backend, capacity=main_budget, role="main"
+        ),
+        # Inside summarization so the SDK's overflow fallback retry also
+        # revalidates identity before the second real model call.
+        TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
         TracingBudgetMiddleware(policy.budget),
         LedgerLifecycleMiddleware(name),
         TracingPublishMiddleware(

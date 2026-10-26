@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test:contracts": "node --test tests/agent-output-stream-contract.test.cjs tests/chat-contract.test.cjs tests/agent-events-contract.test.cjs tests/feedback-client.test.cjs tests/capability-store-contract.test.cjs tests/capability-final-regressions.test.cjs tests/session-client.test.cjs tests/full-system-bugfixes.test.cjs"
+    "test:contracts": "node --test tests/agent-output-stream-contract.test.cjs tests/chat-contract.test.cjs tests/agent-events-contract.test.cjs tests/feedback-client.test.cjs tests/capability-store-contract.test.cjs tests/capability-final-regressions.test.cjs tests/session-client.test.cjs tests/full-system-bugfixes.test.cjs tests/chat-input-limit-contract.test.cjs"
   },
   "dependencies": {
     "@assistant-ui/react": "0.15.4",

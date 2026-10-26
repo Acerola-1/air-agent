@@ -29,9 +29,7 @@ class ModelRegistry:
 
     _main_llm_api_key = SecretStr(config.MAIN_LLM_API_KEY)
 
-    # 主对话通道：本机 workbuddy2api 网关的 OpenAI 兼容 /v1/chat/completions。
-    # hy3 为推理模型（reasoning_tokens 计入 max_tokens，额度需留足）。
-    # 实测（2026-10-10）plain / tool_calls / SSE stream 三路径均可用。
+    # 主通道与生成预留由部署配置提供；推理输出计入生成额度时需一并预留。
     main_llm = ChatOpenAI(
         api_key=_main_llm_api_key,
         base_url=config.MAIN_LLM_BASE_URL,

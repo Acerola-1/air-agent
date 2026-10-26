@@ -20,6 +20,7 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
 from common.business_graph.nodes import BusinessGraphNodes
+from common.context_preparation import PreparedRequest
 from common.identity.db import IdentityState
 from common.identity.runtime import (
     RuntimeIdentityError,
@@ -28,6 +29,36 @@ from common.identity.runtime import (
 from common.text_reduction import summarize_complete_text
 
 pytestmark = pytest.mark.anyio
+
+
+def _patch_prepared(monkeypatch, nodes_mod) -> None:
+    """提供不受预算影响的完整待发请求，聚焦身份复查语义."""
+
+    async def fake_prepared(*args: Any, **kwargs: Any) -> PreparedRequest:
+        return PreparedRequest(
+            messages=[HumanMessage(content="input")],
+            schemas=[],
+            metrics={
+                "input_tokens": 1,
+                "input_budget_tokens": 100000,
+                "summary_trigger_tokens": 80000,
+                "window_tokens": 100000,
+                "summary_trigger_ratio": 0.8,
+                "measurement_source": "estimate:test",
+                "input_breakdown_tokens": {
+                    "system": 0,
+                    "conversation": 1,
+                    "tools": 0,
+                    "framing": 0,
+                },
+                "tool_count": 0,
+                "output_reserved_tokens": 0,
+                "safety_tokens": 0,
+            },
+            within_capacity=True,
+        )
+
+    monkeypatch.setattr(nodes_mod, "prepare_model_request", fake_prepared)
 
 
 async def test_sdk_retry_cannot_send_after_revision_revocation(monkeypatch) -> None:
@@ -158,15 +189,8 @@ async def test_model_retry_rechecks_identity_before_each_call(
 
     monkeypatch.setenv("TENANT_ENFORCE_RUNTIME_IDENTITY", "true")
     monkeypatch.setattr(rt, "fetch_identity_state", fake_fetch)
-    monkeypatch.setattr(nodes_mod, "enforce_request_budget", lambda *a, **k: {})
-    monkeypatch.setattr(nodes_mod, "fit_tool_schemas", lambda *a, **k: [])
-    monkeypatch.setattr(
-        nodes_mod, "request_metrics", lambda *a, **k: {"input_tokens": 1}
-    )
+    _patch_prepared(monkeypatch, nodes_mod)
     monkeypatch.setattr(nodes_mod, "emit_event", lambda *a, **k: None)
-    monkeypatch.setattr(
-        nodes_mod, "prepare_model_context", lambda messages, **k: list(messages)
-    )
     models = SimpleNamespace(
         main_llm=SimpleNamespace(
             ainvoke=invoke, bind_tools=lambda s: SimpleNamespace(ainvoke=invoke)
@@ -206,15 +230,8 @@ async def test_empty_reply_nudge_rechecks_identity(
 
     monkeypatch.setenv("TENANT_ENFORCE_RUNTIME_IDENTITY", "true")
     monkeypatch.setattr(rt, "fetch_identity_state", fake_fetch)
-    monkeypatch.setattr(nodes_mod, "enforce_request_budget", lambda *a, **k: {})
-    monkeypatch.setattr(nodes_mod, "fit_tool_schemas", lambda *a, **k: [])
-    monkeypatch.setattr(
-        nodes_mod, "request_metrics", lambda *a, **k: {"input_tokens": 1}
-    )
+    _patch_prepared(monkeypatch, nodes_mod)
     monkeypatch.setattr(nodes_mod, "emit_event", lambda *a, **k: None)
-    monkeypatch.setattr(
-        nodes_mod, "prepare_model_context", lambda messages, **k: list(messages)
-    )
     models = SimpleNamespace(
         main_llm=SimpleNamespace(
             ainvoke=invoke, bind_tools=lambda s: SimpleNamespace(ainvoke=invoke)

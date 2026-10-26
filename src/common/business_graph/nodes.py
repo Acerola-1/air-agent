@@ -1,14 +1,4 @@
-"""业务图（basic_qa）节点流的所有节点函数.
-
-用显式节点替代 create_deep_agent 的中间件链：
-- classify_intent: 入口意图分类（chitchat / knowledge / data_query）
-- resolve_skill: 语义路由前置执行，命中规则直接内联，消除 find_skill 工具往返
-- prepare_model: MCP 刷新 + 系统提示词一次性组装
-- call_model: LLM 推理，决定调工具 / 直接输出（主答案直推 SSE）
-- execute_tools: ToolNode，ReAct 循环
-
-无 check_permission / finalize_output 节点: 权限审查已废弃, 主答案由 call_model 直推 SSE。
-"""
+"""基础问答节点：意图与技能准备、工具规划，以及独立流式终答."""
 
 from __future__ import annotations
 
@@ -17,7 +7,7 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Any
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import StructuredTool
 from langgraph.types import StreamWriter
@@ -38,17 +28,18 @@ from common.business_graph.prompting import (
 from common.business_graph.skill_content import load_skill_rules
 from common.business_graph.state import BusinessGraphState
 from common.capabilities import refresh_authorized_mcp_tools
-from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
-from common.context_guard import prepare_model_context
-from common.conversation_summarizer import update_conversation_summary
-from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
-from common.model_budget import (
-    ContextBudgetExceeded,
-    enforce_request_budget,
-    fit_tool_schemas,
-    request_metrics,
+from common.context_preparation import (
+    ContextRecoveryFailed,
+    PreparedRequest,
+    call_with_context_recovery,
+    merge_prepared_updates,
+    prepare_context_recovery,
+    prepare_model_request,
 )
+from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
+from common.model_budget import ContextBudgetExceeded
+from common.model_errors import is_context_overflow
 from common.models import ModelRegistry
 from common.output_streaming.answer import stream_final_answer, strip_reasoning_text
 from common.output_streaming.controls import publish_control_message
@@ -156,17 +147,21 @@ class BusinessGraphNodes:
         不确定时 fail-open 到 data_query 全流程，快车道只对高置信信号开放。
         """
         question = _latest_human_content(state.get("messages", []))
-        max_input_chars = getattr(app_config, "MAX_INPUT_CHARS", 8000)
-        if len(question) > max_input_chars:
-            overflow_msg = (
-                f"您的提问内容过长（共 {len(question)} 字符，系统单次提问上限为 {max_input_chars} 字符），"
-                "请精简或分段提问。"
-            )
+        from common.input_limits import (
+            count_user_characters,
+            current_input_limit,
+            input_overflow_message,
+        )
+
+        limit = current_input_limit()
+        count = count_user_characters(question)
+        if count > limit.max_chars:
+            overflow_msg = input_overflow_message(count, limit.max_chars)
             logger.warning(
                 "用户提问超出长度限制，直接拦截: graph={}, length={}, max={}",
                 self._graph_name,
-                len(question),
-                max_input_chars,
+                count,
+                limit.max_chars,
             )
             return {
                 "intent": "input_overflow",
@@ -349,17 +344,6 @@ class BusinessGraphNodes:
                 configurable=configurable,
             )
         updates: dict[str, Any] = {"system_prompt": system_prompt, "planning_draft": ""}
-        try:
-            curr_tools = self._available_tools(state, config)
-        except TypeError:
-            curr_tools = self._available_tools(state)
-        updates.update(
-            await update_conversation_summary(
-                {**state, "system_prompt": system_prompt},
-                config,
-                tools=curr_tools,
-            )
-        )
         updates["needs_planning"] = self._needs_planning(state, config)
         return updates
 
@@ -523,32 +507,40 @@ class BusinessGraphNodes:
             available = self._planning_tools(state)
 
         messages = state["messages"]
-        protected_messages = prepare_model_context(
-            messages,
-            summary=state.get("summary"),
-            summary_covered_message_id=state.get("summary_covered_message_id"),
+        prepare_kwargs: dict[str, Any] = {
+            "system_messages": [system_prompt, _PLANNING_ADDENDUM],
+            "tools": available,
+            "role": "planning",
+        }
+        prepared = await prepare_model_request(
+            state, dict(config or {}), **prepare_kwargs
         )
-
-        full_messages: list[Any] = []
-        if system_prompt:
-            full_messages.append(SystemMessage(content=system_prompt))
-        full_messages.append(SystemMessage(content=_PLANNING_ADDENDUM))
-        full_messages.extend(protected_messages)
-
-        schemas = fit_tool_schemas(full_messages, available)
-        try:
-            metrics = enforce_request_budget(full_messages, schemas)
-        except ContextBudgetExceeded as exc:
-            metrics = request_metrics(full_messages, schemas)
-            emit_event(config, "context_metrics", **metrics)
-            return await _control(AIMessage(content=str(exc)), "context_budget")
-
+        metrics = prepared.metrics
         emit_event(config, "context_metrics", **metrics)
+        if prepared.over_capacity:
+            return {
+                **prepared.updates,
+                "context_metrics": metrics,
+                **await _control(
+                    AIMessage(
+                        content=prepared.failure_reason
+                        or "本次资料超出当前模型可用输入容量，尚未完成处理。请缩小数据范围后重试。"
+                    ),
+                    "context_budget",
+                ),
+            }
 
-        if available:
-            model_with_tools = model.bind_tools(schemas)
-        else:
-            model_with_tools = model
+        def bind(request: PreparedRequest) -> Any:
+            return model.bind_tools(request.schemas) if request.schemas else model
+
+        def invoke(request: PreparedRequest) -> Any:
+            return invoke_with_data_deadline(
+                bind(request),
+                request.messages,
+                messages,
+                config,
+                invocation_metadata=_obs_metadata,
+            )
 
         data_model_started_at = datetime.now(UTC).isoformat()
         response = None
@@ -557,18 +549,32 @@ class BusinessGraphNodes:
             if blocked is not None:
                 return await _control(blocked, "authorization_stopped")
             try:
-                response = await invoke_with_data_deadline(
-                    model_with_tools,
-                    full_messages,
-                    messages,
-                    config,
-                    invocation_metadata=_obs_metadata,
+                response, prepared = await call_with_context_recovery(
+                    invoke,
+                    prepared,
+                    state=state,
+                    run_config=dict(config or {}),
+                    prepare_kwargs=prepare_kwargs,
                 )
+                metrics = prepared.metrics
+                emit_event(config, "context_metrics", **metrics)
                 break
             except RuntimeIdentityError as exc:
                 return await _control(
                     AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}"),
                     "authorization_stopped",
+                )
+            except ContextBudgetExceeded as exc:
+                if isinstance(exc, ContextRecoveryFailed):
+                    prepared = exc.prepared
+                emit_event(config, "context_metrics", **prepared.metrics)
+                return merge_prepared_updates(
+                    prepared,
+                    {
+                        **prepared.updates,
+                        "context_metrics": prepared.metrics,
+                        **await _control(AIMessage(content=str(exc)), "context_budget"),
+                    },
                 )
             except DataProcessingFailure as exc:
                 status = emit_event(
@@ -578,10 +584,15 @@ class BusinessGraphNodes:
                     status="failed",
                     message=str(exc),
                 )
-                return {
-                    **await _control(AIMessage(content=str(exc)), "data_failure"),
-                    "data_status": status,
-                }
+                return merge_prepared_updates(
+                    prepared,
+                    {
+                        **prepared.updates,
+                        "context_metrics": prepared.metrics,
+                        **await _control(AIMessage(content=str(exc)), "data_failure"),
+                        "data_status": status,
+                    },
+                )
             except Exception as exc:
                 logger.warning(
                     "业务图模型调用失败 (attempt {}): {}",
@@ -591,9 +602,16 @@ class BusinessGraphNodes:
                 if attempt < 2:
                     await asyncio.sleep(0.5 * (attempt + 1))
                 else:
-                    return await _control(
-                        AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE),
-                        "service_unavailable",
+                    return merge_prepared_updates(
+                        prepared,
+                        {
+                            **prepared.updates,
+                            "context_metrics": prepared.metrics,
+                            **await _control(
+                                AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE),
+                                "service_unavailable",
+                            ),
+                        },
                     )
 
         # 空回复检测：content 为空且无 tool_calls -> 追加引导重试
@@ -606,17 +624,39 @@ class BusinessGraphNodes:
             blocked = await _guard_or_message()
             if blocked is not None:
                 return await _control(blocked, "authorization_stopped")
-            nudge_messages = [
-                *full_messages,
-                response,
-                HumanMessage(content=_EMPTY_REPLY_NUDGE),
-            ]
             try:
-                metrics = enforce_request_budget(nudge_messages, schemas)
-                emit_event(config, "context_metrics", **metrics)
+                nudge = await prepare_model_request(
+                    state,
+                    dict(config or {}),
+                    system_messages=[system_prompt, _PLANNING_ADDENDUM],
+                    tools=available,
+                    tail_messages=[
+                        response,
+                        HumanMessage(content=_EMPTY_REPLY_NUDGE),
+                    ],
+                    role="planning",
+                )
+                emit_event(config, "context_metrics", **nudge.metrics)
+                if nudge.over_capacity:
+                    return merge_prepared_updates(
+                        nudge,
+                        {
+                            **nudge.updates,
+                            "context_metrics": nudge.metrics,
+                            **await _control(
+                                AIMessage(
+                                    content=nudge.failure_reason
+                                    or "本次资料超出当前模型可用输入容量，请缩小数据范围后重试。"
+                                ),
+                                "context_budget",
+                            ),
+                        },
+                    )
+                prepared = nudge
+                metrics = nudge.metrics
                 nudge_response = await invoke_with_data_deadline(
-                    model_with_tools,
-                    nudge_messages,
+                    bind(nudge),
+                    nudge.messages,
                     messages,
                     config,
                     invocation_metadata=_obs_metadata,
@@ -667,16 +707,20 @@ class BusinessGraphNodes:
                 "planning_finished": finish_only or not remaining_calls,
             },
         )
-        update: dict[str, Any] = {
-            "messages": [planning_message],
-            "data_model_started_at": data_model_started_at,
-            "planning_draft": draft,
-            "context_metrics": {
-                **(metrics or {}),
-                "latest_usage": getattr(response, "usage_metadata", None) or {},
-                "planning_draft_chars": len(draft),
+        update: dict[str, Any] = merge_prepared_updates(
+            prepared,
+            {
+                **prepared.updates,
+                "messages": [planning_message],
+                "data_model_started_at": data_model_started_at,
+                "planning_draft": draft,
+                "context_metrics": {
+                    **(metrics or {}),
+                    "latest_usage": getattr(response, "usage_metadata", None) or {},
+                    "planning_draft_chars": len(draft),
+                },
             },
-        }
+        )
         return update
 
     async def answer_model(
@@ -725,41 +769,40 @@ class BusinessGraphNodes:
         model = ModelRegistry.main_llm
         system_prompt = state.get("system_prompt", "")
         messages = state["messages"]
-        protected_messages = prepare_model_context(
-            messages,
-            summary=state.get("summary"),
-            summary_covered_message_id=state.get("summary_covered_message_id"),
-        )
-        full_messages: list[Any] = []
-        if system_prompt:
-            full_messages.append(SystemMessage(content=system_prompt))
-        full_messages.append(SystemMessage(content=_ANSWER_ADDENDUM))
+        answer_prefix = [system_prompt, _ANSWER_ADDENDUM]
         if state.get("planning_draft"):
-            full_messages.append(
-                SystemMessage(
-                    content=(
-                        "规划阶段留下的候选材料（仅供整理，不得原样复述内部规划；"
-                        "最终正文必须完整、可独立阅读）：\n"
-                        + str(state.get("planning_draft"))[:4000]
-                    )
-                )
+            answer_prefix.append(
+                "规划阶段留下的候选材料（仅供整理，不得原样复述内部规划；"
+                "最终正文必须完整、可独立阅读）：\n"
+                + str(state.get("planning_draft"))[:4000]
             )
-        full_messages.extend(protected_messages)
-
-        metrics = request_metrics(full_messages, [])
-        try:
-            metrics = enforce_request_budget(full_messages, [])
-        except ContextBudgetExceeded as exc:
-            emit_event(config, "context_metrics", **metrics)
+        prepare_kwargs: dict[str, Any] = {
+            "system_messages": answer_prefix,
+            "tools": [],
+            "role": "answer",
+        }
+        prepared = await prepare_model_request(
+            state, dict(config or {}), **prepare_kwargs
+        )
+        metrics = prepared.metrics
+        emit_event(config, "context_metrics", **metrics)
+        if prepared.over_capacity:
             published = await publish_control_message(
                 dict(config or {}),
                 graph_id=self._graph_name,
-                text=str(exc),
+                text=prepared.failure_reason
+                or "本次资料超出当前模型可用输入容量，尚未完成处理。请缩小数据范围后重试。",
                 writer=writer,
                 control_code="context_budget",
             )
-            return {"messages": [published], "context_metrics": metrics}
-        emit_event(config, "context_metrics", **metrics)
+            return merge_prepared_updates(
+                prepared,
+                {
+                    **prepared.updates,
+                    "messages": [published],
+                    "context_metrics": metrics,
+                },
+            )
 
         observed = model_call_scope(config, role="answer")
         publisher = OutputPublisher(
@@ -768,15 +811,98 @@ class BusinessGraphNodes:
             writer=writer,
             authorization_probe=runtime_authorization_probe(dict(config or {})),
         )
-        result = await stream_final_answer(
-            model,
-            full_messages,
-            invocation_config(config, role="answer"),
-            publisher=publisher,
-            policy_messages=messages,
-            question=_latest_human_content(messages),
-            invocation_metadata=observed.runtime_metadata(),
-        )
+        try:
+            result = await stream_final_answer(
+                model,
+                prepared.messages,
+                invocation_config(config, role="answer"),
+                publisher=publisher,
+                policy_messages=messages,
+                question=_latest_human_content(messages),
+                invocation_metadata=observed.runtime_metadata(),
+            )
+        except Exception as exc:  # noqa: BLE001 - 仅超窗进入一次恢复
+            if not is_context_overflow(exc):
+                published = await publish_control_message(
+                    dict(config or {}),
+                    graph_id=self._graph_name,
+                    text=_SERVICE_UNAVAILABLE_MESSAGE,
+                    writer=writer,
+                    control_code="answer_fallback",
+                )
+                return merge_prepared_updates(
+                    prepared,
+                    {
+                        **prepared.updates,
+                        "messages": [published],
+                        "context_metrics": metrics,
+                    },
+                )
+            try:
+                recovered = await prepare_context_recovery(
+                    prepared,
+                    state=state,
+                    run_config=dict(config or {}),
+                    prepare_kwargs=prepare_kwargs,
+                )
+            except ContextRecoveryFailed as failure:
+                recovered = failure.prepared
+                published = await publish_control_message(
+                    dict(config or {}),
+                    graph_id=self._graph_name,
+                    text=str(failure),
+                    writer=writer,
+                    control_code="context_budget",
+                )
+                return merge_prepared_updates(
+                    recovered,
+                    {
+                        **recovered.updates,
+                        "messages": [published],
+                        "context_metrics": recovered.metrics,
+                    },
+                )
+            prepared = recovered
+            metrics = recovered.metrics
+            emit_event(config, "context_metrics", **metrics)
+            publisher = OutputPublisher(
+                dict(config or {}),
+                graph_id=self._graph_name,
+                writer=writer,
+                authorization_probe=runtime_authorization_probe(dict(config or {})),
+            )
+            try:
+                result = await stream_final_answer(
+                    model,
+                    prepared.messages,
+                    invocation_config(config, role="answer"),
+                    publisher=publisher,
+                    policy_messages=messages,
+                    question=_latest_human_content(messages),
+                    invocation_metadata=observed.runtime_metadata(),
+                )
+            except Exception as second:  # noqa: BLE001 - 第二次仍超限则有界停止
+                logger.warning(
+                    "业务图最终正文上下文恢复失败: {}", type(second).__name__
+                )
+                published = await publish_control_message(
+                    dict(config or {}),
+                    graph_id=self._graph_name,
+                    text=(
+                        "模型上下文已超限，自动整理后仍无法完成本次回答。"
+                        "请缩小数据范围或新开会话后重试。"
+                    ),
+                    writer=writer,
+                    control_code="context_budget",
+                )
+                return merge_prepared_updates(
+                    prepared,
+                    {
+                        **prepared.updates,
+                        "messages": [published],
+                        "context_metrics": metrics,
+                    },
+                )
 
         latest_usage = result.usage or {}
         emit_event(
@@ -809,14 +935,22 @@ class BusinessGraphNodes:
                     writer=writer,
                     control_code="answer_fallback",
                 )
-                return {
-                    "messages": [published],
+                return merge_prepared_updates(
+                    prepared,
+                    {
+                        **prepared.updates,
+                        "messages": [published],
+                        "context_metrics": {**metrics, "latest_usage": latest_usage},
+                    },
+                )
+            return merge_prepared_updates(
+                prepared,
+                {
+                    **prepared.updates,
+                    "messages": [result.message],
                     "context_metrics": {**metrics, "latest_usage": latest_usage},
-                }
-            return {
-                "messages": [result.message],
-                "context_metrics": {**metrics, "latest_usage": latest_usage},
-            }
+                },
+            )
 
         try:
             await self.observe_skill_executed(
@@ -826,9 +960,13 @@ class BusinessGraphNodes:
             )
         except Exception:  # noqa: BLE001 - 观测失败开放
             pass
-        return {
-            "messages": [result.message],
-            "context_metrics": {**metrics, "latest_usage": latest_usage},
-        }
+        return merge_prepared_updates(
+            prepared,
+            {
+                **prepared.updates,
+                "messages": [result.message],
+                "context_metrics": {**metrics, "latest_usage": latest_usage},
+            },
+        )
 
     # ──── 工具过滤 ────

@@ -29,6 +29,7 @@ from common.knowledge.policy import (
     citation_ids_from_messages,
     is_specific_regulation_text,
 )
+from common.model_errors import is_context_overflow
 from common.output_streaming.contract import (
     DELIVERY_MODE_POLICY_BOUND,
     DELIVERY_MODE_TOKEN,
@@ -235,6 +236,14 @@ async def stream_final_answer(
             )
         raise
     except Exception as exc:  # noqa: BLE001 - stream errors must not fake success
+        if is_context_overflow(exc) and publisher.total_chars == 0:
+            # 未发布任何可见正文时交给调用方整理并重发一次；已发布正文仍按
+            # partial/aborted 终态处理，不能重放相同片段。
+            logger.bind(output_stream=True).warning(
+                "final answer context overflow before visible text class={}",
+                type(exc).__name__,
+            )
+            raise
         logger.bind(output_stream=True).warning(
             "final answer stream failed class={}", type(exc).__name__
         )
@@ -357,6 +366,9 @@ async def _stream_policy_bound(
     try:
         response = await model.ainvoke(messages, config={**config, **extra_config})
     except Exception as exc:  # noqa: BLE001
+        if is_context_overflow(exc):
+            # 尚未发布正文：交给调用方整理并只重发这一次模型调用。
+            raise
         await publisher.abort("generation_failed", detail=type(exc).__name__)
         return _aborted_result(publisher, "", {}, 0, "generation_failed")
     raw = (

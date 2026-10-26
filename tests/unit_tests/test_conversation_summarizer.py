@@ -1,4 +1,4 @@
-"""全量摘要、水位和失败恢复回归."""
+"""窗口比例触发、覆盖水位、容量收缩与失败恢复回归."""
 
 from __future__ import annotations
 
@@ -8,32 +8,51 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
 from common.config import config
+from common.context_preparation import prepare_model_request
 from common.conversation_summarizer import (
-    should_summarize_conversation,
+    pending_history,
     split_messages_by_turns,
     summarize_conversation_history,
-    update_conversation_summary,
 )
+from common.model_capacity import capacity_from_window
 from common.models import ModelRegistry
 from common.text_reduction import split_text_for_budget, summarize_complete_text
 
 
-def history():
+def history(turns: int = 5, *, size: int = 10) -> list:
+    filler = "x" * size
     return [
         message
-        for i in range(5)
+        for i in range(turns)
         for message in (
-            HumanMessage(content=f"问题{i}", id=f"h{i}"),
-            AIMessage(content=f"事实{i}", id=f"a{i}"),
+            HumanMessage(content=f"问题{i} {filler}", id=f"h{i}"),
+            AIMessage(content=f"事实{i} {filler}", id=f"a{i}"),
         )
     ]
 
 
-def test_split_and_threshold():
+def capacity(window: int, *, output: int = 100, safety: int = 100):
+    return capacity_from_window(
+        window,
+        role="main",
+        output_reserved_tokens=output,
+        safety_tokens=safety,
+    )
+
+
+def test_split_and_pending_boundaries():
     early, active = split_messages_by_turns(history(), 3)
     assert len(early) == 4 and len(active) == 6
-    assert should_summarize_conversation(history(), threshold_tokens=1)
-    assert not should_summarize_conversation(history(), threshold_tokens=100000)
+    assert [m.id for m in pending_history(history(), watermark=None, keep_turns=3)] == [
+        "h0",
+        "a0",
+        "h1",
+        "a1",
+    ]
+    assert [m.id for m in pending_history(history(), watermark="a0", keep_turns=3)] == [
+        "h1",
+        "a1",
+    ]
     with pytest.raises(ValueError):
         split_messages_by_turns(history(), 0)
 
@@ -54,34 +73,140 @@ async def test_summary_covers_only_new_history(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_failure_does_not_advance_watermark(monkeypatch):
-    model = AsyncMock()
-    model.ainvoke.side_effect = TimeoutError()
-    monkeypatch.setattr(ModelRegistry, "summary_llm", model)
-    monkeypatch.setattr(config, "CONVERSATION_SUMMARY_THRESHOLD_TOKENS", 1)
-    state = {
-        "messages": history(),
-        "summary": "既有",
-        "summary_covered_message_id": "a0",
-    }
-    update = await update_conversation_summary(state, {})
-    assert "summary" not in update and "summary_covered_message_id" not in update
-    assert update["context_status"]["status"] == "failed"
-    assert len(state["messages"]) == 10
+async def test_below_watermark_does_not_summarize(monkeypatch):
+    summarize = AsyncMock(return_value="不应调用")
+    monkeypatch.setattr(
+        "common.context_preparation.summarize_conversation_history", summarize
+    )
+    prepared = await prepare_model_request(
+        {"messages": history(20, size=50)},
+        {},
+        capacity=capacity(10_000_000),
+    )
+    assert not prepared.compacted
+    assert prepared.within_capacity
+    summarize.assert_not_awaited()
 
 
 @pytest.mark.anyio
-async def test_success_advances_to_whole_turn(monkeypatch):
-    model = AsyncMock()
-    model.ainvoke.return_value = AIMessage(content="完整摘要")
-    monkeypatch.setattr(ModelRegistry, "summary_llm", model)
-    monkeypatch.setattr(config, "CONVERSATION_SUMMARY_THRESHOLD_TOKENS", 1)
-    update = await update_conversation_summary(
-        {"messages": history()}, {"configurable": {"thread_id": "t"}}
+async def test_reaching_watermark_compacts_all_pending(monkeypatch):
+    summarize = AsyncMock(return_value="新摘要")
+    monkeypatch.setattr(
+        "common.context_preparation.summarize_conversation_history", summarize
     )
-    assert update["summary_covered_message_id"] == "a1"
-    assert update["context_status"]["thread_id"] == "t"
-    assert update["context_status"]["kept_turns"] == 3
+    prepared = await prepare_model_request(
+        {"messages": history(20)},
+        {},
+        capacity=capacity(500),
+    )
+    assert prepared.compacted and prepared.within_capacity
+    assert prepared.summary == "新摘要"
+    assert prepared.watermark == "a16"
+    assert prepared.kept_turns == 3
+    projected_ids = [getattr(message, "id", None) for message in prepared.messages]
+    assert "h17" in projected_ids and "h0" not in projected_ids
+    assert summarize.await_args.kwargs["watermark"] is None
+
+
+@pytest.mark.anyio
+async def test_existing_summary_does_not_retrigger_per_turn(monkeypatch):
+    summarize = AsyncMock(return_value="不应调用")
+    monkeypatch.setattr(
+        "common.context_preparation.summarize_conversation_history", summarize
+    )
+    prepared = await prepare_model_request(
+        {
+            "messages": history(10, size=20),
+            "summary": "已覆盖到第七轮",
+            "summary_covered_message_id": "a6",
+        },
+        {},
+        capacity=capacity(10_000_000),
+    )
+    assert not prepared.compacted
+    summarize.assert_not_awaited()
+
+
+@pytest.mark.anyio
+async def test_accumulated_turns_merge_into_existing_summary(monkeypatch):
+    summarize = AsyncMock(return_value="合并摘要")
+    monkeypatch.setattr(
+        "common.context_preparation.summarize_conversation_history", summarize
+    )
+    prepared = await prepare_model_request(
+        {
+            "messages": history(20),
+            "summary": "旧摘要",
+            "summary_covered_message_id": "a6",
+        },
+        {},
+        capacity=capacity(500),
+    )
+    assert prepared.compacted
+    assert summarize.await_args.args[1] == "旧摘要"
+    assert prepared.watermark == "a16"
+    assert prepared.summary == "合并摘要"
+
+
+@pytest.mark.anyio
+async def test_summary_failure_does_not_advance_watermark(monkeypatch):
+    summarize = AsyncMock(side_effect=TimeoutError())
+    monkeypatch.setattr(
+        "common.context_preparation.summarize_conversation_history", summarize
+    )
+    prepared = await prepare_model_request(
+        {
+            "messages": history(20),
+            "summary": "既有",
+            "summary_covered_message_id": "a6",
+        },
+        {},
+        capacity=capacity(500),
+    )
+    assert not prepared.compacted
+    assert "summary" not in prepared.updates
+    assert "summary_covered_message_id" not in prepared.updates
+    assert prepared.failure_reason
+    assert len(history(20)) == 40
+
+
+@pytest.mark.anyio
+async def test_keep_turns_shrink_to_one_under_capacity_pressure(monkeypatch):
+    summarize = AsyncMock(return_value="摘要")
+    monkeypatch.setattr(
+        "common.context_preparation.summarize_conversation_history", summarize
+    )
+    prepared = await prepare_model_request(
+        {"messages": history(20, size=3000)},
+        {},
+        capacity=capacity(3000),
+    )
+    assert prepared.compacted and prepared.within_capacity
+    assert prepared.watermark == "a18"
+    assert prepared.kept_turns == 1
+    assert summarize.await_count == 3
+    kept = {
+        getattr(message, "id", None)
+        for message in prepared.messages
+        if isinstance(message, HumanMessage)
+    }
+    assert kept == {"h19"}
+
+
+@pytest.mark.anyio
+async def test_old_thread_without_watermark_compacts(monkeypatch):
+    summarize = AsyncMock(return_value="首次摘要")
+    monkeypatch.setattr(
+        "common.context_preparation.summarize_conversation_history", summarize
+    )
+    prepared = await prepare_model_request(
+        {"messages": history(20)},
+        {},
+        capacity=capacity(500),
+    )
+    assert prepared.compacted
+    assert prepared.watermark == "a16"
+    assert prepared.summary == "首次摘要"
 
 
 @pytest.mark.anyio

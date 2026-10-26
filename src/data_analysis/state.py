@@ -39,5 +39,6 @@ class DataAnalysisState(TypedDict):
     summary_covered_message_id: NotRequired[str]
     context_metrics: NotRequired[dict[str, Any]]
     context_status: NotRequired[dict[str, Any]]
+    input_overflow: NotRequired[bool]
     data_status: Annotated[dict[str, Any], merge_processing_status]
     data_model_started_at: NotRequired[str]

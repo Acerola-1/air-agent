@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import yaml
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import StreamWriter
 from loguru import logger
@@ -17,15 +17,16 @@ from loguru import logger
 from common.capabilities import refresh_authorized_mcp_tools
 from common.config import config as app_config
 from common.context import get_message_content, get_routing_context
-from common.context_guard import prepare_model_context
-from common.conversation_summarizer import update_conversation_summary
-from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
-from common.model_budget import (
-    ContextBudgetExceeded,
-    enforce_request_budget,
-    fit_tool_schemas,
-    request_metrics,
+from common.context_preparation import (
+    ContextRecoveryFailed,
+    PreparedRequest,
+    call_with_context_recovery,
+    merge_prepared_updates,
+    prepare_model_request,
 )
+from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
+from common.model_budget import ContextBudgetExceeded, request_metrics
+from common.model_errors import is_context_overflow
 from common.models import ModelRegistry
 from common.output_contract import visible_result
 from common.output_streaming.answer import stream_final_answer
@@ -141,6 +142,41 @@ def _merge_skill_content(skill_body: str, references_content: str) -> str:
 
 
 # ──── Phase 2: 确定性节点 ────
+
+
+async def validate_input(
+    state: DataAnalysisState,
+    config: RunnableConfig,
+    *,
+    writer: StreamWriter,
+) -> dict[str, Any]:
+    """入口校验单次用户文本长度；超限时不进入 Skill/MCP/模型路径."""
+    from common.input_limits import (
+        count_user_characters,
+        current_input_limit,
+        input_overflow_message,
+    )
+
+    question = ""
+    for message in reversed(state.get("messages", [])):
+        if isinstance(message, HumanMessage):
+            question = get_message_content(message)
+            break
+    limit = current_input_limit()
+    count = count_user_characters(question)
+    if count <= limit.max_chars:
+        return {"input_overflow": False}
+    logger.warning(
+        "数据分析用户提问超出输入限制: len={}, max={}", count, limit.max_chars
+    )
+    published = await publish_control_message(
+        dict(config or {}),
+        graph_id="data-analysis",
+        text=input_overflow_message(count, limit.max_chars),
+        writer=writer,
+        control_code="input_overflow",
+    )
+    return {"messages": [published], "input_overflow": True}
 
 
 async def resolve_skill(
@@ -303,16 +339,6 @@ async def prepare_model(
     )
 
     updates: dict[str, Any] = {"system_prompt": system_prompt}
-    updates.update(
-        await update_conversation_summary(
-            {**state, "system_prompt": system_prompt},
-            config,
-            tools=filter_business_tools(
-                get_business_tools(include_computation=True), allowed
-            ),
-        )
-    )
-
     return updates
 
 
@@ -385,6 +411,12 @@ async def call_model(
 
     messages = state["messages"]
     # 1. 检查最新用户提问长度
+    from common.input_limits import (
+        count_user_characters,
+        current_input_limit,
+        input_overflow_message,
+    )
+
     last_human = ""
     for msg in reversed(messages):
         if (
@@ -393,16 +425,14 @@ async def call_model(
         ):
             last_human = get_message_content(msg)
             break
-    max_input_chars = getattr(app_config, "MAX_INPUT_CHARS", 8000)
-    if len(last_human) > max_input_chars:
-        overflow_msg = (
-            f"您的提问内容过长（共 {len(last_human)} 字符，系统单次提问上限为 {max_input_chars} 字符），"
-            "请精简或分段提问。"
-        )
+    limit = current_input_limit()
+    count = count_user_characters(last_human)
+    if count > limit.max_chars:
+        overflow_msg = input_overflow_message(count, limit.max_chars)
         logger.warning(
             "数据分析用户提问超出输入限制: len={}, max={}",
-            len(last_human),
-            max_input_chars,
+            count,
+            limit.max_chars,
         )
         published = await publish_control_message(
             dict(config or {}),
@@ -413,56 +443,83 @@ async def call_model(
         )
         return {"messages": [published]}
 
-    # 2. 模型调用前只读上下文修剪 (注入早期历史摘要 + 保护当期轮次与旧工具治理)
-    protected_messages = prepare_model_context(
-        messages,
-        summary=state.get("summary"),
-        summary_covered_message_id=state.get("summary_covered_message_id"),
-    )
-
-    full_messages: list[Any] = []
-    if system_prompt:
-        full_messages.append(SystemMessage(content=system_prompt))
-    full_messages.extend(protected_messages)
-
-    # 绑定工具
-    schemas = fit_tool_schemas(full_messages, available)
-    try:
-        metrics = enforce_request_budget(full_messages, schemas)
-    except ContextBudgetExceeded as exc:
-        metrics = request_metrics(full_messages, schemas)
-        emit_event(config, "context_metrics", **metrics)
+    # 2. 统一发送前准备：投影、工具定义、计量与必要整理
+    prepare_kwargs: dict[str, Any] = {
+        "system_messages": [system_prompt],
+        "tools": available,
+        "role": "main",
+    }
+    prepared = await prepare_model_request(state, dict(config or {}), **prepare_kwargs)
+    metrics = prepared.metrics
+    emit_event(config, "context_metrics", **metrics)
+    if prepared.over_capacity:
         published = await publish_control_message(
             dict(config or {}),
             graph_id="data-analysis",
-            text=str(exc),
+            text=prepared.failure_reason
+            or "本次资料超出当前模型可用输入容量，尚未完成处理。请缩小数据范围后重试。",
             writer=writer,
             control_code="context_budget",
         )
-        return {"messages": [published], "context_metrics": metrics}
-    emit_event(config, "context_metrics", **metrics)
+        return merge_prepared_updates(
+            prepared,
+            {
+                **prepared.updates,
+                "messages": [published],
+                "context_metrics": metrics,
+            },
+        )
 
-    if available:
-        model_with_tools = model.bind_tools(schemas)
-    else:
-        model_with_tools = model
-
-    # 重试调用模型（最多 3 次）
     from common.observability.model_adapter import model_call_scope
 
     observed_scope = model_call_scope(config, role="main")
+
+    def bind(request: PreparedRequest) -> Any:
+        return model.bind_tools(request.schemas) if request.schemas else model
+
+    def invoke(request: PreparedRequest) -> Any:
+        return invoke_with_data_deadline(
+            bind(request),
+            request.messages,
+            messages,
+            config,
+            invocation_metadata=observed_scope.runtime_metadata(),
+        )
+
+    # 重试调用模型（最多 3 次）
     data_model_started_at = datetime.now(UTC).isoformat()
     response = None
     for attempt in range(3):
         try:
-            response = await invoke_with_data_deadline(
-                model_with_tools,
-                full_messages,
-                messages,
-                config,
-                invocation_metadata=observed_scope.runtime_metadata(),
+            response, prepared = await call_with_context_recovery(
+                invoke,
+                prepared,
+                state=state,
+                run_config=dict(config or {}),
+                prepare_kwargs=prepare_kwargs,
             )
+            metrics = prepared.metrics
+            emit_event(config, "context_metrics", **metrics)
             break
+        except ContextBudgetExceeded as exc:
+            if isinstance(exc, ContextRecoveryFailed):
+                prepared = exc.prepared
+            emit_event(config, "context_metrics", **prepared.metrics)
+            published = await publish_control_message(
+                dict(config or {}),
+                graph_id="data-analysis",
+                text=str(exc),
+                writer=writer,
+                control_code="context_budget",
+            )
+            return merge_prepared_updates(
+                prepared,
+                {
+                    **prepared.updates,
+                    "messages": [published],
+                    "context_metrics": prepared.metrics,
+                },
+            )
         except DataProcessingFailure as exc:
             status = emit_event(
                 config,
@@ -478,11 +535,15 @@ async def call_model(
                 writer=writer,
                 control_code="data_failure",
             )
-            return {
-                "messages": [published],
-                "data_status": status,
-                "context_metrics": metrics,
-            }
+            return merge_prepared_updates(
+                prepared,
+                {
+                    **prepared.updates,
+                    "messages": [published],
+                    "data_status": status,
+                    "context_metrics": prepared.metrics,
+                },
+            )
         except Exception as exc:
             logger.warning(
                 "数据分析模型调用失败 (attempt {}): {}", attempt + 1, type(exc).__name__
@@ -498,10 +559,14 @@ async def call_model(
                     writer=writer,
                     control_code="service_unavailable",
                 )
-                return {
-                    "messages": [published],
-                    "context_metrics": metrics,
-                }
+                return merge_prepared_updates(
+                    prepared,
+                    {
+                        **prepared.updates,
+                        "messages": [published],
+                        "context_metrics": prepared.metrics,
+                    },
+                )
 
     # 空回复检测：content 为空且无 tool_calls -> 追加引导重试
     if (
@@ -510,16 +575,40 @@ async def call_model(
         and not get_message_content(response).strip()
     ):
         logger.info("数据分析模型空回复，追加引导消息重试")
-        nudge_messages = [
-            *full_messages,
-            response,
-            HumanMessage(content=_EMPTY_REPLY_NUDGE),
-        ]
         try:
-            metrics = enforce_request_budget(nudge_messages, schemas)
-            emit_event(config, "context_metrics", **metrics)
+            nudge = await prepare_model_request(
+                state,
+                dict(config or {}),
+                system_messages=[system_prompt],
+                tools=available,
+                tail_messages=[
+                    response,
+                    HumanMessage(content=_EMPTY_REPLY_NUDGE),
+                ],
+                role="main",
+            )
+            emit_event(config, "context_metrics", **nudge.metrics)
+            if nudge.over_capacity:
+                published = await publish_control_message(
+                    dict(config or {}),
+                    graph_id="data-analysis",
+                    text=nudge.failure_reason
+                    or "本次资料超出当前模型可用输入容量，请缩小数据范围后重试。",
+                    writer=writer,
+                    control_code="context_budget",
+                )
+                return merge_prepared_updates(
+                    nudge,
+                    {
+                        **nudge.updates,
+                        "messages": [published],
+                        "context_metrics": nudge.metrics,
+                    },
+                )
+            prepared = nudge
+            metrics = nudge.metrics
             nudge_response = await invoke_with_data_deadline(
-                model_with_tools, nudge_messages, messages, config
+                bind(nudge), nudge.messages, messages, config
             )
             if (
                 isinstance(nudge_response, AIMessage)
@@ -539,10 +628,14 @@ async def call_model(
     from common.knowledge.policy import apply_answer_policy
 
     response = apply_answer_policy(response, messages)
-    return {
-        **visible_result(response, config, metrics=metrics, publish=False),
-        "data_model_started_at": data_model_started_at,
-    }
+    return merge_prepared_updates(
+        prepared,
+        {
+            **prepared.updates,
+            **visible_result(response, config, metrics=metrics, publish=False),
+            "data_model_started_at": data_model_started_at,
+        },
+    )
 
 
 # ──── Phase 5: 最终输出节点 ────
@@ -590,7 +683,6 @@ async def finalize_output(
 
     ensure_model_observability(config)
     model = ModelRegistry.main_llm
-    prompt = _FINAL_OUTPUT_CLEANUP_PROMPT.format(answer=answer or _FALLBACK_EMPTY_REPLY)
 
     publisher = OutputPublisher(
         dict(config or {}),
@@ -603,20 +695,79 @@ async def finalize_output(
         if isinstance(message, HumanMessage):
             question = get_message_content(message)
             break
+
+    def cleanup_request(answer_text: str) -> tuple[list[Any], dict[str, Any]]:
+        built = _FINAL_OUTPUT_CLEANUP_PROMPT.format(
+            answer=answer_text or _FALLBACK_EMPTY_REPLY
+        )
+        messages = [HumanMessage(content=built)]
+        return messages, request_metrics(messages)
+
+    async def reduce_answer(text: str) -> str:
+        from common.text_reduction import summarize_complete_text
+
+        reduced, _coverage = await summarize_complete_text(
+            text or _FALLBACK_EMPTY_REPLY,
+            instruction=(
+                "压缩待清理的最终正文：保留全部业务结论、数值、单位、日期、"
+                "引用和限制说明，不新增事实，不改变结论。"
+            ),
+            timeout_seconds=timeout,
+            run_config=dict(config or {}),
+        )
+        return reduced
+
     timeout = app_config.FINAL_OUTPUT_CLEANUP_TIMEOUT_SECONDS
     try:
         async with asyncio.timeout(timeout):
-            cleanup_messages = [HumanMessage(content=prompt)]
-            enforce_request_budget(cleanup_messages)
-            result = await stream_final_answer(
-                model,
-                cleanup_messages,
-                invocation_config(config, role="cleanup"),
-                publisher=publisher,
-                policy_messages=state.get("messages", []),
-                question=question,
-            )
-    except (TimeoutError, ContextBudgetExceeded) as exc:
+            cleanup_messages, cleanup_metrics = cleanup_request(answer)
+            if cleanup_metrics["input_tokens"] > cleanup_metrics["input_budget_tokens"]:
+                answer = await reduce_answer(answer)
+                cleanup_messages, cleanup_metrics = cleanup_request(answer)
+                if (
+                    cleanup_metrics["input_tokens"]
+                    > cleanup_metrics["input_budget_tokens"]
+                ):
+                    raise ContextBudgetExceeded(
+                        "最终答案整理请求仍超出模型可用输入容量。"
+                    )
+            emit_event(config, "context_metrics", **cleanup_metrics)
+            try:
+                result = await stream_final_answer(
+                    model,
+                    cleanup_messages,
+                    invocation_config(config, role="cleanup"),
+                    publisher=publisher,
+                    policy_messages=state.get("messages", []),
+                    question=question,
+                )
+            except Exception as exc:  # noqa: BLE001 - 仅超窗进入一次恢复
+                if not is_context_overflow(exc):
+                    raise
+                answer = await reduce_answer(answer)
+                cleanup_messages, cleanup_metrics = cleanup_request(answer)
+                if (
+                    cleanup_metrics["input_tokens"]
+                    > cleanup_metrics["input_budget_tokens"]
+                ):
+                    raise ContextBudgetExceeded(
+                        "最终答案整理请求仍超出模型可用输入容量。"
+                    ) from exc
+                publisher = OutputPublisher(
+                    dict(config or {}),
+                    graph_id="data-analysis",
+                    writer=writer,
+                    authorization_probe=runtime_authorization_probe(dict(config or {})),
+                )
+                result = await stream_final_answer(
+                    model,
+                    cleanup_messages,
+                    invocation_config(config, role="cleanup"),
+                    publisher=publisher,
+                    policy_messages=state.get("messages", []),
+                    question=question,
+                )
+    except Exception as exc:  # noqa: BLE001 - 清洗失败必须落到受控终态
         logger.warning("数据分析最终输出清洗失败: {}", type(exc).__name__)
         if publisher.total_chars:
             await publisher.abort("generation_failed")

@@ -71,16 +71,13 @@ def test_knowledge_search_is_visible_in_every_qa_lane():
 
 
 @pytest.mark.anyio
-async def test_all_intents_update_summary(monkeypatch):
-    update = AsyncMock(
-        return_value={"summary": "记忆", "summary_covered_message_id": "a"}
-    )
-    monkeypatch.setattr(module, "update_conversation_summary", update)
+async def test_prepare_model_builds_prompt_without_implicit_summary(monkeypatch):
     monkeypatch.setattr(module, "refresh_authorized_mcp_tools", AsyncMock())
     for intent in ["chitchat", "knowledge", "data_query"]:
         result = await nodes().prepare_model({"messages": [], "intent": intent}, {})
-        assert result["summary_covered_message_id"] == "a"
-    assert update.await_count == 3
+        assert result["system_prompt"]
+        assert "summary" not in result
+        assert "summary_covered_message_id" not in result
 
 
 @pytest.mark.anyio
@@ -122,7 +119,7 @@ async def test_model_projects_watermark_and_marks_only_final(monkeypatch):
 async def test_budget_and_terminal_computation_do_not_call_model(monkeypatch):
     model = AsyncMock()
     monkeypatch.setattr(ModelRegistry, "main_llm", model)
-    monkeypatch.setattr(config, "MODEL_CONTEXT_BUDGET_TOKENS", 100)
+    monkeypatch.setattr(config, "MODEL_PROVIDER_INPUT_LIMIT_TOKENS", 200)
     result = await nodes().call_model(
         {"messages": [HumanMessage(content="x" * 1000)], "intent": "chitchat"},
         {},
@@ -268,6 +265,27 @@ async def test_tool_then_answer_uses_no_tool_streaming_final_call(monkeypatch):
 
 
 @pytest.mark.anyio
+async def test_answer_model_rejects_over_capacity_without_stream(monkeypatch):
+    class Fake:
+        streams = 0
+
+        async def astream(self, *args, **kwargs):
+            Fake.streams += 1
+            if False:  # pragma: no cover - keeps this an async generator
+                yield AIMessageChunk(content="")
+
+    monkeypatch.setattr(ModelRegistry, "main_llm", Fake())
+    monkeypatch.setattr(config, "MODEL_PROVIDER_INPUT_LIMIT_TOKENS", 1)
+    result = await nodes().answer_model(
+        {"messages": [HumanMessage(content="查一下")], "system_prompt": "规则"},
+        {},
+        writer=lambda event: None,
+    )
+    assert "超出" in result["messages"][0].content
+    assert Fake.streams == 0
+
+
+@pytest.mark.anyio
 async def test_finish_planning_sentinel_routes_to_answer_without_tool_execution(
     monkeypatch,
 ):
@@ -305,9 +323,6 @@ async def test_knowledge_question_can_plan_and_execute_retrieval(monkeypatch):
     service = nodes()
     intent, _ = classify_intent_rule(question)
     state = {"messages": [HumanMessage(content=question)], "intent": intent}
-    monkeypatch.setattr(
-        module, "update_conversation_summary", AsyncMock(return_value={})
-    )
     prepared = await service.prepare_model(state, {})
     assert _route_after_prepare({**state, **prepared}) == "call_model"
     model = AsyncMock()
@@ -383,9 +398,6 @@ async def test_compiled_knowledge_graph_reaches_actual_tool_before_streamed_answ
     )
     monkeypatch.setattr(builder, "get_business_tools", lambda **kw: [tool])
     monkeypatch.setattr(module, "get_business_tools", lambda **kw: [tool])
-    monkeypatch.setattr(
-        module, "update_conversation_summary", AsyncMock(return_value={})
-    )
     model = AsyncMock()
     model.bind_tools = Mock(return_value=model)
     question = "请根据知识库解释臭氧是怎么形成的"

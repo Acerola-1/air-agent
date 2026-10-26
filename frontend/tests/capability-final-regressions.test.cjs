@@ -8,8 +8,19 @@ const jsx = require(path.join(root, 'node_modules/react/jsx-runtime'));
 
 function composer(disabled = false) {
   const sends = [];
+  const initialStates = [
+    '中文候选词',
+    {
+      scope: JSON.stringify(['basic-qa', 'u', 'A', 1, 1]),
+      value: { graph_id: 'basic-qa', max_input_chars: 8000, character_count_mode: 'unicode_code_point' },
+    },
+    null,
+    false,
+    0,
+  ];
+  let stateIndex = 0;
   const react = {
-    useState: () => ['中文候选词', () => {}],
+    useState: () => [initialStates[stateIndex++] ?? null, () => {}],
     useRef: (initial) => ({ current: initial }),
     useCallback: (fn) => fn,
     useEffect: () => {},
@@ -21,7 +32,15 @@ function composer(disabled = false) {
   const module = { exports: {} };
   const ignored = new Proxy({}, { get: () => () => null });
   const requireLocal = (name) => name === 'react' ? react : name === 'react/jsx-runtime' ? jsx
-    : name === '@/lib/session-client' ? { useSessionStore: (fn) => fn({ username: null }) } : ignored;
+    : name === '@/lib/chat-store' ? { useChatStore: (fn) => fn({ graphId: 'basic-qa' }) }
+    : name === '@/lib/session-client' ? { useSessionStore: (fn) => fn({
+      username: null, sessionEpoch: 1,
+      ctx: { user: { id: 'u' }, current_tenant: { id: 'A' }, context_version: 1 },
+    }) }
+    : name === '@/lib/chat-config' ? {
+      fetchChatConfig: async () => ({ graph_id: 'basic-qa', max_input_chars: 8000, character_count_mode: 'unicode_code_point' }),
+      countUnicodeCodePoints: (text) => Array.from(String(text)).length,
+    } : ignored;
   new Function('require', 'module', 'exports', compiled)(requireLocal, module, module.exports);
   const tree = module.exports.__ComposerForTest({ disabled, onSend: (text) => sends.push(text), onStop: () => {} });
   const find = (node) => {

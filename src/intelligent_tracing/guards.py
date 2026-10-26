@@ -17,12 +17,24 @@ from langgraph.errors import GraphBubbleUp
 from langgraph.types import Command
 
 from common.identity.runtime import require_identity, revalidate
+from common.model_capacity import ModelCapacity, capacity_for_model
 from common.observability.deepagents_adapter import ObservedSummarizationMiddleware
 from intelligent_tracing.policy import BudgetPolicy
 
 
 class GuardedSummarizationMiddleware(ObservedSummarizationMiddleware):
-    """Revalidate trusted identity before every summary-model call."""
+    """按部署容量约束完整请求，摘要发送前复查可信身份."""
+
+    def __init__(self, *, capacity: ModelCapacity, **kwargs: Any) -> None:
+        """将容量绑定到每次SDK发送及恢复检查."""
+        self.capacity = capacity
+        super().__init__(**kwargs)
+
+    def _input_budget(self, request: Any) -> int:
+        return self.capacity.input_limit_tokens
+
+    def _get_profile_limits(self) -> int:
+        return self.capacity.window_tokens
 
     @property
     def name(self) -> str:
@@ -42,21 +54,38 @@ class GuardedSummarizationMiddleware(ObservedSummarizationMiddleware):
         return await super()._acreate_summary(messages_to_summarize)
 
 
-def guarded_summarization(model: Any, backend: Any) -> GuardedSummarizationMiddleware:
-    """Build the guarded middleware with the SDK's adaptive defaults."""
+def guarded_summarization(
+    model: Any,
+    backend: Any,
+    *,
+    capacity: ModelCapacity | None = None,
+    role: str = "main",
+) -> GuardedSummarizationMiddleware:
+    """为当前模型绑定触发线、有效输入边界及近期原文保留预算."""
     from deepagents.middleware.summarization import (
         DEEPAGENTS_DEFAULT_SUMMARY_PROMPT,
-        compute_summarization_defaults,
     )
 
-    defaults = compute_summarization_defaults(model)
+    from common.model_budget import request_metrics
+
+    resolved = capacity or capacity_for_model(model, role=role)
+
+    def count_tokens(messages: Any, *, tools: Any = ()) -> int:
+        return request_metrics(messages, tools or (), capacity=resolved)["input_tokens"]
+
+    keep = ("tokens", max(1, resolved.window_tokens // 10))
     return GuardedSummarizationMiddleware(
+        capacity=resolved,
         model=model,
         backend=backend,
-        trigger=defaults["trigger"],
-        keep=defaults["keep"],
+        trigger=("tokens", resolved.trigger_tokens),
+        keep=keep,
+        token_counter=count_tokens,
         summary_prompt=DEEPAGENTS_DEFAULT_SUMMARY_PROMPT,
-        truncate_args_settings=defaults["truncate_args_settings"],
+        truncate_args_settings={
+            "trigger": ("tokens", resolved.trigger_tokens),
+            "keep": keep,
+        },
     )
 
 
@@ -68,6 +97,43 @@ class NoFilesystemToolsMiddleware(FilesystemMiddleware):
         super().__init__(backend=backend, tools=["read_file"])
         self._enabled_tools = frozenset()
         self.tools = []
+
+
+class InputLimitMiddleware(AgentMiddleware):
+    """Reject an oversized user turn before any lead model or tool dispatch."""
+
+    async def awrap_model_call(self, request: Any, handler: Any) -> Any:
+        """Return a controlled message instead of calling the provider."""
+        from common.context import get_message_content
+        from common.input_limits import (
+            count_user_characters,
+            current_input_limit,
+            input_overflow_message,
+        )
+
+        question = ""
+        for message in reversed(getattr(request, "messages", []) or []):
+            if getattr(message, "type", "") == "human":
+                question = get_message_content(message)
+                break
+        limit = current_input_limit()
+        count = count_user_characters(question)
+        if count <= limit.max_chars:
+            return await handler(request)
+        return ExtendedModelResponse(
+            model_response=ModelResponse(
+                result=[
+                    AIMessage(
+                        content=input_overflow_message(count, limit.max_chars),
+                        additional_kwargs={
+                            "ui_visible": True,
+                            "input_overflow": True,
+                        },
+                    )
+                ]
+            ),
+            command=Command(update={"input_overflow": True}),
+        )
 
 
 class _RunBudgetState:

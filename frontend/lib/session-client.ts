@@ -14,6 +14,7 @@ import { setFeedbackScope } from "@/lib/feedback/client";
  * 但企业维度由服务端可信过滤保证）。
  */
 type SessionState = {
+  sessionEpoch: number;
   ctx: AdminSessionContext | null;
   username: string | null;
   userId: string | null;
@@ -79,6 +80,7 @@ onTenantContextConflict(() => {
 });
 
 export const useSessionStore = create<SessionState>((set, get) => ({
+  sessionEpoch: 0,
   ctx: null,
   username: null,
   userId: null,
@@ -90,6 +92,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   refreshSession: async () => {
     if (get().logoutPending) return;
     const epoch = ++sessionEpoch;
+    set({ sessionEpoch: epoch });
     try {
       const ctx = await fetchMe();
       if (epoch !== sessionEpoch) return;
@@ -106,7 +109,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   logout: async () => {
     if (get().logoutPending) return;
     const epoch = ++sessionEpoch;
-    set({ logoutPending: true, error: null });
+    set({ sessionEpoch: epoch, logoutPending: true, error: null });
     try {
       const res = await fetch("/api/auth/logout", { method: "POST" });
       if (!res.ok && res.status !== 401) throw new Error("logout unconfirmed");
@@ -126,6 +129,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     if (!current) return { ok: false, error: "未登录" };
     if (current.current_tenant?.id === tenantId) return { ok: true };
     const epoch = ++sessionEpoch;
+    set({ sessionEpoch: epoch });
     set({ error: null });
     try {
       const res = await fetch("/api/auth/switch-tenant", {

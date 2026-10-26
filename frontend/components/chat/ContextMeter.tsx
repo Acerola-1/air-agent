@@ -11,7 +11,8 @@ export function ContextMeter({ className }: { className?: string }) {
   const hasActual = typeof actual === "number" && Number.isFinite(actual) && actual >= 0;
   const displayed = hasActual ? actual : metrics?.input_tokens ?? 0;
   const estimated = metrics && !hasActual && !metrics.measurement_source.startsWith("tokenizer:");
-  const near = metrics && displayed >= metrics.input_budget_tokens * 0.9;
+  const trigger = metrics?.summary_trigger_tokens;
+  const near = metrics && (typeof trigger === "number" ? displayed >= trigger : displayed >= metrics.input_budget_tokens * 0.9);
   const ratio = metrics ? Math.min(100, displayed / metrics.input_budget_tokens * 100) : 0;
   const format = (count: number) => count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
   return (
@@ -35,6 +36,12 @@ export function ContextMeter({ className }: { className?: string }) {
           </>}
           <dt>可用输入容量</dt><dd className="text-right">{metrics.input_budget_tokens.toLocaleString()}</dd>
           <dt>模型窗口</dt><dd className="text-right">{metrics.window_tokens.toLocaleString()}</dd>
+          {typeof metrics.summary_trigger_tokens === "number" && <>
+            <dt>历史整理水位{typeof metrics.summary_trigger_ratio === "number" ? `（${Math.round(metrics.summary_trigger_ratio * 100)}%）` : ""}</dt><dd className="text-right">{metrics.summary_trigger_tokens.toLocaleString()}</dd>
+          </>}
+          {typeof metrics.provider_input_limit_tokens === "number" && <>
+            <dt>服务商输入上限</dt><dd className="text-right">{metrics.provider_input_limit_tokens.toLocaleString()}</dd>
+          </>}
           <dt>生成预留</dt><dd className="text-right">{metrics.output_reserved_tokens.toLocaleString()}</dd>
           {metrics.latest_usage && <><dt>最近主模型输入</dt><dd className="text-right">{metrics.latest_usage.input_tokens?.toLocaleString() ?? "—"}</dd><dt>最近主模型生成</dt><dd className="text-right">{metrics.latest_usage.output_tokens?.toLocaleString() ?? "—"}</dd></>}
         </dl>

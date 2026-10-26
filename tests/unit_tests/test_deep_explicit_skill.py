@@ -85,7 +85,7 @@ async def test_selected_rules_still_obey_complete_request_budget(
     from common.model_budget import config as settings
 
     agent, model, config = explicit_agent
-    monkeypatch.setattr(settings, "MODEL_CONTEXT_BUDGET_TOKENS", 1)
+    monkeypatch.setattr(settings, "MODEL_PROVIDER_INPUT_LIMIT_TOKENS", 1)
     with pytest.raises(ContextBudgetExceeded):
         await agent.ainvoke({"messages": [("user", "你好")]}, config)
     assert model.captured == []
