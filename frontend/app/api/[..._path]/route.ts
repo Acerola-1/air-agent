@@ -158,6 +158,7 @@ async function handleRequest(req: NextRequest, method: string) {
       if (isWritePath) {
         // → trace 归属：Users 页按人聚合，Sessions 页按线程聚合。
         nextMeta.langfuse_user_id = userId;
+        nextMeta.user_account = ctx.user.account;
         if (threadId) nextMeta.langfuse_session_id = threadId;
       }
       body.metadata = nextMeta;
@@ -175,7 +176,7 @@ async function handleRequest(req: NextRequest, method: string) {
       body.metadata = { ...createdMeta, langfuse_session_id: mintedThreadId };
     }
     if (threadId && method === "POST" && segments[2] === "runs" && segments.length <= 4 && !["cancel", "join"].includes(segments[3] ?? "")) {
-      const cfg = body.config as { configurable?: Record<string, unknown>; tags?: string[] } | undefined;
+      const cfg = body.config as { configurable?: Record<string, unknown>; tags?: string[]; metadata?: Record<string, unknown> } | undefined;
       // 台账可信受理必须先于平台运行创建：受理失败 → 503，不启动新运行。
       const submissionKey = req.headers.get("x-submission-key") ?? `auto-${crypto.randomUUID()}`;
       let operationKind = (req.headers.get("x-operation-kind") ?? "initial") as
@@ -287,6 +288,7 @@ async function handleRequest(req: NextRequest, method: string) {
       const meta = (body.metadata as Record<string, unknown> | undefined) ?? {};
       body.metadata = {
         ...meta,
+        user_account: ctx.user.account,
         ledger_request_id: ledgerAdmission.requestId,
         ledger_attempt_id: ledgerAdmission.attemptId,
         ledger_submission_id: ledgerAdmission.submissionId,
@@ -298,6 +300,12 @@ async function handleRequest(req: NextRequest, method: string) {
       };
       body.config = {
         ...cfg,
+        // 可读账号只作 Langfuse metadata 维度；user_id 仍用稳定 UUID。
+        // 覆盖客户端同名字段，避免浏览器伪造归属。
+        metadata: {
+          ...(cfg?.metadata ?? {}),
+          user_account: ctx.user.account,
+        },
         configurable: {
           ...cfg?.configurable,
           user_id: userId,

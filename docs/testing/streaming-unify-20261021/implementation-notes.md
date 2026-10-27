@@ -2,7 +2,7 @@
 
 日期：2026-10-21。工作区：`/Users/acerola/Dev/Python/air_agent`。分支 `dev`，冻结 HEAD `7711914`。
 
-本目录只保存本次任务的实施说明、探针输出与浏览器证据；不覆盖性能 Agent 的 `scripts/unified_campaign/sender.py` 未提交改动、`scripts/product_chat_perf/` 和 `docs/reviews/basic-qa-performance/20261021-201100-e2e4/`。
+本目录只保存本次任务的实施说明、探针输出与浏览器证据；不覆盖性能 Agent 的 `scripts/unified_campaign/sender.py` 未提交改动、`scripts/product_chat_perf/` 和 `旧性能证据已清理`。
 
 ## 1. 修复前实际链路
 

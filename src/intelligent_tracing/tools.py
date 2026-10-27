@@ -213,7 +213,9 @@ def build_freeze_request_tool(
             )
         except TracingScopeError as exc:
             return {"status": "invalid", "message": str(exc)}
-        except (RequestValidationError, ValueError, DataSourceUnavailable) as exc:
+        except DataSourceUnavailable:
+            return {"status": "catalog_unavailable", "message": "站点目录暂时不可用"}
+        except (RequestValidationError, ValueError) as exc:
             return {"status": "invalid", "message": str(exc)}
         if resolution.ambiguous:
             return {

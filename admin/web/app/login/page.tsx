@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 
@@ -18,6 +18,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [recoveryHint, setRecoveryHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const reason = url.searchParams.get("reason");
+    const hints: Record<string, string> = {
+      "session-expired": "登录已过期，请使用账号和密码重新登录。",
+      "sso-failed": "统一登录未完成，请使用账号和密码登录，或重新发起统一登录。",
+      "identity-unavailable": "身份服务暂时不可用，请稍后重试。",
+    };
+    if (reason && hints[reason]) {
+      setRecoveryHint(hints[reason]);
+      document.getElementById("account")?.focus();
+      url.searchParams.delete("reason");
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    }
+  }, []);
+
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -55,6 +73,7 @@ export default function LoginPage() {
         <Card className="py-6">
           <CardContent>
             <form onSubmit={onSubmit} className="space-y-4">
+              {recoveryHint && <p role="status" className="text-muted-foreground text-sm">{recoveryHint}</p>}
               <div className="space-y-1.5">
                 <Label htmlFor="account">账号</Label>
                 <Input

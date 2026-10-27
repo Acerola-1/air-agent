@@ -23,6 +23,7 @@ from common.middleware import TenantRuntimeGuardMiddleware, TimeContextMiddlewar
 from common.model_capacity import ModelCapacity, capacity_for_model, main_capacity
 from common.models import ModelRegistry
 from common.observability.middleware import ObservabilityModelMiddleware
+from intelligent_tracing.conversation import ANALYSIS_TOOLS
 from intelligent_tracing.data_access import (
     BusinessMCPDataSource,
     StationCatalog,
@@ -56,6 +57,7 @@ from intelligent_tracing.tools import (
     build_policy_summary_tool,
     build_report_tools,
 )
+from intelligent_tracing.turn_routing import TracingTurnMiddleware, build_turn_tool
 
 SYSTEM_PROMPT = """
 ## 角色
@@ -63,7 +65,12 @@ SYSTEM_PROMPT = """
 文件/代码工具，不输出事实正文；所有用户可见结论由服务端验证后的报告发布。
 
 ## 必须流程
-1. 先调用 `freeze_tracing_request` 冻结请求；缺少站点代码/名称、行政区中文名
+0. 每个用户回合先且仅调用 `submit_tracing_turn`。问候、能力、流程说明使用
+   conversation及登记的blocks，不要求分析条件；明确分析需求（含问候+分析）
+   或补充上一轮条件使用analysis。slots只摘录本轮原文，source_text必须精确引用；
+   仅当用户明确续接时inherit_previous=true，否定条件用reset_fields。
+   不提供自由正文，不因为历史存在request/report而重复分析。
+1. 本轮分析条件通过后调用 `freeze_tracing_request` 冻结请求；缺少站点代码/名称、行政区中文名
    （如“郑州市”）、时间范围或半径时向用户补问，在冻结前不得委派数据任务。
 2. 冻结后，在同一轮用原生 `task` 并行委派 `station-data` 与 `grid-data`。
    `task` 只有 `description` 和 `subagent_type`；子图会从受控状态读取冻结请求，
@@ -261,12 +268,14 @@ def build_tracing_graph(
         TenantRuntimeGuardMiddleware(inject_mcp_tools=False),
         TracingBudgetMiddleware(policy.budget),
         LedgerLifecycleMiddleware(name),
+        TracingTurnMiddleware(policy, ANALYSIS_TOOLS),
         TracingPublishMiddleware(
             registry=registry,
             gate=gate,
             policy=policy,
             report_store=store,
             lifecycle_probe=lifecycle_probe,
+            require_turn_decision=True,
         ),
     ]
 
@@ -274,7 +283,14 @@ def build_tracing_graph(
     try:
         return create_deep_agent(
             model=resolved_model,
-            tools=[station_tool, policy_tool, report_tool, canvas_tool, knowledge_tool],
+            tools=[
+                build_turn_tool(),
+                station_tool,
+                policy_tool,
+                report_tool,
+                canvas_tool,
+                knowledge_tool,
+            ],
             system_prompt=SYSTEM_PROMPT if enable_reviewer else SYSTEM_PROMPT_NO_REVIEW,
             middleware=middleware,
             backend=backend,

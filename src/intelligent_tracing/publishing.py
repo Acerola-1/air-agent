@@ -8,6 +8,7 @@ reuses the same publication session and never resends the body.
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import uuid
 from collections.abc import Awaitable, Callable
@@ -24,8 +25,17 @@ from common.event_ledger.lifecycle import require_ledger_context
 from common.event_ledger.store import fetch_attempt_lifecycle, thread_deletion_exists
 from common.identity.runtime import guard_runtime_call
 from common.output_streaming.controls import publish_control_message
-from common.output_streaming.publisher import runtime_authorization_probe
+from common.output_streaming.publisher import (
+    OutputAborted,
+    OutputPublisher,
+    runtime_authorization_probe,
+)
 from intelligent_tracing.claims import build_claim_allowlist, fallback_plan
+from intelligent_tracing.conversation import (
+    ANALYSIS_TOOLS,
+    capability_catalog,
+    render_conversation,
+)
 from intelligent_tracing.evidence import EvidenceRegistry
 from intelligent_tracing.gate import ReportGate
 from intelligent_tracing.policy import AnalysisPolicy
@@ -37,6 +47,8 @@ from intelligent_tracing.schemas import (
     ReportPlan,
     RuntimeScope,
     TracingRequest,
+    TurnDecision,
+    TurnPublication,
     ValidatedReport,
 )
 from intelligent_tracing.section_publishing import (
@@ -44,6 +56,7 @@ from intelligent_tracing.section_publishing import (
     publication_execution_key,
     publish_frozen_plan,
 )
+from intelligent_tracing.turn_routing import current_decision, turn_context
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +79,7 @@ class TracingPublishMiddleware(AgentMiddleware):
         report_store: ReportStore,
         lifecycle_probe: Callable[[dict[str, Any], RuntimeScope], Awaitable[bool]]
         | None = None,
+        require_turn_decision: bool = False,
     ) -> None:
         """Bind the execution-layer publication dependencies."""
         super().__init__()
@@ -75,6 +89,8 @@ class TracingPublishMiddleware(AgentMiddleware):
         self._report_store = report_store
         self._lifecycle_probe = lifecycle_probe or self._ledger_probe
         self._published_ids: set[str] = set()
+        self._require_turn_decision = require_turn_decision
+        self._catalog = capability_catalog(policy, ANALYSIS_TOOLS)
 
     @staticmethod
     async def _ledger_probe(config: dict[str, Any], scope: RuntimeScope) -> bool:
@@ -165,6 +181,28 @@ class TracingPublishMiddleware(AgentMiddleware):
     ) -> dict[str, Any] | None:
         """Confirm/reuse the publication session or publish a controlled fallback."""
         config = self._config(runtime)
+        if self._require_turn_decision:
+            decision = current_decision(state, config)
+            if decision is None:
+                if state.get("turn_decision") is not None:
+                    return {}
+                decision = TurnDecision(
+                    context=turn_context(state, config),
+                    proposed_intent="unknown",
+                    route="fallback",
+                    reason="missing_plan",
+                )
+            if decision.route != "analysis":
+                return await self._publish_turn(state, config, decision)
+            current_request = state.get("request")
+            if (
+                not decision.frozen
+                or current_request is None
+                or current_request.analysis_id != decision.analysis_id
+                or current_request.revision != decision.revision
+                or current_request.request_digest != decision.request_digest
+            ):
+                return await self._publish_text(config, _INCOMPLETE_TEXT, "incomplete")
         request = state.get("request") if isinstance(state, dict) else None
         scope = state.get("scope") if isinstance(state, dict) else None
         report = state.get("validated_report") if isinstance(state, dict) else None
@@ -290,6 +328,87 @@ class TracingPublishMiddleware(AgentMiddleware):
             "publication_session": new_session,
         }
 
+    async def _publish_turn(
+        self, state: Any, config: dict[str, Any], decision: Any
+    ) -> dict[str, Any]:
+        """Publish one validated conversation plan, never the hidden lead prose."""
+        scope = decision.context.scope
+        if self._should_suppress(config, scope) or not await self._publication_allowed(
+            config, scope
+        ):
+            return {}
+        try:
+            text = render_conversation(decision, self._catalog)
+        except (ValueError, KeyError):
+            decision = decision.model_copy(
+                update={"route": "fallback", "reason": "catalog_changed"}
+            )
+            text = render_conversation(decision, self._catalog)
+        digest = hashlib.sha256(text.encode()).hexdigest()
+        record = state.get("turn_publication")
+        if (
+            isinstance(record, TurnPublication)
+            and record.turn_key == decision.context.key
+        ):
+            if record.content_sha256 != digest or record.text != text:
+                return {}
+        else:
+            identifier = uuid.uuid5(uuid.NAMESPACE_URL, decision.context.key).hex
+            record = TurnPublication(
+                turn_key=decision.context.key,
+                output_id="out_" + identifier,
+                message_id="msg_" + identifier,
+                text=text,
+                content_sha256=digest,
+            )
+        if (
+            record.output_id not in self._published_ids
+            and state.get("turn_publication") != record
+        ):
+
+            async def probe() -> bool:
+                return await self._publication_allowed(config, scope)
+
+            publisher = OutputPublisher(
+                config,
+                graph_id="intelligent-tracing",
+                delivery_mode="single_shot",
+                writer=self._stream_writer(),
+                authorization_probe=probe,
+                output_id=record.output_id,
+                message_id=record.message_id,
+            )
+            publisher.start(control_code="tracing_" + decision.route)
+            try:
+                await publisher.finish(text)
+            except OutputAborted:
+                return {}
+            self._published_ids.add(record.output_id)
+            logger.info(
+                "tracing publication kind=%s output=%s attempt=%s run=%s",
+                decision.route,
+                record.output_id,
+                decision.context.attempt_id,
+                decision.context.run_id,
+            )
+        return {
+            "turn_decision": decision,
+            "turn_publication": record,
+            "messages": [
+                AIMessage(
+                    content=text,
+                    id=record.message_id,
+                    additional_kwargs={
+                        "ui_visible": True,
+                        "output_protocol_version": 1,
+                        "output_id": record.output_id,
+                        "delivery_mode": "single_shot",
+                        "control_code": "tracing_" + decision.route,
+                    },
+                )
+            ],
+        }
+
     async def _current_allowlist(self, state: dict[str, Any]):
         """Rebuild the trusted allowlist from the findings present now."""
         request = state.get("request")
@@ -411,6 +530,14 @@ class TracingPublishMiddleware(AgentMiddleware):
     async def _publish_text(
         self, config: dict[str, Any], text: str, prefix: str
     ) -> dict[str, Any]:
+        if self._require_turn_decision:
+            from intelligent_tracing.runtime import runtime_scope_from_config
+
+            scope = runtime_scope_from_config(config)
+            if self._should_suppress(
+                config, scope
+            ) or not await self._publication_allowed(config, scope):
+                return {}
         message = await publish_control_message(
             config,
             graph_id="intelligent-tracing",

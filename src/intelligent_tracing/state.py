@@ -16,6 +16,10 @@ from intelligent_tracing.schemas import (
     SpatialFindings,
     StationFindings,
     TracingRequest,
+    TracingRequestDraft,
+    TurnContext,
+    TurnDecision,
+    TurnPublication,
     ValidatedReport,
 )
 
@@ -63,9 +67,9 @@ def merge_child_executions(
 def merge_publication_session(
     current: PublicationSession | None, incoming: PublicationSession | None
 ) -> PublicationSession | None:
-    """Merge a resumable section publication without replaying delivered sections."""
+    """Merge a publication; explicit None resets it for a newly frozen turn."""
     if incoming is None:
-        return current
+        return None
     if current is None:
         return incoming
     if (
@@ -106,6 +110,11 @@ def latest_report_reducer(
 
 class TracingState(DeepAgentState):
     """DeepAgent state extended with frozen request and specialist results."""
+
+    turn_context: NotRequired[TurnContext]
+    turn_decision: NotRequired[TurnDecision | None]
+    request_draft: NotRequired[TracingRequestDraft | None]
+    turn_publication: NotRequired[TurnPublication | None]
 
     request: NotRequired[Annotated[TracingRequest | None, latest_request_reducer]]
     scope: NotRequired[RuntimeScope]

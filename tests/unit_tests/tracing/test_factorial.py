@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 import pytest
+from conversation_fixtures import analysis_prefix, analysis_question, run_config
 from fake_model import ScriptedChatModel
 from fixtures import (
     BUSINESS_CODE,
@@ -27,8 +29,18 @@ from intelligent_tracing.report_store import InMemoryReportStore
 from intelligent_tracing.sources import FixtureDataSource
 
 
+@pytest.fixture(autouse=True)
+def controlled_identity(monkeypatch):
+    from unittest.mock import AsyncMock
+
+    import common.identity.runtime as identity
+
+    monkeypatch.setattr(identity, "revalidate", AsyncMock())
+
+
 def _lead_model(*, include_reviewer: bool) -> ScriptedChatModel:
     responses = [
+        *analysis_prefix(),
         AIMessage(
             content="",
             tool_calls=[
@@ -145,12 +157,13 @@ async def _run_deepagents(*, reviewer: bool):
     )
     out = await graph.ainvoke(
         {
-            "messages": [HumanMessage(content="分析")],
+            "messages": [HumanMessage(content=analysis_question())],
             "request": request,
             "scope": make_scope(),
         },
         config={
             "configurable": {
+                **run_config()["configurable"],
                 "thread_id": "thread-a",
                 "execution_epoch": "epoch-1",
                 "ledger_business_code": BUSINESS_CODE,
@@ -183,14 +196,21 @@ async def test_factorial_cells_share_deterministic_report():
         )
         b0_lead, b0_report, _ = await _run_deepagents(reviewer=False)
         b1_lead, b1_report, _ = await _run_deepagents(reviewer=True)
-        digests = {result.report.content_sha256 for result in (a0, a1)} | {
-            b0_report.content_sha256,
-            b1_report.content_sha256,
-        }
-        assert len(digests) == 1
+        reports = [a0.report, a1.report, b0_report, b1_report]
+        # Each run now owns a server-generated analysis ID/run binding. Verify
+        # every scoped digest, and compare the full public content separately.
+        assert all(
+            report.content_sha256 == report.compute_digest() for report in reports
+        )
+        assert len({report.body_markdown for report in reports}) == 1
+        assert len({report.limitations for report in reports}) == 1
+        public_digest = hashlib.sha256(a0.report.body_markdown.encode()).hexdigest()
         assert a0.analysis.allowlist.digest == a1.analysis.allowlist.digest
         assert a0.report.claim_ids == b0_report.claim_ids == b1_report.claim_ids
         assert b0_lead.calls >= 1 and b1_lead.calls >= b0_lead.calls
+        for result in (a0, a1):
+            assert result.report.claim_ids == b0_report.claim_ids == b1_report.claim_ids
+        iteration_start = len(manifests)
         manifests.extend(
             [
                 report_manifest(a0, model_name="none"),
@@ -209,6 +229,8 @@ async def test_factorial_cells_share_deterministic_report():
                 },
             ]
         )
-    assert len({item["report_digest"] for item in manifests}) == 1
+        for item in manifests[iteration_start:]:
+            item["public_digest"] = public_digest
+    assert len({item["public_digest"] for item in manifests}) == 1
     # Evidence is inspectable and contains no secret/session data.
     assert "sk-" not in json.dumps(manifests)

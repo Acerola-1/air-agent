@@ -45,6 +45,13 @@ _LIMITATION_TEXT = {
     "wind_direction_association_not_source": "风场关联不等于来源或距离。",
     "process_association_not_causation": "过程解释仅为关联，不是因果确认或贡献率。",
     "lag_correlation_not_causal": "滞后相关仅为统计关联，不是因果或概率。",
+    "target_anomaly_unknown": "目标异常状态无法判断，未生成依赖异常分段的空间/过程结论。",
+    "grid_topology_unknown": "网格拓扑未知，未推断连片范围。",
+    "grid_time_inconsistent": "网格时刻不一致或未知，未拼接连片范围。",
+    "grid_bounded_snapshot": "网格仅为有界同刻样本，不能代表整个过程或全区覆盖。",
+    "neighbors_truncated": "邻站按距离有界选取，存在未读取的半径内候选。",
+    "station_history_unavailable": "站点辅助历史获取失败，基线与滑动统计按实际覆盖处理。",
+    "nwp_time_inconsistent": "模式起报或时效信息矛盾，相关字段未用于过程判断。",
     "no_target_anomaly": "目标站未检出异常，未生成空间/过程结论。",
     "neighbor_geometry_unknown": "邻站几何未知，未纳入半径调查。",
     "constant_baseline": "基线方差为零，异常判定同时依赖绝对变化量。",
@@ -171,6 +178,12 @@ def build_claim_allowlist(
                     "expected_hours": station.coverage.expected_hours,
                     "max_gap_hours": station.coverage.max_gap_hours,
                     "coverage_sufficient": station.coverage.sufficient,
+                    "baseline_valid_hours": station.baseline_coverage.valid_hours
+                    if station.baseline_coverage
+                    else 0,
+                    "baseline_expected_hours": station.baseline_coverage.expected_hours
+                    if station.baseline_coverage
+                    else 0,
                 },
                 evidence_ids=station.evidence_ids,
                 limitations=station.limitations,
@@ -192,20 +205,6 @@ def build_claim_allowlist(
                     "peak_at": segment.peak_at.isoformat(),
                     "direction": segment.direction,
                     "segment_count": len(station.anomaly_segments),
-                },
-                evidence_ids=station.evidence_ids,
-                limitations=station.limitations,
-                requirements=("station_anomaly",),
-            )
-        )
-        claims.append(
-            _claim(
-                "anomaly.peak",
-                ClaimType.PEAK,
-                level=1,
-                parameters={
-                    "peak_value": station.peak_value,
-                    "peak_at": station.peak_at.isoformat() if station.peak_at else None,
                 },
                 evidence_ids=station.evidence_ids,
                 limitations=station.limitations,
@@ -283,22 +282,65 @@ def build_claim_allowlist(
                 requirements=("station_series",),
             )
         )
-    if station.change_rate is not None and station.status == "anomaly":
+    if (
+        station.coverage.sufficient
+        and station.peak_value is not None
+        and station.peak_at
+    ):
         claims.append(
             _claim(
-                "anomaly.change_rate",
-                ClaimType.CHANGE_RATE,
-                level=2,
-                parameters={"change_rate": round(station.change_rate, 4)},
+                "observation.peak",
+                ClaimType.PEAK,
+                level=1,
+                parameters={
+                    "peak_value": station.peak_value,
+                    "peak_at": station.peak_at.isoformat(),
+                    "coverage_sufficient": True,
+                },
                 evidence_ids=station.evidence_ids,
                 limitations=station.limitations,
-                requirements=("station_anomaly",),
+                requirements=("station_series", "coverage_sufficient"),
+            )
+        )
+    if (
+        station.coverage.sufficient
+        and station.mean_value is not None
+        and station.min_value is not None
+    ):
+        claims.append(
+            _claim(
+                "observation.summary",
+                ClaimType.OBSERVATION_SUMMARY,
+                level=1,
+                parameters={
+                    "mean_value": station.mean_value,
+                    "min_value": station.min_value,
+                    "coverage_sufficient": True,
+                },
+                evidence_ids=station.evidence_ids,
+                limitations=station.limitations,
+                requirements=("station_series", "coverage_sufficient"),
+            )
+        )
+    if station.change_rate is not None and station.coverage.sufficient:
+        claims.append(
+            _claim(
+                "observation.change_rate",
+                ClaimType.CHANGE_RATE,
+                level=2,
+                parameters={
+                    "change_rate": round(station.change_rate, 4),
+                    "coverage_sufficient": True,
+                },
+                evidence_ids=station.evidence_ids,
+                limitations=station.limitations,
+                requirements=("station_series", "coverage_sufficient"),
             )
         )
     for evaluation in station.evaluations:
         claims.append(
             _claim(
-                f"evaluation.{evaluation.metric}",
+                f"evaluation.{evaluation.metric}.{evaluation.period_end.isoformat()}",
                 ClaimType.EVALUATION,
                 level=2 if evaluation.metric == "daily_max_8h" else 1,
                 parameters={
@@ -314,6 +356,25 @@ def build_claim_allowlist(
                 evidence_ids=(evaluation.evidence_id,),
                 limitations=evaluation.limitations,
                 requirements=("evaluation_evidence", "not_source_contribution"),
+            )
+        )
+    if (
+        meteo.background_mean_wind_speed is not None
+        and meteo.weather_wind_samples >= policy.wind.min_paired_samples
+    ):
+        claims.append(
+            _claim(
+                "weather.background",
+                ClaimType.WEATHER_BACKGROUND,
+                level=1,
+                parameters={
+                    "mean_wind_speed": meteo.background_mean_wind_speed,
+                    "source_types": list(meteo.source_types),
+                    "wind_speed_samples": meteo.weather_wind_samples,
+                },
+                evidence_ids=meteo.evidence_ids,
+                limitations=meteo.limitations,
+                requirements=("weather_series", "not_source_distance"),
             )
         )
     if station.status == "anomaly" and spatial.pattern != "unknown":
@@ -516,12 +577,20 @@ def _by_id(allowlist: ClaimAllowlist) -> dict[str, AllowedClaim]:
 def _render_claim_blocks(claim: AllowedClaim, profile: Any) -> list[str]:
     """Render one allowlisted claim into canonical Markdown blocks."""
     if claim.claim_type == ClaimType.COVERAGE:
+        baseline_text = (
+            f"\n基线覆盖：有效 {claim.parameters['baseline_valid_hours']} / 应有 "
+            f"{claim.parameters['baseline_expected_hours']} 小时。"
+            if "baseline_valid_hours" in claim.parameters
+            and "baseline_expected_hours" in claim.parameters
+            else ""
+        )
         return [
             "### 数据覆盖\n"
             f"数据完整率 {claim.parameters['coverage_ratio'] * 100:.1f}%"
             f"（有效 {claim.parameters['valid_hours']} / 应有 "
             f"{claim.parameters['expected_hours']} 小时，最大连续缺口 "
             f"{claim.parameters['max_gap_hours']} 小时）。"
+            f"{baseline_text}"
         ]
     if claim.claim_type == ClaimType.ANOMALY_PRESENT:
         return [
@@ -551,12 +620,28 @@ def _render_claim_blocks(claim: AllowedClaim, profile: Any) -> list[str]:
             f"峰值 {claim.parameters['peak_value']:.1f} {profile.display_unit}，"
             f"出现在 {_fmt(datetime.fromisoformat(claim.parameters['peak_at']))}。"
         ]
+    if claim.claim_type == ClaimType.OBSERVATION_SUMMARY:
+        return [
+            "### 观测统计\n"
+            f"分析窗口有效样本均值 {claim.parameters['mean_value']:.1f} {profile.display_unit}，"
+            f"最低值 {claim.parameters['min_value']:.1f} {profile.display_unit}。"
+            "该均值为有效样本统计，不作为法规日均评价。"
+        ]
+    if claim.claim_type == ClaimType.WEATHER_BACKGROUND:
+        source = "历史模式" if "nwp" in claim.parameters["source_types"] else "气象资料"
+        return [
+            "### 气象背景\n"
+            f"{source}有效气象小时的平均风速 "
+            f"{claim.parameters['mean_wind_speed']:.1f} 米/秒，"
+            f"有效风速样本 {claim.parameters['wind_speed_samples']} 小时。"
+            "该背景描述不能单独确认污染来源或传输路径。"
+        ]
     if claim.claim_type == ClaimType.DURATION:
         return [f"### 持续时间\n异常持续 {claim.parameters['duration_hours']} 小时。"]
     if claim.claim_type == ClaimType.CHANGE_RATE:
         return [
             "### 变化幅度\n"
-            f"时段首末变化率 {claim.parameters['change_rate'] * 100:.1f}%。"
+            f"有效样本首末变化率 {claim.parameters['change_rate'] * 100:.1f}%。"
         ]
     if claim.claim_type == ClaimType.SPATIAL_PATTERN:
         pattern = claim.parameters["pattern"]
@@ -646,6 +731,8 @@ _SECTION_KIND = {
     ClaimType.NO_ANOMALY: "observation",
     ClaimType.DATA_INSUFFICIENT: "observation",
     ClaimType.PEAK: "observation",
+    ClaimType.OBSERVATION_SUMMARY: "observation",
+    ClaimType.WEATHER_BACKGROUND: "spatial",
     ClaimType.DURATION: "observation",
     ClaimType.CHANGE_RATE: "observation",
     ClaimType.EVALUATION: "observation",

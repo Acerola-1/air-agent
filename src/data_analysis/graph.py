@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.runnables import RunnableConfig
 from langgraph.graph import START, StateGraph
 from langgraph.prebuilt import ToolNode
 from loguru import logger
@@ -158,4 +159,21 @@ def build_graph(*, checkpointer: Any = None):
     return compiled
 
 
-graph = with_langfuse_tracing(build_graph(checkpointer=None))
+_graph = build_graph(checkpointer=None)
+
+
+def graph(config: RunnableConfig):
+    """Bind Langfuse attributes per admitted execution, not at import time.
+
+    The native worker restores the admitted attempt/thread config before calling
+    this factory. Binding the official handler here lets LangChain propagate
+    ``langfuse_user_id`` / ``langfuse_session_id`` to every child observation;
+    schema and state reads reuse the compiled graph without starting a trace.
+    """
+    if not (config.get("configurable") or {}).get("__is_for_execution__"):
+        return _graph
+    try:
+        return with_langfuse_tracing(_graph, config=config)
+    except Exception as exc:  # noqa: BLE001 - observation failure cannot fail answers
+        logger.warning("Langfuse run tracing unavailable: {}", type(exc).__name__)
+        return _graph

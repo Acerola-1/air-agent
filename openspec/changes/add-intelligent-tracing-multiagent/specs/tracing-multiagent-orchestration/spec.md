@@ -104,6 +104,16 @@ lead、LLM 专员及摘要外呼 SHALL 执行实时身份守卫与独立角色�
 - **AND** 同一 thread 的其他 attempt MUST 使用不同 trace，客户端 metadata 不得覆盖可信关联
 - **AND** 系统 MUST 保留 SDK 应用根节点标记及完整输入输出，真实入库的完整执行只有一个应用根节点
 
+#### Scenario: Users 和 Sessions 可信聚合
+- **WHEN** 同一用户在线程内执行多轮或创建新线程，并由主图派生模型和工具观测
+- **THEN** 全部子观测 MUST 携带可信用户 UUID 与实际 thread ID，同线程多轮归入同一 session，新线程独立归组
+- **AND** 可读账号 MUST 来自服务端已验证身份链的显示引用，缺失时不得采用客户端 metadata 或 configurable 中的同名声明
+
+#### Scenario: 流结束后属性清理
+- **WHEN** 流被跨任务关闭、取消、异常终止，或同步流被其他线程关闭
+- **THEN** 调用者上下文 MUST 恢复，后续无关观测不得携带此前的用户或会话属性
+- **AND** 并行用户及复用工厂上下文 MUST 相互隔离，不修改 SDK 私有父链和采集逻辑
+
 #### Scenario: 运行预算耗尽
 - **WHEN** 达到版本化的 task/模型/补查/时间预算
 - **THEN** MUST 停止追加调查并发布允许的部分结果或受限状态

@@ -138,7 +138,7 @@ def _report(summary: dict[str, Any], manifest: dict[str, Any]) -> str:
         [
             f"# basic QA 冒烟报告：{summary['run_id']}",
             "",
-            "规范：[basic QA 并发性能回归规范](../../../testing/basic-qa-performance-regression.md)。",
+            "流程：[Agent 性能压力测试](../../../performance/pressure-testing-workflow.md)。",
             "",
             f"- 结论：{conclusion}",
             f"- campaign_id：{summary['campaign_id']}",

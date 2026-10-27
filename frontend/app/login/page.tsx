@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useSessionStore } from "@/lib/session-client";
@@ -18,6 +18,24 @@ export default function LoginPage() {
   const [stage, setStage] = useState<Stage>("login");
   const [pendingCtx, setPendingCtx] = useState<AdminSessionContext | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [recoveryHint, setRecoveryHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const reason = url.searchParams.get("reason");
+    const hints: Record<string, string> = {
+      "session-expired": "登录已过期，请使用账号和密码重新登录。",
+      "sso-failed": "统一登录未完成，请使用账号和密码登录，或重新发起统一登录。",
+      "identity-unavailable": "身份服务暂时不可用，请稍后重试。",
+    };
+    if (reason && hints[reason]) {
+      setRecoveryHint(hints[reason]);
+      document.getElementById("username")?.focus();
+      url.searchParams.delete("reason");
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    }
+  }, []);
+
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -94,6 +112,7 @@ export default function LoginPage() {
 
         {stage === "login" ? (
           <form onSubmit={onSubmit} className="space-y-3 rounded-xl border border-border bg-card p-5">
+            {recoveryHint && <p role="status" className="text-muted-foreground text-sm">{recoveryHint}</p>}
             <div>
               <label htmlFor="username" className="text-muted-foreground mb-1 block text-xs">账号</label>
               <input

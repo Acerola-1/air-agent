@@ -1,6 +1,6 @@
 # P/S 冒烟与 Change 6/7 核对
 
-run_id：`20261021-121015-5a659c`。campaign_id：`campaign-20261021-121015-235a659c`。耗时约 286 秒。原始明细在 `docs/reviews/basic-qa-performance/20261021-ps-smoke/`。
+run_id：`20261021-121015-5a659c`。campaign_id：`campaign-20261021-121015-235a659c`。耗时约 286 秒。原始明细在 `旧性能证据已清理`。
 
 ## 冒烟链路
 

@@ -46,6 +46,11 @@ def _overlap_hours(
 
 
 def _grid_contiguous(cells: tuple[GridCell, ...], policy: AnalysisPolicy) -> int:
+    # An unlocated or cross-time point set has no proven adjacency.
+    if not cells or any(cell.row is None or cell.col is None for cell in cells):
+        return 0
+    if len({cell.observed_at for cell in cells}) != 1 or cells[0].observed_at is None:
+        return 0
     high = {
         cell.cell_id: cell
         for cell in cells
@@ -53,7 +58,11 @@ def _grid_contiguous(cells: tuple[GridCell, ...], policy: AnalysisPolicy) -> int
     }
     if not high:
         return 0
-    positions = {(cell.row, cell.col): cell for cell in high.values()}
+    positions = {
+        (cell.row, cell.col): cell
+        for cell in high.values()
+        if cell.row is not None and cell.col is not None
+    }
     visited: set[tuple[int, int]] = set()
     largest = 0
     for position in positions:
@@ -95,7 +104,12 @@ def analyze_spatial(
 ) -> SpatialFindings:
     """Describe spatial pattern without asserting transport or source."""
     fetched = fetched_at or datetime.now(UTC)
-    limitations: list[str] = []
+    limitations: list[str] = [
+        code
+        for code in bundle.missing
+        if code
+        in {"grid_topology_unknown", "grid_bounded_snapshot", "neighbors_truncated"}
+    ]
     if station_findings.status != "anomaly":
         return SpatialFindings(
             analysis_id=request.analysis_id,
@@ -103,7 +117,12 @@ def analyze_spatial(
             pattern="unknown",
             target_anomalous=False,
             valid_neighbor_count=0,
-            limitations=("no_target_anomaly",),
+            limitations=tuple(limitations)
+            + (
+                ("no_target_anomaly",)
+                if station_findings.status == "no_anomaly"
+                else ("target_anomaly_unknown",)
+            ),
         )
     threshold = (station_findings.baseline_median or 0.0) + policy.require_supported(
         request.pollutant
@@ -183,6 +202,13 @@ def analyze_spatial(
     grid_summary = None
     grid_evidence = ""
     if bundle.grid_cells:
+        if any(cell.row is None or cell.col is None for cell in bundle.grid_cells):
+            limitations.append("grid_topology_unknown")
+        if (
+            len({cell.observed_at for cell in bundle.grid_cells}) != 1
+            or bundle.grid_cells[0].observed_at is None
+        ):
+            limitations.append("grid_time_inconsistent")
         contiguous = _grid_contiguous(bundle.grid_cells, policy)
         relation = _grid_relation(bundle.grid_cells)
         high_cells = [

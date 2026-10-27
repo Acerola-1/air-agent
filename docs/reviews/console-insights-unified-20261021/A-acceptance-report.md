@@ -60,7 +60,7 @@
 
 v3 指标（仅冒烟，不是性能/容量结论）：完成 P50/P95 = 952.5/1092.45 ms；首字 P50/P95 = 757.5/849.35 ms；94 条真实模型观测；6 条资源采样；usage 由受控模型返回空，记 `not_provided`；Token 未采集。
 
-证据：`docs/reviews/basic-qa-performance/20261021-ps-smoke-v3-fixed-sender/`、`docs/reviews/evidence/run/20261021-ps-smoke-v3-fixed-sender/`，失败 run 的同名 v2 目录保留。
+证据：`旧性能证据已清理`、`docs/reviews/evidence/run/20261021-ps-smoke-v3-fixed-sender/`，失败 run 的同名 v2 目录保留。
 
 ## 1.2 IAM 权限
 
@@ -148,8 +148,8 @@ Agent 仓库（本轮新增/修改，未提交）：
 - `admin/api/app/schemas_demand.py`
 - `admin/api/tests/demand_insights/{test_review_regressions,test_db_integration}.py`
 - `src/intelligent_tracing/subagents.py`
-- `docs/testing/unified-campaign-runner.md`
-- 新证据：`docs/reviews/basic-qa-performance/20261021-ps-smoke-v2-fixed-sender/`、`.../20261021-ps-smoke-v3-fixed-sender/`、`.../20261021-chat-r-20261021/`、`docs/reviews/evidence/run/20261021-ps-smoke-v{2,3}-fixed-sender/`、`docs/reviews/console-insights-unified-20261021/change7-live/`、`B-calibration-20261021.json`、`B-replay-summary.json`、`B-report-20261021.md`、`C-scale-6-7-20261021.json`、`C-scale-6-7-after-indexes-20261021.json`、`C-report-20261021.md`、本报告与 IAM/Change6 报告。
+- `docs/performance/pressure-testing-workflow.md`
+- 新证据：`旧性能证据已清理`、`.../20261021-ps-smoke-v3-fixed-sender/`、`.../20261021-chat-r-20261021/`、`docs/reviews/evidence/run/20261021-ps-smoke-v{2,3}-fixed-sender/`、`docs/reviews/console-insights-unified-20261021/change7-live/`、`B-calibration-20261021.json`、`B-replay-summary.json`、`B-report-20261021.md`、`C-scale-6-7-20261021.json`、`C-scale-6-7-after-indexes-20261021.json`、`C-report-20261021.md`、本报告与 IAM/Change6 报告。
 
 工作区里还有上一轮遗留的未提交改动（`admin/api/app/routers/feedback.py`、`admin/api/app/services/ledger.py`、`deployment/local_host_bridge.py`、`frontend/app/api/[..._path]/route.ts`、`src/common/artifact_http.py`、`tests/unit_tests/test_local_host_bridge.py`、OpenSpec 文档等），未回退、未覆盖。
 

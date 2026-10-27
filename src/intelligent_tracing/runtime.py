@@ -79,7 +79,7 @@ def _identity_binding(identity: RuntimeIdentity) -> BusinessBinding | None:
 def runtime_scope_from_config(
     config: dict[str, Any] | None,
     *,
-    analysis_id: str,
+    analysis_id: str = "",
     epoch: str | None = None,
 ) -> RuntimeScope:
     """Build a scope from platform-injected identity and business snapshot.
@@ -115,8 +115,10 @@ def runtime_scope_from_config(
         or metadata.get("execution_epoch")
         or configurable.get("run_id")
         or metadata.get("run_id")
-        or f"{analysis_id}:pending"
+        or (f"{analysis_id}:pending" if analysis_id else "")
     )
+    if not resolved_epoch:
+        raise TracingScopeError("缺少可信执行标识")
     return RuntimeScope(
         tenant_id=identity.tenant_id,
         user_id=identity.user_id,

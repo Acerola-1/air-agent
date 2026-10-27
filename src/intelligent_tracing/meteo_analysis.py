@@ -247,6 +247,9 @@ def analyze_meteo(
     )
     low_pblh_ratio = low_pblh / len(pblh_values) if pblh_values else 0.0
     wind_stats, _valid_pairs = compute_wind_stats(quality.rows, observations, policy)
+    weather_speeds = [
+        row.wind_speed for row in quality.rows if row.wind_speed is not None
+    ]
     weather_evidence = registry.register(
         scope=scope,
         analysis_id=request.analysis_id,
@@ -464,6 +467,10 @@ def analyze_meteo(
         low_pblh_ratio=low_pblh_ratio,
         mean_pblh=(sum(pblh_values) / len(pblh_values) if pblh_values else None),
         mean_wind_speed=wind_stats.mean_speed,
+        background_mean_wind_speed=sum(weather_speeds) / len(weather_speeds)
+        if weather_speeds
+        else None,
+        weather_wind_samples=len(weather_speeds),
         calm_ratio=wind_stats.calm_ratio,
         source_types=source_types,
         nwp_run_times=tuple(

@@ -1,7 +1,8 @@
 # 快速流程
 
-1. 解析并冻结请求；缺字段/同名站先补问。
-2. 并行运行 station-data 与 grid-data。
-3. 运行 meteo-analyst；必要时 evidence-reviewer 找反证。
-4. 由执行层生成 claim allowlist 与 ValidatedReport；非法计划回退确定性模板。
-5. 只发布已验证报告；画布只接受已验证报告引用。
+1. 按本轮意图提供普通交流、精确补问或分析；普通交流不启动取数。
+2. 分析条件完整后解析并冻结请求；缺字段/同名站先补问，授权目录解析不等于污染分析取数。
+3. 并行运行 station-data 与 grid-data。
+4. 运行 meteo-analyst；必要时 evidence-reviewer 找反证。
+5. 由执行层生成 claim allowlist 与 ValidatedReport；非法计划回退确定性模板。
+6. 分析结论只发布已验证报告；画布只接受已验证报告引用。普通交流/澄清发布可信条目计划，不回退原始模型消息。

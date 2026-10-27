@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 
 import pytest
+from conversation_fixtures import analysis_prefix, analysis_question, run_config
 from fake_model import ScriptedChatModel
 from fixtures import (
     allow_publication,
@@ -29,9 +30,20 @@ from intelligent_tracing.section_publishing import (
 from intelligent_tracing.sources import FixtureDataSource
 
 
+@pytest.fixture(autouse=True)
+def controlled_runtime_identity(monkeypatch):
+    """G0 uses a controlled identity service; no production database is queried."""
+    from unittest.mock import AsyncMock
+
+    import common.identity.runtime as identity
+
+    monkeypatch.setattr(identity, "revalidate", AsyncMock())
+
+
 def _lead() -> ScriptedChatModel:
     return ScriptedChatModel(
         responses=[
+            *analysis_prefix(),
             AIMessage(
                 content="",
                 tool_calls=[
@@ -149,12 +161,13 @@ async def _run_graph(section_barrier=None):
     last_values = None
     async for mode, chunk in graph.astream(
         {
-            "messages": [HumanMessage(content="分析目标站 PM2.5")],
+            "messages": [HumanMessage(content=analysis_question())],
             "request": request,
             "scope": make_scope(),
         },
         config={
             "configurable": {
+                **run_config()["configurable"],
                 "thread_id": "thread-a",
                 "execution_epoch": "epoch-1",
                 "run_id": "run-test",
@@ -197,12 +210,13 @@ async def test_first_section_arrives_while_next_section_is_blocked():
     async def consume():
         async for mode, chunk in graph.astream(
             {
-                "messages": [HumanMessage(content="分析目标站 PM2.5")],
+                "messages": [HumanMessage(content=analysis_question())],
                 "request": request,
                 "scope": make_scope(),
             },
             config={
                 "configurable": {
+                    **run_config()["configurable"],
                     "thread_id": "thread-a",
                     "execution_epoch": "epoch-1",
                     "run_id": "run-test",
@@ -218,9 +232,7 @@ async def test_first_section_arrives_while_next_section_is_blocked():
     async def watcher():
         await reached.wait()
         await asyncio.sleep(0.1)
-        deltas = [
-            event for event in events if event.get("type") == "final_output_delta"
-        ]
+        deltas = [e for e in events if e.get("type") == "final_output_delta"]
         assert [event.get("section_id") for event in deltas] == ["header", "claims-1"]
         assert not [
             event for event in events if event.get("type") == "final_output_done"
@@ -407,6 +419,7 @@ async def test_tracing_done_message_id_equals_history():
     ]
     assert len(visible) == 1
     assert done["message_id"] == visible[0].id == values["validated_report"].report_id
+    assert done["message"] == visible[0].content
 
 
 @pytest.mark.anyio
@@ -424,6 +437,7 @@ async def test_real_checkpoint_pause_rebuild_and_resume_without_repeated_section
     report_store = InMemoryReportStore()
     config = {
         "configurable": {
+            **run_config()["configurable"],
             "thread_id": "thread-a",
             "execution_epoch": "epoch-1",
             "run_id": "run-test",
@@ -471,14 +485,18 @@ async def test_real_checkpoint_pause_rebuild_and_resume_without_repeated_section
         await consume(
             graph,
             {
-                "messages": [HumanMessage(content="分析目标站 PM2.5")],
+                "messages": [HumanMessage(content=analysis_question())],
                 "request": request,
                 "scope": scope,
             },
         )
         assert [
-            e.get("section_id") for e in events if e["type"] == "final_output_delta"
-        ] == ["header", "claims-1"]
+            e.get("section_id")
+            for e in [e for e in events if e.get("type") == "final_output_delta"]
+        ] == [
+            "header",
+            "claims-1",
+        ]
         assert not [
             e
             for e in events
@@ -506,13 +524,19 @@ async def test_real_checkpoint_pause_rebuild_and_resume_without_repeated_section
             side_effect=AssertionError("preflight repeated on resume"),
         ):
             values = await consume(graph, Command(resume=True))
-    deltas = [e for e in events if e["type"] == "final_output_delta"]
+    deltas = [e for e in events if e.get("type") == "final_output_delta"]
     assert [e["section_id"] for e in deltas] == [
         "header",
         "claims-1",
         "claims-2",
+        "claims-3",
+        "claims-4",
         "limits",
     ]
+    assert values["station_findings"].status == "anomaly"
+    assert set(e["section_id"] for e in deltas) == set(
+        values["publication_session"].section_ids
+    )
     assert len({e["output_id"] for e in events}) == 1
     assert len({e["message_id"] for e in events}) == 1
     assert [e["seq"] for e in events] == list(range(len(events)))
@@ -535,6 +559,7 @@ async def test_pending_publication_cannot_resume_after_authority_or_execution_ch
     bundle = build_bundle(scenario="transport")
     config = {
         "configurable": {
+            **run_config()["configurable"],
             "thread_id": "thread-a",
             "execution_epoch": "epoch-1",
             "ledger_attempt_id": "first-attempt",
@@ -570,11 +595,19 @@ async def test_pending_publication_cannot_resume_after_authority_or_execution_ch
         return values
 
     await consume(
-        {"messages": [HumanMessage(content="分析")], "request": request, "scope": scope}
+        {
+            "messages": [HumanMessage(content=analysis_question())],
+            "request": request,
+            "scope": scope,
+        }
     )
     assert [
-        e.get("section_id") for e in events if e["type"] == "final_output_delta"
-    ] == ["header", "claims-1"]
+        e.get("section_id")
+        for e in [e for e in events if e.get("type") == "final_output_delta"]
+    ] == [
+        "header",
+        "claims-1",
+    ]
     if change == "revoke":
         monkeypatch.setattr(
             publication, "runtime_authorization_probe", lambda config: lambda: False
@@ -585,8 +618,16 @@ async def test_pending_publication_cannot_resume_after_authority_or_execution_ch
         config["configurable"]["execution_epoch"] = "epoch-2"
     values = await consume(Command(resume=True))
     assert [
-        e.get("section_id") for e in events if e["type"] == "final_output_delta"
-    ] == ["header", "claims-1"]
+        e.get("section_id")
+        for e in [e for e in events if e.get("type") == "final_output_delta"]
+    ] == [
+        "header",
+        "claims-1",
+    ]
     assert not any(e["type"] == "final_output_done" for e in events)
     assert not values.get("validated_report")
-    assert values["publication_session"].failed_reason
+    # The turn guard may now reject before the publication subgraph resumes.
+    session = values.get("publication_session")
+    assert (session and session.failed_reason) or values[
+        "turn_decision"
+    ].reason == "execution_changed"

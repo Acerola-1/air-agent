@@ -155,7 +155,8 @@ async def sso_callback(
     query = request.query_params
     ticket = str(query.get("ticket") or "")
     state = str(query.get("state") or "")
-    if not ticket or not state:
+    error = str(query.get("error") or "")
+    if not state or (not ticket and not error) or (ticket and error):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="回调缺少 ticket 或 state"
         )
@@ -170,6 +171,17 @@ async def sso_callback(
     if kind != requested_kind or not hmac.compare_digest(bound_state, state):
         # 错误 state / 未发起的回调：不兑换，清掉一次性 cookie
         response = Response(status_code=status.HTTP_400_BAD_REQUEST, content=b"invalid state")
+        response.delete_cookie(state_cookie, path="/")
+        return response
+    if error:
+        # 未登录恢复仍必须绑定原发起浏览器；此分支绝不兑换或建立应用会话。
+        response = Response(status_code=status.HTTP_303_SEE_OTHER)
+        response.headers["Location"] = (
+            "/login?reason=session-expired"
+            if error == "login_required"
+            else "/login?reason=sso-failed"
+        )
+        response.headers["Cache-Control"] = "no-store"
         response.delete_cookie(state_cookie, path="/")
         return response
     redirect_uri = _callback_url(config, request, kind)

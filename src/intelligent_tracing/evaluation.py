@@ -11,6 +11,7 @@ from intelligent_tracing.schemas import (
     EvaluationSummary,
     HourlyObservation,
     RuntimeScope,
+    TimeWindow,
     TracingRequest,
 )
 
@@ -26,6 +27,7 @@ def daily_max_8h(
     *,
     timezone: str,
     min_valid_hours: int = 6,
+    evaluation_window: TimeWindow | None = None,
 ) -> tuple[EvaluationSummary, ...]:
     """Compute daily max 8h O3 with within-day and cross-midnight windows.
 
@@ -45,6 +47,11 @@ def daily_max_8h(
         best: EvaluationSummary | None = None
         for end_offset in range(1, 25):
             end = day_start + timedelta(hours=end_offset)
+            if (
+                evaluation_window
+                and not evaluation_window.start < end <= evaluation_window.end
+            ):
+                continue
             window = [end - timedelta(hours=8 - index) for index in range(8)]
             present = [values[key] for key in window if key in values]
             if len(present) < min_valid_hours:
@@ -76,6 +83,7 @@ def pm25_24h_sliding(
     *,
     timezone: str,
     min_valid_hours: int = 18,
+    evaluation_window: TimeWindow | None = None,
 ) -> tuple[EvaluationSummary, ...]:
     """Compute daily maximum 24h sliding PM2.5 as a supplementary statistic."""
     values = _valid_values_by_hour(observations)
@@ -89,6 +97,11 @@ def pm25_24h_sliding(
         best: EvaluationSummary | None = None
         for end_offset in range(1, 25):
             end = day_start + timedelta(hours=end_offset)
+            if (
+                evaluation_window
+                and not evaluation_window.start < end <= evaluation_window.end
+            ):
+                continue
             window = [end - timedelta(hours=24 - index) for index in range(24)]
             present = [values[key] for key in window if key in values]
             if len(present) < min_valid_hours:
@@ -127,10 +140,16 @@ def evaluate_request(
     pollutant = request.pollutant.lower()
     fetched = fetched_at or datetime.now(UTC)
     if pollutant == "o3":
-        summaries = daily_max_8h(observations, timezone=request.time_window.timezone)
+        summaries = daily_max_8h(
+            observations,
+            timezone=request.time_window.timezone,
+            evaluation_window=request.time_window,
+        )
     elif pollutant == "pm2.5":
         summaries = pm25_24h_sliding(
-            observations, timezone=request.time_window.timezone
+            observations,
+            timezone=request.time_window.timezone,
+            evaluation_window=request.time_window,
         )
     else:
         return (), ("evaluation_profile_not_defined",)

@@ -22,3 +22,26 @@ npm --prefix ../../Java/air_agent_iam/web run build
 ```
 
 IAM Java jar 需先由仓库既有构建流程生成；启动器只检查产物，不构建它。
+
+## 启动期资源保护
+
+性能测试见 [性能压力测试流程](../docs/performance/pressure-testing-workflow.md)。启动保护使用本轮实际部署的资源清单、预算和停止阈值，执行前完成监督校准。
+
+恢复完整服务前先运行只读启动前检查；检查不通过时不得开始恢复：
+
+```bash
+.venv/bin/python -m scripts.product_chat_perf.startup_guard preflight --out .local/startup-preflight --seconds 30
+```
+
+需要按计划启动时，用同一守卫包裹现有启动命令。守卫不替代本启动器，只负责启动前拒绝、运行期停止线和自有组件收尾：
+
+```bash
+.venv/bin/python -m scripts.product_chat_perf.startup_guard plan \
+  --out .local/guarded-start \
+  --profile .local/guarded-start-service-profile.json \
+  --plan .local/guarded-start-plan.json
+```
+
+超线或采集失败后立即终止当前启动命令并禁止后续步骤。收尾只优雅停止“启动前未运行、启动期间新出现”的容器和宿主服务；原本运行的 PG/Redis/应用不会被停止，不删除卷或数据，也不对服务使用 SIGKILL。
+
+`--plan` 文件格式为 `{"steps": [{"name": "步骤名", "argv": ["命令", "参数..."]}]}`；每一步只在前一步成功且门禁未关闭时执行。

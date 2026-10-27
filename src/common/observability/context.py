@@ -35,6 +35,7 @@ class ObservationContext:
     operation_kind: str
     thread_id: str | None
     platform_run_id: str | None
+    account: str = ""
     run_key: str = field(default_factory=new_id)
 
     def as_guc(self) -> dict[str, str]:
@@ -106,6 +107,8 @@ def observation_context_from_config(
             or ""
         )
         or None,
+        # Metadata is client-controlled; only the authenticated identity owns labels.
+        account=identity.account,
     )
 
 

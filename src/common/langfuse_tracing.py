@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import os
+from collections.abc import AsyncIterator, Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import Any, TypeVar
 
 from langchain_core.runnables import Runnable
@@ -10,6 +13,115 @@ from loguru import logger
 
 InputT = TypeVar("InputT")
 OutputT = TypeVar("OutputT")
+_PROPAGATION_SCOPES: ContextVar[tuple[tuple[object, Any], ...]] = ContextVar(
+    "langfuse_run_scopes", default=()
+)
+
+
+class _AttributePropagatingRunnable(Runnable[InputT, OutputT]):
+    """Enter Langfuse attribute propagation in the caller's execution context.
+
+    LangChain dispatches sync callbacks through a copied context. The SDK's
+    root-only ``propagate_attributes`` therefore reaches the root span but not
+    generations/tools created in other LangGraph node tasks (langfuse#16177).
+    The caller's OTel context is copied into child tasks. Streaming scopes end
+    before yielding, so closing an iterator from another task cannot leak labels.
+    """
+
+    def __init__(
+        self, runnable: Runnable[InputT, OutputT], attributes: dict[str, Any]
+    ) -> None:
+        self._runnable = runnable
+        self._attributes = attributes
+
+    async def __aenter__(self) -> Runnable[InputT, OutputT]:
+        """Keep the propagation context open for the native worker's run task."""
+        cm = self._propagation()
+        cm.__enter__()
+        _PROPAGATION_SCOPES.set((*_PROPAGATION_SCOPES.get(), (self, cm)))
+        return self._runnable
+
+    async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> bool:
+        scopes = _PROPAGATION_SCOPES.get()
+        if scopes:
+            owner, cm = scopes[-1]
+            if owner is not self:
+                raise RuntimeError("Langfuse attribute scopes must exit in entry order")
+            _PROPAGATION_SCOPES.set(scopes[:-1])
+            cm.__exit__(exc_type, exc, tb)
+        return False
+
+    @contextmanager
+    def _propagation(self) -> Iterator[None]:
+        from langfuse import propagate_attributes
+
+        with propagate_attributes(**self._attributes):
+            yield
+
+    def invoke(self, input: Any, config: Any = None, **kwargs: Any) -> Any:  # noqa: A002
+        with self._propagation():
+            return self._runnable.invoke(input, config, **kwargs)
+
+    async def ainvoke(self, input: Any, config: Any = None, **kwargs: Any) -> Any:  # noqa: A002
+        with self._propagation():
+            return await self._runnable.ainvoke(input, config, **kwargs)
+
+    def stream(self, input: Any, config: Any = None, **kwargs: Any) -> Iterator[Any]:  # noqa: A002
+        source = self._runnable.stream(input, config, **kwargs)
+        try:
+            while True:
+                with self._propagation():
+                    try:
+                        item = next(source)
+                    except StopIteration:
+                        return
+                yield item
+        finally:
+            if close := getattr(source, "close", None):
+                with self._propagation():
+                    close()
+
+    def astream(
+        self, input: Any, config: Any = None, *args: Any, **kwargs: Any
+    ) -> AsyncIterator[Any]:  # noqa: A002
+        return self._stream_async(
+            self._runnable.astream, input, config, *args, **kwargs
+        )
+
+    def astream_events(
+        self, input: Any, config: Any = None, *args: Any, **kwargs: Any
+    ) -> AsyncIterator[Any]:  # noqa: A002
+        return self._stream_async(
+            self._runnable.astream_events, input, config, *args, **kwargs
+        )
+
+    async def _stream_async(
+        self,
+        method: Callable[..., AsyncIterator[Any]],
+        *args: Any,
+        **kwargs: Any,
+    ) -> AsyncIterator[Any]:
+        source = method(*args, **kwargs)
+        try:
+            while True:
+                with self._propagation():
+                    try:
+                        item = await anext(source)
+                    except StopAsyncIteration:
+                        return
+                yield item
+        finally:
+            if close := getattr(source, "aclose", None):
+                with self._propagation():
+                    await close()
+
+    def __getattr__(self, name: str) -> Any:
+        if name == "_runnable":
+            raise AttributeError(name)
+        value = getattr(self._runnable, name)
+        if name == "astream_protocol_events" and callable(value):
+            return lambda *args, **kwargs: self._stream_async(value, *args, **kwargs)
+        return value
 
 
 def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
@@ -48,6 +160,7 @@ def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
 
     trace_context = None
     trace_metadata = {}
+    trace_attributes: dict[str, Any] = {}
     if config is not None:
         from common.observability.context import observation_context_from_config
 
@@ -66,6 +179,16 @@ def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
             "langfuse_user_id": ctx.user_id,
             "langfuse_session_id": ctx.thread_id,
         }
+        trace_attributes = {
+            "trace_name": ctx.graph_id,
+            "user_id": ctx.user_id,
+            "session_id": ctx.thread_id,
+        }
+        if ctx.account:
+            # Keep the stable UUID as user_id; expose the readable account as a
+            # custom metadata dimension on the trace and every child observation.
+            trace_metadata["user_account"] = ctx.account
+            trace_attributes["metadata"] = {"user_account": ctx.account}
 
     # Capture all graph/model/tool content in the configured Langfuse project.
     os.environ.setdefault("OTEL_BSP_MAX_QUEUE_SIZE", "1000")
@@ -97,4 +220,5 @@ def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
     # LangGraph merges these defaults with the worker's invocation callbacks,
     # preserving its callback manager and parent. Copying worker callbacks into
     # both places would deliver events twice when callbacks are a plain list.
-    return runnable.with_config(callbacks=[handler], metadata=trace_metadata)
+    bound = runnable.with_config(callbacks=[handler], metadata=trace_metadata)
+    return _AttributePropagatingRunnable(bound, trace_attributes)

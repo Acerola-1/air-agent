@@ -168,6 +168,8 @@ Langfuse 回调在原生 worker 恢复可信配置后的图工厂中按执行创
 
 2026-10-22 用户明确只使用 Langfuse 后，运行配置关闭 LangSmith 追踪，启动预检拒绝重新启用；框架依赖库和 licensed 原生服务的开发启动授权保留。使用原样官方 `langfuse.langchain.CallbackHandler`，只在顶层注入，子节点由 SDK 继承。删除临时的 LangSmith 祖先桥接、SDK 子类与私有 exporter/mask 修改，不将双追踪兼容作为现行要求。可信 trace 属性在受理授权边界覆盖客户端同名字段；SDK 内仅使用官方 metadata/trace_context 和标准回调执行标志。验收覆盖 LangSmith 客户端零创建/写入、并发隔离、本地业务观测关联及实际 Langfuse 入库。
 
+Users 以稳定用户 UUID 聚合，Sessions 以 thread ID 聚合；同线程多 attempt 分 trace、不分 session。三图均在执行期绑定属性，并用官方 `propagate_attributes` 覆盖子观测。原生工厂上下文按任务保存可重入作用域；直接流式入口在每次读取/关闭内进入并退出作用域，不能跨 `yield` 留下 OTel 属性。进程内传播不启用 HTTP baggage。可读账号来自已有票据绑定对应用户的 IAM 同步引用，读引用前设置事务本地用户 GUC，保留 FORCE RLS；该标签不作为授权依据，不新增表或迁移。引用缺失时忽略客户端同名字段及其 configurable 别名，观测上下文不从 metadata 兜底取账号。
+
 实现前定义并记录每轮 task/补查/模型调用上限、并发上限、总超时及每工具重试策略；预算耗尽返回已验证部分结果与限制。确定性参数错误和权限失败不自动重试；轨迹/PSCF 永远零调用。局部失败可以降级，身份失效、后端不可用和删除状态不能作为普通缺测继续外呼。
 
 ### D11. 独立框架实验

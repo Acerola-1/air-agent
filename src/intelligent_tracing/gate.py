@@ -148,6 +148,25 @@ class ReportGate:
         }
         if process_ids and not process_ids.issubset(set(plan.claim_ids)):
             errors.append("process_assessment_missing")
+        # A model may arrange a report, but cannot drop verified basic facts
+        # and leave the user with only limitations again.
+        fact_ids = {
+            claim.claim_id
+            for claim in allowlist.claims
+            if claim.claim_type
+            in {
+                ClaimType.COVERAGE,
+                ClaimType.PEAK,
+                ClaimType.OBSERVATION_SUMMARY,
+                ClaimType.CHANGE_RATE,
+                ClaimType.WEATHER_BACKGROUND,
+                ClaimType.ANOMALY_PRESENT,
+                ClaimType.NO_ANOMALY,
+                ClaimType.DATA_INSUFFICIENT,
+            }
+        }
+        if not fact_ids.issubset(set(plan.claim_ids)):
+            errors.append("verified_facts_missing")
         return errors
 
     def precheck(
@@ -356,11 +375,25 @@ class ReportGate:
                     errors.append(f"unavailable_reason_not_declared:{claim.claim_id}")
             if "station_series" in requirements and "station_series" not in products:
                 errors.append(f"missing_station_series:{claim.claim_id}")
+            if "weather_series" in requirements:
+                if not any(
+                    record.product == "weather_series"
+                    and record.sample_count >= self._policy.wind.min_paired_samples
+                    for record in records
+                ):
+                    errors.append(f"missing_weather_series:{claim.claim_id}")
+                if (
+                    claim.claim_type == ClaimType.WEATHER_BACKGROUND
+                    and int(claim.parameters.get("wind_speed_samples") or 0)
+                    < self._policy.wind.min_paired_samples
+                ):
+                    errors.append(f"weather_samples_insufficient:{claim.claim_id}")
             if "station_anomaly" in requirements and "station_anomaly" not in products:
                 errors.append(f"missing_station_anomaly:{claim.claim_id}")
             if "coverage_sufficient" in requirements:
                 if not claim.parameters.get("coverage_sufficient") or not any(
-                    record.sample_count >= self._policy.quality.min_samples
+                    record.product == "station_series"
+                    and record.sample_count >= self._policy.quality.min_samples
                     for record in records
                 ):
                     errors.append(f"coverage_insufficient:{claim.claim_id}")

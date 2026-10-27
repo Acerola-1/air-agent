@@ -1,0 +1,9 @@
+{
+  "schema_version": "agent-performance-index.v1",
+  "timezone": "Asia/Shanghai",
+  "order": "descending_directory_timestamp",
+  "current_standard_version": "AGENT-CONCURRENCY-v1.0",
+  "workflow": "pressure-testing-workflow.md",
+  "updated_at": "2026-10-26T12:18:19+08:00",
+  "entries": []
+}

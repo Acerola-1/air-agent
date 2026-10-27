@@ -9,15 +9,33 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from langchain_core.runnables import RunnableConfig
+from loguru import logger
+
 from common.business_graph import build_business_graph
 from common.langfuse_tracing import with_langfuse_tracing
 
 SKILLS_DIR = Path(__file__).parent / "skills"
 
-graph = with_langfuse_tracing(
-    build_business_graph(
-        skills_dir=SKILLS_DIR,
-        name="basic-qa",
-        checkpointer=None,
-    )
+_graph = build_business_graph(
+    skills_dir=SKILLS_DIR,
+    name="basic-qa",
+    checkpointer=None,
 )
+
+
+def graph(config: RunnableConfig):
+    """Bind Langfuse attributes per admitted execution, not at import time.
+
+    The native worker restores the admitted attempt/thread config before calling
+    this factory. Binding the official handler here lets LangChain propagate
+    ``langfuse_user_id`` / ``langfuse_session_id`` to every child observation;
+    schema and state reads reuse the compiled graph without starting a trace.
+    """
+    if not (config.get("configurable") or {}).get("__is_for_execution__"):
+        return _graph
+    try:
+        return with_langfuse_tracing(_graph, config=config)
+    except Exception as exc:  # noqa: BLE001 - observation failure cannot fail answers
+        logger.warning("Langfuse run tracing unavailable: {}", type(exc).__name__)
+        return _graph

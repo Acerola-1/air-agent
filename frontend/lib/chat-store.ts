@@ -693,12 +693,14 @@ function textOfContent(content: unknown): string {
   if (Array.isArray(content)) return content.filter((part) => part?.type === "text" && typeof part.text === "string").map((part) => part.text).join("");
   return "";
 }
-function callsOf(message: Record<string, unknown>): ToolExecution[] {
+function callsOf(message: Record<string, unknown>, internalIds: Set<string>): ToolExecution[] {
   const calls = new Map<string, ToolExecution>();
   const list = [ ...(Array.isArray(message.tool_calls) ? message.tool_calls : []),
     ...(Array.isArray(message.content) ? message.content.filter((part) => part?.type === "tool_call") : []) ];
   for (const call of list) {
     const id = String(call.id ?? generateUuidV7());
+    // Server routing is an internal control step, not a data/tool operation.
+    if (call.name === "submit_tracing_turn") { internalIds.add(id); continue; }
     calls.set(id, { id, name: String(call.name ?? "工具"), args: call.args ?? call.input, status: "running" });
   }
   return [...calls.values()];
@@ -706,6 +708,7 @@ function callsOf(message: Record<string, unknown>): ToolExecution[] {
 
 /** 每轮一个终答，工具与内部草稿只留调用记录。历史无标记终答兼容。 */
 export function parseMessages(raw: unknown[]): ChatMessage[] {
+  const internalIds = new Set<string>();
   const result: ChatMessage[] = []; let turnId: string | undefined; let assistant: ChatMessage | undefined;
   const ensureAssistant = (id: string) => {
     if (!assistant) { assistant = { id: turnId ? `${turnId}:assistant` : id, role: "assistant", content: "", tools: [] }; result.push(assistant); }
@@ -720,7 +723,7 @@ export function parseMessages(raw: unknown[]): ChatMessage[] {
     }
     if (type === "ai" || type === "assistant") {
       const kwargs = message.additional_kwargs as Record<string, unknown> ?? {};
-      const calls = callsOf(message);
+      const calls = callsOf(message, internalIds);
       if (calls.length) {
         const target = ensureAssistant(id); const known = new Set(target.tools?.map((tool) => tool.id));
         target.tools!.push(...calls.filter((tool) => !known.has(tool.id)));
@@ -738,6 +741,7 @@ export function parseMessages(raw: unknown[]): ChatMessage[] {
       if (metadata?.model_name) target.modelName = String(metadata.model_name);
     }
     if (type === "tool" || type === "ToolMessage") {
+      if (message.name === "submit_tracing_turn" || internalIds.has(String(message.tool_call_id ?? ""))) continue;
       const target = ensureAssistant(id); const callId = String(message.tool_call_id ?? id);
       let tool = target.tools!.find((candidate) => candidate.id === callId);
       if (!tool) { tool = { id: callId, name: String(message.name ?? "工具"), args: {}, status: "running" }; target.tools!.push(tool); }

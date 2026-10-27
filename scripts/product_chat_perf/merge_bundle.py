@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shutil
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -168,27 +167,6 @@ def main(argv: list[str] | None = None) -> int:
     (args.out_dir / "manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
     )
-    # Preserve aborted segments as evidence.
-    aborted = args.out_dir / "aborted-runs"
-    aborted.mkdir()
-    for name, source in (
-        (
-            "e2e2-sequential-worker-bug",
-            Path(
-                "docs/reviews/basic-qa-performance/20261021-195900-e2e2/requests.partial.jsonl"
-            ),
-        ),
-        (
-            "e2e3-q4-history-abort",
-            Path(
-                "docs/reviews/basic-qa-performance/20261021-201100-e2e3/requests.partial.jsonl"
-            ),
-        ),
-    ):
-        if source.exists():
-            target = aborted / name
-            target.mkdir()
-            shutil.copy2(source, target / "requests.partial.jsonl")
     print(
         json.dumps(
             {"rows": len(rows), "answers": len(unique_answers), "calls": len(calls)},

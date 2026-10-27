@@ -139,6 +139,8 @@ services:
   langfuse-clickhouse:
     image: clickhouse/clickhouse-server:25.12
     container_name: air-agent-langfuse-clickhouse
+    # Real ingestion exceeded the previous 2 GiB server memory budget.
+    mem_limit: 4g
     restart: unless-stopped
     ports:
       - "18123:8123"
@@ -261,6 +263,10 @@ services:
         restart: true
     env_file:
       - .env.langfuse
+    environment:
+      LANGFUSE_INGESTION_CLICKHOUSE_WRITE_BATCH_SIZE: "100"
+      LANGFUSE_INGESTION_CLICKHOUSE_MAX_ATTEMPTS: "10"
+      LANGFUSE_OTEL_INGESTION_QUEUE_PROCESSING_CONCURRENCY: "2"
     profiles:
       - observability
 

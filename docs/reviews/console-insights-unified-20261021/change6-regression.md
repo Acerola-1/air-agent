@@ -7,7 +7,7 @@
 - 40 题计量 + 50 条多轮历史用户轮 + 2 条代表场景，共 92 条真实请求。
 - `aggregate:change6-question-delta`：期望 92，实际 92，PASS。
 - 92 条请求全部 `stream_completed`；历史 50、计量 40、代表 2 均保留在活动索引中。
-- 证据：`docs/reviews/basic-qa-performance/20261021-ps-smoke-v3-fixed-sender/checks.jsonl`、同目录 `summary.json`。
+- 证据：`旧性能证据已清理`、同目录 `summary.json`。
 
 同环境更早的 v2 run `20261021-161459-5a659c` 因隔离 IAM 内部限流中断（30 条完成、62 条 admission_failed），作为失败证据保留，不用于结论。
 

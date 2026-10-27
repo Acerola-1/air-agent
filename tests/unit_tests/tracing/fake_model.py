@@ -61,6 +61,10 @@ class ScriptedChatModel(BaseChatModel):
     ) -> ChatResult:
         if not self.responses:
             raise RuntimeError("ScriptedChatModel has no responses")
-        response = self.responses[min(self._index, len(self.responses) - 1)]
+        # LangChain assigns an id to the returned object. Keep the script
+        # immutable so a repeated multi-turn fixture receives a fresh message id.
+        response = self.responses[min(self._index, len(self.responses) - 1)].model_copy(
+            deep=True
+        )
         self._index += 1
         return ChatResult(generations=[ChatGeneration(message=response)])

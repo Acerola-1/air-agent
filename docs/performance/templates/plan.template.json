@@ -1,0 +1,139 @@
+{
+  "schema_version": "agent-concurrency-plan.v1",
+  "standard_version": "AGENT-CONCURRENCY-v1.0",
+  "status": "DRAFT",
+  "run_id": null,
+  "timezone": "Asia/Shanghai",
+  "directory_created_at": null,
+  "objective": "end_to_end_closed_loop_concurrency",
+  "allow_real_models": false,
+  "authorization": {
+    "environment_use_confirmed": false,
+    "budget_confirmed": false,
+    "reference": null,
+    "retention": "preserve_normal_conversations_ledger_and_observations"
+  },
+  "target": {
+    "environment": null,
+    "bff_base_url": null,
+    "graph_id": "basic-qa",
+    "model_requested": null,
+    "model_response_name": null,
+    "account_alias": null,
+    "tenant_code": null,
+    "session_secret_reference": null,
+    "normal_sso": true,
+    "independent_thread_per_question": true,
+    "langfuse_enabled": true
+  },
+  "source_and_resources": {
+    "head": null,
+    "source_snapshot_sha256": null,
+    "lock_sha256": null,
+    "runtime_inventory_reference": null,
+    "physical_memory_bytes": null,
+    "cpu_cores": null,
+    "background_activity": null,
+    "aggregate_hard_memory_limit_verified": false
+  },
+  "workload": {
+    "profile": "BQA-Q12-v1",
+    "dataset_sha256": null,
+    "case_ids": [
+      "BQA-001",
+      "BQA-002",
+      "BQA-003",
+      "BQA-004",
+      "BQA-005",
+      "BQA-011",
+      "BQA-012",
+      "BQA-013",
+      "BQA-014",
+      "BQA-015"
+    ],
+    "weights": {
+      "Q1": 0.5,
+      "Q2": 0.5
+    },
+    "seed": 20261026,
+    "history_profile": "none",
+    "cache_policy": "normal_configuration_record_actual_state"
+  },
+  "slo": {
+    "on_time_success_rate_min": 0.99,
+    "first_body_p95_ms_max": 45000,
+    "complete_p95_ms_max": 60000,
+    "apply_overall_and_per_category": true,
+    "deadline_seconds": {
+      "Q1": 60,
+      "Q2": 120
+    },
+    "answer_rule": "legacy_explicit_source_and_coverage",
+    "quality_audit_plan": null
+  },
+  "search": {
+    "mode": "continuous_closed_loop",
+    "initial_levels": [
+      1,
+      2,
+      5,
+      10,
+      15,
+      20
+    ],
+    "continue_increment": 5,
+    "spawn_users_per_second_max": 1,
+    "settle_seconds": 60,
+    "explore_measure_seconds": 300,
+    "explore_min_sends": 20,
+    "explore_min_sends_per_category": 5,
+    "explore_extension_seconds_max": 300,
+    "inflight_target_fraction": 0.9,
+    "inflight_attainment_min": 0.9,
+    "refine_to_adjacent_integer": true,
+    "candidate_confirmation_rounds": 2,
+    "candidate_measure_seconds": 600,
+    "candidate_min_sends": 30,
+    "candidate_min_sends_per_category": 10,
+    "candidate_extension_seconds_max": 600,
+    "neighbor_failure_retest_rounds": 2,
+    "drain_seconds_max": 150
+  },
+  "budgets": {
+    "example_values_are_not_authorization": true,
+    "max_total_seconds": 7200,
+    "max_logical_questions_all_phases": 3000,
+    "physical_token_limit": null,
+    "cost_limit": null,
+    "physical_limit_enforcement": "not_configured_do_not_claim_hard_token_or_cost_cap"
+  },
+  "resource_protection": {
+    "supervisor_verified": false,
+    "supervisor_config_reference": null,
+    "sample_interval_target_seconds": 2,
+    "load_generator_rss_stop_mib_suggestion": 512,
+    "host_stop_conditions": null,
+    "service_budget_and_accounting": null,
+    "threshold_basis": null,
+    "stop_scope": "own_load_generator_and_verified_task_started_components_only"
+  },
+  "output": {
+    "public_directory": null,
+    "private_evidence_directory_reference": null,
+    "overwrite_existing": false
+  },
+  "extensions": {
+    "upstream_model_only": false,
+    "open_arrival_rate": false,
+    "one_hour_soak": false,
+    "fault_injection": false,
+    "browser_rendering": false
+  },
+  "executor": {
+    "engine": "locust_with_product_sse_adapter",
+    "adapter_path": null,
+    "version_and_calibration_reference": null,
+    "ready": false
+  },
+  "note": "执行前填写必要字段，确认环境与预算授权，完成执行器和资源监督验收。"
+}

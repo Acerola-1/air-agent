@@ -356,18 +356,23 @@ def _run_input_content(value: Any) -> str:
     return text.strip()
 
 
-def _pin_langfuse_metadata(value, *, graph_id, user_id, thread_id):
+def _pin_langfuse_metadata(value, *, graph_id, user_id, thread_id, account=""):
     """Bind official SDK trace attributes at the trusted admission boundary."""
     attributes = {
         "langfuse_trace_name": graph_id,
         "langfuse_user_id": user_id,
         "langfuse_session_id": thread_id,
     }
+    if account:
+        # Readable dimension only; user_id remains the stable UUID.
+        attributes["user_account"] = account
     metadata = value.get("metadata")
     value["metadata"] = {
         **(metadata if isinstance(metadata, dict) else {}),
         **attributes,
     }
+    if not account:
+        value["metadata"].pop("user_account", None)
     kwargs = value.get("kwargs")
     if not isinstance(kwargs, dict):
         kwargs = {}
@@ -378,11 +383,17 @@ def _pin_langfuse_metadata(value, *, graph_id, user_id, thread_id):
         kwargs["config"] = config
     for candidate in (config, value.get("config")):
         if isinstance(candidate, dict):
+            configurable = candidate.get("configurable")
+            if isinstance(configurable, dict):
+                # LangChain mirrors scalar configurable values into metadata.
+                configurable.pop("user_account", None)
             metadata = candidate.get("metadata")
             candidate["metadata"] = {
                 **(metadata if isinstance(metadata, dict) else {}),
                 **attributes,
             }
+            if not account:
+                candidate["metadata"].pop("user_account", None)
 
 
 def _pin_ledger_ids(
@@ -507,6 +518,8 @@ def _claims_from_ctx(ctx: Auth.types.AuthContext) -> dict[str, str]:
         "tenant_id": str(_user_attr(ctx, "tenant_id", "") or ""),
         "membership_id": str(_user_attr(ctx, "membership_id", "") or ""),
         "session_id": str(_user_attr(ctx, "session_id", "") or ""),
+        # 登录账号（非凭据）；只用于 Langfuse 可读维度，不参与授权判定。
+        "account": str(_user_attr(ctx, "display_name", "") or ""),
     }
 
 
@@ -648,7 +661,8 @@ async def authenticate(request):  # noqa: ANN001 - 平台注入 starlette Reques
             ) from exc
         return {
             "identity": claims.user_id,
-            "display_name": "",
+            # Display label from the IAM-synchronized server reference only.
+            "display_name": getattr(binding, "account", ""),
             "is_authenticated": True,
             # 入站内省冻结的 IAM 精确权限；create_run 用它求交业务使用权。
             "permissions": sorted(binding.permissions),
@@ -1268,7 +1282,11 @@ async def on_thread_create_run(
     # metadata-only 运行，补偿无法定位。客户端同名声明在这里无条件覆盖。
     value["metadata"].update({key: ids[key] for key in _TRUSTED_METADATA_KEYS})
     _pin_langfuse_metadata(
-        value, graph_id=actual_graph, user_id=ids["user_id"], thread_id=thread_id
+        value,
+        graph_id=actual_graph,
+        user_id=ids["user_id"],
+        thread_id=thread_id,
+        account=ids.get("account", ""),
     )
     # 运行中不再信任任何客户端身份字段；平台随后注入 auth user
     return

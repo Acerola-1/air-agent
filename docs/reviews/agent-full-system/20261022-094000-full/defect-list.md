@@ -4,7 +4,7 @@
 
 - 现象：用户先看到多段正文，约 7–23s 后收到 `final_output_aborted`，`reason_code=policy_requires_complete_answer`，没有终答。
 - 影响：E/S 40 题中 6 题（BQA-003/004/006/019/022/038），Q1 3/10；用户看到半截内容且无法继续。
-- 证据：`docs/reviews/basic-qa-performance/20261022-es-full/requests.jsonl`、`calls.jsonl`（6 条 model failed）、LangGraph 日志 `output aborted ... reason=policy_requires_complete_answer detail=unit_policy`；代码 `src/common/output_streaming/answer.py` 的 `_validate_public_unit`。
+- 证据：`旧性能证据已清理`、`calls.jsonl`（6 条 model failed）、LangGraph 日志 `output aborted ... reason=policy_requires_complete_answer detail=unit_policy`；代码 `src/common/output_streaming/answer.py` 的 `_validate_public_unit`。
 - 复现：真实模型下发送 BQA-003“什么是AQI？…”；首段可显示，随后 aborted。
 - 建议：正文开始前按问题/技能判定是否 policy-bound；若答案含具体法规文字，应改走完整答案路径，不应先流后撤。
 

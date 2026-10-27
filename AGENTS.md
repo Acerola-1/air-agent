@@ -2,6 +2,13 @@
 
 本文件约束整个仓库的 AI/自动化开发。面向使用者的介绍与启动步骤放在 [README.md](README.md)，交互规范放在 [UX-CONTRACT.md](UX-CONTRACT.md) 和 [DESIGN.md](DESIGN.md)；子目录有更具体指南时同时读取。
 
+## 当前开发范围（2026-10-27 起）
+
+- 开发主线为基础问答 `basic-qa` 与溯源分析 `intelligent-tracing`；后续需求拆解、会话能力改进、功能开发与专项验收默认围绕这两张图推进。
+- 数据分析 `data-analysis` 暂时封存：暂停该图的新功能、专项重构、优化与专项验收，不因历史计划或未完成任务自动继续开发；恢复专项开发需用户明确调整范围。
+- 封存保留 `src/data_analysis/`、Skill、测试、历史证据、菜单约束及 `langgraph.json` 注册；这是开发范围调整，不表示已删除、隐藏或停用运行入口，也不表示历史未完成项已验收。
+- 共享身份、台账、MCP、上下文、前端等改动仍须保持已保留图的兼容与安全。必要的兼容或安全修复可最小范围涉及封存图，并在交付中说明；相关回归不因封存而删除或跳过。
+
 ## 正式运行态（始终适用）
 
 - 当前已完成独立IAM与业务分库；唯一权威清单见[正式环境](docs/CURRENT-RUNTIME.md)。正式业务库为15432/air_agent_business，身份只来自19100 Java IAM；旧air_agent源与多轮评测环境已删除，不重建、不回退local鉴权。
@@ -19,10 +26,10 @@
 
 | 区域 | 当前职责 |
 |---|---|
-| `langgraph.json` | 三个公开 Graph ID（`basic-qa`、`data-analysis`、`intelligent-tracing`）与 custom auth/custom HTTP 声明 |
-| `src/basic_qa/` | 显式业务节点流和语义 Skill 路由 |
-| `src/data_analysis/` | 菜单驱动的确定性分析；不能被显式技能绕过菜单约束 |
-| `src/intelligent_tracing/` | 受控溯源 DeepAgents 调度图（冻结请求 + 四专员 + 证据门禁）；涉及执行边界需覆盖主任务和真实子任务 |
+| `langgraph.json` | 保留三个公开 Graph ID（`basic-qa`、`data-analysis`、`intelligent-tracing`）及 custom auth/custom HTTP 声明；开发主线为基础问答与溯源分析 |
+| `src/basic_qa/` | 开发主线：显式业务节点流和语义 Skill 路由 |
+| `src/data_analysis/` | 暂时封存：保留菜单驱动的确定性分析；不能被显式技能绕过菜单约束 |
+| `src/intelligent_tracing/` | 开发主线：受控溯源 DeepAgents 调度图（冻结请求 + 四专员 + 证据门禁）；涉及执行边界需覆盖主任务和真实子任务 |
 | `src/common/identity/`、`capabilities.py`、`mcp_scoped.py` | 可信身份、能力选择及作用域工具发现/执行 |
 | `src/common/event_ledger/`、`observability/` | 运行事实台账和模型/工具/Skill观测 |
 | `frontend/` | Next.js聊天、反馈、能力选择、画布和同源BFF |

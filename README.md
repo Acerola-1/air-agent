@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  面向空气质量业务的多租户 Agent 平台：三张业务图、可信运行台账、MCP 能力治理与企业运营后台。
+  面向空气质量业务的多租户 Agent 平台：基础问答与污染溯源双主线、可信运行台账、MCP 能力治理与企业运营后台。
 </p>
 
 <p align="center">
@@ -29,15 +29,23 @@
 
 企业运营后台仍在持续建设：运行台账、反馈、观测、能力选择和需求洞察已经落地，后续范围见 [企业化路线图](docs/enterprise-agent-roadmap.md)。
 
+性能测试统一使用 [Agent 性能压力测试流程](docs/performance/pressure-testing-workflow.md)，包含本机持续并发、边界复测和可复用计划/报告模板。
+
+## 当前开发范围（2026-10-27 起）
+
+后续开发聚焦 **基础问答 `basic-qa`** 与 **溯源分析 `intelligent-tracing`** 两张图，包括会话能力、业务执行与相关验收。
+
+**数据分析 `data-analysis` 暂时封存**：暂停新功能、专项重构、优化与专项验收，已有计划不自动继续推进，待用户明确恢复。保留其代码、Skill、测试、历史证据、菜单约束及现有图注册；本次封存是开发范围调整，未执行运行入口下线或界面隐藏。共享基础设施变更仍需保持兼容与安全，必要修复及回归按 [AGENTS.md](AGENTS.md) 执行。
+
 ## 核心能力
 
-- **三张业务图**：基础问答、菜单驱动的数据分析，以及受控的四专员污染溯源（冻结请求 + 确定性证据/门禁 + 统一发布）。
+- **两条开发主线**：基础问答，以及受控的四专员污染溯源（冻结请求 + 确定性证据/门禁 + 统一发布）；菜单驱动的数据分析图暂时封存，现有实现与注册保留。
 - **企业与访问控制**：账号、企业、部门、成员、角色、权限和审计；服务端会话可撤销，企业切换带上下文版本校验。
 - **可信运行台账**：关联逻辑提问、提交、尝试、平台运行和回答；支持幂等、重新生成、恢复及独立的停止意图。
 - **反馈与体验采集**：按回答版本点赞/点踩、意见、成功复制事件及可见正文计时。采集由部署开关控制。
 - **业务授权**：以 IAM 的“企业开通 ∩ 本企业角色授权”为唯一人员使用资格（`agent:business:<code>:use`），普通 Skill/MCP 不再逐项做人员 RBAC；目录、受理、原生运行、恢复与逐发送共用一套守卫。
 - **能力选择**：在已获准业务内提供 Skill/MCP 目录，支持 Skill 自动/单选、MCP 自动/子集/禁用；已受理计划约束主任务、子任务、重试与恢复。
-- **数据分析菜单**：分析项目使用与后端 `menu_skill_mapping` 同步的原生选择器，菜单值随本轮请求冻结；运行或停止待确认时不可切换，显式 Skill 只能在该菜单映射内选择。
+- **数据分析菜单（封存保留）**：分析项目使用与后端 `menu_skill_mapping` 同步的原生选择器，菜单值随本轮请求冻结；运行或停止待确认时不可切换，显式 Skill 只能在该菜单映射内选择。
 - **运行观测**：模型 usage、延迟、价格版本与成本、Skill 各阶段和工具结果分类，可关联 Langfuse Trace；未知数据保留缺失状态。
 - **资料与画布**：归档大工具结果、按会话回读报告与可视化资料，支持删除与恢复后的墓碑重施。
 
@@ -53,7 +61,7 @@ flowchart LR
   API --> IAM["独立 Java IAM<br/>19100 / iam_identity"]
   Runtime --> IAM
   Runtime --> QA["basic-qa"]
-  Runtime --> DA["data-analysis"]
+  Runtime --> DA["data-analysis<br/>暂时封存 · 保留注册"]
   Runtime --> TR["intelligent-tracing"]
   Runtime --> PG[("PostgreSQL 17<br/>线程 / 台账 / 归档")]
   Runtime --> Redis[("Redis")]
@@ -69,7 +77,7 @@ flowchart LR
 
 | 层 | 选型 | 说明 |
 |---|---|---|
-| Agent 运行时 | LangGraph 1.2 · DeepAgents 0.7 · LangChain 1.4 | 三张业务图、受控调度与统一流式发布 |
+| Agent 运行时 | LangGraph 1.2 · DeepAgents 0.7 · LangChain 1.4 | 基础问答与溯源分析双主线、受控调度与统一流式发布；保留三图注册 |
 | 服务端 | Python 3.13 · FastAPI · PostgreSQL 17 · Redis | 管理 API、运行台账、归档与观测 |
 | 前端 | Next.js 16 · TypeScript · Tailwind CSS | 聊天、能力选择、反馈、画布与运营后台 |
 | 身份与授权 | 独立 Java IAM · Sa-Token · PostgreSQL RLS | 企业开通 ∩ 角色授权，逐请求实时复查 |
@@ -88,9 +96,9 @@ flowchart LR
 
 | 路径 | 职责 |
 |---|---|
-| `src/basic_qa/` | 显式业务节点流与语义 Skill 路由 |
-| `src/data_analysis/` | 菜单映射驱动的确定性分析 |
-| `src/intelligent_tracing/` | 受控溯源 DeepAgents 调度图：四专员、真实业务 MCP 数据源、证据门禁；Skill 材料仅内部参考，不进入在线可选目录 |
+| `src/basic_qa/` | 开发主线：显式业务节点流与语义 Skill 路由 |
+| `src/data_analysis/` | 暂时封存：保留菜单映射驱动的确定性分析 |
+| `src/intelligent_tracing/` | 开发主线：受控溯源 DeepAgents 调度图，四专员、真实业务 MCP 数据源、证据门禁；Skill 材料仅内部参考，不进入在线可选目录 |
 | `src/common/` | 身份、能力、模型、MCP、台账、观测、中间件与归档 |
 | `frontend/` | 聊天、能力选择、反馈、画布及 Agent BFF |
 | `admin/api/` | FastAPI 管理与业务 API、Alembic 迁移、引导和恢复脚本 |
@@ -99,7 +107,9 @@ flowchart LR
 | `openspec/specs/` | 已同步主规格；活动计划与归档分别在 `changes/`、`changes/archive/` |
 | `docs/reviews/` | 独立验收、失败基线、原始证据与模型评价 |
 
-公开 Graph ID 以 [`langgraph.json`](langgraph.json) 为准：`basic-qa`、`data-analysis`、`intelligent-tracing`。
+现有公开 Graph ID 以 [`langgraph.json`](langgraph.json) 为准，仍保留 `basic-qa`、`data-analysis`、`intelligent-tracing` 三项；其中 `data-analysis` 暂时封存，不列入当前开发主线。
+
+智能溯源的会话入口支持问候、能力介绍、条件澄清和正式分析：可以直接问“你好，你能做什么”，无需先提供站点；需要分析时提供站点/城市、时段和半径，缺少条件会逐项补问。普通介绍不启动取数；实际污染分析仍通过证据门禁发布报告。同一聊天的后续交流不会自动重发旧报告。实现与验收状态见[会话路由记录](docs/testing/tracing-conversation-20261023/baseline.md)。
 
 ## 快速开始
 
@@ -133,6 +143,8 @@ npm --prefix admin/web ci
 启用 `LANGFUSE_ENABLED=true` 后，Langfuse 完整采集 SDK 可见的图/节点输入输出、系统提示与对话、模型响应、工具定义及参数结果、元数据和实际异常。2026-10-22 已按用户要求移除统一正文过滤；普通业务台账和本地日志仍按各自字段规则记录。此前已过滤的历史内容不能补回。
 
 运行观测仅使用 Langfuse，直接采用官方 `langfuse.langchain.CallbackHandler`，在顶层绑定后由模型、工具和子代理继承，不重写 SDK 父链或 exporter。`LANGSMITH_TRACING`、`LANGCHAIN_TRACING_V2`、`LANGCHAIN_TRACING` 均设为 `false`，正式启动预检拒绝启用追踪的配置。`langsmith` 库是框架依赖，保留安装；当前 licensed 原生服务仍需私有 `.env.langgraph` 中的 `LANGSMITH_API_KEY` 进行开发启动授权，该 key 不用于启用追踪，宿主 Agent `.env` 不需要配置它。
+
+Langfuse Users 使用稳定的用户 UUID，Sessions 使用聊天 thread ID，同一线程内不同 attempt 保留各自 trace。三个公开图均在执行期绑定官方回调，并通过官方 `propagate_attributes` 给子观测传递用户、会话及可读账号标签。账号仅来自服务端 IAM 同步引用，缺失时省略；客户端 `user_account` 不作身份兜底。可读账号是 metadata，不替换 Users 页的稳定 ID。直接流式入口的属性作用域在每次读取/关闭内结束；原生工厂的作用域绑定运行任务，结束后恢复。
 
 宿主`.env`由dotenv读取；原生`.env.langgraph`使用完整literal key=value（不带shell外层引号），不要混用两套文件。
 
@@ -178,6 +190,7 @@ npm --prefix admin/web run lint
 
 ## 继续开发
 
+- 默认围绕 `basic-qa` 与 `intelligent-tracing` 推进；`data-analysis` 按上文约定暂时封存。
 - 修改前先读 [AGENTS.md](AGENTS.md)、相关主规格及活动 change。
 - UI 行为与设计约定见 [UX-CONTRACT.md](UX-CONTRACT.md)、[DESIGN.md](DESIGN.md)。
 - 后台后续范围和依赖见 [企业化路线图](docs/enterprise-agent-roadmap.md)；归档表示该阶段验收关闭，不表示整个企业后台已完成。

@@ -14,12 +14,12 @@
 
 | 用途 | 路径 |
 |---|---|
-| 原始目标 | `docs/handoffs/console-insights-performance-unified-goal.md` |
+| 原始目标 | `docs/performance/pressure-testing-workflow.md` |
 | 当日进度 | `docs/reviews/console-insights-unified-20261021/status.md` |
-| 冒烟原文 | `docs/reviews/basic-qa-performance/20261021-ps-smoke/` |
+| 冒烟原文 | `旧性能证据已清理` |
 | 冒烟当时的 6/7 核对 | `docs/reviews/console-insights-unified-20261021/ps-smoke-reconcile.md` |
 | 后续探测后的 Change 6 | `docs/reviews/console-insights-unified-20261021/post-probe-change6.json` |
-| 工具说明 | `docs/testing/unified-campaign-runner.md` |
+| 工具说明 | `docs/performance/pressure-testing-workflow.md` |
 | IAM 目录提议 | `docs/reviews/console-insights-unified-20261021/proposed-iam-v28-agent-insights-manage.sql` |
 
 口令、DSN、cookie 只在 gitignore 的 `.local/campaign-20261021/`。不要把这些内容抄进报告或提交。
@@ -110,7 +110,7 @@ IAM 仓库最高迁移是 V27。提议的下一份是 V28，只插入权限码 `
 - 不要把 V28 写进 IAM 仓库或隔离 IAM，除非用户明确授权改那个仓库。
 - 不要插入洞察作业来绕过 403。
 - 不要启动 R/F、后台规模、组合负载、未批准的真实案例或外部模型。
-- 不要覆盖 `docs/reviews/basic-qa-performance/20261021-ps-smoke/`。新证据用新目录。
+- 旧独立性能证据已按用户要求清理；后续性能测试统一采用现行流程和新的时间目录。
 - 不要清理正式容器，也不要全局 prune。本轮容器名都带 `aa-campaign-20261021`。结束时只回收这一批，并先确认没有人还在用。
 - 不要勾 OpenSpec 任务，除非该项的全部场景都有这次实测。冒烟不是性能通过，归类 403 不是归类通过。
 

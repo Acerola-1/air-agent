@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 import pytest
+from conversation_fixtures import analysis_prefix, analysis_question, run_config
 from fake_model import ScriptedChatModel
 from fixtures import allow_publication, build_bundle, make_request, make_scope
 from langchain_core.messages import AIMessage, HumanMessage
@@ -16,11 +17,17 @@ from intelligent_tracing.sources import FixtureDataSource
 
 
 @pytest.mark.anyio
-async def test_budget_exhaustion_publishes_partial_validated_report():
+async def test_budget_exhaustion_publishes_partial_validated_report(monkeypatch):
+    from unittest.mock import AsyncMock
+
+    import common.identity.runtime as identity
+
+    monkeypatch.setattr(identity, "revalidate", AsyncMock())
     request = make_request()
     bundle = build_bundle()
     lead = ScriptedChatModel(
         responses=[
+            *analysis_prefix(),
             AIMessage(
                 content="",
                 tool_calls=[
@@ -78,7 +85,7 @@ async def test_budget_exhaustion_publishes_partial_validated_report():
     )
     policy = replace(
         DEFAULT_POLICY,
-        budget=replace(DEFAULT_POLICY.budget, max_model_calls=1),
+        budget=replace(DEFAULT_POLICY.budget, max_model_calls=3),
     )
     graph = build_tracing_graph(
         model=lead,
@@ -92,12 +99,13 @@ async def test_budget_exhaustion_publishes_partial_validated_report():
     )
     out = await graph.ainvoke(
         {
-            "messages": [HumanMessage(content="分析")],
+            "messages": [HumanMessage(content=analysis_question())],
             "request": request,
             "scope": make_scope(),
         },
         config={
             "configurable": {
+                **run_config()["configurable"],
                 "thread_id": "thread-a",
                 "execution_epoch": "epoch-1",
             }

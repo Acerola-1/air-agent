@@ -196,6 +196,22 @@ async def revoke_sessions_for_user(session: AsyncSession, user_id: str) -> None:
     )
 
 
+async def _reference_matches(
+    session: AsyncSession, table: str, row_id: uuid.UUID, values: dict
+) -> bool:
+    """Read the small display/FK projection; it never authorizes a request.
+
+    Table/column identifiers come only from the fixed call sites below. Unchanged
+    projections must not take UPDATE locks: native FK checks acquire KEY SHARE.
+    """
+    result = await session.execute(
+        text(f"SELECT {', '.join(values)} FROM {table} WHERE id = :i"),
+        {"i": row_id},
+    )
+    row = result.mappings().first()
+    return row is not None and all(str(row[k]) == str(v) for k, v in values.items())
+
+
 async def upsert_reference_projection(
     session: AsyncSession,
     *,
@@ -210,69 +226,85 @@ async def upsert_reference_projection(
     tenant_auth_revision: int | None,
     membership_revision: int | None,
 ) -> None:
-    """同步最小业务引用投影（同 UUID；不授权、不存会话/角色/口令材料）。
+    """Synchronize non-authorizing references in native FK lock order.
 
-    remote 下业务 FK（thread_ownership、偏好、台账等）要求引用行存在；
-    这里以 INSERT .. ON CONFLICT 幂等 upsert。任何失败抛
-    IdentityBackendUnavailable（投影不可用 = 业务引用不可用，失败关闭）。
+    Every request still checks IAM. Equal reference values are read-only; changed
+    rows synchronize tenant -> user -> membership, matching thread_ownership's
+    FK order. synced_at denotes the last actual projection write, not last use.
     """
     from app.db import TenantContext, apply_tenant_context
 
     try:
-        # This helper is also called by the SSO callback before request middleware.
-        # Apply the verified identity before the reference-table RLS policies run.
         await apply_tenant_context(session, TenantContext(user_id=user_id, tenant_id=tenant_id))
-        await session.execute(
-            text(
-                "INSERT INTO iam_reference_users (id, account, display_name, auth_revision)"
-                " VALUES (:i, :a, :d, :r)"
-                " ON CONFLICT (id) DO UPDATE SET"
-                "   account = EXCLUDED.account, display_name = EXCLUDED.display_name,"
-                "   auth_revision = EXCLUDED.auth_revision,"
-                "   synced_at = now()"
-            ),
-            {
-                "i": uuid.UUID(user_id),
-                "a": account,
-                "d": display_name,
-                "r": user_auth_revision,
-            },
-        )
         if tenant_id:
+            tenant_values = {
+                "code": tenant_code or "",
+                "name": tenant_name or "",
+                "auth_revision": tenant_auth_revision or 1,
+            }
+            if not await _reference_matches(
+                session, "iam_reference_tenants", uuid.UUID(tenant_id), tenant_values
+            ):
+                await session.execute(
+                    text(
+                        "INSERT INTO iam_reference_tenants (id, code, name, auth_revision)"
+                        " VALUES (:i, :c, :n, :r)"
+                        " ON CONFLICT (id) DO UPDATE SET"
+                        "   code = EXCLUDED.code, name = EXCLUDED.name,"
+                        "   auth_revision = EXCLUDED.auth_revision, synced_at = now()"
+                    ),
+                    {
+                        "i": uuid.UUID(tenant_id),
+                        "c": tenant_values["code"],
+                        "n": tenant_values["name"],
+                        "r": tenant_values["auth_revision"],
+                    },
+                )
+        user_values = {
+            "account": account,
+            "display_name": display_name,
+            "auth_revision": user_auth_revision,
+        }
+        if not await _reference_matches(
+            session, "iam_reference_users", uuid.UUID(user_id), user_values
+        ):
             await session.execute(
                 text(
-                    "INSERT INTO iam_reference_tenants (id, code, name, auth_revision)"
-                    " VALUES (:i, :c, :n, :r)"
+                    "INSERT INTO iam_reference_users (id, account, display_name, auth_revision)"
+                    " VALUES (:i, :a, :d, :r)"
                     " ON CONFLICT (id) DO UPDATE SET"
-                    "   code = EXCLUDED.code, name = EXCLUDED.name,"
+                    "   account = EXCLUDED.account, display_name = EXCLUDED.display_name,"
                     "   auth_revision = EXCLUDED.auth_revision, synced_at = now()"
                 ),
-                {
-                    "i": uuid.UUID(tenant_id),
-                    "c": tenant_code or "",
-                    "n": tenant_name or "",
-                    "r": tenant_auth_revision or 1,
-                },
+                {"i": uuid.UUID(user_id), "a": account, "d": display_name, "r": user_auth_revision},
             )
         if membership_id and tenant_id:
-            result = await session.execute(
-                text(
-                    "INSERT INTO iam_reference_memberships (id, tenant_id, user_id, revision)"
-                    " VALUES (:i, :t, :u, :r)"
-                    " ON CONFLICT (id) DO UPDATE SET"
-                    "   revision = EXCLUDED.revision, synced_at = now()"
-                    " WHERE iam_reference_memberships.tenant_id = EXCLUDED.tenant_id"
-                    "   AND iam_reference_memberships.user_id = EXCLUDED.user_id"
-                ),
-                {
-                    "i": uuid.UUID(membership_id),
-                    "t": uuid.UUID(tenant_id),
-                    "u": uuid.UUID(user_id),
-                    "r": membership_revision or 1,
-                },
-            )
-            if result.rowcount != 1:
-                raise ValueError("IAM 成员引用已绑定到其他企业或用户")
+            member_values = {
+                "tenant_id": uuid.UUID(tenant_id),
+                "user_id": uuid.UUID(user_id),
+                "revision": membership_revision or 1,
+            }
+            if not await _reference_matches(
+                session, "iam_reference_memberships", uuid.UUID(membership_id), member_values
+            ):
+                result = await session.execute(
+                    text(
+                        "INSERT INTO iam_reference_memberships (id, tenant_id, user_id, revision)"
+                        " VALUES (:i, :t, :u, :r)"
+                        " ON CONFLICT (id) DO UPDATE SET"
+                        "   revision = EXCLUDED.revision, synced_at = now()"
+                        " WHERE iam_reference_memberships.tenant_id = EXCLUDED.tenant_id"
+                        "   AND iam_reference_memberships.user_id = EXCLUDED.user_id"
+                    ),
+                    {
+                        "i": uuid.UUID(membership_id),
+                        "t": member_values["tenant_id"],
+                        "u": member_values["user_id"],
+                        "r": member_values["revision"],
+                    },
+                )
+                if result.rowcount != 1:
+                    raise ValueError("IAM 成员引用已绑定到其他企业或用户")
     except Exception as exc:  # noqa: BLE001 - 投影失败按后端不可用关闭
         raise IdentityBackendUnavailable("业务引用投影不可用") from exc
 
@@ -463,19 +495,6 @@ async def resolve_remote_identity(session: AsyncSession, cookie_value: str | Non
         tenant_auth_revision=revisions["tenant_auth_revision"],
         membership_revision=revisions["membership_revision"],
     )
-    await upsert_reference_projection(
-        session,
-        **fields,
-        display_name=payload["user"].get("display_name") or fields["account"],
-    )
-    await apply_tenant_context(
-        session,
-        TenantContext(
-            user_id=fields["user_id"],
-            tenant_id=fields["tenant_id"],
-            session_id=payload["session"]["id"],
-        ),
-    )
     verification_ref = None
     if fields["tenant_id"]:
         ec = payload.get("execution_context") or {}
@@ -486,6 +505,26 @@ async def resolve_remote_identity(session: AsyncSession, cookie_value: str | Non
             or ec.get("revisions") != revisions
         ):
             raise IdentityBackendUnavailable("IAM执行引用协议异常")
+    await upsert_reference_projection(
+        session,
+        **fields,
+        display_name=payload["user"].get("display_name") or fields["account"],
+    )
+    # Authentication/projection work precedes business mutations. Release its
+    # FK/update locks before a proxy request waits on the native graph; restore
+    # transaction-local scope for the new business transaction below.
+    try:
+        await session.commit()
+    except Exception as exc:
+        raise IdentityBackendUnavailable("业务引用提交不可用") from exc
+    await apply_tenant_context(
+        session,
+        TenantContext(
+            user_id=fields["user_id"],
+            tenant_id=fields["tenant_id"],
+            session_id=payload["session"]["id"],
+        ),
+    )
     identity = _identity_objects(
         **{key: value for key, value in fields.items() if not key.endswith("revision")},
         session_id=payload["session"]["id"],

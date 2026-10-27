@@ -47,6 +47,8 @@
   同日后续实查 `51fdedddfa379465dcfd2ca7e7542167`：固定 trace ID 后仍有 2 个应用根，下一 attempt 有 21 个应用根；前次测试关闭 LangSmith，未覆盖正式 worker 的双观测模式。本次补齐 LangSmith-only 中间件父链桥接，同步/流式固定复现由每轮 15 根降为 1 根，实际镜像与真实 Langfuse 各验证 65 跨度、1 根、0 子节点缺父，完整内容采集保持开启。证据见 `docs/testing/langfuse-langsmith-parent-20261022/report.md`；仍不勾选整个 3.7，也未重放原真实业务问题。
 
   用户随后明确停用 LangSmith 观测，要求官方接入：已关闭追踪并移除上述临时桥接、SDK 子类及私有采集状态修改，改用原样官方回调；仅保留 licensed 原生服务必需的启动授权 key。现行结果见 `docs/testing/langfuse-official-only-20261022/report.md`。旧报告保留为阶段记录，不再代表当前接线。
+
+  同日 Users/Sessions 审查后：保留三图执行期接线，修复流式跨任务/线程关闭的属性残留和账号 metadata 伪造；账号标签改由票据绑定用户的 IAM 同步引用提供，缺失则省略。固定模型经真实 Langfuse 的四轮入库、Users/Sessions 聚合及正式镜像加载器均已复验，证据见 `docs/testing/langfuse-users-sessions-20261022/report.md`。仍不据此勾选整个 3.7 的撤销/缓存/摘要专项。
 - [ ] 3.8 子任务标识关联已有attempt/run和工具终态；不伪造新用户请求/顶层attempt，核对实际委派覆盖（G0 用注入 attempt/run 验证 child execution；平台真实终态未验收）
 - [ ] 3.9 实现有界task/补查/并发/超时/重试；预算耗尽降级，权限或参数错误不盲目重试（task/并发/超时/模型调用/重试已实现；max_supplemental_queries 补查计数待接）
 

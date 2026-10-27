@@ -55,6 +55,8 @@ CSS 变量／Tailwind 运行时为 tokens 所有者，DESIGN.md 记录语义与�
 
 ## 正文流式状态（agent-output-stream-v1）
 
+溯源的内部本轮意图提交由 `chat-store.parseMessages` 在实时与历史统一过滤，不显示为用户工具操作，也不作为正文；业务数据工具仍保留原有可回看记录。来源：`openspec/changes/add-tracing-conversation-routing/`。
+
 - 正文只消费服务端 `final_output_start/delta/done/aborted` 生命周期；`messages` 原始增量、工具参数、内部摘要和 DeepAgents 专员草稿永不作正文。
 - 处理中显示独立状态条；收到已校验 delta 后正文立即追加，标“正在生成 · 内容尚未最终确认”。`done` 才表示完整终答；`aborted` 或流结束但无 done 时保留已显示内容并标“未完成”，不开放反馈/复制为完整答案。已有正文后失败不得另开完成输出；仅零正文的失败允许由 single_shot 固定失败文案替代。
 - 客户端按 `thread_id/run_id/output_id` 隔离输出，按 `seq` 连续追加；重复帧忽略，冲突/缺口回读可信快照。DeepAgents 按逐节检查点续发，不重发已确认章节；传输重放不得重复追加正文。
@@ -158,3 +160,9 @@ Composer以composition生命周期、native isComposing和Safari keyCode=229保�
 ## 需求洞察（2026-10-21，Change 7）
 
 需求洞察复用运营后台的QueryToolbar/DataTable/TrendBars与useOperationQuery。`operations/insights/layout.tsx`按现有useScopeKey及路由目标重建页面，清除旧企业的改名/合并/拆分草稿、选择项和操作反馈。拆分预览返回后再次确认页面仍有效；离开或切企业后不继续发送旧拆分提交。业务分类、来源正文及作业管理仍由服务端独立授权；本轮仅代码/类型验证，真实浏览器完整流程与系统IME在后续联合验收中验证。
+
+## 登录过期恢复（2026-10-23）
+
+统一身份的顶层授权导航在会话失效时，经原客户端与精确回调校验返回 `login_required/state`；Agent 后端仍比对发起浏览器的 HttpOnly state cookie，未通过不兑换、不建会话。聊天和管理端回调统一清理地址里的 ticket/state，并回到本端账号密码表单。过期、回调未完成和服务暂不可用分别使用固定提示，提示出现后聚焦账号输入框；不自动再次发起 SSO，避免循环。成功路径保留原认证和选企业步骤。普通 API 401、权限 403 与依赖 503 不被中央恢复重定向改写。
+
+所有者：IAM `BrowserSessionInterceptor` / SSO 注册校验、Agent `iam_remote.sso_callback`、两端 `api/auth/iam/callback` 与现有登录表单。验收见 `docs/testing/sso-session-recovery-20261023/`；未改变会话期限、账号源或权限。

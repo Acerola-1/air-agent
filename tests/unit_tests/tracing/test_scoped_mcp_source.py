@@ -76,12 +76,12 @@ def _station_payload(code: str = "S001") -> dict:
         "data": [
             {
                 "stationKey": code,
-                "updateTime": "2026-01-01 00:00:00",
+                "updateTime": "2026-10-01 00:00:00",
                 "pm25": "35.0",
             },
             {
                 "stationKey": code,
-                "updateTime": "2026-01-01 01:00:00",
+                "updateTime": "2026-10-01 01:00:00",
                 "pm25": "-",
             },
         ],
@@ -120,7 +120,15 @@ class RecordingExecutor:
                 ],
             }
         if tool_id == TRACING_PRODUCT_TOOLS["station_series"]:
-            return _station_payload(str(args.get("station")))
+            payload = _station_payload(str(args.get("station")))
+            from datetime import datetime, timedelta
+
+            start = datetime.fromisoformat(args["sTime"])
+            for index, row in enumerate(payload["data"]):
+                row["updateTime"] = (start + timedelta(hours=index)).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                )
+            return payload
         if tool_id == TRACING_PRODUCT_TOOLS["nwp"]:
             return {
                 "success": True,
@@ -128,7 +136,7 @@ class RecordingExecutor:
                 "data": [
                     [
                         {
-                            "updateTime": "2026-01-01 00:00:00",
+                            "updateTime": "2026-10-01 00:00:00",
                             "windSpeed": "2.0",
                             "windDirection": "90",
                             "pblh": "-1",
@@ -146,7 +154,7 @@ class RecordingExecutor:
                 "data": [
                     {
                         "name": "A1",
-                        "updateTime": "2026-01-01 00:00:00",
+                        "updateTime": "2026-10-01 00:00:00",
                         "value": "50",
                     }
                 ],
@@ -239,7 +247,11 @@ async def test_products_use_explicit_args_not_universal_params(monkeypatch):
     assert bundle.observations[1].value is None
     assert bundle.nwp[0].pblh == -1.0
     assert bundle.grid_cells[0].cell_id == "A1"
-    assert bundle.missing == ()
+    assert bundle.missing == (
+        "evaluation_context",
+        "grid_bounded_snapshot",
+        "grid_topology_unknown",
+    )
     assert set(bundle.neighbors) == {"S002"}
     assert (
         bundle.source_tools["station_series"]

@@ -148,7 +148,10 @@ def test_fixture_evidence_provenance_and_derivation():
     assert target.derived_from == ()
     assert baseline.evidence_id not in target.derived_from
     evaluation = next(r for r in station_records if r.product == "evaluation_metric")
-    assert evaluation.derived_from == (target.evidence_id,)
+    context = next(r for r in station_records if r.product == "station_context_series")
+    assert context.sample_count == 23
+    assert context.valid_to == request.time_window.start
+    assert evaluation.derived_from == (target.evidence_id, context.evidence_id)
     grid = next(
         record
         for record in registry.get_many(

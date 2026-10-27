@@ -61,6 +61,8 @@ class TicketBinding:
     # 入站内省时冻结的 IAM 精确权限集合（非秘密）；native create_run 用它求交
     # 业务使用权限。逐发送仍以执行引用复查修订，不缓存正向授权到业务存储。
     permissions: frozenset[str] = frozenset()
+    # IAM-synchronized display label, never used to grant access.
+    account: str = ""
 
 
 def _audience() -> str:
@@ -187,6 +189,7 @@ def facade_issue_and_bind(
         membership_revision=claims.membership_revision,
         session_ctx_version=claims.session_ctx_version,
         permissions=ident.permissions,
+        account=ident.account,
     )
     return ticket, expires_in, binding
 
@@ -396,6 +399,7 @@ def _binding_from_record(record: dict) -> TicketBinding:
         membership_revision=int(record["membership_revision"]),
         session_ctx_version=int(record["session_ctx_version"]),
         permissions=_record_permissions(record.get("permissions")),
+        account=str(record.get("account") or ""),
     )
 
 
@@ -431,10 +435,21 @@ def _load_binding_sync(ticket_hash: str) -> dict | None:
                 "SELECT * FROM agent_iam_ticket_bindings WHERE ticket_hash = %s",
                 (ticket_hash,),
             ).fetchone()
+            if row is None or row["entry_expires_at"] <= dt.datetime.now(dt.UTC):
+                return None
+            # The binding selects the user; a browser metadata field cannot do so.
+            # Keep the reference table's existing user-scoped RLS in force.
+            conn.execute(
+                "SELECT set_config('air_agent.user_id', %s, true)",
+                (str(row["user_id"]),),
+            )
+            reference = conn.execute(
+                "SELECT account FROM iam_reference_users WHERE id = %s",
+                (row["user_id"],),
+            ).fetchone()
+            row["account"] = reference["account"] if reference else ""
     except psycopg.Error as exc:
         raise IdentityBackendUnavailable("绑定存储不可用") from exc
-    if row is None:
-        return None
     if row["entry_expires_at"] <= dt.datetime.now(dt.UTC):
         return None
     return dict(row)

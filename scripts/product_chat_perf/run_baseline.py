@@ -612,7 +612,7 @@ def _report(summary: dict[str, Any], manifest: dict[str, Any]) -> str:
     lines = [
         f"# basic QA 真实聊天性能基线报告：{summary['run_id']}",
         "",
-        "规范：[basic QA 并发性能回归规范](../../../testing/basic-qa-performance-regression.md)。",
+        "流程：[Agent 性能压力测试](../../../performance/pressure-testing-workflow.md)。",
         "",
         "## 1. 结论与范围",
         "",

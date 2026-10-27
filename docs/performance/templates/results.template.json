@@ -1,0 +1,52 @@
+{
+  "schema_version": "agent-concurrency-results.v1",
+  "standard_version": "AGENT-CONCURRENCY-v1.0",
+  "status": "NOT_RUN",
+  "run_id": null,
+  "execution_started_at": null,
+  "execution_ended_at": null,
+  "objective": "end_to_end_closed_loop_concurrency",
+  "model_requested": null,
+  "workload_profile": null,
+  "highest_observed_passed_concurrency": null,
+  "highest_confirmed_concurrency": null,
+  "max_confirmed_concurrency_under_this_standard": null,
+  "confirmed_lower_bound": null,
+  "neighbor_concurrency": null,
+  "neighbor_outcome": null,
+  "boundary_resolution": null,
+  "confirmation_duration_and_samples": [],
+  "stages": [],
+  "requests": {
+    "all_phases_logical_sent": null,
+    "measure_logical_sent": null,
+    "on_time_success": null,
+    "failed": null,
+    "unknown": null,
+    "not_sent": null
+  },
+  "quality": {
+    "audit_count": null,
+    "pass": null,
+    "fail": null,
+    "unknown": null,
+    "scope": null
+  },
+  "observability": {
+    "natural_trace_coverage": null,
+    "natural_ingestion_delay_seconds": null,
+    "recovered_trace_coverage": null,
+    "identity_reconciliation": null,
+    "usage_coverage": null,
+    "cost": null
+  },
+  "resource_or_load_generator_limited": null,
+  "stop_reason": null,
+  "unknown_run_reconciliation_reference": null,
+  "open_arrival_rate_verified": false,
+  "one_hour_soak_verified": false,
+  "evidence_references": [],
+  "limitations": [],
+  "note": "未执行值为 null；实际未发送可记 0。未找到可复现相邻 SLO 失败或资源保护先到限时最大确认值留空，只报告已验证下界。",
+  "extended_acceptance_completed": false
+}

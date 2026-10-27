@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
 import uuid
+from contextlib import AsyncExitStack
 from unittest.mock import AsyncMock
 
 import pytest
@@ -38,6 +40,7 @@ def run_config(*, attempt=None, thread=None, tenant=None):
         "configurable": {
             "__is_for_execution__": True,
             "thread_id": thread or _uuid(),
+            "run_id": _uuid(),
             "execution_epoch": _uuid(),
             "ledger_request_id": _uuid(),
             "ledger_attempt_id": attempt or _uuid(),
@@ -113,7 +116,53 @@ def test_factory_isolates_attempts_and_skips_reads(sdk):
     assert not graph_module._graph.config.get("callbacks")
 
 
-async def export_run(monkeypatch, config, *, streaming):
+@pytest.mark.parametrize(
+    ("module_name", "graph_id"),
+    [("basic_qa.graph", "basic-qa"), ("data_analysis.graph", "data-analysis")],
+)
+def test_business_graph_factories_bind_attributes_per_execution(
+    sdk, module_name, graph_id
+):
+    """Basic QA and data analysis must attribute every child observation."""
+    from langfuse.langchain import CallbackHandler
+
+    module = importlib.import_module(module_name)
+    assert module.graph({}) is module._graph
+    assert not (module._graph.config or {}).get("callbacks")
+
+    config = run_config()
+    config["configurable"]["ledger_graph_id"] = graph_id
+    bound = module.graph(config)
+    handler = bound.config["callbacks"][0]
+    assert type(handler) is CallbackHandler
+    assert handler.run_inline
+    assert bound.config["metadata"] == {
+        "langfuse_trace_name": graph_id,
+        "langfuse_user_id": config["configurable"]["langgraph_auth_user"]["identity"],
+        "langfuse_session_id": config["configurable"]["thread_id"],
+    }
+
+
+def test_graph_factory_exposes_readable_account_metadata(sdk):
+    from common.observability.context import observation_context_from_config
+
+    module = importlib.import_module("basic_qa.graph")
+    config = run_config()
+    # Native auth resolves the IAM reference account; browser metadata cannot
+    # replace that label. It must reach the trace and every child observation.
+    config["configurable"]["langgraph_auth_user"]["display_name"] = "root"
+    config["metadata"] = {"user_account": "forged"}
+    bound = module.graph(config)
+    assert observation_context_from_config(config).account == "root"
+    assert (
+        bound.config["metadata"]["langfuse_user_id"]
+        == config["configurable"]["langgraph_auth_user"]["identity"]
+    )
+    assert bound.config["metadata"]["user_account"] == "root"
+    assert bound._attributes["metadata"] == {"user_account": "root"}
+
+
+async def export_run(monkeypatch, config, *, streaming, native_context=True):
     request = make_request()
     lead = _lead_model()
     lead.responses.insert(
@@ -143,7 +192,13 @@ async def export_run(monkeypatch, config, *, streaming):
     _, compiled = _graph(FixtureDataSource(build_bundle()), lead=lead)
     monkeypatch.setattr(graph_module, "_graph", compiled)
     graph = graph_module.graph(config)
-    payload = {"messages": [HumanMessage(content="PRIVATE_TRACE_FIXTURE")]}
+    from conversation_fixtures import analysis_question
+
+    payload = {
+        "messages": [
+            HumanMessage(content="PRIVATE_TRACE_FIXTURE " + analysis_question())
+        ]
+    }
     # The trusted native auth boundary replaces browser-supplied trace attributes.
     config = {
         **config,
@@ -158,22 +213,26 @@ async def export_run(monkeypatch, config, *, streaming):
         user_id=config["configurable"]["langgraph_auth_user"]["identity"],
         thread_id=config["configurable"]["thread_id"],
     )
-    if streaming:
-        source = graph.astream(
-            payload,
-            config,
-            stream_mode=["messages", "updates", "custom"],
-            subgraphs=True,
-        )
-        # The native server advances the iterator from separate async tasks.
-        while True:
-            try:
-                await asyncio.create_task(anext(source))
-            except StopAsyncIteration:
-                break
-    else:
-        result = await graph.ainvoke(payload, config)
-        assert result["validated_report"] is not None
+    # Mirror the native server: get_graph enters the runnable's async context
+    # before advancing the stream, so the attribute context stays active.
+    async with AsyncExitStack() as stack:
+        runnable = await stack.enter_async_context(graph) if native_context else graph
+        if streaming:
+            source = runnable.astream(
+                payload,
+                config,
+                stream_mode=["messages", "updates", "custom"],
+                subgraphs=True,
+            )
+            # The native server advances the iterator from separate async tasks.
+            while True:
+                try:
+                    await asyncio.create_task(anext(source))
+                except StopAsyncIteration:
+                    break
+        else:
+            result = await runnable.ainvoke(payload, config)
+            assert result["validated_report"] is not None
     handler = graph.config["callbacks"][0]
     assert not handler._runs
     assert not handler._run_states
@@ -229,6 +288,14 @@ async def test_full_deepagents_tree_has_one_root_and_no_orphans(
         == config["configurable"]["langgraph_auth_user"]["identity"]
     )
     assert root_attrs["session.id"] == config["configurable"]["thread_id"]
+    # v4 aggregates over the wide observations table: every child span must
+    # carry the same trusted attributes, not just the root chain.
+    for span in spans:
+        assert (
+            span.attributes.get("user.id")
+            == config["configurable"]["langgraph_auth_user"]["identity"]
+        )
+        assert span.attributes.get("session.id") == config["configurable"]["thread_id"]
 
 
 def test_factory_preserves_platform_callbacks_and_degrades(sdk, monkeypatch):
@@ -360,6 +427,7 @@ def test_trace_attributes_are_pinned_at_auth_boundary(kwargs):
         graph_id="intelligent-tracing",
         user_id="trusted-user",
         thread_id="thread",
+        account="root",
     )
     for metadata in (
         value["metadata"],
@@ -369,6 +437,7 @@ def test_trace_attributes_are_pinned_at_auth_boundary(kwargs):
         assert metadata["langfuse_trace_name"] == "intelligent-tracing"
         assert metadata["langfuse_user_id"] == "trusted-user"
         assert metadata["langfuse_session_id"] == "thread"
+        assert metadata["user_account"] == "root"
     assert value["metadata"]["custom"] == "preserved"
 
 

@@ -21,13 +21,12 @@
 
 - 根AGENTS.md、frontend/AGENTS.md、DESIGN.md、UX-CONTRACT.md；有CodeGraph才按仓库要求先用它。需要容器/浏览器时遵循对应技能。
 - `docs/CURRENT-RUNTIME.md`及IAM的`docs/CURRENT-RUNTIME.md`、`docs/runtime-manifest.json`：用于识别保护对象，不是测试地址来源。
-- `docs/testing/basic-qa-performance-regression.md`、`docs/testing/templates/basic-qa-performance-report.md`。
+- `docs/performance/pressure-testing-workflow.md`、`docs/performance/templates/report.template.md`。
 - `docs/testing/basic-qa-reference-questions.md`、`docs/testing/data/basic-qa-reference-cases.v1.json`及其fixtures。
-- `docs/testing/product-chat-performance-baseline.md`、`docs/testing/unified-campaign-runner.md`、`scripts/unified_campaign/`、`scripts/product_chat_perf/`。
+- `docs/performance/executor-handoff.md`、`scripts/unified_campaign/`、`scripts/product_chat_perf/`。
 - `openspec/changes/unify-user-visible-answer-streaming/`及`docs/contracts/agent-output-stream-v1/`。
 - `docs/reviews/unify-answer-streaming-independent-review-20261021.md`、`docs/reviews/unify-answer-streaming-repair-20261022.md`。最终官方恢复证据为`docs/testing/streaming-unify-20261021/repair/official-api-restart-10.json`，不能拿此前失败的01–09记录当作当前结论，也不能删除它们。
 - `openspec/changes/validate-console-insights-live-workflows/`、后台6/7活动change及既有联合验收报告，区分已实现、已验收和未实测；不重做与本次无关的旧计划。
-- 历史真实聊天基线：`docs/reviews/basic-qa-performance/20261021-201100-e2e4/report.md`。它是旧版本探索记录：36/40按时技术完成、26/40结构/语义合格，首正文29.0s/104.4s，完整29.1s/104.6s；旧资源只有空闲快照。不能直接当新流式版本的稳定基线或与新模型无条件比较。
 
 冻结dev/HEAD/diff、三仓版本、依赖锁、实际API镜像版本、数据库migration head、模型requested/reported名称、MCP/知识库可用性、输入hash、资源规格、数据/冷热状态、测试工具版本、预算和阈值到新manifest。不假定当前模型仍是hy3，不把模型名字当底层供应商证明；不改模型配置来追求好结果。
 
@@ -82,18 +81,7 @@
 
 ### 阶段B：产品聊天性能
 
-固定Basic QA题库`bqa-reference-202605-v1`，40题、Q1–Q4各10题，保持问题、自动Skill路由、fast配置与冻结评分。Q4按正常BFF建立固定5轮自然历史，再测第6轮；50条历史用户轮单列，不混入40题分母，不能把gold或正确Skill预先塞给模型。其他两图用独立代表用例，不能冒充同一40题基线。
-
-执行顺序：
-
-1. P/S：真实平台/持久化/IAM/BFF、受控有延迟模型/MCP与明确Embedding设置，40题各一次。协议/故障首先可确定重现。
-2. E/S：真实配置模型，通过实际聊天链路40题各一次，单用户单并发，不自动重新生成。Q1/Q2/Q3/Q4截止分别60/120/180/180秒；晚到成功不回填按时成功。预检与历史成本单列。真实数据与合成gold数值不等价时分开确定性与结构/语义评分，不能降低规则后仍称严格正确率可比。
-3. P/R：基础功能与采集可用后，受控依赖闭环并发1/5/10，每档3轮。每轮预热至少2分钟且8题，计量至少3分钟且40题，两条件均满足；40题跑完后单纯sleep不算持续负载。每个并行问题独立线程/主体上下文，Q4独立历史。失败率/资源硬错误达到原规范停止条件就保留失败并停止升级，不为凑样本继续过载。
-4. E/R、F：本轮未另获预算时不执行，写明最少问题数、Token/价格、配额、资源和时间估算及可运行计划。R不是可持续到达率，S不是并发能力，不能登记虚构lambda_ref。若用户补充预算，再按既有规范执行，不发明新的短测代替。
-
-报告至少包含：全部计划/实际发送/按时技术完成/业务失败/超时/取消/未知计数；严格合格数/已发送数；各Q类及各轮P50/P95和缺失；首正文/末正文/流结束/确认/浏览器独立时钟；模型TTFT、实际模型与工具次数、失败分类、重试、输入/输出/缓存usage、价格/费用覆盖；整个测量窗CPU/内存/队列/池等待、在途及排空。缺测是null/未采集，不能记0、平均P95或只报告成功幸存样本。
-
-特别检查旧问题是否改善：Q1知识库授权漏配、工具permission_denied/validation_rejected与重复无效尝试、超时题、首正文≈全文时间。区分环境、工具策略/参数、平台代码、模型行为；不能所有失败都归模型，也不能通过放宽授权、关台账或改题掩盖。
+统一按 [现行性能压力测试流程](../performance/pressure-testing-workflow.md) 与本轮明确授权执行。本系统功能验收不自动启动收费负载；闭环并发、模型、负载 profile、扩展及预算单独冻结，不能继承旧阶段或报告成绩。旧性能独立报告已按用户要求清理。
 
 ### 缺陷处理与交付
 

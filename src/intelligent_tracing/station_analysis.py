@@ -5,6 +5,7 @@ from __future__ import annotations
 import statistics
 from datetime import UTC, datetime, timedelta
 
+from intelligent_tracing.data_windows import plan_station_windows
 from intelligent_tracing.evaluation import evaluate_request
 from intelligent_tracing.evidence import EvidenceRegistry
 from intelligent_tracing.policy import AnalysisPolicy, PollutantProfile
@@ -43,7 +44,9 @@ def baseline_statistics(
         end = request.time_window.start
         start = end - timedelta(days=policy.baseline.lookback_days)
     cleaned = clean_concentration_series(
-        bundle.observations,
+        bundle.observations
+        if bundle.baseline_observations is None
+        else bundle.baseline_observations,
         start=start,
         end=end,
         timezone=request.time_window.timezone,
@@ -119,6 +122,11 @@ def register_station_evidence(
         sample_count=sample_count,
         derived_from=derived_from,
         source_relation=source_relation,  # type: ignore[arg-type]
+        metadata={
+            "upstream_tool": bundle.source_tools.get(
+                product, bundle.source_tools.get("station_series", "")
+            )
+        },
     )
     return record.evidence_id
 
@@ -209,6 +217,8 @@ def analyze_station(
         profile=profile,
     )
     limitations: list[str] = list(policy_fixed_limitations())
+    if "station_history_unavailable" in bundle.missing:
+        limitations.append("station_history_unavailable")
     if not target_series.coverage.sufficient:
         limitations.append("coverage_insufficient")
     baseline_values, median, mad, baseline_coverage, baseline_evidence = (
@@ -253,14 +263,48 @@ def analyze_station(
         if baseline_evidence
         else (target_evidence,)
     )
+    windows = plan_station_windows(request, policy)
+    context_rows = ()
+    evaluation_sources = (target_evidence,)
+    if windows.context:
+        context = clean_concentration_series(
+            bundle.observations
+            if bundle.context_observations is None
+            else bundle.context_observations,
+            start=windows.context.start,
+            end=windows.context.end,
+            timezone=request.time_window.timezone,
+            policy=policy,
+            profile=profile,
+        )
+        context_rows = context.observations
+        if context_rows:
+            context_evidence = register_station_evidence(
+                registry,
+                scope=scope,
+                bundle=bundle,
+                request=request,
+                policy=policy,
+                fetched_at=fetched,
+                start=windows.context.start,
+                end=windows.context.end,
+                values=[row.value for row in context_rows if row.value is not None],
+                product="station_context_series",
+                tool_id="station.clean_context",
+                raw_payload=[row.model_dump(mode="json") for row in context_rows],
+                quality_flags=context.flags,
+                sample_count=context.coverage.valid_hours,
+            )
+            evaluation_sources = (target_evidence, context_evidence)
+            evidence_ids = (*evidence_ids, context_evidence)
     evaluations, evaluation_limitations = evaluate_request(
         request,
-        target_series.observations,
+        (*context_rows, *target_series.observations),
         registry=registry,
         scope=scope,
         policy=policy,
         fetched_at=fetched,
-        derived_from=(target_evidence,),
+        derived_from=evaluation_sources,
     )
     limitations.extend(evaluation_limitations)
     evidence_ids = (*evidence_ids, *(item.evidence_id for item in evaluations))
@@ -302,7 +346,7 @@ def analyze_station(
             policy=policy,
             profile=profile,
         )
-        if median is not None
+        if median is not None and "baseline_insufficient" not in limitations
         else ()
     )
     peak_at, peak_value = max(values, key=lambda item: item[1])

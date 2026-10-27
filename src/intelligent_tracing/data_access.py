@@ -18,7 +18,9 @@ from datetime import datetime
 from typing import Any, Protocol
 from zoneinfo import ZoneInfo
 
-from common.identity.runtime import identity_from_config
+from common.identity.runtime import RuntimeIdentityError, identity_from_config
+from common.mcp_authorization import McpAuthorizationError
+from intelligent_tracing.data_windows import plan_station_windows, within_window
 from intelligent_tracing.policy import AnalysisPolicy
 from intelligent_tracing.runtime import (
     BusinessBinding,
@@ -32,6 +34,7 @@ from intelligent_tracing.schemas import (
     HourlyWeather,
     RuntimeScope,
     StationMeta,
+    TimeWindow,
     TracingRequest,
 )
 from intelligent_tracing.sources import DataSourceUnavailable
@@ -133,6 +136,17 @@ def _parse_payload(tool_id: str, result: Any) -> Any:
             payload = json.loads(result)
         except json.JSONDecodeError:
             raise MCPToolError(tool_id, "返回非 JSON 文本") from None
+    if isinstance(payload, dict):
+        error = payload.get("error")
+        code = error.get("code") if isinstance(error, dict) else payload.get("code")
+        if str(code).lower() in {
+            "401",
+            "403",
+            "unauthenticated",
+            "forbidden",
+            "unauthorized",
+        }:
+            raise TracingScopeError("上游鉴权失败，停止后续取数")
     if is_error:
         raise MCPToolError(tool_id, "工具协议返回失败")
     if isinstance(payload, dict):
@@ -164,12 +178,17 @@ async def _call_tool(
         try:
             result = await executor(SERVER_KEY, tool_id, args, config)
             return _parse_payload(tool_id, result)
+        except (TracingScopeError, RuntimeIdentityError, McpAuthorizationError):
+            raise
         except MCPToolError as exc:
             attempts += 1
             if attempts > max_retries or not exc.transient:
                 raise
             await asyncio.sleep(0.2 * attempts)
         except Exception as exc:  # noqa: BLE001 - normalized at the boundary
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            if status in (401, 403):
+                raise TracingScopeError("上游鉴权失败，停止后续取数") from exc
             message = f"{type(exc).__name__}: {exc}"
             attempts += 1
             transient = _is_transient_message(message)
@@ -205,12 +224,13 @@ def _num(value: Any) -> float | None:
     if value is None or isinstance(value, bool):
         return None
     if isinstance(value, (int, float)):
-        return float(value)
+        return float(value) if math.isfinite(value) else None
     text = str(value).strip()
     if text in {"", "-", "--", "null", "None", "N/A"}:
         return None
     try:
-        return float(text)
+        number = float(text)
+        return number if math.isfinite(number) else None
     except ValueError:
         return None
 
@@ -219,6 +239,15 @@ def _dt(value: Any) -> datetime | None:
     text = str(value or "").strip()
     if not text:
         return None
+    try:
+        parsed = datetime.fromisoformat(text)
+        return (
+            parsed.replace(tzinfo=_TZ)
+            if parsed.tzinfo is None
+            else parsed.astimezone(_TZ)
+        )
+    except ValueError:
+        pass
     for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
         try:
             return datetime.strptime(text, fmt).replace(tzinfo=_TZ)
@@ -427,6 +456,7 @@ class BusinessMCPDataSource:
         """Fetch one scoped snapshot; never broaden the frozen request."""
         config = _run_config()
         _verify_scope(config, request, scope)
+        windows = plan_station_windows(request, policy)
         retries = int(policy.budget.max_tool_retries)
         region = request.target.region_name
         missing: list[str] = []
@@ -450,18 +480,55 @@ class BusinessMCPDataSource:
         if not target_obs:
             raise DataSourceUnavailable("station_series_empty")
 
+        history = list(target_obs)
+        for window in windows.auxiliary:
+            try:
+                rows, _ = await self._station_series(
+                    config,
+                    request,
+                    station_code=target.station_code,
+                    region=region,
+                    max_retries=retries,
+                    window=window,
+                )
+                history.extend(rows)
+            except MCPToolError:
+                missing.append("station_history_unavailable")
+        baseline_obs = within_window(tuple(history), windows.baseline)
+        context_obs = within_window(tuple(history), windows.context)
+        source_tools["baseline_series"] = tool
+        source_tools["station_context_series"] = tool
+        if not baseline_obs:
+            missing.append("baseline")
+        if windows.context and not context_obs:
+            missing.append("evaluation_context")
+
         neighbors: dict[str, tuple[HourlyObservation, ...]] = {}
-        selected = [
-            item for item in stations if item.station_code != target.station_code
-        ]
-        for item in selected:
+        selected = sorted(
+            [
+                item
+                for item in stations
+                if item.station_code != target.station_code
+                and _distance_km(
+                    target.latitude, target.longitude, item.latitude, item.longitude
+                )
+                <= request.neighbor_radius_km
+            ],
+            key=lambda item: (
+                _distance_km(
+                    target.latitude, target.longitude, item.latitude, item.longitude
+                ),
+                item.station_code,
+            ),
+        )
+        if len(selected) > self._max_neighbors:
+            missing.append("neighbors_truncated")
+        for item in selected[: self._max_neighbors]:
             distance = _distance_km(
                 target.latitude, target.longitude, item.latitude, item.longitude
             )
             if distance > request.neighbor_radius_km:
                 continue
-            if len(neighbors) >= self._max_neighbors:
-                break
             try:
                 rows, _ = await self._station_series(
                     config,
@@ -489,12 +556,20 @@ class BusinessMCPDataSource:
                 TRACING_PRODUCT_TOOLS["nwp"],
                 {
                     "region": region,
-                    "sTime": request.time_window.start.strftime("%Y-%m-%d %H:00"),
-                    "eTime": request.time_window.end.strftime("%Y-%m-%d %H:00"),
+                    "sTime": request.time_window.start.astimezone(_TZ).strftime(
+                        "%Y-%m-%d %H:00"
+                    ),
+                    "eTime": request.time_window.end.astimezone(_TZ).strftime(
+                        "%Y-%m-%d %H:00"
+                    ),
                 },
                 max_retries=retries,
             )
-            nwp = self._normalize_weather(payload)
+            nwp = tuple(
+                row
+                for row in self._normalize_weather(payload)
+                if request.time_window.start <= row.timestamp < request.time_window.end
+            )
             if not nwp:
                 missing.append("nwp")
             source_tools["nwp"] = TRACING_PRODUCT_TOOLS["nwp"]
@@ -509,6 +584,9 @@ class BusinessMCPDataSource:
             if not grid_cells:
                 missing.append("grid")
             else:
+                missing.append("grid_bounded_snapshot")
+                if any(cell.row is None or cell.col is None for cell in grid_cells):
+                    missing.append("grid_topology_unknown")
                 source_tools["grid_series"] = TRACING_PRODUCT_TOOLS["grid_series"]
                 source_tools["grid_geometry"] = TRACING_PRODUCT_TOOLS["grid_geometry"]
         except (MCPToolError, DataSourceUnavailable):
@@ -525,6 +603,8 @@ class BusinessMCPDataSource:
             target_station_code=target.station_code,
             region_code=target.region_code,
             observations=target_obs,
+            baseline_observations=baseline_obs,
+            context_observations=context_obs,
             neighbors=neighbors,
             stations=stations,
             grid_cells=grid_cells,
@@ -542,7 +622,9 @@ class BusinessMCPDataSource:
         station_code: str,
         region: str,
         max_retries: int,
+        window: TimeWindow | None = None,
     ) -> tuple[tuple[HourlyObservation, ...], str]:
+        window = window or request.time_window
         field = POLLUTANT_FIELDS.get(request.pollutant.lower())
         if field is None:
             raise DataSourceUnavailable(f"未登记污染物: {request.pollutant}")
@@ -555,8 +637,8 @@ class BusinessMCPDataSource:
                 "region": region,
                 "station": station_code,
                 "type": "hourly",
-                "sTime": request.time_window.start.strftime("%Y-%m-%d %H:00:00"),
-                "eTime": request.time_window.end.strftime("%Y-%m-%d %H:00:00"),
+                "sTime": window.start.astimezone(_TZ).strftime("%Y-%m-%d %H:00:00"),
+                "eTime": window.end.astimezone(_TZ).strftime("%Y-%m-%d %H:00:00"),
             },
             max_retries=max_retries,
         )
@@ -567,7 +649,7 @@ class BusinessMCPDataSource:
             if station and station != station_code:
                 continue
             timestamp = _dt(row.get("updateTime"))
-            if timestamp is None:
+            if timestamp is None or not window.start <= timestamp < window.end:
                 continue
             rows.append(
                 HourlyObservation(
@@ -588,6 +670,29 @@ class BusinessMCPDataSource:
             timestamp = _dt(row.get("updateTime"))
             if timestamp is None:
                 continue
+            run_time = _dt(row.get("runTime"))
+            lead = _num(row.get("leadHours"))
+            lead_hours = (
+                int(lead)
+                if lead is not None and lead >= 0 and lead.is_integer()
+                else None
+            )
+            flags: list[str] = []
+            if (row.get("runTime") is not None and run_time is None) or (
+                row.get("leadHours") is not None and lead_hours is None
+            ):
+                flags.append("nwp_time_inconsistent")
+            if run_time is not None and (
+                run_time > timestamp
+                or (
+                    lead_hours is not None
+                    and (timestamp - run_time).total_seconds() != lead_hours * 3600
+                )
+            ):
+                flags.append("nwp_time_inconsistent")
+            if flags:
+                run_time = None
+                lead_hours = None
             wind_speed = _num(row.get("windSpeed"))
             wind_direction = _num(row.get("windDirection"))
             u = v = None
@@ -607,6 +712,9 @@ class BusinessMCPDataSource:
                     pressure=_num(row.get("pressure")),
                     temperature=_num(row.get("temperature")),
                     source_type="nwp",
+                    run_time=run_time,
+                    lead_hours=lead_hours,
+                    qc_flags=tuple(flags),
                 )
             )
         rows.sort(key=lambda item: item.timestamp)
@@ -631,25 +739,40 @@ class BusinessMCPDataSource:
                 "region": region,
                 "type": "hourly",
                 "index": index,
-                "sTime": request.time_window.start.strftime("%Y-%m-%d %H:00:00"),
-                "eTime": request.time_window.end.strftime("%Y-%m-%d %H:00:00"),
+                "sTime": request.time_window.start.astimezone(_TZ).strftime(
+                    "%Y-%m-%d %H:00:00"
+                ),
+                "eTime": request.time_window.end.astimezone(_TZ).strftime(
+                    "%Y-%m-%d %H:00:00"
+                ),
             },
             max_retries=max_retries,
         )
-        best: dict[str, tuple[float, datetime]] = {}
+        frames: dict[datetime, dict[str, float]] = {}
         for row in _rows(payload):
             name = str(row.get("name") or "").strip()
             value = _num(row.get("value"))
             timestamp = _dt(row.get("updateTime"))
             if not name or value is None or timestamp is None:
                 continue
-            current = best.get(name)
-            if current is None or value > current[0]:
-                best[name] = (value, timestamp)
-        if not best:
+            if not request.time_window.start <= timestamp < request.time_window.end:
+                continue
+            frame = frames.setdefault(timestamp, {})
+            # Conflicting duplicates have no unique value and are excluded below.
+            if name in frame and frame[name] != value:
+                frame[name] = float("nan")
+            else:
+                frame[name] = value
+        if not frames:
             return ()
-        ranked = sorted(best.items(), key=lambda item: item[1][0], reverse=True)
-        ranked = ranked[: self._max_grid_cells]
+        timestamp = max(frames)
+        ranked = [
+            (name, value)
+            for name, value in sorted(frames[timestamp].items())
+            if math.isfinite(value)
+        ][: self._max_grid_cells]
+        if not ranked:
+            return ()
         names = ",".join(name for name, _ in ranked)
         geometry_payload = await _call_tool(
             self._executor,
@@ -663,8 +786,8 @@ class BusinessMCPDataSource:
             name = str(row.get("name") or "").strip()
             if name:
                 geometry[name] = row
-        cells: list[tuple[str, float, datetime, float, float]] = []
-        for name, (value, timestamp) in ranked:
+        cells: list[GridCell] = []
+        for name, value in ranked:
             row = geometry.get(name)
             if row is None:
                 continue
@@ -672,27 +795,36 @@ class BusinessMCPDataSource:
             longitude = _num(row.get("longitude"))
             if latitude is None or longitude is None:
                 continue
-            cells.append((name, value, timestamp, latitude, longitude))
-        if not cells:
-            return ()
-        latitudes = [item[3] for item in cells]
-        longitudes = [item[4] for item in cells]
-        base_lat = min(latitudes)
-        base_lon = min(longitudes)
-        step = 0.01
-        return tuple(
-            GridCell(
-                cell_id=name,
-                row=round((latitude - base_lat) / step),
-                col=round((longitude - base_lon) / step),
-                latitude=latitude,
-                longitude=longitude,
-                value=value,
-                observed_at=timestamp,
-                source_relation="unknown",
+            if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:
+                continue
+            if (
+                _distance_km(
+                    request.target.latitude,
+                    request.target.longitude,
+                    latitude,
+                    longitude,
+                )
+                > request.neighbor_radius_km
+            ):
+                continue
+            grid_row, grid_col = _num(row.get("row")), _num(row.get("col"))
+            cells.append(
+                GridCell(
+                    cell_id=name,
+                    row=int(grid_row)
+                    if grid_row is not None and grid_row.is_integer()
+                    else None,
+                    col=int(grid_col)
+                    if grid_col is not None and grid_col.is_integer()
+                    else None,
+                    latitude=latitude,
+                    longitude=longitude,
+                    value=value,
+                    observed_at=timestamp,
+                    source_relation="unknown",
+                )
             )
-            for name, value, timestamp, latitude, longitude in cells
-        )
+        return tuple(cells)
 
 
 class TracingDataSourceGuard:

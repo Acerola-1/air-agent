@@ -786,3 +786,49 @@ test('tracing done and history share identity even if final reread fails', async
   const answers=store.getState().messages.filter(m=>m.role==='assistant');
   assert.equal(answers.length,1); assert.equal(answers[0].id,'rep1');
 });
+
+test('proxy pins readable account in both run metadata locations', async () => {
+  const previous = global.fetch, oldBase = process.env.LANGGRAPH_API_URL;
+  process.env.LANGGRAPH_API_URL = 'http://native.invalid';
+  let forwarded;
+  try {
+    global.fetch = async (_url, options) => {
+      forwarded = JSON.parse(options.body);
+      return Response.json({ run_id: 'fixture' });
+    };
+    const ctx = makeCtx();
+    ctx.user.account = 'trusted-account';
+    const routes = proxyFixture(ctx);
+    const response = await routes.POST(request('threads/own/runs', {
+      assistant_id: 'basic-qa',
+      input: { messages: [{ role: 'user', content: 'fixture' }] },
+      metadata: { user_account: 'forged-top' },
+      config: { metadata: { user_account: 'forged-config', custom: 'preserved' } },
+    }, 'POST'));
+    assert.equal(response.status, 200);
+    assert.equal(forwarded.metadata.user_account, 'trusted-account');
+    assert.equal(forwarded.config.metadata.user_account, 'trusted-account');
+    assert.equal(forwarded.config.metadata.custom, 'preserved');
+  } finally {
+    global.fetch = previous;
+    if (oldBase === undefined) delete process.env.LANGGRAPH_API_URL;
+    else process.env.LANGGRAPH_API_URL = oldBase;
+  }
+});
+
+test('tracing turn control stays internal in live values and history while data tools remain visible',()=>{
+  const f=fixture();
+  const raw=[
+    {type:'human',id:'hello',content:'你好啊,你能做什么'},
+    {type:'ai',id:'plan',content:'',additional_kwargs:{ui_visible:false},tool_calls:[{id:'route',name:'submit_tracing_turn',args:{plan:{intent:'conversation'}}}]},
+    {type:'tool',tool_call_id:'route',content:'{"route":"conversation"}'},
+    {type:'ai',id:'answer',content:'你好，我能辅助分析污染过程。',additional_kwargs:{ui_visible:true}},
+  ];
+  const parsed=f.parseMessages(raw);
+  assert.equal(parsed.length,2); assert.equal(parsed[1].content,raw[3].content);
+  assert.deepEqual(parsed[1].tools,[]);
+  const orphan=f.parseMessages([{type:'tool',name:'submit_tracing_turn',tool_call_id:'route',content:'{"route":"conversation"}'}]);
+  assert.deepEqual(orphan,[]);
+  const tools=f.parseMessages([...raw,{type:'ai',tool_calls:[{id:'data',name:'query_air',args:{}}]}, {type:'tool',tool_call_id:'data',name:'query_air',content:'ok'}]);
+  assert.equal(tools[1].tools.length,1);assert.equal(tools[1].tools[0].name,'query_air');
+});

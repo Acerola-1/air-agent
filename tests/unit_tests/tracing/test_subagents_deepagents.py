@@ -6,6 +6,7 @@ import asyncio
 import time
 
 import pytest
+from conversation_fixtures import analysis_prefix, analysis_question, run_config
 from deepagents.middleware.subagents import TaskToolSchema
 from fake_model import ScriptedChatModel
 from fixtures import (
@@ -26,6 +27,16 @@ from intelligent_tracing.report_store import InMemoryReportStore
 from intelligent_tracing.sources import FixtureDataSource
 from intelligent_tracing.state import latest_finding_reducer, latest_request_reducer
 from intelligent_tracing.subagents import build_station_runnable
+
+
+@pytest.fixture(autouse=True)
+def controlled_runtime_identity(monkeypatch):
+    """G0 uses a controlled identity service; no production database is queried."""
+    from unittest.mock import AsyncMock
+
+    import common.identity.runtime as identity
+
+    monkeypatch.setattr(identity, "revalidate", AsyncMock())
 
 
 def _lead_model(
@@ -152,8 +163,16 @@ def _graph(
 ):
     request = make_request()
     bundle = build_bundle(scenario="transport")
+    lead = lead or _lead_model()
+    prefix = analysis_prefix()
+    if (
+        lead.responses[0].tool_calls
+        and lead.responses[0].tool_calls[0]["name"] == "freeze_tracing_request"
+    ):
+        prefix = prefix[:1]
+    lead.responses[:0] = prefix
     graph = build_tracing_graph(
-        model=lead or _lead_model(),
+        model=lead,
         meteo_model=meteo or _meteo_model(),
         reviewer_model=reviewer or _reviewer_model(request.analysis_id),
         data_source=source,
@@ -167,7 +186,7 @@ def _graph(
 async def _invoke(graph, request):
     return await graph.ainvoke(
         {
-            "messages": [HumanMessage(content="分析目标站 PM2.5")],
+            "messages": [HumanMessage(content=analysis_question())],
             "request": request,
             "scope": make_scope(),
         },
@@ -181,6 +200,9 @@ async def _invoke(graph, request):
                 "ledger_business_policy_version": BUSINESS_POLICY_VERSION,
                 "ledger_business_permission": BUSINESS_PERMISSION,
                 "ledger_graph_id": "intelligent-tracing",
+                "langgraph_auth_user": run_config()["configurable"][
+                    "langgraph_auth_user"
+                ],
             }
         },
     )
@@ -204,6 +226,7 @@ async def test_lead_and_specialist_tool_boundaries():
     )
     await _invoke(graph, request)
     assert set(lead_model.bound_tools) == {
+        "submit_tracing_turn",
         "freeze_tracing_request",
         "get_analysis_policy_summary",
         "build_validated_report",
@@ -366,8 +389,8 @@ async def test_child_executions_link_existing_attempt_without_new_request():
         "evidence-reviewer",
     }
     for child in children:
-        assert child.analysis_id == request.analysis_id
-        assert child.revision == request.revision
+        assert child.analysis_id == out["request"].analysis_id
+        assert child.revision == out["request"].revision
         assert child.attempt_id == "attempt-test"
         assert child.run_id == "run-test"
         assert child.status in {"succeeded", "failed", "partial"}
@@ -467,6 +490,7 @@ async def test_freeze_then_delegate_without_injected_scope(monkeypatch):
             AIMessage(content="模型自由文本不发布。"),
         ]
     )
+    lead.responses[:0] = analysis_prefix()[:1]
     graph = build_tracing_graph(
         model=lead,
         meteo_model=_meteo_model(),
@@ -477,7 +501,7 @@ async def test_freeze_then_delegate_without_injected_scope(monkeypatch):
         lifecycle_probe=allow_publication,
     )
     out = await graph.ainvoke(
-        {"messages": [HumanMessage(content="分析目标站 PM2.5")]},
+        {"messages": [HumanMessage(content=analysis_question())]},
         config={
             "configurable": {
                 "thread_id": "thread-trusted",
@@ -499,7 +523,8 @@ async def test_freeze_then_delegate_without_injected_scope(monkeypatch):
             }
         },
     )
-    assert out["request"].analysis_id == request.analysis_id
+    assert out["request"].analysis_id == out["turn_decision"].analysis_id
+    assert out["request"].request_digest == out["turn_decision"].request_digest
     assert out["scope"].tenant_id == "tenant-trusted"
     assert out["scope"].user_id == "user-trusted"
     assert out["scope"].thread_id == "thread-trusted"

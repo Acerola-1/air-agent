@@ -2,7 +2,7 @@
 
 run_id：`20261022-094000-full`  
 基线：`dev` / `52da249`（工作区有本轮测试工具修改，见 §8）  
-规范：[basic QA 并发性能回归规范](../../../testing/basic-qa-performance-regression.md) v1.2、`basic-qa-perf.v1`  
+当时使用旧版 v1.2 / `basic-qa-perf.v1`；旧性能流程及独立报告已按用户要求清理。现行执行入口见 [Agent 性能压力测试流程](../../../performance/pressure-testing-workflow.md)。
 时间：2026-10-22 01:19 — 09:40（Asia/Shanghai）。**实际墙钟约 8h20m，其中 7h17m 为 ego-browser 控制权暂停等待；主动执行约 1h12m，已超出 4 小时预算。** 因此本轮在 E/S 后停止新增负载，P/R、E/R、F 未执行，不能把本轮写成容量或全量验收通过。
 
 ## 1. 一句话结论
@@ -116,7 +116,7 @@ run_id：`20261022-094000-full`
 ## 10. 交付与复跑
 
 - 本目录：`manifest.json`、`summary.json`、`defect-list.md`、`scenario-matrix.md`、`commands.md`、`screenshots/`、`evidence/`。
-- 性能原始 bundle：`docs/reviews/basic-qa-performance/20261022-ps-full/`、`docs/reviews/basic-qa-performance/20261022-es-full/`。
+- 性能原始 bundle：`旧性能证据已清理`、`旧性能证据已清理`。
 - 受限正文与大日志：`.local/full-20261022/evidence-ps/`、`.local/full-20261022/evidence-es/`（公开报告不含正文）。
 - 复跑命令见 `commands.md`。
 

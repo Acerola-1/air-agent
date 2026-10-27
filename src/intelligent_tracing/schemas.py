@@ -132,6 +132,88 @@ class RuntimeScope(StrictModel):
     business_permission: str = Field(min_length=1, max_length=128)
 
 
+DraftField = Literal[
+    "station_code",
+    "station_name",
+    "region_name",
+    "region_code",
+    "pollutant",
+    "start",
+    "end",
+    "timezone",
+    "neighbor_radius_km",
+    "baseline_start",
+    "baseline_end",
+]
+
+
+class DraftSlot(StrictModel):
+    """A model extraction, backed by an exact quote from the current input."""
+
+    field: DraftField
+    value: str = Field(min_length=1, max_length=200)
+    source_text: str = Field(min_length=1, max_length=1000)
+
+
+class TracingTurnPlan(StrictModel):
+    """Model proposal only; contains no authority or free-form public body."""
+
+    intent: Literal["conversation", "analysis"]
+    blocks: tuple[str, ...] = Field(default=(), max_length=12)
+    tone: Literal["friendly", "concise"] = "friendly"
+    slots: tuple[DraftSlot, ...] = Field(default=(), max_length=12)
+    inherit_previous: bool = False
+    reset_fields: tuple[DraftField, ...] = ()
+
+
+class TurnContext(StrictModel):
+    """Server-owned identity of a single user turn, including its input digest."""
+
+    key: str
+    run_id: str
+    attempt_id: str
+    message_id: str
+    input_digest: str
+    scope: RuntimeScope
+
+
+class TracingRequestDraft(StrictModel):
+    """Incomplete conditions, scoped independently of an executable request."""
+
+    scope: RuntimeScope
+    values: dict[str, str] = Field(default_factory=dict)
+    sources: dict[str, str] = Field(default_factory=dict)
+
+
+class TurnDecision(StrictModel):
+    """Validated turn route; only the server can mint an execution binding."""
+
+    context: TurnContext
+    proposed_intent: Literal["conversation", "analysis", "unknown"]
+    route: Literal["conversation", "clarify", "analysis", "fallback"]
+    blocks: tuple[str, ...] = ()
+    tone: Literal["friendly", "concise"] = "friendly"
+    missing: tuple[str, ...] = ()
+    invalid: tuple[str, ...] = ()
+    reason: str = ""
+    catalog_version: str = ""
+    analysis_id: str = ""
+    revision: int = 0
+    frozen: bool = False
+    request_digest: str = ""
+    candidates: tuple[str, ...] = ()
+
+
+class TurnPublication(StrictModel):
+    """Checkpointable identity and confirmed text of a non-report answer."""
+
+    turn_key: str
+    output_id: str
+    message_id: str
+    text: str
+    content_sha256: str
+
+
 class EvidenceRecord(StrictModel):
     """Execution-layer evidence; models cannot construct or register it."""
 
@@ -226,8 +308,8 @@ class GridCell(StrictModel):
     """One grid cell; row/column support deterministic contiguity."""
 
     cell_id: str = Field(min_length=1)
-    row: int
-    col: int
+    row: int | None = None
+    col: int | None = None
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     value: float | None = None
@@ -245,6 +327,10 @@ class DataBundle(StrictModel):
     target_station_code: str = Field(min_length=1)
     region_code: str = ""
     observations: tuple[HourlyObservation, ...] = ()
+    # None supports legacy snapshots containing all hours in observations.
+    # An explicit empty tuple means fetched history is genuinely unavailable.
+    baseline_observations: tuple[HourlyObservation, ...] | None = None
+    context_observations: tuple[HourlyObservation, ...] | None = None
     neighbors: dict[str, tuple[HourlyObservation, ...]] = Field(default_factory=dict)
     stations: tuple[StationMeta, ...] = ()
     grid_cells: tuple[GridCell, ...] = ()
@@ -418,6 +504,8 @@ class MeteoFindings(StrictModel):
     low_pblh_ratio: float = Field(ge=0, le=1)
     mean_pblh: float | None = None
     mean_wind_speed: float | None = None
+    background_mean_wind_speed: float | None = None
+    weather_wind_samples: int = Field(default=0, ge=0)
     calm_ratio: float = Field(ge=0, le=1)
     source_types: tuple[str, ...] = ()
     nwp_run_times: tuple[datetime, ...] = ()
@@ -479,6 +567,8 @@ class ClaimType(StrEnum):
     NO_ANOMALY = "no_anomaly"
     DATA_INSUFFICIENT = "data_insufficient"
     PEAK = "peak"
+    OBSERVATION_SUMMARY = "observation_summary"
+    WEATHER_BACKGROUND = "weather_background"
     DURATION = "duration"
     CHANGE_RATE = "change_rate"
     SPATIAL_PATTERN = "spatial_pattern"

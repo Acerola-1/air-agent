@@ -284,6 +284,7 @@ def clean_weather(
             flags.add("not_hour_aligned")
             invalid += 1
             continue
+        flags.update(row.qc_flags)
         wind_speed = _valid_wind_speed(row.wind_speed, policy)
         direction = _valid_direction(row.wind_direction, policy)
         u = _valid_component(row.u, policy)
