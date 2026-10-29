@@ -38,6 +38,41 @@ BRIDGE_HOST = (
 BRIDGE_PORT = 19110
 GRAPH_PORT = 2024
 GRAPH_CONTAINER = "air-agent-langgraph-api"
+# Langfuse 全套栈固定在显式网段上：default 网络随 vmnet 桥重建改 /24
+# （192.168.64.0 → 65.0），而固定网段的网关恒为第一个地址，所以 .env.langfuse
+# 里的内部地址可以写常量，不必每次启动重算。
+LANGFUSE_NETWORK = "air-agent-langfuse"
+LANGFUSE_NETWORK_SUBNET = "10.99.0.0/24"
+LANGFUSE_GATEWAY = "10.99.0.1"
+LANGFUSE_HTTP_PORT = 3001
+LANGFUSE_SERVICES = (
+    "langfuse-postgres",
+    "langfuse-clickhouse",
+    "langfuse-minio",
+    "langfuse-redis",
+    "langfuse-web",
+    "langfuse-worker",
+)
+LANGFUSE_CONTAINERS = tuple(f"air-agent-{name}" for name in LANGFUSE_SERVICES)
+# 只有这些键明确指向本机私有桥（19110 桥或经桥转发的 Langfuse）。其它 URL
+# 配置（MCP、检索、内网服务）即使地址以 .1 结尾也不得改写。
+BRIDGE_HOST_KEYS = (
+    "IAM_BASE_URL",
+    "MAIN_LLM_BASE_URL",
+    "SUMMARY_LLM_BASE_URL",
+    "LANGFUSE_BASE_URL",
+    "KNOWLEDGE_API_URL",
+)
+# 启动应用前必须先运行的既有依赖；启动器只 start 已存在的容器，从不重建。
+DEPENDENCY_CONTAINERS = (
+    "air-agent-postgres",
+    "air-agent-redis",
+    "iam-pg17",
+    "iam-redis7",
+    "lightrag-postgres",
+    "lightrag-neo4j",
+    "lightrag-qdrant",
+)
 HTTP_TIMEOUT_SECONDS = 20.0
 PORT_WAIT_SECONDS = 20.0
 GRAPH_HEALTH_TIMEOUT_SECONDS = 30.0
@@ -134,6 +169,31 @@ def _out(message: str) -> None:
 
 def _err(message: str) -> None:
     sys.stderr.write(f"{message}\n")
+
+
+_URL_USERINFO = re.compile(r"://[^/\s@]+@")
+
+
+def _command_tail(result: subprocess.CompletedProcess[str], lines: int = 3) -> str:
+    """Return a short tail of a failed command's output with credentials removed.
+
+    Compose/CLI output can embed DSNs, so URL userinfo is overwritten before the
+    keyword filter: "connection failed: postgresql://user:pw@host/db" contains
+    none of the filtered words but still carries a secret.
+    """
+    text = "\n".join(part for part in (result.stderr, result.stdout) if part)
+    candidates = []
+    for line in text.splitlines():
+        stripped = _URL_USERINFO.sub("://***@", line.strip())
+        if not stripped:
+            continue
+        if any(
+            marker in stripped.lower()
+            for marker in ("password", "secret", "token", "key=")
+        ):
+            continue
+        candidates.append(stripped)
+    return " / ".join(candidates[-lines:]) or "无输出"
 
 
 def _business_database_uri(value: str, label: str) -> None:
@@ -243,6 +303,63 @@ def _validate_host_env(
     return iam_env, agent_env, rag_env
 
 
+def _private_ipv4_host(value: str) -> bool:
+    try:
+        address = ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return (
+        address.version == 4
+        and not address.is_global
+        and not address.is_loopback
+        and not address.is_unspecified
+        and not address.is_multicast
+    )
+
+
+def _render_gateway_value(value: str, gateway: str) -> str:
+    """Point a known host-bridge URL at the gateway the container network owns now.
+
+    Apple container rebuilds its vmnet bridge with a fresh /24, so the host
+    address seen from containers moves with it (64.1 → 65.1). Callers must only
+    pass the reviewed host-bridge keys: "private IPv4 ending in .1" is not a
+    property of Apple container, and unrelated intranet services can use it.
+    """
+    if "://" not in value:
+        return value
+    try:
+        parsed = urlparse(value)
+        port = parsed.port
+    except ValueError:
+        return value
+    host = parsed.hostname or ""
+    if parsed.scheme not in {"http", "https"} or not host.endswith(".1"):
+        return value
+    if not _private_ipv4_host(host):
+        return value
+    userinfo, separator, _ = parsed.netloc.rpartition("@")
+    prefix = f"{userinfo}@" if separator else ""
+    suffix = f":{port}" if port is not None else ""
+    return parsed._replace(netloc=f"{prefix}{gateway}{suffix}").geturl()
+
+
+def _require_bridge_endpoint(value: str, *, path: str, label: str) -> None:
+    """Require a private-bridge endpoint without pinning today's gateway IP."""
+    try:
+        parsed = urlparse(value)
+        port = parsed.port
+    except ValueError as exc:
+        raise LaunchError(f"LangGraph {label} 不是有效 URL。") from exc
+    if parsed.scheme not in {"http", "https"} or not _private_ipv4_host(
+        parsed.hostname or ""
+    ):
+        raise LaunchError(f"LangGraph {label} 必须指向本机私有桥地址。")
+    if port != BRIDGE_PORT:
+        raise LaunchError(f"LangGraph {label} 必须使用私有桥端口 {BRIDGE_PORT}。")
+    if parsed.path.rstrip("/") != path:
+        raise LaunchError(f"LangGraph {label} 路径必须为 {path or '/'}。")
+
+
 def _validate_graph_env(path: Path) -> dict[str, str]:
     values = _parse_literal_env(path)
     _validate_langfuse_only(values, "LangGraph dotenv")
@@ -256,17 +373,19 @@ def _validate_graph_env(path: Path) -> dict[str, str]:
         _required(values, "LANGGRAPH_STORE", "LangGraph dotenv")
     )
     _business_database_uri(store["uri"], "LangGraph LANGGRAPH_STORE uri")
-    if (
-        values.get("IAM_BASE_URL", "").rstrip("/")
-        != f"http://{BRIDGE_HOST}:{BRIDGE_PORT}"
-    ):
-        raise LaunchError("LangGraph IAM_BASE_URL 必须指向本机私有桥 19110。")
-    model_base = f"http://{BRIDGE_HOST}:{BRIDGE_PORT}/v1"
-    if values.get("MAIN_LLM_BASE_URL", "").rstrip("/") != model_base:
-        raise LaunchError("LangGraph MAIN_LLM_BASE_URL 必须指向本机私有桥 /v1。")
+    _require_bridge_endpoint(
+        _required(values, "IAM_BASE_URL", "LangGraph dotenv"),
+        path="",
+        label="IAM_BASE_URL",
+    )
+    _require_bridge_endpoint(
+        _required(values, "MAIN_LLM_BASE_URL", "LangGraph dotenv"),
+        path="/v1",
+        label="MAIN_LLM_BASE_URL",
+    )
     summary_base = values.get("SUMMARY_LLM_BASE_URL")
-    if summary_base and summary_base.rstrip("/") != model_base:
-        raise LaunchError("LangGraph SUMMARY_LLM_BASE_URL 必须指向本机私有桥 /v1。")
+    if summary_base:
+        _require_bridge_endpoint(summary_base, path="/v1", label="SUMMARY_LLM_BASE_URL")
     return values
 
 
@@ -297,8 +416,11 @@ def _check_bridge_config(path: Path) -> tuple[dict[str, Any], tuple[str, ...]]:
         raise LaunchError("私有桥配置权限必须为 0600。")
     if not isinstance(config, dict):
         raise LaunchError("私有桥配置格式无效。")
-    if config.get("bind_host") not in {"127.0.0.1", BRIDGE_HOST}:
-        raise LaunchError("私有桥绑定地址不在允许范围内。")
+    bind_host = config.get("bind_host")
+    if not isinstance(bind_host, str) or (
+        bind_host != "127.0.0.1" and not _private_ipv4_host(bind_host)
+    ):
+        raise LaunchError("私有桥绑定地址必须是回环或私有 IPv4。")
     if config.get("bind_port") != BRIDGE_PORT:
         raise LaunchError("私有桥端口必须为 19110。")
     allowed = config.get("allowed_source_ips")
@@ -427,20 +549,52 @@ def _read_pid(log_dir: Path, key: str) -> int | None:
         return None
 
 
-def _spawn_service(service: Service, log_dir: Path) -> None:
+def _output_log_path(log_dir: Path, key: str) -> Path:
+    """Path of the raw stdout/stderr capture for one service.
+
+    Matches the private bridge's own crash log name so a service has exactly
+    one output file beside its sanitized ``<key>.log`` lifecycle events.
+    """
+    return log_dir / f"{key}.out.log"
+
+
+def _rotate_output_log(path: Path, limit_bytes: int = 5 * 1024 * 1024) -> None:
+    if path.is_symlink():
+        raise LaunchError("服务输出文件不能是符号链接。")
     try:
+        if path.stat().st_size <= limit_bytes:
+            return
+    except OSError:
+        return
+    try:
+        os.replace(path, path.with_name(f"{path.name}.1"))
+    except OSError as exc:
+        raise LaunchError("服务输出文件无法轮换。") from exc
+
+
+def _spawn_service(service: Service, log_dir: Path) -> None:
+    path = _output_log_path(log_dir, service.key)
+    _rotate_output_log(path)
+    try:
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+    except OSError as exc:
+        raise LaunchError(f"{service.key} 输出文件无法创建。") from exc
+    try:
+        os.fchmod(descriptor, 0o600)
         process = subprocess.Popen(
             service.command,
             cwd=service.cwd,
             env=service.env,
             stdin=subprocess.DEVNULL,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=descriptor,
+            stderr=descriptor,
             start_new_session=True,
             close_fds=True,
         )
     except OSError as exc:
         raise LaunchError(f"{service.key} 无法启动。") from exc
+    finally:
+        os.close(descriptor)
     _write_pid(log_dir, service.key, process.pid)
     _append_lifecycle(
         log_dir, service.key, "started", pid=process.pid, port=service.port
@@ -454,7 +608,12 @@ def _start_http_service(service: Service, log_dir: Path) -> None:
     else:
         _spawn_service(service, log_dir)
         _out(f"已启动 {service.key}，等待健康检查。")
-    _wait_for_http(service.key, service.port, service.health_path)
+    try:
+        _wait_for_http(service.key, service.port, service.health_path)
+    except LaunchError as exc:
+        raise LaunchError(
+            f"{exc} 进程输出见 {_output_log_path(log_dir, service.key)}。"
+        ) from exc
     if already_listening:
         _append_lifecycle(log_dir, service.key, "skipped_existing", port=service.port)
     _append_lifecycle(
@@ -585,6 +744,128 @@ def _container_ip(container_cli: str, container_name: str) -> str:
     return addresses.pop()
 
 
+def _inspect_container(
+    container_cli: str, container_name: str
+) -> dict[str, Any] | None:
+    try:
+        result = subprocess.run(
+            [container_cli, "inspect", container_name],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        payload: Any = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return None
+    if isinstance(payload, list):
+        payload = payload[0] if payload else None
+    return payload if isinstance(payload, dict) else None
+
+
+def _inspect_status(container_cli: str, container_name: str) -> dict[str, Any] | None:
+    """Return the inspected status block, or None when the container is absent."""
+    payload = _inspect_container(container_cli, container_name)
+    status = (payload or {}).get("status")
+    return status if isinstance(status, dict) else None
+
+
+def _container_state(container_cli: str, container_name: str) -> str:
+    """Return 'running'/'stopped'/..., or '' when the container does not exist."""
+    status = _inspect_status(container_cli, container_name)
+    if status is None:
+        return ""
+    return str(status.get("state") or status.get("status") or "").lower()
+
+
+def _container_networks(container_cli: str, container_name: str) -> tuple[str, ...]:
+    """Return the container's networks.
+
+    A stopped container reports an empty ``status.networks`` but still records
+    the network it will join under ``configuration.networks``; read that first
+    so a stopped container is not mistaken for a misconfigured one.
+    """
+    payload = _inspect_container(container_cli, container_name)
+    if payload is None:
+        return ()
+    configuration = payload.get("configuration")
+    configured = (
+        configuration.get("networks") if isinstance(configuration, dict) else None
+    )
+    status = payload.get("status")
+    records = configured if isinstance(configured, list) and configured else None
+    if records is None and isinstance(status, dict):
+        records = status.get("networks")
+    if isinstance(records, dict):
+        records = list(records.values())
+    if not isinstance(records, list):
+        return ()
+    return tuple(
+        str(record["network"])
+        for record in records
+        if isinstance(record, dict) and isinstance(record.get("network"), str)
+    )
+
+
+def _published_tcp_ports(
+    container_cli: str, container_name: str
+) -> tuple[tuple[str, int], ...]:
+    payload = _inspect_container(container_cli, container_name)
+    configuration = (payload or {}).get("configuration")
+    records = (
+        configuration.get("publishedPorts") if isinstance(configuration, dict) else None
+    )
+    if not isinstance(records, list):
+        return ()
+    ports: list[tuple[str, int]] = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        if str(record.get("proto") or "tcp").lower() != "tcp":
+            continue
+        host_port = record.get("hostPort")
+        if not isinstance(host_port, int):
+            continue
+        address = record.get("hostAddress")
+        host = (
+            address
+            if isinstance(address, str) and address not in {"", "0.0.0.0", "::"}
+            else "127.0.0.1"
+        )
+        ports.append((host, host_port))
+    return tuple(ports)
+
+
+def _network_status(container_cli: str, network_name: str) -> dict[str, Any] | None:
+    try:
+        result = subprocess.run(
+            [container_cli, "network", "inspect", network_name],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        payload: Any = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return None
+    if isinstance(payload, list):
+        payload = payload[0] if payload else None
+    if not isinstance(payload, dict):
+        return None
+    status = payload.get("status")
+    return status if isinstance(status, dict) else None
+
+
 def _inspect_existing_dependencies(container_cli: str) -> tuple[str, str]:
     addresses: list[str] = []
     for name in ("air-agent-postgres", "air-agent-redis"):
@@ -606,7 +887,13 @@ def _rewrite_uri_host(value: str, host: str, port: int = 5432) -> str:
     return parsed._replace(netloc=f"{prefix}{host}:{port}").geturl()
 
 
-def _native_env_bytes(source: bytes, postgres_ip: str, redis_ip: str) -> bytes:
+def _native_env_bytes(
+    source: bytes,
+    postgres_ip: str,
+    redis_ip: str,
+    bridge_host: str | None = None,
+) -> bytes:
+    gateway = (bridge_host or BRIDGE_HOST).strip()
     try:
         text = source.decode("utf-8")
     except UnicodeError as exc:
@@ -628,6 +915,16 @@ def _native_env_bytes(source: bytes, postgres_ip: str, redis_ip: str) -> bytes:
     for key in ("DATABASE_URI", "POSTGRES_URI", "RUNTIME_DATABASE_URI"):
         _business_database_uri(replacements[key], f"原生 LangGraph {key}")
     _business_database_uri(store["uri"], "原生 LangGraph LANGGRAPH_STORE uri")
+    # 宿主桥地址每次启动按当前网关渲染，源文件里的旧网段不再需要手工维护。
+    # 只改写明确指向本机私有桥的键；其它 URL 保持原值（见 BRIDGE_HOST_KEYS）。
+    gateway_replacements: dict[str, str] = {}
+    for key in BRIDGE_HOST_KEYS:
+        value = values.get(key)
+        if not value or key in replacements:
+            continue
+        rendered_value = _render_gateway_value(value, gateway)
+        if rendered_value != value:
+            gateway_replacements[key] = rendered_value
 
     seen: set[str] = set()
     rendered: list[str] = []
@@ -639,11 +936,15 @@ def _native_env_bytes(source: bytes, postgres_ip: str, redis_ip: str) -> bytes:
         raw_key, _raw_value = body.split("=", 1)
         key = raw_key.strip()
         if key in replacements:
-            newline = line[len(body) :]
-            rendered.append(f"{raw_key}={replacements[key]}{newline}")
-            seen.add(key)
+            new_value = replacements[key]
+        elif key in gateway_replacements:
+            new_value = gateway_replacements[key]
         else:
             rendered.append(line)
+            continue
+        newline = line[len(body) :]
+        rendered.append(f"{raw_key}={new_value}{newline}")
+        seen.add(key)
     required_keys = {
         "DATABASE_URI",
         "POSTGRES_URI",
@@ -800,12 +1101,16 @@ def _verify_admin_schema(agent_root: Path, agent_env: dict[str, str]) -> None:
 
 
 def _write_native_environment(
-    source_path: Path, i4_dir: Path, postgres_ip: str, redis_ip: str
+    source_path: Path,
+    i4_dir: Path,
+    postgres_ip: str,
+    redis_ip: str,
+    bridge_host: str,
 ) -> Path:
     target = i4_dir / "native.env"
     try:
         source = source_path.read_bytes()
-        payload = _native_env_bytes(source, postgres_ip, redis_ip)
+        payload = _native_env_bytes(source, postgres_ip, redis_ip, bridge_host)
     except OSError as exc:
         raise LaunchError("LangGraph dotenv 无法读取。") from exc
     if target.exists():
@@ -1008,9 +1313,16 @@ def _ensure_bridge(
     log_dir: Path,
 ) -> None:
     config, previous_ips = _check_bridge_config(config_path)
-    changed = previous_ips != (actual_ip,)
-    bind_host = str(config["bind_host"])
-    bridge_hosts = tuple(dict.fromkeys((bind_host, "127.0.0.1", BRIDGE_HOST)))
+    desired_bind = BRIDGE_HOST
+    previous_bind = str(config.get("bind_host") or "")
+    changed = previous_bind != desired_bind or previous_ips != (actual_ip,)
+    bridge_hosts = tuple(
+        dict.fromkeys(
+            host
+            for host in (desired_bind, previous_bind, "127.0.0.1", BRIDGE_HOST)
+            if host
+        )
+    )
     listening = _is_listening(BRIDGE_PORT, bridge_hosts)
     expected = _bridge_argv(agent_root, config_path)
     managed_pid: int | None = None
@@ -1021,9 +1333,12 @@ def _ensure_bridge(
                 "私有桥 IP 已变化但 19110 由非受管进程监听；未终止任何进程。"
             )
     if changed:
+        config["bind_host"] = desired_bind
         config["allowed_source_ips"] = [actual_ip]
         _atomic_private_json(config_path, config)
-        _out("已将私有桥来源限制更新为当前 LangGraph 容器 IP。")
+        _out(
+            f"已将私有桥绑定地址更新为 {desired_bind}，来源限制更新为当前 LangGraph 容器 IP。"
+        )
     if listening and not changed:
         _append_lifecycle(
             log_dir, "local-host-bridge", "skipped_existing", port=BRIDGE_PORT
@@ -1243,7 +1558,10 @@ def _start_graph(
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise LaunchError("LangGraph Compose 启动失败。") from exc
         if result.returncode != 0:
-            raise LaunchError("LangGraph Compose 启动失败。")
+            raise LaunchError(
+                f"LangGraph Compose 启动失败（退出码 {result.returncode}）："
+                f"{_command_tail(result)}"
+            )
         _append_lifecycle(log_dir, "langgraph", "compose_started", port=GRAPH_PORT)
         _out("已请求启动 LangGraph。")
     actual_ip = _container_ip(container_cli, GRAPH_CONTAINER)
@@ -1252,6 +1570,272 @@ def _start_graph(
     _wait_for_http("langgraph", GRAPH_PORT, "/ok", GRAPH_HEALTH_TIMEOUT_SECONDS)
     _append_lifecycle(log_dir, "langgraph", "healthy", port=GRAPH_PORT, http_status=200)
     _out("就绪 LangGraph：HTTP 200。")
+
+
+def _ensure_container_system(container_cli: str) -> None:
+    try:
+        probe = subprocess.run(
+            [container_cli, "ls"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise LaunchError("Apple container CLI 无法执行。") from exc
+    if probe.returncode == 0:
+        return
+    _out("Apple container 服务未运行，正在启动。")
+    try:
+        started = subprocess.run(
+            [container_cli, "system", "start"],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise LaunchError("Apple container 服务无法启动。") from exc
+    if started.returncode != 0:
+        raise LaunchError("Apple container 服务无法启动。")
+
+
+def _ensure_running_containers(
+    container_cli: str,
+    names: tuple[str, ...],
+    label: str,
+    timeout_seconds: float = 60.0,
+) -> None:
+    """Start stopped dependencies; never create or recreate them."""
+    missing: list[str] = []
+    to_start: list[str] = []
+    for name in names:
+        state = _container_state(container_cli, name)
+        if state == "running":
+            continue
+        if not state:
+            missing.append(name)
+        else:
+            to_start.append(name)
+    if missing:
+        raise LaunchError(
+            f"缺少{label}容器：{', '.join(missing)}；请按部署文档创建后再启动，"
+            "启动器不会重建依赖容器。"
+        )
+    for name in to_start:
+        try:
+            result = subprocess.run(
+                [container_cli, "start", name],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise LaunchError(f"{label}容器 {name} 启动失败。") from exc
+        if result.returncode != 0:
+            raise LaunchError(f"{label}容器 {name} 启动失败。")
+        _out(f"已启动{label}容器：{name}。")
+    deadline = time.monotonic() + timeout_seconds
+    # 已运行的依赖同样要核对就绪：运行中但端口不可用不能算通过。
+    pending = list(names)
+    while True:
+        pending = [
+            name
+            for name in pending
+            if _container_state(container_cli, name) != "running"
+            or not all(
+                _is_listening(host_port, (host,))
+                for host, host_port in _published_tcp_ports(container_cli, name)
+            )
+        ]
+        if not pending:
+            return
+        if time.monotonic() >= deadline:
+            raise LaunchError(
+                f"{label}容器未在 {int(timeout_seconds)} 秒内就绪："
+                f"{', '.join(sorted(pending))}。"
+            )
+        time.sleep(1.0)
+
+
+def _ensure_langfuse_network(container_cli: str) -> None:
+    status = _network_status(container_cli, LANGFUSE_NETWORK)
+    if status is None:
+        try:
+            result = subprocess.run(
+                [
+                    container_cli,
+                    "network",
+                    "create",
+                    "--subnet",
+                    LANGFUSE_NETWORK_SUBNET,
+                    LANGFUSE_NETWORK,
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise LaunchError("无法创建 Langfuse 固定网络。") from exc
+        if result.returncode != 0:
+            raise LaunchError(
+                f"无法创建 Langfuse 固定网络 {LANGFUSE_NETWORK}（{LANGFUSE_NETWORK_SUBNET}）；"
+                "该网段可能已被其他网络占用。"
+            )
+        _out(
+            f"已创建 Langfuse 固定网络：{LANGFUSE_NETWORK}（{LANGFUSE_NETWORK_SUBNET}）。"
+        )
+        status = _network_status(container_cli, LANGFUSE_NETWORK)
+        if status is None:
+            raise LaunchError("Langfuse 固定网络创建后仍不可见。")
+    subnet = str(status.get("ipv4Subnet") or "").strip()
+    gateway = str(status.get("ipv4Gateway") or "").strip()
+    if subnet != LANGFUSE_NETWORK_SUBNET or gateway != LANGFUSE_GATEWAY:
+        raise LaunchError(
+            f"网络 {LANGFUSE_NETWORK} 不是固定网段（期望 {LANGFUSE_NETWORK_SUBNET} / "
+            f"{LANGFUSE_GATEWAY}，实际 {subnet or '未知'} / {gateway or '未知'}）；"
+            "请停止该网络的容器后重建网络。"
+        )
+
+
+def _langfuse_enabled(agent_root: Path) -> bool:
+    path = agent_root / ".env.langgraph"
+    if not path.is_file():
+        return False
+    return _parse_literal_env(path).get("LANGFUSE_ENABLED", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+def _wait_langfuse_running(
+    container_cli: str, names: tuple[str, ...], timeout_seconds: float = 180.0
+) -> None:
+    deadline = time.monotonic() + timeout_seconds
+    while True:
+        states = {name: _container_state(container_cli, name) for name in names}
+        if all(state == "running" for state in states.values()):
+            return
+        if time.monotonic() >= deadline:
+            raise LaunchError(
+                f"Langfuse 容器未在 {int(timeout_seconds)} 秒内全部运行："
+                + ", ".join(
+                    f"{name}={state or '不存在'}"
+                    for name, state in states.items()
+                    if state != "running"
+                )
+            )
+        time.sleep(1.0)
+
+
+def _ensure_langfuse_stack(
+    agent_root: Path, container_cli: str, compose_cli: str | None
+) -> None:
+    if not _langfuse_enabled(agent_root):
+        _out("跳过 Langfuse：.env.langgraph 未启用 LANGFUSE_ENABLED。")
+        return
+    _ensure_langfuse_network(container_cli)
+    states = {
+        name: _container_state(container_cli, name) for name in LANGFUSE_CONTAINERS
+    }
+    attached = {
+        name: LANGFUSE_NETWORK in _container_networks(container_cli, name)
+        for name in LANGFUSE_CONTAINERS
+    }
+    if all(state == "running" for state in states.values()) and all(attached.values()):
+        # 容器在跑不等于服务就绪：同样要过 HTTP 健康门禁，否则会虚报成功。
+        _out("Langfuse 容器均在固定网络运行，核对健康状态。")
+        _wait_for_http("langfuse", LANGFUSE_HTTP_PORT, "/api/public/health", 60.0)
+        _out("就绪 langfuse：HTTP 200。")
+        return
+    missing = [name for name in LANGFUSE_CONTAINERS if not states[name]]
+    misattached = [
+        name for name in LANGFUSE_CONTAINERS if states[name] and not attached[name]
+    ]
+    stopped = [
+        name
+        for name in LANGFUSE_CONTAINERS
+        if states[name] and attached[name] and states[name] != "running"
+    ]
+    if stopped and not missing and not misattached:
+        # 只是停止：直接 start。container-compose up 会无差别重建并重新解析镜像，
+        # 冷镜像时可能耗时十几分钟，普通重启不能走那条路。
+        for name in stopped:
+            try:
+                result = subprocess.run(
+                    [container_cli, "start", name],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    timeout=180,
+                )
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                raise LaunchError(f"Langfuse 容器 {name} 启动失败。") from exc
+            if result.returncode != 0:
+                raise LaunchError(
+                    f"Langfuse 容器 {name} 启动失败：{_command_tail(result)}"
+                )
+            _out(f"已启动 Langfuse 容器：{name}。")
+        _wait_langfuse_running(container_cli, LANGFUSE_CONTAINERS)
+        _wait_for_http("langfuse", LANGFUSE_HTTP_PORT, "/api/public/health", 120.0)
+        _out("就绪 langfuse：HTTP 200。")
+        return
+    if missing:
+        _out(f"Langfuse 容器缺失（{', '.join(missing)}），只能由 Compose 创建。")
+    if misattached:
+        _out(
+            f"Langfuse 容器不在固定网络（{', '.join(misattached)}），需要 Compose 重建。"
+        )
+    _out("正在按 Compose 描述同步 Langfuse 栈；期间 Langfuse 暂时不可用。")
+    _out("Compose 会重建整套栈并重新解析镜像，网络慢时可能耗时数分钟。")
+    if compose_cli is None:
+        raise LaunchError("缺少 container-compose，无法创建或迁移 Langfuse 容器。")
+    command = [
+        compose_cli,
+        "up",
+        "-d",
+        "--profile",
+        "observability",
+        "-f",
+        str((agent_root / "docker-compose.yaml").resolve()),
+        # 只点名 langfuse 服务：应用依赖的 PostgreSQL/Redis 不能被一并重建。
+        *LANGFUSE_SERVICES,
+    ]
+    tail = ""
+    for attempt in range(2):
+        try:
+            result = subprocess.run(
+                command,
+                cwd=agent_root,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=900,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise LaunchError(
+                "Langfuse Compose 启动超时（可能仍在拉取镜像）。"
+            ) from exc
+        except OSError as exc:
+            raise LaunchError("Langfuse Compose 启动失败。") from exc
+        if result.returncode == 0:
+            break
+        tail = _command_tail(result)
+        # 重建时旧容器的端口映射可能尚未释放；重试一次通常即可通过。
+        if attempt == 0:
+            _out("Langfuse Compose 首次失败，5 秒后重试一次。")
+            time.sleep(5.0)
+    if result.returncode != 0:
+        raise LaunchError(
+            f"Langfuse Compose 启动失败（退出码 {result.returncode}）：{tail}"
+        )
+    _wait_langfuse_running(container_cli, LANGFUSE_CONTAINERS)
+    _wait_for_http("langfuse", LANGFUSE_HTTP_PORT, "/api/public/health", 120.0)
+    _out("就绪 langfuse：HTTP 200。")
 
 
 def _status() -> int:
@@ -1277,12 +1861,44 @@ def _status() -> int:
             _out(f"未就绪 {name}：HTTP {status if status is not None else '无响应'}。")
             healthy = False
     container_cli = shutil.which("container")
-    bridge_host = _detect_bridge_host(container_cli) if container_cli else BRIDGE_HOST
+    if container_cli is None:
+        _out("缺少 Apple container CLI。")
+        return 1
+    bridge_host = _detect_bridge_host(container_cli)
+    _out(f"容器网关：{bridge_host}（应用配置按启动时实际值渲染）。")
     if _is_listening(BRIDGE_PORT, (bridge_host, "127.0.0.1")):
         _out(f"就绪 local-host-bridge：{BRIDGE_PORT} TCP 已监听。")
     else:
         _out(f"未监听 local-host-bridge：{BRIDGE_PORT}。")
         healthy = False
+    for name in DEPENDENCY_CONTAINERS:
+        state = _container_state(container_cli, name)
+        if state == "running":
+            _out(f"就绪容器 {name}。")
+        else:
+            _out(f"未运行容器 {name}：{state or '不存在'}。")
+            healthy = False
+    if _langfuse_enabled(_agent_root()):
+        for name in LANGFUSE_CONTAINERS:
+            state = _container_state(container_cli, name)
+            networks = _container_networks(container_cli, name)
+            if state == "running" and LANGFUSE_NETWORK in networks:
+                _out(f"就绪容器 {name}（{LANGFUSE_NETWORK}）。")
+            else:
+                _out(
+                    f"未就绪容器 {name}：{state or '不存在'}，"
+                    f"网络 {', '.join(networks) or '无'}。"
+                )
+                healthy = False
+        langfuse_status = _http_status(LANGFUSE_HTTP_PORT, "/api/public/health", 2.0)
+        if langfuse_status == 200:
+            _out("就绪 langfuse：HTTP 200。")
+        else:
+            _out(
+                "未就绪 langfuse："
+                f"HTTP {langfuse_status if langfuse_status is not None else '无响应'}。"
+            )
+            healthy = False
     return 0 if healthy else 1
 
 
@@ -1308,9 +1924,7 @@ def _start(args: argparse.Namespace) -> int:
         native_env_path,
     )
     bridge_path = agent_root / ".local" / "i4-live" / "bridge.json"
-    bridge_config, _ = _check_bridge_config(bridge_path)
-    if bridge_config["bind_host"] != BRIDGE_HOST:
-        raise LaunchError("生产启动要求私有桥绑定 192.168.64.1。")
+    _check_bridge_config(bridge_path)
 
     services = _service_specs(
         iam_root, agent_root, rag_root, iam_env, agent_env, rag_env
@@ -1325,7 +1939,7 @@ def _start(args: argparse.Namespace) -> int:
     postgres_ip, redis_ip = _inspect_existing_dependencies(container_cli)
     i4_dir = _prepare_private_i4_dir(agent_root)
     native_env_path = _write_native_environment(
-        graph_path, i4_dir, postgres_ip, redis_ip
+        graph_path, i4_dir, postgres_ip, redis_ip, BRIDGE_HOST
     )
     native_compose_path = _write_native_compose(native_descriptor, i4_dir)
     log_dir = _private_services_dir(agent_root)
@@ -1355,12 +1969,25 @@ def _start(args: argparse.Namespace) -> int:
     return 0
 
 
+def _up(args: argparse.Namespace) -> int:
+    """Bring up the whole local stack: containers first, then every host process."""
+    agent_root, _iam_root, _rag_root = _project_paths(args)
+    container_cli = shutil.which("container")
+    if container_cli is None:
+        raise LaunchError("缺少 Apple container CLI。")
+    compose_cli = shutil.which("container-compose")
+    _ensure_container_system(container_cli)
+    _ensure_running_containers(container_cli, DEPENDENCY_CONTAINERS, "依赖")
+    _ensure_langfuse_stack(agent_root, container_cli, compose_cli)
+    return _start(args)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="启动或检查已切库的本机分离服务。")
     parser.add_argument("--iam-project", type=Path, default=None)
     parser.add_argument("--rag-project", type=Path, default=None)
     subparsers = parser.add_subparsers(dest="action", required=True)
-    for action in ("start", "status"):
+    for action in ("up", "start", "status"):
         child = subparsers.add_parser(action)
         child.add_argument("--iam-project", type=Path, default=argparse.SUPPRESS)
         child.add_argument("--rag-project", type=Path, default=argparse.SUPPRESS)
@@ -1370,9 +1997,11 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     """Run the requested read-only status check or bounded local startup."""
     args = _parser().parse_args(argv)
-    if args.action == "status":
-        return _status()
     try:
+        if args.action == "status":
+            return _status()
+        if args.action == "up":
+            return _up(args)
         return _start(args)
     except LaunchError as exc:
         _err(f"启动失败：{exc}")

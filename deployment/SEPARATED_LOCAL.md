@@ -1,11 +1,47 @@
 # 本机分离服务启动
 
-使用 Agent 仓库的虚拟环境运行：
+一键启动（推荐）：
 
 ```bash
-.venv/bin/python deployment/run_separated_local.py start
+./run-local.sh            # 等同 up：容器 → Langfuse → IAM/RAG/Agent 全部拉起
+./run-local.sh status     # 只读核对：端口、HTTP 200、容器状态与网络归属
+```
+
+等价的显式形式：
+
+```bash
+.venv/bin/python deployment/run_separated_local.py up
+.venv/bin/python deployment/run_separated_local.py start   # 只拉起宿主进程，不动容器
 .venv/bin/python deployment/run_separated_local.py status
 ```
+
+`up` 的顺序固定为：Apple container 系统 → 既有依赖容器（只 `start` 已存在的，缺容器直接报名字，不重建）→ Langfuse 栈（`LANGFUSE_ENABLED=true` 时）→ 宿主进程（IAM → LangGraph + 私有桥 → admin API/RAG/前端）。每一步都已就绪时会跳过，因此重复执行是安全的。
+
+## 地址模型（为什么以前每次启动都要手改）
+
+Apple container 的 `default` 网络属于 vmnet 桥，桥重建后整个网段会换一个 /24（`192.168.64.0` → `192.168.65.0` → …），容器访问宿主机只能用**当前网段**的网关。以前这些地址写死在配置里，网段一漂移就会出现两个现象：
+
+1. 启动器直接报"必须指向本机私有桥"，只能手改 `.env.langgraph`；
+2. 更隐蔽的情况是容器仍在跑但连不到宿主——宿主机 Clash TUN 对不可达的 `192.168.x.1` 会返回**假连接**（连一个没人监听的端口也"连接成功"，随后的 HTTP 请求才超时），所以服务看着都起来了，实际全在空转。
+
+现在的处理：
+
+- **应用侧地址运行时渲染。** `.env.langgraph` 里的 `IAM_BASE_URL`、`MAIN_LLM_BASE_URL`、`SUMMARY_LLM_BASE_URL`、`LANGFUSE_BASE_URL`、`KNOWLEDGE_API_URL` 只校验"私有地址 + 19110 /v1"等形态，启动器按 `container network inspect` 的实际网关重写进 `.local/i4-live/native.env`；`bridge.json` 的 `bind_host` 与来源 IP 也自动跟随并重启私有桥。旧网段写在源文件里不会再导致启动失败，也不需要手改。
+- **Langfuse 栈固定网段。** 六个 Langfuse 容器固定在 `air-agent-langfuse` 网络（`10.99.0.0/24`，网关恒 `10.99.0.1`），`.env.langfuse` 里的内部地址是常量，不再随 `default` 漂移。该网络由 `up` 创建；直接用 `container-compose` 前必须先存在。
+- 依赖容器（PostgreSQL/Redis）的 IPv4 依旧每次从 `container inspect` 读取后写入 native env。
+- **Langfuse 只"启动"不"重建"。** 容器已存在只是停止时，`up` 用 `container start` 拉起（秒级）；只有容器缺失或不在固定网络时才退回 `container-compose up`。
+
+## 为什么不要随手跑 container-compose
+
+`container-compose up` 在这个版本（1.1.0）里对 Langfuse 栈是"全量重建"语义：即使配置没变，它也会停掉全部容器重新创建，并且每次都重新解析镜像 tag。实测一次冷镜像重建要十几分钟（`cgr.dev/chainguard/minio:latest` 漂移时会真正下载 ~117 MB），期间 Langfuse 不可用。所以：
+
+- 日常启动用 `./run-local.sh`（`up`），它只在必要时才调用 Compose。
+- 需要更新 Langfuse 镜像/配置时才手工 `container-compose up -d --profile observability -f docker-compose.yaml langfuse-postgres langfuse-clickhouse langfuse-minio langfuse-redis langfuse-web langfuse-worker`；执行前先确认 `air-agent-langfuse` 网络存在。
+- `container-compose down` 会移除容器（卷保留），本栈不需要它；不要用它做"重启"。
+
+修改 `.env.langfuse` 或 Compose 中的 `networks` 会让 Compose 重建 Langfuse 容器；重建可能需要重新拉取镜像（网络慢时数分钟），期间 Langfuse 暂不可用。
+
+## 校验与环境
 
 IAM 与 RAG 默认使用 `../../Java/air_agent_iam` 和 `../RAG/env-rag-final`；仓库路径不同时用 `--iam-project`、`--rag-project` 指定。启动器读取各仓真实 dotenv，注入对应进程环境，不输出配置值、密钥或 SSO 参数。进程输出丢弃；`.local/i4-live/services` 仅保存脱敏生命周期日志和 PID，目录权限为 0700、文件为 0600。启动器没有 stop 子命令，也不会终止未知进程。
 
