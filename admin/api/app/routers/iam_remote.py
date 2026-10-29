@@ -317,6 +317,12 @@ async def login_remote(
         )
         if response.status_code == 401:
             raise RemoteIdentityRejected("账号或密码错误")
+        if response.status_code == 400:
+            # IAM 对不符合口令策略的输入返回 400（如 "password 不合法"）。
+            # 这是凭据问题，不是身份后端不可用，不能映射成 503。
+            raise HTTPException(status_code=401, detail="账号或密码错误")
+        if response.status_code == 403:
+            raise HTTPException(status_code=403, detail="账号已停用或不可登录")
         result = response_json(response)
         token = result.get("access_token") if isinstance(result, dict) else None
         if not isinstance(token, str) or not token:
