@@ -155,13 +155,15 @@ Langfuse Users 使用稳定的用户 UUID，Sessions 使用聊天 thread ID，�
 本地完整栈使用统一启动器：
 
 ```bash
-.venv/bin/python deployment/run_separated_local.py start
-.venv/bin/python deployment/run_separated_local.py status
-# 兼容旧命令，但只转交同一个启动器：
+# 一键：容器系统 → 依赖容器 → Langfuse → IAM → LangGraph → 其余宿主进程
 ./run-local.sh
+# 只拉起宿主进程，不动容器
+.venv/bin/python deployment/run_separated_local.py start
+# 只读核对（端口、HTTP 200、容器状态与网络归属）
+.venv/bin/python deployment/run_separated_local.py status
 ```
 
-启动器会复用已有 PostgreSQL/Redis，只按需重建原生应用；首次使用前请按 `.env.example` 配置数据库、模型与 IAM 连接。完整运行态、端口与容器白名单见 [运行态说明](docs/CURRENT-RUNTIME.md) 及 [启动器说明](deployment/SEPARATED_LOCAL.md)。
+`up` 只 `container start` 已存在的依赖容器与 Langfuse，容器缺失或网络配置漂移时才由 Compose 重建；宿主进程按端口与健康检查复用。首次使用前请按 `.env.example` 配置数据库、模型与 IAM 连接。完整运行态、端口与容器白名单见 [运行态说明](docs/CURRENT-RUNTIME.md) 及 [启动器说明](deployment/SEPARATED_LOCAL.md)。
 
 ## 检查与验收
 

@@ -12,8 +12,23 @@
 ## 正式运行态（始终适用）
 
 - 当前已完成独立IAM与业务分库；唯一权威清单见[正式环境](docs/CURRENT-RUNTIME.md)。正式业务库为15432/air_agent_business，身份只来自19100 Java IAM；旧air_agent源与多轮评测环境已删除，不重建、不回退local鉴权。
-- 唯一启动入口为`deployment/run_separated_local.py start/status`，`run-local.sh`仅作同入口包装；不要用全量compose重建依赖或在正式库seed root。
+- 唯一启动入口为`deployment/run_separated_local.py up/start/status`，`run-local.sh` 默认执行 `up`；不要用全量compose重建依赖或在正式库seed root。`up` 会先确保依赖容器与 Langfuse 运行，再拉起宿主进程；`start` 只拉起宿主进程。
 - 测试只用自建空临时资源，结束后回收。历史报告、评分、归档和私有证据用于溯源，不能当成现用DSN/容器/账号来源。
+
+## 本机完整栈启动顺序
+
+本机服务分三层，顺序不能颠倒；一条命令 `./run-local.sh`（= `up`）全部完成，`./run-local.sh status` 只读核对：
+
+1. **容器**：Apple container 系统 → 既有依赖容器 `air-agent-postgres`/`air-agent-redis`、`iam-pg17`/`iam-redis7`、`lightrag-postgres`/`lightrag-neo4j`/`lightrag-qdrant`。启动器只 `container start` 已存在的容器；容器缺失时直接报出名字，不重建依赖。运维用的 `lightrag-air`/`-coastal`/`-water` 默认停止，不属于必需依赖。
+2. **Langfuse**（`.env.langgraph` 的 `LANGFUSE_ENABLED=true` 时）：六个容器固定在网络 `air-agent-langfuse`（10.99.0.0/24，网关恒 `10.99.0.1`），内部地址见 `.env.langfuse`。停止的容器用 `container start` 拉起；只有容器缺失或不在固定网络时才由 Compose 重建。`container-compose up` 在本机是**全量重建 + 重新解析镜像**（冷镜像可拖十几分钟），不要当重启命令用。
+3. **宿主进程**：IAM Java(19100) → LangGraph 容器(2024) + 私有桥(19110) → admin API(8100) / RAG(8099) / chat(3000) / admin(3100) / IAM web(19101)。
+
+地址约定（排查启动问题先看这几条）：
+
+- `default` 网络的 /24 会随 Apple container 的 vmnet 桥重建而漂移（`192.168.64.0` → `65.0` → …），**不要**把它的网关写进任何配置；容器访问宿主机只能用"自己当前网段"的网关。
+- `.env.langgraph` 里的 `IAM_BASE_URL`、`MAIN_LLM_BASE_URL`、`SUMMARY_LLM_BASE_URL`、`LANGFUSE_BASE_URL`、`KNOWLEDGE_API_URL` 只要求"私有地址 + 19110 /v1"等形态，启动器会按 `container network inspect` 的实际网关重写到 `.local/i4-live/native.env`；手改源文件无效也不需要。`bridge.json` 的 `bind_host` 同样自动跟随。
+- Langfuse 栈不要手工改 `.env.langfuse` 的网关：它是固定网段常量。改该文件会触发 Compose 重建 Langfuse 容器（可能重新拉取镜像，耗时数分钟）。
+- 判断"服务是否真的活着"不能只看端口或 TCP 连接成功：宿主机 Clash TUN 会对不可达地址返回**假连接**（连 `192.168.64.1:65000` 也"成功"），必须以 `status` 的 HTTP 200 与容器网络归属为准。
 
 ## 开始工作
 
