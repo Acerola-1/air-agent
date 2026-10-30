@@ -30,8 +30,6 @@ import threading
 from pathlib import Path
 from typing import Any
 
-from loguru import logger
-
 from common.config import config
 
 logger = logging.getLogger(__name__)

@@ -41,7 +41,7 @@ _OPERATION_KINDS = ("initial", "retry", "regenerate", "resume")
 # 载荷内需要按字典校验枚举的字段 → 字典来源
 _ENUM_FIELDS = ("state", "origin", "phase", "evidence_source", "operation_kind")
 
-# change complete-agent-observability 窄例外：仅 runtime.model_usage 的 runtime
+# 模型用量计数窄例外：仅 runtime.model_usage 的 runtime
 # 来源、payload **顶层**、以下登记白名单键允许"非布尔非负整数"计数。字符串 /
 # bool / 负数 / 浮点 / 嵌套键 / 其他类型一律仍走原规则；禁止键（token 等）扫描
 # 先于本例外，嵌套 secret 照常硬拒绝。不能扩大到其他 event_type 或来源。

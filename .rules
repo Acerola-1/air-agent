@@ -1,147 +1,23 @@
-# LangGraph Agent 项目规则
+# Air Agent 当前项目规则入口
 
-## 项目概述
+本文件是导航，不独立维护另一套架构或运行约定。全仓开发约束以 [AGENTS.md](AGENTS.md) 为准；启动和环境以 [README.md](README.md)、[CURRENT-RUNTIME.md](docs/CURRENT-RUNTIME.md) 为准；依赖版本以 pyproject.toml / uv.lock 为准。
 
-基于 LangGraph 的智能代理系统，支持多意图路由、工具调用、权限检查、知识检索、Text2SQL 等功能。
+## 当前工作流
 
-## 技术栈
+- Basic QA：会话准备 → 提示准备 → 工具规划 ⇄ 工具批次执行 → 流式终答 → 台账收尾。搜索和加载由模型按需调用，支持多个 Skill 和独立工具跨轮复用。
+- 溯源分析：保留受控 DeepAgents 四专员调度、证据门禁及独立执行边界。
+- 数据分析：代码、菜单、测试和公开图入口保留，专项开发暂时封存。
 
-- **框架**: LangGraph (1.1.0)
-- **语言**: Python (≥3.9)
-- **模型**: OpenAI, Anthropic Claude, Ollama, SiliconFlow
-- **向量库**: Milvus, Chroma
-- **MCP**: langchain-mcp-adapters (0.2.1)
-- **数据库**: PostgreSQL, Redis
-- **Text2SQL**: Vanna (0.7.6)
+Basic QA 的代码布局、节点持久化名称与实现方法对照见 [当前架构](docs/architecture/basic-qa-graph.md)。不要依据历史 permission_agent、unified_intent_match、planner/executor/replanner 或旧单 Skill 路由重建现行流程。
 
-## 代码规范
+## 目录与安全边界
 
-### 导入顺序
-1. 标准库导入 (`from __future__ import annotations` 优先)
-2. 第三方库导入
-3. 本地项目导入 (`from agent.xxx`)
+- 各图拥有自己的构图、节点、状态、提示、工具编排与上下文生命周期；Basic QA 和数据分析互不依赖。
+- common 提供身份、台账、观测、存储及通用叶子机制；application 按可信实际图装配策略。公共层不得反向导入图实现。
+- 前端声明不构成授权；受理和逐次真实发送均使用服务端身份、不可变选择和当前许可。普通 Skill／MCP 不增加人员独立授权。
+- 不改正式库或重建共享依赖来完成测试；唯一正式启动入口为 deployment/run_separated_local.py。
+- 图节点ID、state键及事件字段均可能属于持久化或公共契约。实现方法改名不意味着可以同步改存储标识；兼容字段应说明实际消费者和迁移用途。
 
-### 类型注解
-- 所有函数参数和返回值必须有类型注解
-- 使用 `from __future__ import annotations` 启用延迟注解
-- 复杂类型使用 TypedDict 或 Pydantic BaseModel
-- 可选类型使用 `Optional[X]` 或 `X | None`
+## 开发与交付
 
-### 命名规范
-- 模块: snake_case (`nodes.py`, `graph.py`)
-- 类: PascalCase (`AgentState`, `PlanStep`)
-- 函数/变量: snake_case (`planner_node`, `build_contextual_question`)
-- 常量: UPPER_SNAKE_CASE
-
-### 文档字符串
-- 使用 Google Style 文档字符串
-- 类和方法必须有 docstring
-
-## LangGraph 规范
-
-### 状态定义 (`state.py`)
-- 状态字段必须是 TypedDict 或 Pydantic Model
-- 消息字段: `Annotated[Sequence[BaseMessage], add_messages]`
-- 列表累加: `Annotated[List[X], operator.add]`
-
-### 节点函数 (`nodes.py`)
-- 异步函数: `async def node_name(state: AgentState) -> dict`
-- 返回字典包含要更新的状态字段
-
-### Stream Writer 规范
-```python
-writer = get_stream_writer()
-
-# 进度消息（无 node 属性）
-writer({"type": "progress", "message": "整理问题..."})
-
-# 业务数据（必须有 node 属性）
-writer({
-    "node": "generate",
-    "type": "message",  # message / chart_data / expanded_questions
-    "message": chunk_str,
-})
-```
-
-### 图构建 (`graph.py`)
-- 使用 StateGraph 构建工作流
-- 条件边使用路由函数返回节点名称字符串
-- 编译时指定 checkpointer
-
-## 工作流结构
-
-```
-START
-  → build_contextual_question
-  → fetch_time_context
-  → parse_region_expansion
-  → permission_agent
-    → permission_retrieve (如需调用工具)
-    → permission_eval
-    → permission_interrupt (如需登录/权限)
-  → unified_intent_match
-    → DIRECT: generate
-    → KNOWLEDGE: knowledge_agent → knowledge_retrieve → grade_documents → generate
-    → TEXT2SQL/MCP: parallel_tool_executor → generate
-    → 其他: planner → executor → replanner → generate
-  → expand_question
-→ END
-```
-
-## 意图类型 (`intent_config.py`)
-
-- `TEXT2SQL`: 数据库查询（Vanna text2sql）
-- `MCP`: 业务分析工具（播报、趋势、排名等）
-- `KNOWLEDGE`: 环境/政策知识检索
-- `DIRECT`: 直接回答
-
-## MCP 工具规范
-
-- 使用 `@tool` 装饰器定义工具
-- 参数使用 Pydantic BaseModel
-- MCP 返回格式: `[{'type': 'text', 'text': '...'}]`
-- 在 `_execute_mcp_tool_async` 提取 `text` 字段
-- 使用 `extract_mcp_data` 解析，分离 `chart_data` 和 `llm_data`
-
-## Git 提交规范
-
-### 格式
-```
-[修复/优化/新增/删除] 简述变更 (≤30字)
-
-1. 具体变更 (≤20字)
-2. 具体变更 (≤20字)
-```
-
-### 示例
-```
-[优化] 重构权限校验流程
-
-1. 抽取权限评估为独立函数
-2. 增加中断恢复逻辑
-3. 优化错误提示文案
-```
-
-## 关键文件
-
-| 文件 | 用途 |
-|------|------|
-| `graph.py` | 主工作流图定义 |
-| `nodes.py` | 所有节点实现 |
-| `state.py` | 状态类型定义 |
-| `tools.py` | 工具封装 |
-| `prompts.py` | 提示词模板 |
-| `config.py` | 环境配置 |
-| `intent_config.py` | 意图路由配置 |
-
-## 日志
-
-- 目录: `logs/graph_YYYY-MM-DD.log`
-- 格式: `时间戳 | 级别 | 模块:函数:行号 - 内容`
-
-## 开发建议
-
-1. 修改图结构后在 LangGraph Studio 验证
-2. 添加新节点时同步更新 `graph.py` 边定义
-3. 优先使用结构化输出 (Pydantic) 而非文本解析
-4. 复杂逻辑在节点函数中实现，保持图结构清晰
+先核对当前分支、工作区和相关 OpenSpec，保留无关改动。Python 使用 3.13；现行验证命令和具体要求见 AGENTS.md，用户当前验证指令优先。区分实施、编译、行为测试、恢复验收与正式发布；不能用一个阶段通过代替其他阶段。

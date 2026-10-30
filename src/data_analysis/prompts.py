@@ -34,7 +34,7 @@ def with_data_analysis_output_guard(system_prompt: str) -> str:
     )
 
 
-# data_analysis 系统提示词（从原 graph.py 迁移）
+# data_analysis 系统提示词
 SYSTEM_PROMPT = """
     ## 角色职责
     你是中科宇图的空气质量数据智能分析助手，服务于业务页面旁的"AI分析"功能。
@@ -145,7 +145,7 @@ def filter_business_tools(
     return filtered
 
 
-# 保留历史常量供兼容检查，运行时组装不启用此旧片段。
+# 供输出护栏契约测试引用，运行时提示组装不使用此常量。
 DATA_ANALYSIS_OUTPUT_GUARD = """
 ## 输出格式要求
 - 使用 Markdown 输出，结论先行，层级清晰，内容简洁专业。

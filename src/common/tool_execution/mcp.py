@@ -75,7 +75,7 @@ def _is_mcp_tool(request: Any) -> bool:
 
 
 async def execute_mcp_tool_request(request: Any) -> ToolMessage:
-    """企业授权执行路径（两种图机制共用；任务 7.2/7.3）.
+    """企业授权执行路径（两种图机制共用）.
 
     直接 handler(request) 只会触达 schema 代理（其协程拒绝直接执行）。这里按
     已认证运行身份解析绑定后调用真实工具；授权错误转为可读降级 ToolMessage，

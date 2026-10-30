@@ -5,13 +5,13 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from common.runtime_context import get_routing_context
 from langchain_core.messages import AIMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
+from basic_qa.capabilities.errors import BasicQARuntimeError
 from basic_qa.capabilities.skill_materials import (
     load_basic_qa_material,
     verify_basic_qa_material_version,
@@ -21,6 +21,7 @@ from common.business_registry import business_for_code
 from common.capabilities import discover_authorized_mcp_catalog
 from common.identity.business_access import BusinessAccessError
 from common.identity.runtime import RuntimeIdentityError, guard_runtime_call
+from common.runtime_context import get_routing_context
 from common.skill_tool_scope import ScopedTool, resolve_skill_tools
 
 # 仅列出当前材料审计确认、且尚未注册的 chart 名称；它们没有稳定 ID。
@@ -36,10 +37,6 @@ _UNAVAILABLE_CHARTS = frozenset(
         "chart_city_monthly_yearly_comparison",
     }
 )
-
-
-class BasicQARuntimeError(RuntimeError):
-    """当前活动技能与可信运行或实时工具范围不匹配."""
 
 
 def trusted_turn_key(config: RunnableConfig) -> str:

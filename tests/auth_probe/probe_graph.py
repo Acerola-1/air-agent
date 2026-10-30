@@ -1,4 +1,4 @@
-"""任务 1.2 探针：最小图，供隔离实例 LANGSERVE_GRAPHS 使用。"""
+"""鉴权探针：最小图，供隔离实例 LANGSERVE_GRAPHS 使用。"""
 
 from __future__ import annotations
 

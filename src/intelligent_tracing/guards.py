@@ -104,12 +104,12 @@ class InputLimitMiddleware(AgentMiddleware):
 
     async def awrap_model_call(self, request: Any, handler: Any) -> Any:
         """Return a controlled message instead of calling the provider."""
-        from common.runtime_context import get_message_content
         from common.input_limits import (
             count_user_characters,
             current_input_limit,
             input_overflow_message,
         )
+        from common.runtime_context import get_message_content
 
         question = ""
         for message in reversed(getattr(request, "messages", []) or []):

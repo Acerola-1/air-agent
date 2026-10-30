@@ -1,4 +1,4 @@
-"""业务作用域 MCP 工具层（change simplify-agent-business-authorization 任务 3.2–3.4）.
+"""业务作用域 MCP 工具层.
 
 结构：
 - `ScopedMCPToolFactory`：真正发起调用的执行层。每次发现/调用前按

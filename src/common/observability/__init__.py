@@ -1,4 +1,4 @@
-"""Agent 运行时观测域（change complete-agent-observability）.
+"""Agent 运行时观测域.
 
 逐调用模型观测、Skill/MCP 归因、Langfuse 真实映射与版本化成本。
 

@@ -1,6 +1,6 @@
-"""业务 MCP 连接解析与凭据提供（change simplify-agent-business-authorization）.
+"""业务 MCP 连接解析与凭据提供.
 
-旧 `mcp_identity_bindings` 人员/成员授权已退役。现在：
+业务准入与连接凭据边界：
 
 - 业务准入由 `common.identity.business_access` 按 IAM 业务使用权限裁决；
 - 服务连接来自受保护部署配置（`common.mcp_connections`），浏览器不可指定；

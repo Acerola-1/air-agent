@@ -1,4 +1,4 @@
-"""受保护 MCP 服务连接配置（change simplify-agent-business-authorization 任务 3.1）.
+"""受保护 MCP 服务连接配置.
 
 连接是**平台部署配置**，不是人员授权：
 

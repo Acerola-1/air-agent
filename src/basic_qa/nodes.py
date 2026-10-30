@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Sequence
+from collections.abc import Awaitable, Callable, Sequence
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
@@ -25,8 +25,9 @@ from basic_qa.context.recovery import (
     call_with_context_recovery,
     prepare_context_recovery,
 )
-from basic_qa.state import BasicQAState
+from basic_qa.state import INPUT_ACCEPTED, INPUT_OVERFLOW, BasicQAState
 from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
+from common.identity.runtime import RuntimeIdentityError
 from common.model_budget import ContextBudgetExceeded
 from common.model_errors import is_context_overflow
 from common.models import ModelRegistry
@@ -116,6 +117,23 @@ class BasicQANodes:
         self._search_mcp_tool = create_search_mcp_tool()
         self._load_mcp_tool = create_load_mcp_tool()
 
+    @property
+    def control_tools(self) -> tuple[Any, ...]:
+        """供构图装配使用的只读控制工具集合."""
+        return (
+            self._load_skill_tool,
+            self._search_skills_tool,
+            self._search_mcp_tool,
+            self._load_mcp_tool,
+            self._finish_planning_tool,
+        )
+
+    @property
+    def planning_tools(self) -> tuple[Any, ...]:
+        """保持已有模型 schema 顺序，同时复用同一组工具实例."""
+        load, search, *remaining = self.control_tools
+        return (search, load, *remaining)
+
     # ──── 会话准备 ────
 
     async def prepare_session(
@@ -142,7 +160,7 @@ class BasicQANodes:
                 limit.max_chars,
             )
             return {
-                "intent": "input_overflow",
+                "intent": INPUT_OVERFLOW,
                 "messages": [
                     AIMessage(
                         content=overflow_msg, additional_kwargs={"ui_visible": True}
@@ -153,14 +171,14 @@ class BasicQANodes:
         from basic_qa.capabilities.projection import initialize
 
         return {
-            # 旧字段仅记录入口通过，不用于业务意图或 Skill 分流。
-            "intent": "data_query",
+            # intent 记录入口校验通过。
+            "intent": INPUT_ACCEPTED,
             **await initialize(state, dict(config or {})),
         }
 
     # ──── 模型准备与调用节点 ────
 
-    async def prepare_model(
+    async def prepare_prompt(
         self,
         state: BasicQAState,
         config: RunnableConfig,
@@ -169,7 +187,6 @@ class BasicQANodes:
         from common.identity.runtime import guard_runtime_call
 
         await guard_runtime_call(dict(config or {}))
-        # 使用会话版提示键，与旧单 Skill 路由模板隔离。
         from basic_qa.prompts import build_basic_qa_system_prompt
 
         return {
@@ -179,7 +196,7 @@ class BasicQANodes:
             "planning_draft": "",
         }
 
-    async def call_model(
+    async def plan_tools(
         self,
         state: BasicQAState,
         config: RunnableConfig,
@@ -189,10 +206,10 @@ class BasicQANodes:
         """工具规划阶段：决定调用工具或结束规划（不发布正文）.
 
         规划调用保留工具 schema 与供应商兼容的非流式模式；最终正文由
-        ``answer_model`` 用无工具流式生成。规划阶段的任何自然语言内容都不进入
+        ``compose_answer`` 用无工具流式生成。规划阶段的任何自然语言内容都不进入
         用户正文，只作为下一阶段的参考材料记录。
         """
-        from common.identity.runtime import RuntimeIdentityError, guard_runtime_call
+        from common.identity.runtime import guard_runtime_call
 
         async def _guard_or_message() -> Any:
             try:
@@ -252,37 +269,27 @@ class BasicQANodes:
         )
 
         ensure_model_observability(config)
-        _obs_scope = model_call_scope(config, role="planning")
-        _obs_metadata = _obs_scope.runtime_metadata()
+        observation = model_call_scope(config, role="planning")
+        invocation_metadata = observation.runtime_metadata()
         model = ModelRegistry.main_llm
         system_prompt = state.get("system_prompt", "")
         from basic_qa.capabilities.projection import prepare_projection
 
-        (
-            prepared,
-            context,
-            material,
-            state,
-            prepared_state,
-            available,
-            system_prompt,
-            prepare_kwargs,
-        ) = await prepare_projection(
+        projection = await prepare_projection(
             state,
             dict(config or {}),
             base_prompt=system_prompt,
             addenda=[_PLANNING_ADDENDUM],
-            controls=[
-                self._search_skills_tool,
-                self._load_skill_tool,
-                self._search_mcp_tool,
-                self._load_mcp_tool,
-                self._finish_planning_tool,
-            ],
+            controls=list(self.planning_tools),
             role="planning",
             prepare=prepare_model_request,
             business=get_business_tools,
         )
+        prepared = projection.prepared
+        context, material = projection.context, projection.material
+        state = projection.state
+        prepared_state = projection.prepared_state
+        prepare_kwargs = projection.prepare_kwargs
         messages = state["messages"]
         metrics = prepared.metrics
         emit_event(config, "context_metrics", **metrics)
@@ -313,15 +320,154 @@ class BasicQANodes:
                 request.messages,
                 messages,
                 config,
-                invocation_metadata=_obs_metadata,
+                invocation_metadata=invocation_metadata,
             )
 
-        data_model_started_at = datetime.now(UTC).isoformat()
+        planning_started_at = datetime.now(UTC).isoformat()
+        outcome = await self._invoke_plan_with_retry(
+            config,
+            invoke=invoke,
+            prepared=prepared,
+            prepared_state=prepared_state,
+            prepare_kwargs=prepare_kwargs,
+            guard=_guard_or_message,
+            control=_control,
+        )
+        if isinstance(outcome, dict):
+            return outcome
+        response, prepared = outcome
+
+        if (
+            isinstance(response, AIMessage)
+            and not response.tool_calls
+            and not get_message_content(response).strip()
+        ):
+            outcome = await self._retry_empty_plan(
+                response,
+                state,
+                config,
+                prepared=prepared,
+                model=model,
+                metadata=invocation_metadata,
+                messages=messages,
+                material=material,
+                guard=_guard_or_message,
+                control=_control,
+            )
+            if isinstance(outcome, dict):
+                return outcome
+            response, prepared, material = outcome
+
+        return self._planning_updates(
+            response,
+            messages=messages,
+            prepared=prepared,
+            material=material,
+            started_at=planning_started_at,
+        )
+
+    async def compose_answer(
+        self,
+        state: BasicQAState,
+        config: RunnableConfig,
+        *,
+        writer: StreamWriter,
+    ) -> dict[str, Any]:
+        """最终回答阶段：无工具、真实流式生成并通过共享发布器输出."""
+        from common.identity.runtime import guard_runtime_call
+        from common.observability.model_adapter import (
+            ensure_model_observability,
+            model_call_scope,
+        )
+
+        try:
+            await guard_runtime_call(dict(config or {}))
+        except RuntimeIdentityError:
+            return await self._abort_answer_visibility(config, "permission_revoked")
+
+        ensure_model_observability(config)
+        model = ModelRegistry.main_llm
+        system_prompt = state.get("system_prompt", "")
+        answer_addenda = [_ANSWER_ADDENDUM]
+        if state.get("planning_draft"):
+            answer_addenda.append(
+                "规划阶段留下的候选材料（仅供整理，不得原样复述内部规划；最终正文必须完整、可独立阅读）：\n"
+                + str(state["planning_draft"])[:4000]
+            )
+        from basic_qa.capabilities.projection import prepare_projection
+
+        projection = await prepare_projection(
+            state,
+            dict(config or {}),
+            base_prompt=system_prompt,
+            addenda=answer_addenda,
+            controls=[],
+            role="answer",
+            prepare=prepare_model_request,
+            business=get_business_tools,
+        )
+        prepared = projection.prepared
+        context, material = projection.context, projection.material
+        state = projection.state
+        prepared_state = projection.prepared_state
+        prepare_kwargs = projection.prepare_kwargs
+        metrics = prepared.metrics
+        emit_event(config, "context_metrics", **metrics)
+        if prepared.over_capacity:
+            published = await publish_control_message(
+                dict(config or {}),
+                graph_id=self._graph_name,
+                text=prepared.failure_reason
+                or "本次资料超出当前模型可用输入容量，尚未完成处理。请缩小数据范围后重试。",
+                writer=writer,
+                control_code="context_budget",
+            )
+            return merge_prepared_updates(
+                prepared,
+                {
+                    **prepared.updates,
+                    "messages": [published],
+                    "context_metrics": metrics,
+                },
+            )
+
+        observed = model_call_scope(config, role="answer")
+        outcome = await self._stream_answer_with_recovery(
+            state,
+            config,
+            writer=writer,
+            model=model,
+            observed=observed,
+            prepared=prepared,
+            prepared_state=prepared_state,
+            prepare_kwargs=prepare_kwargs,
+            context=context,
+            material=material,
+        )
+        if isinstance(outcome, dict):
+            return outcome
+        result, publisher, prepared = outcome
+        return await self._answer_updates(
+            config, writer=writer, result=result, publisher=publisher, prepared=prepared
+        )
+
+    async def _invoke_plan_with_retry(
+        self,
+        config: RunnableConfig,
+        *,
+        invoke: Callable[[PreparedRequest], Awaitable[Any]],
+        prepared: PreparedRequest,
+        prepared_state: dict[str, Any],
+        prepare_kwargs: dict[str, Any],
+        guard: Callable[[], Awaitable[AIMessage | None]],
+        control: Callable[[AIMessage, str], Awaitable[dict[str, Any]]],
+    ) -> tuple[Any, PreparedRequest] | dict[str, Any]:
+        """执行规划请求，独立处理普通重试、容量恢复和终止回执."""
         response = None
         for attempt in range(3):
-            blocked = await _guard_or_message()
+            blocked = await guard()
             if blocked is not None:
-                return await _control(blocked, "authorization_stopped")
+                return await control(blocked, "authorization_stopped")
             try:
                 response, prepared = await call_with_context_recovery(
                     invoke,
@@ -334,7 +480,7 @@ class BasicQANodes:
                 emit_event(config, "context_metrics", **metrics)
                 break
             except RuntimeIdentityError as exc:
-                return await _control(
+                return await control(
                     AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}"),
                     "authorization_stopped",
                 )
@@ -347,7 +493,7 @@ class BasicQANodes:
                     {
                         **prepared.updates,
                         "context_metrics": prepared.metrics,
-                        **await _control(AIMessage(content=str(exc)), "context_budget"),
+                        **await control(AIMessage(content=str(exc)), "context_budget"),
                     },
                 )
             except DataProcessingFailure as exc:
@@ -363,7 +509,7 @@ class BasicQANodes:
                     {
                         **prepared.updates,
                         "context_metrics": prepared.metrics,
-                        **await _control(AIMessage(content=str(exc)), "data_failure"),
+                        **await control(AIMessage(content=str(exc)), "data_failure"),
                         "data_status": status,
                     },
                 )
@@ -381,123 +527,131 @@ class BasicQANodes:
                         {
                             **prepared.updates,
                             "context_metrics": prepared.metrics,
-                            **await _control(
+                            **await control(
                                 AIMessage(content=_SERVICE_UNAVAILABLE_MESSAGE),
                                 "service_unavailable",
                             ),
                         },
                     )
 
-        # 空回复检测：content 为空且无 tool_calls -> 追加引导重试
-        if (
-            isinstance(response, AIMessage)
-            and not response.tool_calls
-            and not get_message_content(response).strip()
-        ):
-            logger.info("业务图模型空回复，追加引导消息重试")
-            blocked = await _guard_or_message()
-            if blocked is not None:
-                return await _control(blocked, "authorization_stopped")
-            try:
-                tail = [response, HumanMessage(content=_EMPTY_REPLY_NUDGE)]
-                from basic_qa.capabilities.projection import (
-                    prepare_projection,
-                )
-                from basic_qa.context.tool_results import apply_replacements
+        return response, prepared
 
-                prior = prepared
-                nudge_state = {
-                    **state,
-                    **prior.updates,
-                    "messages": apply_replacements(
-                        list(state["messages"]), prior.message_updates
-                    ),
-                }
-                (
+    async def _retry_empty_plan(
+        self,
+        response: Any,
+        state: BasicQAState,
+        config: RunnableConfig,
+        *,
+        prepared: PreparedRequest,
+        model: Any,
+        metadata: dict[str, Any],
+        messages: Sequence[Any],
+        material: Any,
+        guard: Callable[[], Awaitable[AIMessage | None]],
+        control: Callable[[AIMessage, str], Awaitable[dict[str, Any]]],
+    ) -> tuple[Any, PreparedRequest, Any] | dict[str, Any]:
+        """重新投影空回复引导，保留已完成摘要和资料替换."""
+        logger.info("业务图模型空回复，追加引导消息重试")
+        blocked = await guard()
+        if blocked is not None:
+            return await control(blocked, "authorization_stopped")
+        try:
+            tail = [response, HumanMessage(content=_EMPTY_REPLY_NUDGE)]
+            from basic_qa.capabilities.projection import (
+                prepare_projection,
+            )
+            from basic_qa.context.tool_results import apply_replacements
+
+            prior = prepared
+            nudge_state = {
+                **state,
+                **prior.updates,
+                "messages": apply_replacements(
+                    list(state["messages"]), prior.message_updates
+                ),
+            }
+            projection = await prepare_projection(
+                nudge_state,
+                dict(config or {}),
+                base_prompt=state.get("system_prompt", ""),
+                addenda=[_PLANNING_ADDENDUM],
+                controls=list(self.planning_tools),
+                role="planning",
+                prepare=prepare_model_request,
+                business=get_business_tools,
+                tail=tail,
+            )
+            nudge = projection.prepared
+            context, material = projection.context, projection.material
+            state = projection.state
+            nudge.updates = {**prior.updates, **nudge.updates}
+            nudge.message_updates = list(
+                {
+                    m.id: m for m in [*prior.message_updates, *nudge.message_updates]
+                }.values()
+            )
+            emit_event(config, "context_metrics", **nudge.metrics)
+            if nudge.over_capacity:
+                return merge_prepared_updates(
                     nudge,
-                    context,
-                    material,
-                    state,
-                    prepared_state,
-                    available,
-                    system_prompt,
-                    _,
-                ) = await prepare_projection(
-                    nudge_state,
-                    dict(config or {}),
-                    base_prompt=state.get("system_prompt", ""),
-                    addenda=[_PLANNING_ADDENDUM],
-                    controls=[
-                        self._search_skills_tool,
-                        self._load_skill_tool,
-                        self._search_mcp_tool,
-                        self._load_mcp_tool,
-                        self._finish_planning_tool,
-                    ],
-                    role="planning",
-                    prepare=prepare_model_request,
-                    business=get_business_tools,
-                    tail=tail,
-                )
-                nudge.updates = {**prior.updates, **nudge.updates}
-                nudge.message_updates = list(
                     {
-                        m.id: m
-                        for m in [*prior.message_updates, *nudge.message_updates]
-                    }.values()
-                )
-                emit_event(config, "context_metrics", **nudge.metrics)
-                if nudge.over_capacity:
-                    return merge_prepared_updates(
-                        nudge,
-                        {
-                            **nudge.updates,
-                            "context_metrics": nudge.metrics,
-                            **await _control(
-                                AIMessage(
-                                    content=nudge.failure_reason
-                                    or "本次资料超出当前模型可用输入容量，请缩小数据范围后重试。"
-                                ),
-                                "context_budget",
+                        **nudge.updates,
+                        "context_metrics": nudge.metrics,
+                        **await control(
+                            AIMessage(
+                                content=nudge.failure_reason
+                                or "本次资料超出当前模型可用输入容量，请缩小数据范围后重试。"
                             ),
-                        },
-                    )
-                prepared = nudge
-                metrics = nudge.metrics
-                from basic_qa.capabilities.projection import (
-                    verify_prompt_context,
+                            "context_budget",
+                        ),
+                    },
                 )
+            prepared = nudge
+            from basic_qa.capabilities.projection import (
+                verify_prompt_context,
+            )
 
-                await verify_prompt_context(
-                    state, dict(config or {}), context, material
-                )
-                nudge_response = await invoke_with_data_deadline(
-                    bind(nudge),
-                    nudge.messages,
-                    messages,
-                    config,
-                    invocation_metadata=_obs_metadata,
-                )
-                if (
-                    isinstance(nudge_response, AIMessage)
-                    and not nudge_response.tool_calls
-                    and not get_message_content(nudge_response).strip()
-                ):
-                    logger.warning("业务图模型空回复重试仍为空，使用兜底消息")
-                    response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
-                else:
-                    response = nudge_response
-            except RuntimeIdentityError as exc:
-                return await _control(
-                    AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}"),
-                    "authorization_stopped",
-                )
-            except Exception as exc:
-                logger.warning(
-                    "业务图模型空回复重试失败: {}，使用兜底消息", type(exc).__name__
-                )
+            await verify_prompt_context(state, dict(config or {}), context, material)
+            nudge_response = await invoke_with_data_deadline(
+                model.bind_tools(nudge.schemas) if nudge.schemas else model,
+                nudge.messages,
+                messages,
+                config,
+                invocation_metadata=metadata,
+            )
+            if (
+                isinstance(nudge_response, AIMessage)
+                and not nudge_response.tool_calls
+                and not get_message_content(nudge_response).strip()
+            ):
+                logger.warning("业务图模型空回复重试仍为空，使用兜底消息")
                 response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
+            else:
+                response = nudge_response
+        except RuntimeIdentityError as exc:
+            return await control(
+                AIMessage(content=f"授权状态已变化，本次运行已停止：{exc}"),
+                "authorization_stopped",
+            )
+        except Exception as exc:
+            logger.warning(
+                "业务图模型空回复重试失败: {}，使用兜底消息", type(exc).__name__
+            )
+            response = AIMessage(content=_FALLBACK_EMPTY_REPLY)
 
+        return response, prepared, material
+
+    @staticmethod
+    def _planning_updates(
+        response: Any,
+        *,
+        messages: Sequence[Any],
+        prepared: PreparedRequest,
+        material: Any,
+        started_at: str,
+    ) -> dict[str, Any]:
+        """将规划结果转换为内部消息、草稿与当次工具定义记录."""
+        metrics = prepared.metrics
         # 服务端依据门禁：带 tool_calls 的草稿正文清空；无工具正文属于规划材料，
         # 不直接公开，交由 answer 阶段生成。
         from common.knowledge.policy import apply_answer_policy
@@ -531,7 +685,7 @@ class BasicQANodes:
             {
                 **prepared.updates,
                 "messages": [planning_message],
-                "data_model_started_at": data_model_started_at,
+                "data_model_started_at": started_at,
                 "planning_draft": draft,
                 "context_metrics": {
                     **(metrics or {}),
@@ -540,107 +694,32 @@ class BasicQANodes:
                 },
             },
         )
-        from basic_qa.capabilities.projection import disclosure_record
+        from basic_qa.capabilities.tool_definitions import disclosure_record
 
         update["bqa_disclosure"] = disclosure_record(
             prepared.schemas, planning_message.id, material
         )
         return update
 
-    async def answer_model(
+    async def _stream_answer_with_recovery(
         self,
         state: BasicQAState,
         config: RunnableConfig,
         *,
         writer: StreamWriter,
-    ) -> dict[str, Any]:
-        """最终回答阶段：无工具、真实流式生成并通过共享发布器输出."""
-        from common.identity.runtime import RuntimeIdentityError, guard_runtime_call
-        from common.observability.model_adapter import (
-            ensure_model_observability,
-            invocation_config,
-            model_call_scope,
-        )
-
-        async def _abort_visibility(reason: str) -> dict[str, Any]:
-            publisher = OutputPublisher(
-                dict(config or {}),
-                graph_id=self._graph_name,
-            )
-            publisher.start()
-            await publisher.abort(reason)
-            return {
-                "messages": [
-                    AIMessage(
-                        content="",
-                        id=publisher.message_id,
-                        additional_kwargs={
-                            "ui_visible": False,
-                            "output_protocol_version": 1,
-                            "output_id": publisher.output_id,
-                            "output_aborted": reason,
-                        },
-                    )
-                ]
-            }
-
-        try:
-            await guard_runtime_call(dict(config or {}))
-        except RuntimeIdentityError:
-            return await _abort_visibility("permission_revoked")
-
-        ensure_model_observability(config)
-        model = ModelRegistry.main_llm
-        system_prompt = state.get("system_prompt", "")
-        answer_addenda = [_ANSWER_ADDENDUM]
-        if state.get("planning_draft"):
-            answer_addenda.append(
-                "规划阶段留下的候选材料（仅供整理，不得原样复述内部规划；最终正文必须完整、可独立阅读）：\n"
-                + str(state["planning_draft"])[:4000]
-            )
-        from basic_qa.capabilities.projection import prepare_projection
-
-        (
-            prepared,
-            context,
-            material,
-            state,
-            prepared_state,
-            _,
-            system_prompt,
-            prepare_kwargs,
-        ) = await prepare_projection(
-            state,
-            dict(config or {}),
-            base_prompt=system_prompt,
-            addenda=answer_addenda,
-            controls=[],
-            role="answer",
-            prepare=prepare_model_request,
-            business=get_business_tools,
-        )
+        model: Any,
+        observed: Any,
+        prepared: PreparedRequest,
+        prepared_state: dict[str, Any],
+        prepare_kwargs: dict[str, Any],
+        context: str,
+        material: Any,
+    ) -> tuple[Any, OutputPublisher, PreparedRequest] | dict[str, Any]:
+        """流式终答只在明确超窗后恢复一次，不重放工具或已发布正文."""
         messages = state["messages"]
         metrics = prepared.metrics
-        emit_event(config, "context_metrics", **metrics)
-        if prepared.over_capacity:
-            published = await publish_control_message(
-                dict(config or {}),
-                graph_id=self._graph_name,
-                text=prepared.failure_reason
-                or "本次资料超出当前模型可用输入容量，尚未完成处理。请缩小数据范围后重试。",
-                writer=writer,
-                control_code="context_budget",
-            )
-            return merge_prepared_updates(
-                prepared,
-                {
-                    **prepared.updates,
-                    "messages": [published],
-                    "context_metrics": metrics,
-                },
-            )
+        from common.observability.model_adapter import invocation_config
 
-        observed = model_call_scope(config, role="answer")
         publisher = OutputPublisher(
             dict(config or {}),
             graph_id=self._graph_name,
@@ -754,6 +833,19 @@ class BasicQANodes:
                     },
                 )
 
+        return result, publisher, prepared
+
+    async def _answer_updates(
+        self,
+        config: RunnableConfig,
+        *,
+        writer: StreamWriter,
+        result: Any,
+        publisher: OutputPublisher,
+        prepared: PreparedRequest,
+    ) -> dict[str, Any]:
+        """写回流式结果；中止后只在未发布正文时生成受控回执."""
+        metrics = prepared.metrics
         latest_usage = result.usage or {}
         emit_event(
             config,
@@ -811,3 +903,28 @@ class BasicQANodes:
                 "context_metrics": {**metrics, "latest_usage": latest_usage},
             },
         )
+
+    async def _abort_answer_visibility(
+        self, config: RunnableConfig, reason: str
+    ) -> dict[str, Any]:
+        """在终答发送前撤权时发布中止状态."""
+        publisher = OutputPublisher(
+            dict(config or {}),
+            graph_id=self._graph_name,
+        )
+        publisher.start()
+        await publisher.abort(reason)
+        return {
+            "messages": [
+                AIMessage(
+                    content="",
+                    id=publisher.message_id,
+                    additional_kwargs={
+                        "ui_visible": False,
+                        "output_protocol_version": 1,
+                        "output_id": publisher.output_id,
+                        "output_aborted": reason,
+                    },
+                )
+            ]
+        }

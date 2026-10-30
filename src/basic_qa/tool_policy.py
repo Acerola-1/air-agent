@@ -26,7 +26,7 @@ def _canonical(value: Any) -> str:
 
 def _model_call_binding(request: Any) -> tuple[AIMessage, str, dict[str, Any]]:
     """核对真实模型调用与当次工具定义记录，不读取 Skill 或激活状态."""
-    from basic_qa.capabilities.projection import mcp_stable_id
+    from basic_qa.capabilities.tool_definitions import mcp_stable_id
     from common.mcp_authorization import McpAuthorizationError
 
     state = getattr(request, "state", None)

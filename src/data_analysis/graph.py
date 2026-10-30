@@ -151,7 +151,7 @@ def build_graph(*, checkpointer: Any = None):
         },
     )
 
-    # 出口：经台账收尾节点落终态与可见回答版本（change add-agent-event-ledger）。
+    # 出口：经台账收尾节点落终态与可见回答版本。
     # 保持编译结果是 Graph 类型；节点在缺受理上下文/台账不可用时直接返回。
     builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
     builder.add_edge("finalize_output", "ledger_finalize")

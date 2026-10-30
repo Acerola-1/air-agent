@@ -7,7 +7,7 @@ from langchain_core.messages import AIMessage
 from langchain_core.tools import StructuredTool
 
 from basic_qa import tool_policy
-from basic_qa.capabilities import projection, runtime
+from basic_qa.capabilities import runtime, tool_definitions
 from common.mcp_authorization import McpAuthorizationError
 from common.tool_execution.schema import schema_version_for
 
@@ -30,7 +30,7 @@ async def test_send_checks_binding_schema_args_without_load_gate(monkeypatch):
         raise AssertionError("execution must not inspect Skill or activation state")
 
     monkeypatch.setattr(runtime, "current_material", no_material_lookup)
-    monkeypatch.setattr(projection, "mcp_stable_id", lambda name: stable)
+    monkeypatch.setattr(tool_definitions, "mcp_stable_id", lambda name: stable)
     monkeypatch.setattr(tool_policy, "_is_mcp_tool", lambda request: True)
     request = SimpleNamespace(
         tool_call={"name": "query", "id": "call", "args": {}},

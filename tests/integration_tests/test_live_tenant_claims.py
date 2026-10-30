@@ -84,9 +84,9 @@ def _native_headers(ticket: str) -> dict[str, str]:
 async def _admit(
     client: httpx.AsyncClient, ctx: dict, tenant_id: str, thread_id: str, graph: str
 ) -> dict:
-    """经可信台账受理，取得运行准入预留（change add-agent-event-ledger 契约）。
+    """经可信台账受理，取得运行准入预留。
 
-    原生运行入口现在要求台账预留：先受理拿 request/attempt，再带预留创建运行。
+    原生运行入口要求台账预留：先受理拿 request/attempt，再带预留创建运行。
     """
     res = await client.post(
         "/agent/requests",

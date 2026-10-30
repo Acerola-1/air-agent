@@ -13,6 +13,7 @@ from langchain_core.tools import tool
 from langgraph.prebuilt import ToolRuntime
 from langgraph.types import Command
 
+from basic_qa.capabilities.errors import BasicQARuntimeError
 from basic_qa.capabilities.mcp_catalog import resolve_tool_catalog
 from basic_qa.capabilities.mcp_index import search_catalog
 from common.identity.business_access import BusinessAccessError
@@ -80,7 +81,6 @@ def create_load_mcp_tool():
     ) -> Command:
         """独立加载/激活指定tool_id和schema版本，不执行查询，不创建连接."""
         from basic_qa.capabilities.runtime import (
-            BasicQARuntimeError,
             session_state,
             trusted_turn_key,
         )

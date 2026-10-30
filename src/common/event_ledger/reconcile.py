@@ -132,7 +132,7 @@ class Reconciler:
     ) -> list[ReconcileOutcome]:
         """按租户有界校准，可**续跑**：每批处理 `batch_limit` 条，游标向后推进.
 
-        F05：有界执行路径——`max_batches` 限制单次运行的批次数（默认 1），返回的批次
+        有界执行路径——`max_batches` 限制单次运行的批次数（默认 1），返回的批次
         游标可直接作为下次 `cursor`，避免一次运行无界扫描；每次运行都落一条校准运行
         记录（`agent_ledger_reconcile_runs`）供审计与续跑。
         """

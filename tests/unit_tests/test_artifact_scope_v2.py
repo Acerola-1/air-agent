@@ -1,4 +1,4 @@
-"""归档 scope v2 协议回归（任务 6.1：版本协议、跨租户重放、篡改、旧 scope 拒绝）."""
+"""归档 scope v2 协议回归（版本协议、跨租户重放、篡改、旧 scope 拒绝）."""
 
 from __future__ import annotations
 

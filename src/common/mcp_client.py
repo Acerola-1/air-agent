@@ -1,4 +1,4 @@
-"""MCP 工具披露接线（change simplify-agent-business-authorization）.
+"""MCP 工具披露接线.
 
 旧"匿名公共目录预热"已移除：不再在导入/启动时发起任何 MCP 网络请求，也不再
 从环境变量读取业务地址。目录来自**已受理业务**的受保护连接发现

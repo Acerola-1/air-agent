@@ -96,7 +96,7 @@ def test_reused_skill_and_independent_sources_do_not_duplicate_tool_execution(
     monkeypatch.setattr(obs, "emit_fact", fact)
     monkeypatch.setattr("common.observability.skill_adapter.emit_skill_stage", stage)
     monkeypatch.setattr(
-        "basic_qa.capabilities.projection.mcp_stable_id", lambda _: TOOL
+        "basic_qa.capabilities.tool_definitions.mcp_stable_id", lambda _: TOOL
     )
     state = {
         "bqa_disclosure": {

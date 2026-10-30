@@ -1,7 +1,8 @@
 """业务图系统提示词组装.
 
 替代原 deepagents 中间件链中的 TimeContextMiddleware / ModeRoutingMiddleware，
-改为在 prepare_model 节点一次性组装。
+改为由 prepare_prompt 在提示准备阶段一次性组装
+（图的持久化节点ID仍为 prepare_model）。
 """
 
 from __future__ import annotations
@@ -71,7 +72,7 @@ def build_mode_context(configurable: dict[str, Any] | None) -> str:
 
 
 def build_basic_qa_system_prompt(configurable: dict[str, Any] | None) -> str:
-    """使用独立版本的会话模板，保留远程管理并隔离旧路由模板."""
+    """组装会话版系统提示：远程托管模板、时间、模式与计算规则."""
     base = """你是中科宇图的空气质量助手。按会话理解用户需求，不猜测城市、时间或指标。
 普通知识可以解释；具体法规、条款和限值必须先检索并使用返回的 citation_id。
 数据结论必须依据本轮真实查询或明确标识的历史结果；不得把现状推断为已证实污染来源。

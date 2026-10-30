@@ -1,4 +1,4 @@
-"""PostgreSQL 报告持久化：scope/摘要/篡改/过期/删除（任务 6.3）.
+"""PostgreSQL 报告持久化：scope/摘要/篡改/过期/删除.
 
 需要显式提供自建测试库 DSN：
     TRACING_TEST_RUNTIME_DSN=postgresql://...

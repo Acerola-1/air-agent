@@ -75,10 +75,10 @@ def ledger_scope_from_config(config: dict[str, Any] | None) -> LedgerScope | Non
 def ledger_ids_from_config(config: dict[str, Any] | None) -> tuple[str, str] | None:
     """提取受理关联 ID（受控入口注入；configurable 优先，运行 metadata 兜底）.
 
-    R01 修复：原生入口在放行时会把**服务端裁决过**的 request/attempt 同时写入运行
+    原生入口在放行时会把**服务端裁决过**的 request/attempt 同时写入运行
     config.configurable 与 run metadata；某些路径（平台只持久化 metadata，
     metadata-only 形态）下 configurable 不可见，此时从 `config["metadata"]` 读取，
-    保证"平台 success 而台账仍 admitting"不再出现。
+    使平台完成状态能关联到对应的台账受理记录。
     """
     cfg = config or {}
     configurable = cfg.get("configurable") or {}
@@ -319,7 +319,7 @@ def declared_graph_id(config: dict[str, Any] | None) -> str:
 def trusted_run_id(config: dict[str, Any] | None) -> str:
     """平台在运行期注入的**可信** platform run id（configurable/metadata 皆可）.
 
-    F05：图内可见 `configurable.run_id`（实测镜像 0.15.1）与 `metadata.run_id`，
+    图内可见 `configurable.run_id`（实测镜像 0.15.1）与 `metadata.run_id`，
     都是平台注入、客户端无法写入的字段；据此可在终态前补齐平台映射，
     而不是让"平台 success 但台账没有 platform_run_id"的记录只能等外部补偿。
     """
@@ -435,7 +435,7 @@ async def _on_graph_end(
         )
         return
     try:
-        # F05：先补**可信平台运行映射**（终态/答案关联都依赖它），再记终态与答案。
+        # 先补**可信平台运行映射**（终态/答案关联都依赖它），再记终态与答案。
         run_id = trusted_run_id(resolved)
         if run_id:
             cfg = (resolved or {}).get("configurable") or {}
@@ -474,7 +474,7 @@ async def _on_graph_end(
                 content_version=1,
                 confirmed=True,
             )
-            # Change 6：确认后独立写受控正文快照；失败开放，不改变回答/终态。
+            # 确认后独立写受控正文快照；失败开放，不改变回答/终态。
             capture_error: str | None = None
             try:
                 # 终答已产生并不表示之后仍有权持久化受控正文。

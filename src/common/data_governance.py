@@ -116,7 +116,7 @@ async def invoke_with_data_deadline(
                 attempt=False,
             )
             remaining.append(claim["remaining_seconds"])
-        # F02：claim 循环可能耗时，草稿生成外呼前再复查一次运行身份
+        # claim 循环可能耗时，草稿生成外呼前再复查一次运行身份
         from common.identity.runtime import guard_runtime_call
 
         await guard_runtime_call(dict(run_config or {}))

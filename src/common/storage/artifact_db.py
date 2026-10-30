@@ -52,7 +52,7 @@ class ComputationLimit(ValueError):
 def _is_pg_configured() -> bool:
     """PG/SQLite 模式开关沿用 `DATABASE_URI`（平台部署标记）.
 
-    R03：PG 模式下归档**绝不**连接该 owner URI——请求路径必须走运行角色
+    PG 模式下归档**绝不**连接该 owner URI——请求路径必须走运行角色
     `RUNTIME_DATABASE_URI`（非 owner、非 BYPASSRLS，RLS 真实生效），清理/
     回填走受限维护角色 `MAINTENANCE_DATABASE_URI`；缺失一律失败关闭。
     """
@@ -134,7 +134,7 @@ async def _connection(
 
 @asynccontextmanager
 async def _maintenance_connection() -> AsyncIterator[_Database]:
-    """受限维护角色连接：只用于到期清理/回填（R03），带事务本地维护 GUC."""
+    """受限维护角色连接：只用于到期清理/回填，带事务本地维护 GUC."""
     import psycopg
     from psycopg.rows import dict_row
 
@@ -169,7 +169,7 @@ async def _query(
 
 
 async def init_artifact_storage_table() -> None:
-    """SQLite 开发路径自动建表；PG 生产路径 DDL 真相源收敛到 Alembic（6.2/R03）.
+    """SQLite 开发路径自动建表；PG 生产路径 DDL 真相源收敛到 Alembic.
 
     PG 模式下运行角色无 DDL 权限，只核对表存在；缺失即失败关闭并提示执行
     admin API 迁移——绝不以 owner 连接兜底建表。
@@ -364,7 +364,7 @@ async def delete_thread_artifacts(
 async def cleanup_expired_artifacts(limit: int = 500) -> None:
     """有界清理过期载荷，不删除聊天或诊断引用.
 
-    R03：走受限维护角色连接（列权限+GUC 策略双重限定，见 0005）；PG 模式
+    走受限维护角色连接（列权限+GUC 策略双重限定，见 0005）；PG 模式
     缺失 MAINTENANCE_DATABASE_URI 一律失败关闭，绝不回退 owner 连接。
     """
     await init_artifact_storage_table()
@@ -398,7 +398,7 @@ async def claim_computation(
 ) -> dict[str, Any]:
     """事务分配一次生成及有界修正，总阶段从首次归档就开始计时.
 
-    R03：计算记录携带租户/用户维度，PG 下经运行角色事务本地 GUC 隔离；
+    计算记录携带租户/用户维度，PG 下经运行角色事务本地 GUC 隔离；
     缺失作用域失败关闭，跨企业引用被"父归档同租户"RLS 策略拒绝。
     """
     if not tenant_id or not user_id:
@@ -424,7 +424,7 @@ async def claim_computation(
                 (artifact_id, run_id, started.isoformat(), 0, tenant_id, user_id),
             )
         except Exception as exc:
-            # R03：跨企业父归档引用在 RLS WITH CHECK 处被数据库拒绝——
+            # 跨企业父归档引用在 RLS WITH CHECK 处被数据库拒绝——
             # 映射为可读的计算失败，不回退 owner 连接。
             raise ComputationLimit("计算引用不属于当前授权作用域，已拒绝。") from exc
         query = (

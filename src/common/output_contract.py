@@ -53,9 +53,7 @@ def visible_result(
         }
     )
     # 新协议输出已在流式发布器中完成 start/delta/done；旧调用方仍走 done-only。
-    already_streamed = bool(
-        response.additional_kwargs.get("output_protocol_version")
-    )
+    already_streamed = bool(response.additional_kwargs.get("output_protocol_version"))
     if visible and not already_streamed:
         payload = event_payload(
             run_config,

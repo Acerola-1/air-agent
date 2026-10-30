@@ -43,11 +43,11 @@ SELECT tenant_id::text AS tenant_id, user_id::text AS user_id, source
 FROM thread_ownership WHERE thread_id = %(thread_id)s
 """
 
-# R01 认领协议：新声明先落 `native_pending`，只有聊天代理确认平台真实创建
+# 认领协议：新声明先落 `native_pending`，只有聊天代理确认平台真实创建
 # 成功后才升级为 `native`；未确认的归属对一切读取路径不可见（未知历史归属
 # 不可访问原则同样覆盖"认领失败残留"）。
 # claim_session_id 绑定"哪一次会话创建产生了这条 pending 认领"：确认端点只
-# 能升级**同一已验票据会话**的 pending 行（F01：内部凭据 + 身份匹配 + pending
+# 能升级**同一已验票据会话**的 pending 行（内部凭据 + 身份匹配 + pending
 # 存在都不构成创建事实，作用域与会话绑定才是可核验的最小凭证）。
 _OWNERSHIP_CLAIM = """
 INSERT INTO thread_ownership
@@ -235,7 +235,7 @@ FROM thread_ownership WHERE thread_id = %(thread_id)s
 async def fetch_thread_in_tenant(thread_id: str, *, tenant_id: str) -> dict | None:
     """租户作用域的线程归属查询（服务级只读校准用；不绑定用户）.
 
-    F05：校准主体不是任何用户，因此只按**票据绑定的租户**限定可见性
+    校准主体不是任何用户，因此只按**票据绑定的租户**限定可见性
     （`thread_ownership` 的 RLS 本就是租户级策略），失败关闭。
     """
     row = await _fetch_row(
@@ -285,7 +285,7 @@ async def delete_thread_ownership(
 async def claim_thread_ownership(
     thread_id: str, *, tenant_id: str, user_id: str, session_id: str = ""
 ) -> str:
-    """threads.create 前的原子认领（R01）.
+    """threads.create 前的原子认领.
 
     返回值：
     - ``claimed``  新建待确认归属（平台创建成功后由代理确认，否则保持不可见）
@@ -321,7 +321,7 @@ async def confirm_thread_claim(
 ) -> bool:
     """平台真实创建成功后的归属确认：pending → native（会话绑定，幂等）.
 
-    F01：只升级**同一已验票据会话**建立的 pending 认领；已确认且同归属的
+    只升级**同一已验票据会话**建立的 pending 认领；已确认且同归属的
     重复确认也返回 True（代理重试安全）；他人/未知归属/他会话认领返回
     False，不泄露任何存在性信息。
     """

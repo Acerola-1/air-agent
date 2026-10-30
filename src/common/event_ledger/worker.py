@@ -70,7 +70,7 @@ class OutboxTask:
     attempt_count: int
     event_type: str
     source: str
-    # R06：租约"代次"覆盖处理与确认——过期旧持有者不得先提交副作用再假确认成功
+    # 租约"代次"覆盖处理与确认——过期旧持有者不得先提交副作用再假确认成功
     generation: int = 0
     consumer_version: int = 1
     thread_id: str | None = None
@@ -224,7 +224,7 @@ class OutboxWorker:
     async def _handle(self, task: OutboxTask) -> None:
         """在对应租户事务内消费：**代次校验 → receipt 占位 → 副作用**，同一事务.
 
-        顺序是幂等的关键（R06）：
+        顺序是幂等的关键：
         1. `FOR UPDATE` 锁住 outbox 行并校验租约仍归本 worker 且未过期（代次）；
            过期/被接管 → 抛 `StaleLease`，**不执行任何副作用**；
         2. 先插入消费 receipt（唯一键冲突即"已处理过"）→ 已处理则直接返回，
@@ -438,7 +438,7 @@ class OutboxWorker:
                 )
                 attempts = task.attempt_count + 1
                 if error_class is None:
-                    # R06：确认前校验租约仍归本 worker 且代次未前进；否则拒绝"假确认"
+                    # 确认前校验租约仍归本 worker 且代次未前进；否则拒绝"假确认"
                     current = await (
                         await conn.execute(
                             "SELECT lease_owner,"
@@ -561,7 +561,7 @@ async def replay(
     actor: str = "ops",
     limit: int = 1000,
 ) -> dict[str, Any]:
-    """从**保留事实**重建投影（R06）：包含已 done 的事件，版本真实生效.
+    """从**保留事实**重建投影：包含已 done 的事件，版本真实生效.
 
     语义（与"只重试失败任务"不同）：
     - 数据源是 `agent_events`（保留事实），窗口按 `occurred_at`，租户显式限定；
@@ -598,7 +598,7 @@ async def replay(
                       AND o.consumer = %(c)s
                       AND e.occurred_at >= %(since)s AND e.occurred_at < %(until)s
                       -- 删除规则优先：**已被删除的线程一律不重建**（含清理已完成），
-                      -- 否则版本重建会把已删会话的派生内容复活（F04）。
+                      -- 否则版本重建会把已删会话的派生内容复活。
                       AND NOT EXISTS (
                         SELECT 1 FROM agent_thread_deletions d
                         WHERE d.tenant_id = e.tenant_id AND d.thread_id = e.thread_id)

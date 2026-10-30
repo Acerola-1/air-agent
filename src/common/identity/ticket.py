@@ -55,7 +55,7 @@ class TicketError(Exception):
 
 @dataclass(frozen=True)
 class MigrationTicketClaims:
-    """R06 历史线程 metadata 迁移的受限单目的票据（mt-v1）.
+    """历史线程 metadata 迁移的受限单目的票据（mt-v1）.
 
     只授权"对指定 thread 更新可信 metadata 键"一次窄操作；不含会话/成员，
     不能读取任何资源。生产签发方为迁移脚本（服务端，持 RUNTIME_TICKET_KEYS）。
@@ -73,7 +73,7 @@ def parse_keys(raw: str) -> list[tuple[str, str]]:
     """`RUNTIME_TICKET_KEYS` → [(kid, secret)]；**kid 与密钥内容绑定，与数组位置无关**.
 
     推荐形态：JSON 对象 `{"<kid>": "<secret>", ...}`，首个条目为当前签发密钥；
-    验签侧按票据内 kid 选钥，新旧密钥交错部署时旧票据仍可验签（R09 修复）。
+    验签侧按票据内 kid 选钥，新旧密钥交错部署时旧票据仍可验签。
     过渡兼容：纯字符串 JSON 数组按 `v1..vN` 索引编号——仅限未迁移的旧部署，
     重排/前插会使旧票据失效，因此不作为长期形态。
     """
@@ -250,7 +250,7 @@ def as_dict_for_admin_compat(claims: TicketClaims) -> dict[str, Any]:
 class ReconcileClaims:
     """服务级只读校准票据（rs-v1）：**不绑定任何用户会话**.
 
-    F05：原成员被撤销/会话失效后，校准仍须可用。因此这是**独立服务主体**的窄范围
+    原成员被撤销/会话失效后，校准仍须可用。因此这是**独立服务主体**的窄范围
     只读凭据：只授权"按租户（可选线程清单）读取运行状态"，不含 user/membership，
     不能被用来创建运行、读消息、执行模型或写任何业务数据。
     """

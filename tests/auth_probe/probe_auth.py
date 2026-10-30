@@ -1,4 +1,4 @@
-"""任务 1.2 探针：验证当前自托管镜像的原生 authenticate/resource hooks/自定义应用鉴权。
+"""鉴权探针：验证当前自托管镜像的原生 authenticate/resource hooks/自定义应用鉴权。
 
 刻意用**静态探针密钥**而非真实运行票据，只回答“镜像支持什么”：
 - @auth.authenticate 对 Bearer 的处理（放行/拒绝）

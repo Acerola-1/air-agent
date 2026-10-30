@@ -1,6 +1,6 @@
 """LangGraph API 自定义归档接口，授权来自同源服务签名.
 
-另承载 R01 归属认领确认端点（`/internal/threads/claim-confirmation`）：
+另承载归属认领确认端点（`/internal/threads/claim-confirmation`）：
 自定义 app 不经平台认证中间件，该端点用内部服务凭据（X-Internal-Token，
 浏览器不可得）保护；只有聊天代理在平台创建线程真实成功（2xx）后调用，
 把 `native_pending` 归属升级为 `native`。未确认的认领对所有资源路径不可见。
@@ -336,7 +336,7 @@ async def read_knowledge_citation(
     )
 
 
-# ------------------------------------------------------------- R01 归属认领确认
+# ------------------------------------------------------------- 归属认领确认
 
 
 def _require_internal_token(request: Request) -> None:
@@ -358,7 +358,7 @@ async def confirm_thread_claim(request: Request) -> dict[str, Any]:
     _require_internal_token(request)
     # 自定义应用不经过原生认证中间件；签名有效也不能代替当前会话/授权有效。
     await _authenticate_custom(request)
-    # F01：作用域与会话只能来自**已验签票据**——内部凭据、pending 行存在、
+    # 作用域与会话只能来自**已验签票据**——内部凭据、pending 行存在、
     # 409、请求体自报身份都不构成创建事实。请求体仅允许 thread_id。
     authorization = request.headers.get("authorization", "")
     token = authorization.removeprefix("Bearer ").strip()
@@ -442,7 +442,7 @@ async def get_capabilities(
     cursor: str | None = None,
     menu_name: str | None = None,
 ) -> dict[str, Any]:
-    """原生能力目录接口（Change 4 任务 2.3）：按当前人类成员授权实时返回 Skill 与 MCP 目录.
+    """原生能力目录接口：按当前人类成员授权实时返回 Skill 与 MCP 目录.
 
     严格鉴权：必须活跃人类成员；迁移凭据与内部校准票据一律 403；
     单个 MCP 2秒/总 5秒超时控制，部分服务不可用时返回 200 并标 temporarily_unavailable.

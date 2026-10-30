@@ -1,7 +1,6 @@
-"""业务图 Skill 规则内容加载、缓存与 load_skill 工具.
+"""共享 Skill 材料读取、references 选择与文件缓存.
 
-resolve_skill 节点与 load_skill 工具共用同一份 (SKILL.md, mode) 缓存，
-避免每次请求重复读取和解析静态 Skill 文件。
+本模块不创建加载工具、不选择 Skill，也不拥有图的会话状态。
 """
 
 from __future__ import annotations

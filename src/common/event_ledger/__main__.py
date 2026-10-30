@@ -84,7 +84,7 @@ async def _cmd_replay(args: argparse.Namespace) -> int:
 
 
 async def _cmd_reconcile(args: argparse.Namespace) -> int:
-    """有界、可续跑的服务级只读校准（F05）.
+    """有界、可续跑的服务级只读校准.
 
     凭据是**服务级只读校准票据**（rs-v1，`LEDGER_RECONCILE_TICKET` 或 `--ticket-file`），
     不绑定任何用户会话：原成员被撤销后校准仍可用，但只能按票据租户（可再按线程清单）

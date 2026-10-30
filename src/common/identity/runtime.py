@@ -1,4 +1,4 @@
-"""图/工具执行侧的可信运行身份与撤销复查（任务 5.4）.
+"""图/工具执行侧的可信运行身份与撤销复查.
 
 - 身份来源**只允许**平台注入的 `configurable.langgraph_auth_user`
   （客户端被平台校验层禁止传入该保留键），不读 metadata/input 自报字段.
@@ -29,7 +29,7 @@ class RuntimeIdentityRevoked(RuntimeIdentityError):
 class RuntimeIdentity:
     """已认证运行身份（仅非秘密标识 + 入站核验时的修订快照）.
 
-    修订快照（R04）：authenticate 入站时已把实时状态里的会话/账号/企业/成员
+    修订快照：authenticate 入站时已把实时状态里的会话/账号/企业/成员
     修订写入可信上下文；运行中的每次外呼与快照比较，"状态仍 active 但修订已
     前进"（角色撤销、A→B→A 切换等）同样拒绝，而不只依赖 active 标志。
     """
@@ -209,13 +209,13 @@ def require_identity(config: dict[str, Any] | None) -> RuntimeIdentity:
 
 
 async def revalidate(identity: RuntimeIdentity) -> None:
-    """撤销复查：状态失效**或修订快照前进**即抛错（R04）.
+    """撤销复查：状态失效**或修订快照前进**即抛错.
 
     local：查本地身份 PG；remote：经服务端绑定的 IAM 执行引用实时复查
-    （A07：>60s 合法运行继续；撤销/修订前进 → RuntimeIdentityRevoked）。
+    （>60s 合法运行继续；撤销/修订前进 → RuntimeIdentityRevoked）。
     remote 缺 verification_ref 即拒绝（不可从 config/metadata 自报引用建立）。
 
-    F02：强制模式下**修订快照缺失或非法一律拒绝**（升级前旧运行上下文必须
+    强制模式下**修订快照缺失或非法一律拒绝**（升级前旧运行上下文必须
     安全停止并由新请求重建可信身份），不得降级为仅查 active。
     """
     _validate_identity_snapshot(identity)
@@ -238,7 +238,7 @@ async def revalidate(identity: RuntimeIdentity) -> None:
 
 def _validate_identity_snapshot(identity):
     if _enforce_enabled():
-        # F02：企业部署（强制模式）下缺/非法快照一律拒绝——旧运行上下文必须
+        # 企业部署（强制模式）下缺/非法快照一律拒绝——旧运行上下文必须
         # 安全停止并由新请求重建可信身份；非强制的本地测试模式仍按状态检查，
         # 避免把守卫缺席的旧 fixture 混入生产语义。
         snapshot = (
@@ -353,12 +353,12 @@ def _business_enforce_enabled() -> bool:
 
 
 def identity_from_request(request: Any) -> RuntimeIdentity | None:
-    """从中间件请求对象提取可信身份（R04，按框架支持的来源逐级尝试）.
+    """从中间件请求对象提取可信身份（按框架支持的来源逐级尝试）.
 
     1. `langgraph.config.get_config()`——节点/中间件运行在 Pregel 任务的
        RunnableConfig 上下文中，平台把已认证的 `langgraph_auth_user` 注入其
        configurable；这是 Runtime 官方文档给出的受支持访问方式（Runtime 本身
-       不含 config，轮次01 实测确认）。
+       不含 config）。
     2. `request.runtime.config`——`ToolRuntime`（prebuilt 工具中间件）携带
        config 的形态。
     3. `request.runtime.server_info.user`——服务端注入的认证用户对象。

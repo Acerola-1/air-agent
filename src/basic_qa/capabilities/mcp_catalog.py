@@ -7,9 +7,10 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from common.tool_execution.schema import content_version, schema_version_for
 from langchain_core.tools import StructuredTool
 from langchain_core.utils.function_calling import convert_to_openai_tool
+
+from common.tool_execution.schema import content_version, schema_version_for
 
 
 @dataclass(frozen=True)
@@ -145,7 +146,7 @@ def document_for(server_key: str, tool: Any) -> ToolDocument:
 
 async def resolve_tool_catalog(config: dict[str, Any]) -> ToolCatalog:
     """Filter by business, connection and accepted selection before ranking/loading."""
-    from basic_qa.capabilities.runtime import BasicQARuntimeError
+    from basic_qa.capabilities.errors import BasicQARuntimeError
     from basic_qa.capabilities.skill_search import _scoped_catalog
     from common.business_registry import BUSINESS_POLICY_VERSION, business_for_code
     from common.capabilities import discover_authorized_mcp_catalog
@@ -177,10 +178,6 @@ async def resolve_tool_catalog(config: dict[str, Any]) -> ToolCatalog:
         if t.status == "available"
         and (mode == "auto" or t.id in cfg.get("capability_tool_ids", []))
     }
-    if cfg.get("capability_skill_mode") == "explicit":
-        # Natural-language Skill choice does not set this accepted API field.
-        selected = _scoped_catalog(config, identity)
-        allowed &= set(selected[0].required_tool_ids)
     for scope in definition.connections:
         connection = connections.resolve(scope.server_key, identity.tenant_id)
         if connection is None:

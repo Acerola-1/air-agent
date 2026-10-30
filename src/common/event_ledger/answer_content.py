@@ -1,4 +1,4 @@
-"""确认终答的受控正文快照（Change 6 小扩展）.
+"""确认终答的受控正文快照.
 
 只保存**用户可见终答文本**：不保存 reasoning、tool call、完整 state、草稿。
 由 `lifecycle._on_graph_end` 在 `record_answer` 确认后调用；快照失败不改变

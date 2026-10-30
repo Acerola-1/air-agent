@@ -1,4 +1,4 @@
-"""Agent 稳定业务目录与可信 Graph 映射（change simplify-agent-business-authorization）.
+"""Agent 稳定业务目录与可信 Graph 映射.
 
 本模块是 Agent 侧唯一的业务准入策略来源：
 - 稳定业务码、中文名、唯一 IAM 使用权限、实际 Graph；

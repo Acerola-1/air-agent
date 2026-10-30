@@ -1,4 +1,4 @@
-"""公共业务准入守卫（change simplify-agent-business-authorization 任务 2.2）.
+"""公共业务准入守卫.
 
 唯一规则：当前有效 IAM 身份必须持有
 `agent:business:<稳定业务码>:use`，且账号、企业、成员与修订有效。

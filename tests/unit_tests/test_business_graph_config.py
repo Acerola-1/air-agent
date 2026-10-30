@@ -57,7 +57,6 @@ def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
     assert "mcp_station_analysis_single_pscf" not in source
     assert "trajectory-analyst" not in source
 
-    bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
     bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
     bg_prompting = BUSINESS_GRAPH_PROMPTING.read_text(encoding="utf-8")
     assert "validate_input" in Path("src/basic_qa/input_policy.py").read_text()
@@ -70,7 +69,11 @@ def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
         for edge in topology.edges
         if edge.source == "prepare_model"
     } == {("call_model", False)}
-    assert "_route_after_tools" in bg_builder
+    assert {
+        (edge.target, edge.conditional)
+        for edge in topology.edges
+        if edge.source == "execute_tools"
+    } == {("call_model", True), ("ledger_finalize", True)}
     assert "prepare_projection" in bg_nodes
     assert "with_main_agent_tool_use_output_guard" in bg_prompting
     assert "air-agent/basic-qa/conversation-system-v2" in bg_prompting
@@ -101,7 +104,7 @@ def test_business_graph_configs_keep_local_graph_names() -> None:
 
 
 def test_basic_qa_uses_rich_output_pipeline() -> None:
-    # basic-qa 迁移节点流后，富输出经共享 composed_tool_wrapper 处理
+    # basic-qa 的本图执行器负责批次，工具包装器负责结果治理和受保护发送。
     source = STATE_GRAPHS["basic-qa"].read_text(encoding="utf-8")
     assert "LegacyChartDataMiddleware()" not in source
 
@@ -110,8 +113,14 @@ def test_basic_qa_uses_rich_output_pipeline() -> None:
     # 工具执行组合包装器保留：绑定实例 + MCP 重试 + 异常兜底
     assert "composed_tool_wrapper" in wrappers
     assert "_handle_artifact" not in wrappers
-    bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
-    assert "basic_qa_tool_wrapper" in bg_builder
+    from basic_qa.builder import bound_node_callable
+    from basic_qa.graph import graph
+    from basic_qa.tool_batches import ToolBatchExecutor
+    from basic_qa.tool_policy import basic_qa_tool_wrapper
+
+    executor = bound_node_callable(graph({}), "execute_tools").__self__
+    assert isinstance(executor, ToolBatchExecutor)
+    assert executor.tool_call_wrapper is basic_qa_tool_wrapper
 
 
 def test_business_graphs_node_flow_finalize_output() -> None:

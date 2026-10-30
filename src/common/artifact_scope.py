@@ -1,4 +1,4 @@
-"""归档授权 scope v2：验证同源服务签发的租户/用户/线程归属（任务 6.1）.
+"""归档授权 scope v2：验证同源服务签发的租户/用户/线程归属.
 
 v2 协议字段：`{v: 2, tenantId, userId, threadId, aud, exp}`，独立签名密钥
 `ARCHIVE_SCOPE_KEYS`（JSON 数组，当前/上一密钥有界轮换；支持 kid），不再复用

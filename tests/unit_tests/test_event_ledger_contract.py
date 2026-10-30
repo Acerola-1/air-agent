@@ -34,7 +34,7 @@ EXPECTED = {
     "bad_uuid",
     "payload_too_large",
     "invalid_enum_value",
-    # change complete-agent-observability：runtime.model_usage 顶层计数窄例外
+    # runtime.model_usage 顶层计数窄例外
     "usage_tokens_not_non_negative_int",
 }
 

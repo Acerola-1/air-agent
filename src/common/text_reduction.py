@@ -51,7 +51,7 @@ async def summarize_complete_text(
 ) -> tuple[str, dict[str, object]]:
     """全量分块和分层合并，返回覆盖证据；任意失败向上传播.
 
-    F02：每次摘要模型外呼前执行运行守卫（run_config 携带平台注入的
+    每次摘要模型外呼前执行运行守卫（run_config 携带平台注入的
     langgraph_auth_user）；强制模式下无运行身份直接拒绝，长会话/大输出
     整理不再绕过撤权链。
     """

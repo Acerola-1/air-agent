@@ -1,11 +1,11 @@
 """Agent 侧台账存储：业务 PG 直连最小异步读写（运行角色 + 事务本地 GUC）.
 
-设计 §1：基本事实与 outbox 同事务，运行可直接写 PG，避免每个节点依赖后台 HTTP。
+基本事实与 outbox 同事务，运行可直接写 PG，避免每个节点依赖后台 HTTP。
 本模块**不导入** `admin/api/app`，只按迁移 0007/0008 的表契约写 SQL。
 
-**原子性（R02 修复）**：所有"事实 + 事件 + outbox"写入都走同一个 `_tx` 事务
+**原子性**：所有"事实 + 事件 + outbox"写入都走同一个 `_tx` 事务
 （同一连接、同一提交点）。事务内任何一步失败 → 整笔回滚、**零可见**；
-不再出现"事件已提交、outbox 缺失"的半提交事实。故障注入缝为 `_insert_outbox`。
+事件与 outbox 必须同时可见。故障注入缝为 `_insert_outbox`。
 
 失败关闭：缺配置/连接失败抛 `LedgerBackendUnavailable`，调用方不得据"写入失败"
 推断业务成功；也不得把台账故障改写为已有答案的业务失败。
@@ -33,7 +33,7 @@ TERMINAL_STATES = ("succeeded", "failed", "cancelled", "timed_out")
 ACTIVE_STATES = ("admitting", "admission_unknown", "queued", "running", "waiting_input")
 EVIDENCE_RANK = {"platform_read": 3, "runtime_callback": 2, "browser_observed": 1}
 DEFAULT_CONSUMERS = ("run_projection",)
-# 参与"同 ID 冲突判定"的信封字段（R02：不能只比 payload 摘要）
+# 参与"同 ID 冲突判定"的信封字段（不能只比 payload 摘要）
 _ENVELOPE_IDENTITY = (
     "event_type",
     "source",
@@ -51,7 +51,7 @@ _POOL: AsyncConnectionPool | None = None
 class ThreadDeleted(Exception):
     """目标会话已删除（永久语义）：**拒绝写入新事实/事件**.
 
-    F04：删除后仍可能有**晚到回调**（运行收尾、状态校准、补投递重试）到达。它们不得
+    删除后仍可能有**晚到回调**（运行收尾、状态校准、补投递重试）到达。它们不得
     复活已删会话的事实与派生内容，也不得写入新的运行事件；调用方按失败开放处理
     （记录而非回滚业务答案），绝不因删除状态把业务失败反灌给用户。
     """
@@ -189,7 +189,7 @@ async def _insert_outbox(
     """Outbox 写入缝（单测在此注入故障以验证整笔回滚）.
 
     同时记录 thread_id：受限清理 worker 需要在不读事件正文、不越权的前提下定位
-    线程归属（R05）。
+    线程归属。
     """
     await conn.execute(
         "INSERT INTO agent_outbox (tenant_id, event_id, consumer, available_at, status,"
@@ -232,9 +232,9 @@ async def _write_event_in(
     """在**调用方事务**内写入事件 + outbox（不自行提交）.
 
     幂等/冲突判定覆盖**信封身份字段**（类型、来源、线程/请求/尝试/运行/回答/消息），
-    不只比较 payload 摘要（R02）：同 ID 但类型或关键关联变化 → 冲突。
+    不只比较 payload 摘要：同 ID 但类型或关键关联变化 → 冲突。
 
-    F04：带线程作用域的写入先检查**永久删除标记**——已删会话不允许再产生新事实/事件
+    带线程作用域的写入先检查**永久删除标记**——已删会话不允许再产生新事实/事件
     （晚到回调、状态校准、重试补写都走这里），避免"删完又被回调写回来"。
     只有**登记删除本身**（`record_thread_deletion`）以 `allow_deleted=True` 放行。
     """
@@ -422,7 +422,7 @@ async def orphan_repair(
     limit: int = 200,
     consumers: tuple[str, ...] = DEFAULT_CONSUMERS,
 ) -> dict[str, Any]:
-    """有界修复：为"有事件但缺 outbox 行"的历史孤立记录补投递（R02）.
+    """有界修复：为"有事件但缺 outbox 行"的历史孤立记录补投递.
 
     - 只看本租户、有限条数；
     - 跳过有开放删除标记的线程（删除优先）；
@@ -436,7 +436,7 @@ async def orphan_repair(
             "   AND NOT EXISTS ("
             "     SELECT 1 FROM agent_outbox o WHERE o.tenant_id = e.tenant_id"
             "       AND o.event_id = e.event_id AND o.consumer = ANY(%(consumers)s))"
-            # F04：删除是永久语义——只要存在删除记录（含清理已完成），
+            # 删除是永久语义——只要存在删除记录（含清理已完成），
             # 该会话的事件就不再补投递，避免重放把已删会话的事实复活。
             "   AND NOT EXISTS ("
             "     SELECT 1 FROM agent_thread_deletions d WHERE d.tenant_id = e.tenant_id"
@@ -1059,7 +1059,7 @@ async def claim_start(
     content: Any,  # noqa: ANN401
     source: str,
 ) -> dict[str, Any]:
-    """原子裁决"启动权"（R01）：**一次业务提交只能启动一次**，且必须与真实输入一致.
+    """原子裁决"启动权"：**一次业务提交只能启动一次**，且必须与真实输入一致.
 
     裁决单元是 **submission**（不是 attempt）：initial/retry/regenerate 的 submission 与
     attempt 一一对应；人工 resume 复用同一 attempt 但每次是新 submission，因此各有独立
@@ -1093,7 +1093,7 @@ async def claim_start(
                 " WHERE x.attempt_id = a.id AND x.tenant_id = a.tenant_id ORDER BY x.resume_index LIMIT 1)"
                 " ELSE a.platform_run_id END END) AS submission_run_id,"
                 " a.graph_id, a.operation_kind AS attempt_kind, a.state,"
-                # F02：校验**本次提交**的规范摘要（恢复提交有自己的 resume 摘要），
+                # 校验**本次提交**的规范摘要（恢复提交有自己的 resume 摘要），
                 # 而不是初次 attempt 的摘要——否则恢复会被误判为 content mismatch。
                 " CASE WHEN s.operation_kind = 'initial' THEN a.content_digest"
                 " ELSE s.content_digest END AS content_digest,"
@@ -1217,9 +1217,8 @@ async def record_thread_deletion(
 ) -> dict[str, Any]:
     """原生删除入口的**持久删除标记**（幂等）：立即禁读/禁新写，并排入清理任务.
 
-    F04：BFF 删除此前已接台账，但直连原生 `DELETE /threads/{id}` 只删归属登记，
-    删完仍可回读/新写。现在两条删除路径都先落**永久**标记（存在即视为已删除），
-    清理失败可重试，且标记不因清理完成而失效。
+    BFF 与原生 `DELETE /threads/{id}` 两条路径均先落**永久**标记
+    （存在即视为已删除）；清理失败可重试，标记不因清理完成而失效。
     """
     now = dt.datetime.now(dt.UTC)
     async with _tx(scope) as conn:
@@ -1300,7 +1299,7 @@ async def record_reconcile_run(
 ) -> dict[str, Any]:
     """记录一次**有界**校准运行（续跑游标 + 计数），供运维审计与继续执行.
 
-    F05：服务级校准必须有可执行、可续跑的落点：单次运行受 `max_batches` 限制，
+    服务级校准必须有可执行、可续跑的落点：单次运行受 `max_batches` 限制，
     游标确保下一次从上次位置继续；本函数只写自身租户的运维台账，不含正文。
     """
     async with _tx(scope) as conn:
@@ -1374,7 +1373,7 @@ async def attempts_needing_reconcile(
 ) -> list[dict[str, Any]]:
     """超过间隔无进展的活跃尝试，以及**终态但缺平台映射**的尝试（校准候选）.
 
-    F05：只筛"活跃"会把"平台已 success、台账也 succeeded、但 platform_run_id 未持久化"
+    只筛"活跃"会把"平台已 success、台账也 succeeded、但 platform_run_id 未持久化"
     的记录永久排除在补偿之外——那正是最需要回填映射的一类。因此在活跃候选之外，
     额外纳入"无 platform_run_id 的终态尝试"（同样有界、同样只做只读核对）。
     """
@@ -1497,13 +1496,13 @@ async def content_digest(*, graph_id: str, operation_kind: str, content: Any) ->
 async def fetch_capability_selection_snapshot(
     scope: LedgerScope, *, attempt_id: str, submission_id: str | None = None
 ) -> dict[str, Any] | None:
-    """从业务数据库读取已受理的不可变能力选择快照（任务 4.1）."""
+    """从业务数据库读取已受理的不可变能力选择快照."""
     sql = (
         "SELECT s.id::text AS id, s.request_id::text AS request_id,"
         " s.membership_id::text AS membership_id, r.thread_id::text AS thread_id,"
         " s.attempt_id::text AS attempt_id, s.submission_id::text AS submission_id,"
-        " s.graph_id, s.skill_mode, s.skill_id, s.mcp_mode, s.tool_ids, s.catalog_version,"
-        " s.material_version, s.selection_digest, s.digest_version, s.selection_source,"
+        " s.graph_id, s.mcp_mode, s.tool_ids, s.catalog_version,"
+        " s.selection_digest, s.digest_version, s.selection_source,"
         " s.validation_time, s.created_at"
         " FROM agent_capability_selections s JOIN agent_requests r"
         " ON r.id = s.request_id AND r.tenant_id = s.tenant_id"

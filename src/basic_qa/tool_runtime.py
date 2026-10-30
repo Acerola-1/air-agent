@@ -58,7 +58,7 @@ async def _invoke_mcp_with_retry(
 ) -> Any:
     """MCP 工具失败后的代码级重试；重试耗尽则降级为 _mcp_fallback.
 
-    F02/7.3：每次重试发送前重新核验身份与绑定授权（revalidate 查真实身份库）；
+    每次重试发送前重新核验身份与绑定授权（revalidate 查真实身份库）；
     授权拒绝直接终止重试并返回可读拒绝，不被瞬时错误重试吞掉。
     """
     from common.identity.runtime import (
@@ -227,9 +227,8 @@ async def composed_tool_wrapper(
     if isinstance(_runtime_config, dict):
         ensure_model_observability(_runtime_config)
 
-    # 1.5 企业运行守卫：授权撤销/停用后下一次工具调用拒绝执行（任务 5.4/7.3）。
-    # F02：走统一的请求级可信来源（get_config 环境/ToolRuntime.config/server_info），
-    # 不再依赖 request.runtime.config 单一形状。
+    # 企业运行守卫：授权撤销/停用后下一次工具调用拒绝执行。
+    # 从 get_config 环境、ToolRuntime.config 或 server_info 提取可信请求身份。
     from common.identity.runtime import RuntimeIdentityError, guard_request_call
 
     try:

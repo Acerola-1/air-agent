@@ -172,8 +172,8 @@ def observe_execution(config, request, result):
         for message in result.update.get("messages", []):
             observe_execution(config, request, message)
         return
-    from basic_qa.capabilities.projection import mcp_stable_id
     from basic_qa.capabilities.runtime import trusted_turn_key
+    from basic_qa.capabilities.tool_definitions import mcp_stable_id
     from common.observability.skill_adapter import emit_skill_stage
     from common.observability.tool_adapter import classify_tool_output
 

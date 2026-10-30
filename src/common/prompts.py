@@ -102,8 +102,6 @@ DATA_AUTHENTICITY_GUARD = """
 """.strip()
 
 
-
-
 ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE = """
 ## 行政区名称规范化
 
@@ -221,10 +219,6 @@ PM10 旧边界(日均/小时)：
 PM2.5 旧边界(日均/小时)：
 小时：1级 0–35，2级 35–75，3级 75–115，4级 115–150，5级 150–250，6级 >250
 """.strip()
-
-
-
-
 
 
 FAST_MODE_SYSTEM_PROMPT = """

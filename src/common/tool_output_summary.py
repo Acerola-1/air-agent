@@ -19,7 +19,7 @@ async def summarize_large_tool_output(
 ) -> tuple[str, dict[str, object]]:
     """全量归纳非结构化资料，失败向上传播.
 
-    F02：透传 run_config 使摘要外呼逐次经过运行守卫（撤权后不再发送）。
+    透传 run_config 使摘要外呼逐次经过运行守卫（撤权后不再发送）。
     """
     result, coverage = await summarize_complete_text(
         raw_output,

@@ -1,6 +1,6 @@
 """观测域存储：观测事实 + runtime.* 事件 + outbox 同事务持久化.
 
-设计约束（change design §2 / spec agent-model-observability §观测故障有界降级）：
+设计约束（参见 openspec/specs/agent-model-observability/spec.md「观测故障有界降级」）：
 
 - 身份与关联只来自可信 ObservationContext；attempt/submission 关联由数据库
   复合外键强制同租户（0012_observability）。

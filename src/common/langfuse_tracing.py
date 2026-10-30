@@ -206,7 +206,7 @@ def with_langfuse_tracing(  # noqa: UP047 - 冻结签名保持 TypeVar 形态
     # The standard callback flag keeps SDK context and local correlation ordered.
     handler.run_inline = True
     try:
-        # 观测域（change complete-agent-observability）反查真实 Langfuse trace id：
+        # 观测域反查真实 Langfuse trace id：
         # 同一 run_id 在所有 handler 间共享，注册表只存弱引用（不延长生命周期）。
 
         from common.observability.model_adapter import register_langfuse_handler
