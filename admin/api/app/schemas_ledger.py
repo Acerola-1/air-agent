@@ -20,13 +20,6 @@ CancelPhase = Literal["queued", "processing", "output", "unknown"]
 EvidenceSource = Literal["platform_read", "runtime_callback", "browser_observed"]
 
 
-class CapabilitySelectionSkillIn(BaseModel):
-    mode: Literal["auto", "explicit"] = "auto"
-    skill_id: str | None = Field(default=None, max_length=200)
-
-    model_config = {"extra": "forbid"}
-
-
 class CapabilitySelectionMcpIn(BaseModel):
     mode: Literal["auto", "allowlist"] = "auto"
     tool_ids: list[str] = Field(default_factory=list, max_length=20)
@@ -35,8 +28,7 @@ class CapabilitySelectionMcpIn(BaseModel):
 
 
 class CapabilitySelectionIn(BaseModel):
-    schema_version: Literal["agent.capability-selection.v1"] = "agent.capability-selection.v1"
-    skill: CapabilitySelectionSkillIn = Field(default_factory=CapabilitySelectionSkillIn)
+    schema_version: Literal["agent.capability-selection.v2"] = "agent.capability-selection.v2"
     mcp: CapabilitySelectionMcpIn = Field(default_factory=CapabilitySelectionMcpIn)
     catalog_version: str | None = Field(default=None, max_length=200)
 

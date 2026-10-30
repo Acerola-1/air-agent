@@ -58,35 +58,66 @@ export type CapabilityCatalogData = {
 };
 
 export type CapabilitySelectionDraft = {
-  skillMode: "auto" | "explicit";
-  selectedSkillId: string | null;
   mcpMode: "auto" | "allowlist";
   selectedToolIds: string[];
 };
 
 export type CapabilityAcceptedSnapshot = {
-  id: string;
-  skill_mode: "auto" | "explicit";
-  skill_id: string | null;
-  mcp_mode: "auto" | "allowlist";
-  tool_ids: string[];
+  selection_id: string;
   selection_digest: string;
+  digest_version: 3;
+  selection_status: "collected";
+  schema_version: "agent.capability-selection.v2";
+  mcp: { mode: "auto" | "allowlist"; tool_ids: string[] };
+  catalog_version: string | null;
   selection_source: string;
+  validation_time: string;
 };
 
 /** 仅转换服务端回读的已受理计划；缺引用或摘要时不显示成功。 */
 export function acceptedSnapshot(raw: Record<string, unknown> | null | undefined): CapabilityAcceptedSnapshot | null {
-  if (!raw || !(raw.id || raw.selection_id) || typeof raw.selection_digest !== "string") return null;
-  const skill = raw.skill as { mode?: "auto" | "explicit"; skill_id?: string } | undefined;
-  const mcp = raw.mcp as { mode?: "auto" | "allowlist"; tool_ids?: string[] } | undefined;
+  if (!raw) return null;
+  const retiredFields = ["skill", "skill_mode", "skill_id", "material_version"];
+  if (retiredFields.some((field) => Object.hasOwn(raw, field))) return null;
+  const selectionId =
+    typeof raw.selection_id === "string" && raw.selection_id.length > 0
+      ? raw.selection_id
+      : typeof raw.id === "string" && raw.id.length > 0
+        ? raw.id
+        : null;
+  if (
+    !selectionId ||
+    typeof raw.selection_digest !== "string" ||
+    raw.selection_digest.length === 0 ||
+    raw.digest_version !== 3 ||
+    raw.selection_status !== "collected" ||
+    raw.schema_version !== "agent.capability-selection.v2" ||
+    (raw.catalog_version !== null && typeof raw.catalog_version !== "string") ||
+    typeof raw.selection_source !== "string" ||
+    typeof raw.validation_time !== "string"
+  ) return null;
+  const mcp = raw.mcp as { mode?: unknown; tool_ids?: unknown } | undefined;
+  if (
+    !mcp ||
+    Object.keys(mcp).some((key) => !["mode", "tool_ids"].includes(key)) ||
+    (mcp.mode !== "auto" && mcp.mode !== "allowlist") ||
+    !Array.isArray(mcp.tool_ids) ||
+    !mcp.tool_ids.every((toolId) => typeof toolId === "string") ||
+    (mcp.mode === "auto" && mcp.tool_ids.length > 0)
+  ) return null;
   return {
-    id: String(raw.id || raw.selection_id),
-    skill_mode: (raw.skill_mode as "auto" | "explicit") ?? skill?.mode ?? "auto",
-    skill_id: (raw.skill_id as string | null) ?? skill?.skill_id ?? null,
-    mcp_mode: (raw.mcp_mode as "auto" | "allowlist") ?? mcp?.mode ?? "auto",
-    tool_ids: [...((raw.tool_ids as string[] | undefined) ?? mcp?.tool_ids ?? [])],
+    selection_id: selectionId,
     selection_digest: raw.selection_digest,
-    selection_source: String(raw.selection_source ?? "admitted"),
+    digest_version: 3,
+    selection_status: "collected",
+    schema_version: "agent.capability-selection.v2",
+    mcp: {
+      mode: mcp.mode,
+      tool_ids: mcp.mode === "auto" ? [] : [...new Set(mcp.tool_ids as string[])].sort(),
+    },
+    catalog_version: raw.catalog_version as string | null,
+    selection_source: raw.selection_source,
+    validation_time: raw.validation_time,
   };
 }
 
@@ -102,7 +133,6 @@ type CapabilityState = {
 
   // Actions
   fetchCatalog: (graphId: string, tenantId?: string | null) => Promise<void>;
-  setSkillMode: (mode: "auto" | "explicit", skillId?: string | null) => void;
   setMcpMode: (mode: "auto" | "allowlist", toolIds?: string[]) => void;
   toggleTool: (toolId: string) => void;
   resetToDefault: () => void;
@@ -112,8 +142,6 @@ type CapabilityState = {
 };
 
 const DEFAULT_SELECTION: CapabilitySelectionDraft = {
-  skillMode: "auto",
-  selectedSkillId: null,
   mcpMode: "auto",
   selectedToolIds: [],
 };
@@ -192,27 +220,12 @@ export const useCapabilityStore = create<CapabilityState>((set, get) => ({
         cursor = next.next_cursor;
       }
 
-      // 如果显式选择的 skillId 不在当前 catalog 中，重置为 auto
       const currentSel = get().selection;
-      let nextSkillMode = currentSel.skillMode;
-      let nextSkillId = currentSel.selectedSkillId;
-      if (nextSkillMode === "explicit" && nextSkillId) {
-        const found = data.skills.some((s) => s.id === nextSkillId);
-        if (!found) {
-          nextSkillMode = "auto";
-          nextSkillId = null;
-        }
-      }
-
       set({
         catalog: data,
         catalogLoading: false,
         catalogError: null,
-        selection: {
-          ...currentSel,
-          skillMode: nextSkillMode,
-          selectedSkillId: nextSkillId,
-        },
+        selection: currentSel,
       });
     } catch (err) {
       if (get().epoch !== currentEpoch) return;
@@ -221,16 +234,6 @@ export const useCapabilityStore = create<CapabilityState>((set, get) => ({
         catalogError: err instanceof Error ? err.message : "获取能力目录网络异常",
       });
     }
-  },
-
-  setSkillMode: (mode, skillId = null) => {
-    set((state) => ({
-      selection: {
-        ...state.selection,
-        skillMode: mode,
-        selectedSkillId: mode === "explicit" ? skillId : null,
-      },
-    }));
   },
 
   setMcpMode: (mode, toolIds = []) => {
@@ -287,28 +290,17 @@ export const useCapabilityStore = create<CapabilityState>((set, get) => ({
   toPayload: () => {
     const sel = get().selection;
     const cat = get().catalog;
-    const isExplicit = sel.skillMode === "explicit" || sel.mcpMode === "allowlist";
     const toolIds =
       sel.mcpMode === "allowlist"
         ? Array.from(new Set(sel.selectedToolIds)).sort()
         : [];
-    const payload: Record<string, unknown> = {
-      schema_version: "agent.capability-selection.v1",
-      skill: {
-        mode: sel.skillMode,
-        skill_id: sel.skillMode === "explicit" ? sel.selectedSkillId : null,
-      },
+    return {
+      schema_version: "agent.capability-selection.v2",
       mcp: {
         mode: sel.mcpMode,
         tool_ids: toolIds,
       },
-      catalog_version: isExplicit ? (cat?.catalog_version ?? null) : null,
+      catalog_version: sel.mcpMode === "allowlist" ? (cat?.catalog_version ?? null) : null,
     };
-    Object.defineProperty(payload, "selection_source", {
-      value: isExplicit ? ("user_explicit" as const) : ("automatic" as const),
-      enumerable: false,
-      configurable: true,
-    });
-    return payload;
   },
 }));

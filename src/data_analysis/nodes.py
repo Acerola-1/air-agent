@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, cast
 
 import yaml
-from common.runtime_context import get_message_content, get_routing_context
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import StreamWriter
@@ -28,6 +27,7 @@ from common.output_streaming.publisher import (
     OutputPublisher,
     runtime_authorization_probe,
 )
+from common.runtime_context import get_message_content, get_routing_context
 from common.runtime_events import emit_event
 from common.runtime_tools import get_business_tools
 from data_analysis.context.preparation import (
@@ -209,21 +209,6 @@ async def resolve_skill(
 
     matched = match_menu_skill(raw_menu_name)
 
-    # 任务 4.2：菜单确定性校验——若显式选择与当前菜单映射冲突，拒绝执行
-    skill_mode = configurable.get("capability_skill_mode") or "auto"
-    if skill_mode == "explicit":
-        skill_id = configurable.get("capability_skill_id") or ""
-        expected_slug = skill_id.split(":")[-1] if skill_id else ""
-        if matched and matched.skill_name != expected_slug:
-            logger.error(
-                "数据分析显式技能与菜单冲突: explicit={}, menu_skill={}",
-                expected_slug,
-                matched.skill_name,
-            )
-            raise ValueError(
-                f"数据分析显式技能（{expected_slug}）与菜单映射技能（{matched.skill_name}）冲突"
-            )
-
     if matched is None:
         logger.info(
             "数据分析 Skill 匹配失配：has_menu={}，降级为通用分析",
@@ -262,7 +247,7 @@ async def resolve_skill(
     skill_rules = _merge_skill_content(skill_body, references_content)
     from common.observability.skill_adapter import emit_skill_stage
 
-    obs_source = "manual" if skill_mode == "explicit" else "menu-mapping"
+    obs_source = "menu-mapping"
     for stage in ("matched", "selected", "loaded"):
         emit_skill_stage(
             config,

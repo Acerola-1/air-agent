@@ -12,7 +12,7 @@ from data_analysis.prompts import filter_business_tools
 
 
 @pytest.mark.anyio
-async def test_menu_selection_and_explicit_conflict():
+async def test_menu_selection():
     state = {"messages": [HumanMessage(content="分析")]}
 
     def writer(event):
@@ -28,18 +28,6 @@ async def test_menu_selection_and_explicit_conflict():
     )
     assert missing["selected_skill"] is None
     assert missing["selected_skill_allowed_tools"] == []
-    with pytest.raises(ValueError, match="冲突"):
-        await resolve_skill(
-            state,
-            {
-                "configurable": {
-                    "menu_name": "CityHourBroadcast",
-                    "capability_skill_mode": "explicit",
-                    "capability_skill_id": "skill:data-analysis:other",
-                }
-            },
-            writer=writer,
-        )
 
 
 def test_no_menu_restricts_business_tools():

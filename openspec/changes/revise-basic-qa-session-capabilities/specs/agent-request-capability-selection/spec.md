@@ -1,54 +1,50 @@
-## MODIFIED Requirements
+## REMOVED Requirements
 
 ### Requirement: 自动默认与显式选择交互
-系统 SHALL 兼容Skill自动或显式单选，以及MCP自动或指定集合的已有受理协议；指定空集合表示不使用MCP，未声明选择的旧客户端保持自动。Basic QA本变更 SHALL 以自然语言和默认自动模式提供能力决策，不要求新增前端选择器。已有选择交互继续提供中文等待、空态、不可用、失败、刷新与取消，并支持键盘与窄屏；运行中不能更改已受理选择。
+**Reason**: 用户已撤回事先指定 Skill，不能继续保留 Skill auto/explicit 协议与运行分支。
+**Migration**: 新请求使用 agent.capability-selection.v2，只保留 MCP 范围。旧 Skill 字段被明确拒绝，已冻结历史选择不改写且不再用于 retry/resume；新请求重新按需发现能力。
 
-#### Scenario: 指定一个Skill和部分MCP
-- **WHEN** 支持选择交互的入口提交本图Skill及当前有权的两个MCP工具
-- **THEN** 本次明确记录已受理选择，下次编辑草稿不改变当前运行；Basic QA的自动多能力状态不改写该用户选择
+## ADDED Requirements
 
-#### Scenario: 选择空集合
-- **WHEN** MCP模式为指定集合且集合为空
-- **THEN** 本次不披露或执行任何MCP工具，本地图基础工具继续按既有规则受控
+### Requirement: 模型发现与 MCP 受理范围
+系统 SHALL 由模型优先 search_skills 发现新业务能力，从候选中 load_skill；不接受请求事先指定 Skill，不向模型注入全量 Skill 目录。已有有效引用可跨轮复用。MCP auto/allowlist 仍独立限定受理范围；指定空集合表示不使用 MCP。
 
-#### Scenario: 自然语言指明业务能力
-- **WHEN** Basic QA用户在消息中明确要求使用某个已知Skill
-- **THEN** 模型优先采用该能力处理其覆盖任务；该消息不伪造服务端显式受理字段、不产生人员授权，未覆盖部分遵循Skill优先的补足策略
+#### Scenario: 旧客户端指定 Skill
+- **WHEN** 请求含 skill 对象或 capability_skill_mode、capability_skill_id、capability_material_version
+- **THEN** 明确拒绝，不静默忽略或恢复旧约束，模型和业务工具零外呼
+
+#### Scenario: 自然语言提及 Skill
+- **WHEN** 用户在消息中提及某项专业能力
+- **THEN** 将其用于搜索并选择候选，或复用已有效加载引用，不生成新的受理 Skill 限制
+
+#### Scenario: MCP 空集合
+- **WHEN** 受理 MCP allowlist 为空
+- **THEN** 不披露或执行任何 MCP 工具，本地工具按既有规则运行
+
+## MODIFIED Requirements
 
 ### Requirement: 服务端验证与依赖冲突
-服务端 SHALL 验证实际Graph的业务权限、能力归属、目录/材料版本、连接状态、选择长度及Skill工具依赖，不再要求普通Skill/MCP独立人员授权。未知、不可用、路径伪造、跨图选择在外呼前拒绝；显式Skill不被静默替换，也不因依赖缺失扩大用户选择。Basic QA按需加载Skill规则和工具定义，不要求每轮重复加载或必须隶属某Skill。执行以本次实际提供的工具定义与实时受理／业务范围为准，不额外检查加载凭证；模型加载不能修改不可变受理选择。
+服务端 SHALL 验证实际 Graph 的业务权限、MCP 范围、目录／连接版本与工具长度。Skill 的材料、模式与工具依赖由按需加载器核验，失败不扩大范围。模型加载不能修改受理选择，执行核对本次工具定义与实时授权，不因 Skill 归属或加载记录增加权限条件。
 
-#### Scenario: Skill依赖被排除
-- **WHEN** 显式Skill必需的MCP工具不在本次指定集合
-- **THEN** 返回中文冲突说明，不启动模型或工具；依赖声明不自动授予权限或扩大选择
+#### Scenario: Skill 所需工具不可用
+- **WHEN** 模型加载的 Skill 必需工具被当前 MCP 范围排除
+- **THEN** 加载明确失败且不扩大许可，其他有效能力保留
 
-#### Scenario: 菜单确定性分析
-- **WHEN** data-analysis当前菜单映射S1，用户提交S2
-- **THEN** 拒绝不一致选择；一致S1且业务获准、依赖满足时可执行
-
-#### Scenario: 无Skill的自动调用
-- **WHEN** 用户有业务资格，使用自动模式且模型调用业务内有效MCP
-- **THEN** Basic QA可在独立工具加载成功后执行，无需制造Skill加载；其他图沿用自身策略，所有图无需成员工具绑定
-
-#### Scenario: 复用不改变用户选择
-- **WHEN** Basic QA跨轮复用或在一次任务中激活多个Skill和独立工具
-- **THEN** 分别记录实际能力状态，按当前受理范围过滤，不修改受理摘要或将模型激活伪称为用户显式选择
-
-#### Scenario: 独立工具不绕过显式范围
-- **WHEN** 当前受理的显式Skill或MCP集合构成限制
-- **THEN** 模型不能借独立工具路径绕过已明确冻结的限制；自然语言指明Skill与该已有协议约束分别处理，不混为一套人员权限
+#### Scenario: 菜单策略故障
+- **WHEN** 数据分析菜单策略加载或校验发生异常
+- **THEN** 受理失败关闭且零外呼，正常未匹配与策略故障分别处理
 
 ### Requirement: 重试重新生成与恢复继承
-重试 SHALL 继承原attempt的业务与选择并重新检查实时许可、连接及策略；重新生成默认继承，只有新submission明确声明才接受新合法选择。恢复 MUST 保持原选择，失效时拒绝，不静默自动匹配另一能力；旧人员绑定不参与判断。Basic QA会话能力引用与attempt事实分离，新轮可重新核验后复用；同attempt恢复不得静默刷新材料或schema版本。
+重试与恢复 SHALL 继承新协议受理的 MCP 范围并复查实时业务／连接许可，不改变不可变摘要。撤回协议的历史选择保留为事实，但拒绝继续执行；重新生成或新请求按新协议受理。已加载能力按本次规则与 schema 重新核验，不每轮清空。
 
-#### Scenario: 恢复时目录已变化
-- **WHEN** 暂停后Skill材料变更、连接失效、业务撤权或用户在resume改选择
-- **THEN** 恢复拒绝并要求重新提交，原attempt及历史事实不改写
+#### Scenario: 旧选择恢复
+- **WHEN** retry/resume 的来源选择摘要版本低于 3
+- **THEN** 明确拒绝并要求发起新请求，不改写历史或静默解除旧限制
 
-#### Scenario: 重新生成修改选择
-- **WHEN** 用户有业务资格，以新提交键重新生成并改成合法S2
-- **THEN** 新attempt记录S2，原回答和S1仍可回读，不增加原逻辑提问数
+#### Scenario: 新选择恢复
+- **WHEN** 新协议运行暂停后恢复，MCP 范围和业务许可仍有效
+- **THEN** 继承相同范围并允许恢复，变更范围或撤权时拒绝
 
-#### Scenario: 新用户轮复用已有能力
-- **WHEN** 新attempt的业务与当前选择允许会话内已加载能力且版本模式有效
-- **THEN** 可重建规则和工具直接使用，不因新attempt标识清空能力，也不沿用旧attempt的许可或调用计数
+#### Scenario: 同能力追问
+- **WHEN** 新轮所需 Skill 已有效加载且仍获许可
+- **THEN** 直接复用其规则和工具，无重复搜索或加载

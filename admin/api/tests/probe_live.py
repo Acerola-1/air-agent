@@ -130,8 +130,7 @@ async def run_probe():
                 "operation_kind": "initial",
                 "content": "测试未核验协议拒绝",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
-                    "skill": {"mode": "auto"},
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:unverified_svc:query"]},
                     "catalog_version": "v1",
                 },
@@ -152,8 +151,7 @@ async def run_probe():
                 "operation_kind": "initial",
                 "content": "测试伪造目录版本",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
-                    "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": []},
                     "catalog_version": "not-a-real-catalog-123",
                 },
@@ -174,8 +172,7 @@ async def run_probe():
                 "operation_kind": "initial",
                 "content": "正常显式提问",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
-                    "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:business:query"]},
                     "catalog_version": "v1",
                 },
@@ -262,8 +259,7 @@ async def run_probe():
                 "source_attempt_id": att_id,
                 "content": "用户补充输入",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
-                    "skill": {"mode": "auto"},
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": []},
                     "catalog_version": "v1",
                 },

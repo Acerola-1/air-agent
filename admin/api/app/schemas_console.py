@@ -286,14 +286,16 @@ class ConsoleTraceRef(ConsoleModel):
     link_source: str
 
 
+class ConsoleSelectionMcp(ConsoleModel):
+    mode: Literal["auto", "allowlist"]
+    tool_ids: list[str]
+
+
 class ConsoleSelection(ConsoleModel):
     selection_status: str | None = None
     selection_id: uuid.UUID | None = None
-    skill_mode: str | None = None
-    skill_id: str | None = None
-    mcp_mode: str | None = None
-    tool_ids: list[str] | None = None
-    material_version: str | None = None
+    schema_version: str | None = None
+    mcp: ConsoleSelectionMcp | None = None
     catalog_version: str | None = None
     selection_digest: str | None = None
     digest_version: int | None = None

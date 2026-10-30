@@ -1,4 +1,4 @@
-"""Basic QA 受理范围内的目录与可选语义搜索."""
+"""Basic QA 服务端 Skill 目录与按需语义搜索."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ class SkillCatalogScopeError(RuntimeError):
 
 
 def _scoped_catalog(config: RunnableConfig, identity: Any) -> list[SkillCatalogItem]:
-    """按已复核身份和服务端注入的受理选择收窄本地图目录."""
+    """复核可信业务与受理关联，返回仅供服务端检索和材料校验的目录."""
     if identity is None:
         raise RuntimeIdentityError("缺少可信身份，拒绝读取 Skill 目录")
     grant = grant_for_graph(graph_id="basic-qa", identity=identity)
@@ -47,25 +47,9 @@ def _scoped_catalog(config: RunnableConfig, identity: Any) -> list[SkillCatalogI
         "capability_selection_digest"
     ):
         raise SkillCatalogScopeError("缺少受理选择快照")
-    mode = cfg.get("capability_skill_mode")
-    if mode not in {"auto", "explicit"}:
-        raise SkillCatalogScopeError("无效的受理 Skill 选择")
-    selected = cfg.get("capability_skill_id")
-    items = [
+    return [
         item for item in list_graph_skills("basic-qa") if item.status == "available"
     ]
-    if mode == "auto":
-        if selected:
-            raise SkillCatalogScopeError("自动选择与显式 Skill 冲突")
-        return items
-    if not isinstance(selected, str) or not selected:
-        raise SkillCatalogScopeError("缺少显式 Skill")
-    item = next((entry for entry in items if entry.id == selected), None)
-    if item is None:
-        raise SkillCatalogScopeError("显式 Skill 不属于当前可用目录")
-    if cfg.get("capability_material_version") != item.material_version:
-        raise SkillCatalogScopeError("显式 Skill 材料版本已失效")
-    return [item]
 
 
 def _summary(item: SkillCatalogItem) -> dict[str, str]:
@@ -76,12 +60,6 @@ def _summary(item: SkillCatalogItem) -> dict[str, str]:
         "material_version": item.material_version,
         "status": item.status,
     }
-
-
-async def basic_qa_skill_catalog(config: RunnableConfig) -> list[dict[str, str]]:
-    """每次读取均复核身份和受理范围；不执行搜索或加载."""
-    identity = await guard_runtime_call(dict(config or {}))
-    return [_summary(item) for item in _scoped_catalog(config, identity)]
 
 
 def create_search_skills_tool(router: SkillSearchRouter, *, timeout: float = 10.0):

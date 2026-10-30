@@ -173,6 +173,41 @@ def _action_body(
 # ------------------------------------------------------------------ 权限
 
 
+async def test_console_run_selection_snapshot_uses_mcp_only(ledger_env) -> None:
+    env = ledger_env
+    thread_id = str(uuid.uuid4())
+    await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
+    client = await _login(await _account_of(env["user_a"]), env["tenant_a"])
+    try:
+        admission = await client.post(
+            "/agent/requests",
+            json={
+                "thread_id": thread_id,
+                "submission_key": "console-selection-v2",
+                "graph_id": "basic-qa",
+                "operation_kind": "initial",
+                "content": "console capability snapshot",
+                "capability_selection": {
+                    "schema_version": "agent.capability-selection.v2",
+                    "mcp": {"mode": "auto", "tool_ids": []},
+                },
+            },
+        )
+        assert admission.status_code == 200, admission.text
+        response = await client.get(f"/agent/console/runs/{admission.json()['attempt_id']}")
+        assert response.status_code == 200, response.text
+        selection = response.json()["capability_selection"]
+        assert selection["schema_version"] == "agent.capability-selection.v2"
+        assert selection["mcp"] == {"mode": "auto", "tool_ids": []}
+        assert selection["selection_source"] == "automatic"
+        assert selection["digest_version"] == 3
+        assert not {"skill", "skill_mode", "skill_id", "material_version"}.intersection(
+            selection
+        )
+    finally:
+        await client.aclose()
+
+
 async def test_console_permission_matrix(ledger_env) -> None:
     env = ledger_env
     thread_id = str(uuid.uuid4())

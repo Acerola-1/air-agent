@@ -1,4 +1,4 @@
-"""企业运行守卫中间件（DeepAgents 图，任务 5.4）.
+"""企业运行守卫中间件（DeepAgents 图）.
 
 每次模型调用与工具调用前复查可信运行身份：会话撤销、账号/企业/成员停用、
 授权修订变化后，下一次外呼直接拒绝（可读错误，绝不继续调用模型或 MCP）.
@@ -23,9 +23,8 @@ class TenantRuntimeGuardMiddleware(AgentMiddleware):
     """DeepAgents 模型/工具调用守卫。无可信身份时由 guard 失败关闭.
 
     身份提取走框架支持的可信来源（RunnableConfig 环境 / ToolRuntime.config /
-    runtime.server_info.user，见 `identity_from_request`）；R04 修复前的
-    `_config_of` 只读 `runtime.config`/`get_config()` 属性，而镜像内 langgraph
-    1.2.11 的 `Runtime` 两者都不存在，导致合法运行被整体误拒。
+    runtime.server_info.user，见 `identity_from_request`）。不同框架的 Runtime
+    属性不同，身份提取需覆盖这些来源。
     """
 
     tools: Sequence[BaseTool] = ()
@@ -46,7 +45,7 @@ class TenantRuntimeGuardMiddleware(AgentMiddleware):
             # Tracing lead/reviewer must not receive MCP data tools even when
             # the current capability selection contains them.
             return await handler(request)
-        # 任务 4.3: 检查 MCP 工具披露白名单与动态代理注入（F03）
+        # 检查 MCP 工具披露白名单与动态代理注入
         from common.capabilities import (
             filter_capability_mcp_tools,
             refresh_authorized_mcp_tools,
@@ -67,69 +66,6 @@ class TenantRuntimeGuardMiddleware(AgentMiddleware):
         ]
         current_proxies = build_proxy_tools()
         filtered_mcp = filter_capability_mcp_tools(current_proxies, run_config)
-        cfg = run_config.get("configurable") or {}
-        if cfg.get("capability_skill_mode") == "explicit":
-            # DeepAgents 没有业务图的 resolve_skill 节点；必须在第一次模型调用前
-            # 确定性加载，不能依赖模型是否主动调用 find_skill。
-            from langchain_core.messages import SystemMessage
-
-            from common.capabilities import GRAPH_SKILLS_DIRS, validate_skill_selection
-            from common.model_budget import enforce_request_budget
-            from common.observability.skill_adapter import emit_skill_stage
-            from common.runtime_context import get_routing_context
-            from common.skill_router import SkillSemanticRouter
-            from common.skills.materials import load_skill_rules
-
-            skill_id = str(cfg.get("capability_skill_id") or "")
-            parts = skill_id.split(":")
-            if len(parts) != 3:
-                raise RuntimeIdentityError("已受理技能标识无效")
-            _, graph_id, slug = parts
-            declared_graph = cfg.get("ledger_graph_id")
-            if declared_graph and declared_graph != graph_id:
-                raise RuntimeIdentityError("已受理技能不属于本次业务图")
-            item = validate_skill_selection(graph_id, skill_id)
-            expected = cfg.get("capability_material_version")
-            if expected and expected != item.material_version:
-                raise RuntimeIdentityError("已受理技能材料已变化，请重新提交")
-            rules = load_skill_rules(
-                SkillSemanticRouter(GRAPH_SKILLS_DIRS[graph_id]),
-                slug,
-                get_routing_context(cfg).mode,
-            )
-            if not rules.strip():
-                raise RuntimeIdentityError("已受理技能规则无法加载")
-            emit_skill_stage(run_config, slug, "selected", body=rules, source="manual")
-            emit_skill_stage(
-                run_config,
-                slug,
-                "loaded",
-                body=rules,
-                source="manual",
-                status="succeeded",
-            )
-            current = request.system_message
-            content = current.content if current else ""
-            instruction = (
-                f"\n\n本次用户已指定技能，必须遵循以下规则，不得自动更换：\n{rules}"
-            )
-            content = (
-                content + instruction
-                if isinstance(content, str)
-                else [
-                    *content,
-                    {"type": "text", "text": instruction},
-                ]
-            )
-            system = (
-                current.model_copy(update={"content": content})
-                if current
-                else SystemMessage(content=content)
-            )
-            enforce_request_budget(
-                [system, *request.messages], base_tools + filtered_mcp
-            )
-            request = request.override(system_message=system)
         if hasattr(request, "override"):
             request = request.override(tools=base_tools + filtered_mcp)
         else:

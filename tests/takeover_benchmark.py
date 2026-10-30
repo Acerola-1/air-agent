@@ -65,7 +65,7 @@ from common.capabilities import (
     discover_authorized_mcp_catalog,
     filter_capability_mcp_tools,
     list_graph_skills,
-    validate_skill_selection,
+    calculate_skill_material_version,
 )
 from common.identity.runtime import RuntimeIdentity
 from common.mcp_scoped import get_factory
@@ -213,7 +213,7 @@ async def main():
         )
         await session.commit()
 
-    # 1. 本地 Helper 开销 (list_graph_skills, validate_skill_selection, filter_capability_mcp_tools)
+    # 1. 本地 Helper 开销 (list_graph_skills, calculate_skill_material_version, filter_capability_mcp_tools)
     class DummyTool:
         def __init__(self, name: str):
             self.name = name
@@ -228,14 +228,14 @@ async def main():
 
     helper_auto_r1 = measure_series(lambda: list_graph_skills("basic-qa"))
     helper_auto_r2 = measure_series(lambda: list_graph_skills("basic-qa"))
-    helper_exp_r1 = measure_series(
-        lambda: validate_skill_selection(
-            "basic-qa", "skill:basic-qa:air-quality-basic-query"
+    helper_material_r1 = measure_series(
+        lambda: calculate_skill_material_version(
+            Path(__file__).resolve().parents[1] / "src/basic_qa/skills/air-quality-basic-query"
         )
     )
-    helper_exp_r2 = measure_series(
-        lambda: validate_skill_selection(
-            "basic-qa", "skill:basic-qa:air-quality-basic-query"
+    helper_material_r2 = measure_series(
+        lambda: calculate_skill_material_version(
+            Path(__file__).resolve().parents[1] / "src/basic_qa/skills/air-quality-basic-query"
         )
     )
     helper_filter_r1 = measure_series(
@@ -509,15 +509,15 @@ async def main():
                     "round_2": helper_auto_r2,
                 },
                 "skill_material_validate_explicit": {
-                    "round_1": helper_exp_r1,
-                    "round_2": helper_exp_r2,
+                    "round_1": helper_material_r1,
+                    "round_2": helper_material_r2,
                 },
                 "mcp_filter_overhead": {
                     "round_1": helper_filter_r1,
                     "round_2": helper_filter_r2,
                 },
                 "delta_p95_ms": round(
-                    helper_exp_r2["p95_ms"] - helper_auto_r2["p95_ms"], 4
+                    helper_material_r2["p95_ms"] - helper_auto_r2["p95_ms"], 4
                 ),
             },
             "asgi_pg_admission": {
@@ -525,7 +525,7 @@ async def main():
                     "round_1": admit_auto_r1,
                     "round_2": admit_auto_r2,
                 },
-                "explicit_protected": {
+                "material_protected": {
                     "round_1": admit_exp_r1,
                     "round_2": admit_exp_r2,
                 },

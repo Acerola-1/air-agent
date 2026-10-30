@@ -13,6 +13,110 @@ import { confirmRunWithMarker, markAdmissionUnknown } from "@/lib/run-admission"
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
+type CapabilitySelectionInput = {
+  schema_version: "agent.capability-selection.v2";
+  mcp: { mode: "auto" | "allowlist"; tool_ids: string[] };
+  catalog_version: string | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function hasOwn(value: Record<string, unknown>, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(value, key);
+}
+
+function hasRetiredCapabilityField(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  return [
+    "skill",
+    "skill_mode",
+    "skill_id",
+    "material_version",
+    "capability_skill_mode",
+    "capability_skill_id",
+    "capability_material_version",
+  ].some((key) => hasOwn(value, key));
+}
+
+function hasServerOwnedCapabilityField(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  return [
+    "capability_selection_id",
+    "capability_selection_digest",
+    "capability_mcp_mode",
+    "capability_tool_ids",
+  ].some((key) => hasOwn(value, key));
+}
+
+function parseCapabilitySelection(value: unknown): { selection?: CapabilitySelectionInput; error?: string } {
+  if (!isRecord(value)) return { error: "能力选择格式无效" };
+  if (hasRetiredCapabilityField(value)) return { error: "能力选择包含已撤回的 Skill 字段" };
+  if (value.schema_version !== "agent.capability-selection.v2") {
+    return { error: "能力选择协议版本不受支持，请刷新后重试" };
+  }
+  if (
+    Object.keys(value).some((key) => !["schema_version", "mcp", "catalog_version"].includes(key)) ||
+    !hasOwn(value, "catalog_version") ||
+    (value.catalog_version !== null && typeof value.catalog_version !== "string") ||
+    !isRecord(value.mcp) ||
+    Object.keys(value.mcp).some((key) => !["mode", "tool_ids"].includes(key))
+  ) {
+    return { error: "能力选择字段无效" };
+  }
+  const mcp = value.mcp;
+  if (
+    (mcp.mode !== "auto" && mcp.mode !== "allowlist") ||
+    !Array.isArray(mcp.tool_ids) ||
+    !mcp.tool_ids.every((toolId) => typeof toolId === "string" && toolId.length > 0) ||
+    (mcp.mode === "auto" && mcp.tool_ids.length > 0)
+  ) {
+    return { error: "MCP 能力选择格式无效" };
+  }
+  return {
+    selection: {
+      schema_version: "agent.capability-selection.v2",
+      mcp: { mode: mcp.mode, tool_ids: [...mcp.tool_ids] },
+      catalog_version: value.catalog_version,
+    },
+  };
+}
+
+function selectionFingerprint(selection: CapabilitySelectionInput): string {
+  const toolIds = selection.mcp.mode === "auto"
+    ? []
+    : Array.from(new Set(selection.mcp.tool_ids)).sort();
+  return JSON.stringify({
+    schema_version: selection.schema_version,
+    mcp: { mode: selection.mcp.mode, tool_ids: toolIds },
+    catalog_version: selection.catalog_version,
+  });
+}
+
+function isCurrentAcceptedSelection(value: unknown): value is Record<string, unknown> {
+  if (!isRecord(value) || hasRetiredCapabilityField(value)) return false;
+  const mcp = value.mcp;
+  return (
+    ((typeof value.selection_id === "string" && value.selection_id.length > 0) ||
+      (typeof value.id === "string" && value.id.length > 0)) &&
+    typeof value.selection_digest === "string" &&
+    value.selection_digest.length > 0 &&
+    value.digest_version === 3 &&
+    value.selection_status === "collected" &&
+    value.schema_version === "agent.capability-selection.v2" &&
+    (value.catalog_version === null || typeof value.catalog_version === "string") &&
+    typeof value.selection_source === "string" &&
+    typeof value.validation_time === "string" &&
+    isRecord(mcp) &&
+    Object.keys(mcp).every((key) => ["mode", "tool_ids"].includes(key)) &&
+    (mcp.mode === "auto" || mcp.mode === "allowlist") &&
+    Array.isArray(mcp.tool_ids) &&
+    mcp.tool_ids.every((toolId) => typeof toolId === "string") &&
+    (mcp.mode !== "auto" || mcp.tool_ids.length === 0)
+  );
+}
+
 /** 聊天代理：每次请求实时确认统一身份 → 内部端点换 60s 运行票据 → 携带票据转发。
  *
  * 安全边界（本 change 核心）：
@@ -177,6 +281,62 @@ async function handleRequest(req: NextRequest, method: string) {
     }
     if (threadId && method === "POST" && segments[2] === "runs" && segments.length <= 4 && !["cancel", "join"].includes(segments[3] ?? "")) {
       const cfg = body.config as { configurable?: Record<string, unknown>; tags?: string[]; metadata?: Record<string, unknown> } | undefined;
+      const configurable = cfg?.configurable;
+      const bodyMetadata = isRecord(body.metadata) ? body.metadata : undefined;
+      const configMetadata = cfg?.metadata;
+      if (
+        [body, cfg, configurable, bodyMetadata, configMetadata].some(hasRetiredCapabilityField) ||
+        [body, cfg, configurable, bodyMetadata, configMetadata].some(hasServerOwnedCapabilityField) ||
+        (cfg && hasOwn(cfg, "capability_selection")) ||
+        (bodyMetadata && hasOwn(bodyMetadata, "capability_selection")) ||
+        (configMetadata && hasOwn(configMetadata, "capability_selection")) ||
+        ["x-capability-skill-mode", "x-capability-skill-id", "x-capability-material-version"].some((name) => req.headers.has(name))
+      ) {
+        const serverOwned = [body, cfg, configurable, bodyMetadata, configMetadata].some(hasServerOwnedCapabilityField);
+        return NextResponse.json(
+          {
+            error: serverOwned ? "请求不能伪造服务端冻结的能力选择" : "请求包含已撤回的 Skill 能力字段",
+            code: serverOwned ? "capability_selection_server_owned_field" : "capability_selection_retired_field",
+          },
+          { status: 400 },
+        );
+      }
+
+      const selectionCandidates: CapabilitySelectionInput[] = [];
+      const candidateValues: unknown[] = [
+        body.capability_selection,
+        configurable?.capability_selection,
+      ].filter((value) => value !== undefined && value !== null);
+      const selectionHeader = req.headers.get("x-capability-selection");
+      if (selectionHeader !== null) {
+        try {
+          candidateValues.push(JSON.parse(selectionHeader) as unknown);
+        } catch {
+          return NextResponse.json({ error: "能力选择格式无效", code: "capability_selection_invalid" }, { status: 400 });
+        }
+      }
+      for (const candidate of candidateValues) {
+        const parsed = parseCapabilitySelection(candidate);
+        if (!parsed.selection) {
+          const retired = isRecord(candidate) && hasRetiredCapabilityField(candidate);
+          return NextResponse.json(
+            {
+              error: parsed.error ?? "能力选择格式无效",
+              code: retired ? "capability_selection_retired_field" : "capability_selection_invalid",
+            },
+            { status: 400 },
+          );
+        }
+        selectionCandidates.push(parsed.selection);
+      }
+      if (
+        selectionCandidates.some((selection) =>
+          selectionFingerprint(selection) !== selectionFingerprint(selectionCandidates[0]),
+        )
+      ) {
+        return NextResponse.json({ error: "能力选择声明冲突", code: "capability_selection_conflict" }, { status: 400 });
+      }
+
       // 台账可信受理必须先于平台运行创建：受理失败 → 503，不启动新运行。
       const submissionKey = req.headers.get("x-submission-key") ?? `auto-${crypto.randomUUID()}`;
       let operationKind = (req.headers.get("x-operation-kind") ?? "initial") as
@@ -184,22 +344,7 @@ async function handleRequest(req: NextRequest, method: string) {
       const userMessageId = req.headers.get("x-user-message-id");
       const firstUserMessage = extractFirstUserContent(body.input);
       const graphId = String(body.assistant_id ?? "");
-      // 基础问答不提供技能/MCP 选择入口；旧页面或手工请求携带的选择一律
-      // 丢弃，由后台强制归为系统自动路由。
-      const rawCapabilitySelection =
-        graphId === "basic-qa"
-          ? undefined
-          : ((body.capability_selection as Record<string, unknown> | undefined) ??
-            (cfg?.configurable?.capability_selection as Record<string, unknown> | undefined) ??
-            (req.headers.get("x-capability-selection")
-              ? (() => {
-                  try {
-                    return JSON.parse(req.headers.get("x-capability-selection")!);
-                  } catch {
-                    return undefined;
-                  }
-                })()
-              : undefined));
+      const rawCapabilitySelection = selectionCandidates[0];
       try {
         // F06：正常提交必须留下**按 request 可精确回读**的原问题来源——否则刷新/
         // 后续提问/重新生成之后，热门问题分析只剩可变 thread 指针与摘要。
@@ -229,6 +374,18 @@ async function handleRequest(req: NextRequest, method: string) {
         });
         operationKind = (admitted.operation_kind ?? operationKind) as typeof operationKind;
         admittedSelection = (admitted.capability_selection as Record<string, unknown> | null) ?? null;
+        if (admittedSelection && !isCurrentAcceptedSelection(admittedSelection)) {
+          return NextResponse.json(
+            { error: "能力选择回读协议无效，本次运行未启动", code: "capability_selection_protocol_mismatch" },
+            { status: 503 },
+          );
+        }
+        if (rawCapabilitySelection && !admittedSelection) {
+          return NextResponse.json(
+            { error: "能力选择未获服务端回读确认，本次运行未启动", code: "capability_selection_not_confirmed" },
+            { status: 503 },
+          );
+        }
         ledgerAdmission = {
           requestId: admitted.request_id,
           attemptId: admitted.attempt_id,
@@ -260,23 +417,11 @@ async function handleRequest(req: NextRequest, method: string) {
       const capMeta = admittedSelection
         ? {
             capability_selection_id:
-              (admittedSelection.id as string | undefined) ??
               (admittedSelection.selection_id as string | undefined) ??
+              (admittedSelection.id as string | undefined) ??
               "",
-            capability_skill_mode:
-              (admittedSelection.skill_mode as string | undefined) ??
-              ((admittedSelection.skill as Record<string, unknown> | undefined)?.mode as string | undefined) ??
-              "auto",
-            capability_skill_id:
-              (admittedSelection.skill_id as string | undefined) ??
-              ((admittedSelection.skill as Record<string, unknown> | undefined)?.skill_id as string | undefined) ??
-              null,
-            capability_mcp_mode:
-              (admittedSelection.mcp_mode as string | undefined) ??
-              ((admittedSelection.mcp as Record<string, unknown> | undefined)?.mode as string | undefined) ??
-              "auto",
+            capability_mcp_mode: ((admittedSelection.mcp as Record<string, unknown> | undefined)?.mode as string | undefined) ?? "auto",
             capability_tool_ids:
-              (admittedSelection.tool_ids as string[] | undefined) ??
               ((admittedSelection.mcp as Record<string, unknown> | undefined)?.tool_ids as string[] | undefined) ??
               [],
             capability_selection_digest:
@@ -298,6 +443,9 @@ async function handleRequest(req: NextRequest, method: string) {
         ledger_marker: marker,
         ...capMeta,
       };
+      delete body.capability_selection;
+      const forwardedConfigurable = { ...configurable };
+      delete forwardedConfigurable.capability_selection;
       body.config = {
         ...cfg,
         // 可读账号只作 Langfuse metadata 维度；user_id 仍用稳定 UUID。
@@ -307,7 +455,7 @@ async function handleRequest(req: NextRequest, method: string) {
           user_account: ctx.user.account,
         },
         configurable: {
-          ...cfg?.configurable,
+          ...forwardedConfigurable,
           user_id: userId,
           tenant_id: tenantId,
           thread_id: threadId,

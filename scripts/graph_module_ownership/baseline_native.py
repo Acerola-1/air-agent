@@ -12,7 +12,6 @@ import importlib.util
 import inspect
 import json
 import os
-import re
 import shutil
 import signal
 import subprocess
@@ -149,18 +148,27 @@ def model_message(body):
             {"region": city, "sTime": "2026-10-28 15:00", "type": "daily_count"},
         )
     else:
-        text = "\n".join(
-            str(m.get("content", "")) for m in messages if m["role"] == "system"
-        )
-        match = re.search(
-            r'\{"skill_id":\s*"([^"]*air-quality-basic-query)"[^}]*"material_version":\s*"([^"]+)"',
-            text,
-        )
-        if not match:
-            raise AssertionError(
-                "the actual system prompt must contain the trusted skill catalog"
-            )
-        name, args = "load_skill", {"skill_id": match[1], "expected_version": match[2]}
+        search_ids = {
+            call["id"]
+            for message in turn
+            for call in message.get("tool_calls", [])
+            if call.get("function", {}).get("name") == "search_skills"
+        }
+        candidates = []
+        for message in turn:
+            if message.get("role") == "tool" and message.get("tool_call_id") in search_ids:
+                payload = json.loads(message["content"])
+                candidates.extend(payload.get("candidates", []))
+        selected = next((item for item in candidates if "air-quality-basic-query" in item["skill_id"]), None)
+        if selected:
+            name, args = "load_skill", {
+                "skill_id": selected["skill_id"], "expected_version": selected["material_version"]
+            }
+        elif search_ids:
+            return {"role": "assistant", "content": "未找到适用 Skill。"}
+        else:
+            name, args = "search_skills", {"query": question}
+
     return {
         "role": "assistant",
         "content": None,
@@ -430,7 +438,7 @@ def run_checks(admin, native):
         sdk = client()
         catalog = check(native.get("/capabilities", params={"graph_id": "basic-qa"}))
         selection = {
-            "skill": {"mode": "auto"},
+            "schema_version": "agent.capability-selection.v2",
             "mcp": {"mode": "allowlist", "tool_ids": []} if empty else {"mode": "auto"},
             "catalog_version": catalog["catalog_version"],
         }
@@ -636,7 +644,7 @@ def run_checks(admin, native):
                 "content": "固定数据分析验收：按菜单分析合成数据。",
                 "menu_name": "CityHourBroadcast",
                 "capability_selection": {
-                    "skill": {"mode": "auto"},
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "auto"},
                     "catalog_version": catalog["catalog_version"],
                 },

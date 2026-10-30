@@ -11,8 +11,8 @@ from langgraph.graph.message import add_messages
 
 import basic_qa.nodes as module
 from basic_qa.builder import (
-    _route_after_model,
-    _route_after_tools,
+    _route_after_plan,
+    _route_after_tool_calls,
 )
 from basic_qa.capabilities.runtime import create_load_skill_tool
 from basic_qa.nodes import BasicQANodes
@@ -51,13 +51,19 @@ def test_routes_and_computation_scope():
         e.source == "classify_intent" and e.target == "ledger_finalize" for e in edges
     )
     assert (
-        _route_after_model({"messages": [AIMessage(content="终答")]}) == "answer_model"
+        _route_after_plan({"messages": [AIMessage(content="终答")]}) == "answer_model"
     )
     assert (
-        _route_after_model(
+        _route_after_plan(
             {
                 "messages": [
-                    AIMessage(content="", additional_kwargs={"ui_visible": True})
+                    AIMessage(
+                        content="",
+                        additional_kwargs={
+                            "ui_visible": True,
+                            "control_code": "control",
+                        },
+                    )
                 ]
             }
         )
@@ -70,7 +76,9 @@ def test_routes_and_computation_scope():
     } == {("prepare_model", "call_model", False)}
     assert "resolve_skill" not in graph({}).get_graph().nodes
     assert (
-        _route_after_tools({"messages": [ToolMessage(content="x", tool_call_id="c")]})
+        _route_after_tool_calls(
+            {"messages": [ToolMessage(content="x", tool_call_id="c")]}
+        )
         == "call_model"
     )
     assert "compute_artifact" not in [tool.name for tool in get_business_tools()]
@@ -87,9 +95,9 @@ def test_general_knowledge_tool_remains_in_current_projection():
 
 
 @pytest.mark.anyio
-async def test_prepare_model_builds_prompt_without_implicit_summary(monkeypatch):
+async def test_prepare_prompt_builds_prompt_without_implicit_summary(monkeypatch):
     for intent in ["chitchat", "knowledge", "data_query"]:
-        result = await nodes().prepare_model({"messages": [], "intent": intent}, {})
+        result = await nodes().prepare_prompt({"messages": [], "intent": intent}, {})
         assert result["system_prompt"]
         assert "summary" not in result
         assert "summary_covered_message_id" not in result
@@ -115,8 +123,8 @@ async def test_model_projects_watermark_and_marks_only_final(monkeypatch):
         "summary_covered_message_id": "a1",
         "system_prompt": "规则",
     }
-    result = await nodes().call_model(state, _RUN_CONFIG, writer=lambda event: None)
-    # 规划阶段不公开正文：内容清空、标记为内部规划，最终正文由 answer_model 生成。
+    result = await nodes().plan_tools(state, _RUN_CONFIG, writer=lambda event: None)
+    # 规划阶段不公开正文：内容清空、标记为内部规划，最终正文由 compose_answer 生成。
     assert result["messages"][0].content == ""
     assert result["messages"][0].additional_kwargs["ui_visible"] is False
     assert result["planning_draft"] == "最终答案"
@@ -127,7 +135,7 @@ async def test_model_projects_watermark_and_marks_only_final(monkeypatch):
     model.ainvoke.return_value = AIMessage(
         content="计划", tool_calls=[{"id": "c", "name": "tool", "args": {}}]
     )
-    result = await nodes().call_model(state, _RUN_CONFIG, writer=lambda event: None)
+    result = await nodes().plan_tools(state, _RUN_CONFIG, writer=lambda event: None)
     assert result["messages"][0].additional_kwargs["ui_visible"] is False
 
 
@@ -136,14 +144,14 @@ async def test_budget_and_terminal_computation_do_not_call_model(monkeypatch):
     model = AsyncMock()
     monkeypatch.setattr(ModelRegistry, "main_llm", model)
     monkeypatch.setattr(config, "MODEL_PROVIDER_INPUT_LIMIT_TOKENS", 200)
-    result = await nodes().call_model(
+    result = await nodes().plan_tools(
         {"messages": [HumanMessage(content="x" * 1000)], "intent": "chitchat"},
         _RUN_CONFIG,
         writer=lambda event: None,
     )
     assert "超出" in result["messages"][0].content
     model.ainvoke.assert_not_awaited()
-    result = await nodes().call_model(
+    result = await nodes().plan_tools(
         {
             "messages": [
                 HumanMessage(content="统计"),
@@ -267,10 +275,10 @@ async def test_tool_then_answer_uses_no_tool_streaming_final_call(monkeypatch):
         "intent": "knowledge",
         "system_prompt": "规则",
     }
-    planning = await nodes().call_model(state, _RUN_CONFIG, writer=lambda event: None)
+    planning = await nodes().plan_tools(state, _RUN_CONFIG, writer=lambda event: None)
     assert planning["messages"][0].tool_calls
     events: list[dict] = []
-    result = await nodes().answer_model(
+    result = await nodes().compose_answer(
         {**state, "planning_draft": ""}, _RUN_CONFIG, writer=events.append
     )
     assert result["messages"][0].content == "工具后最终回答。"
@@ -282,7 +290,7 @@ async def test_tool_then_answer_uses_no_tool_streaming_final_call(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_answer_model_rejects_over_capacity_without_stream(monkeypatch):
+async def test_compose_answer_rejects_over_capacity_without_stream(monkeypatch):
     class Fake:
         streams = 0
 
@@ -293,7 +301,7 @@ async def test_answer_model_rejects_over_capacity_without_stream(monkeypatch):
 
     monkeypatch.setattr(ModelRegistry, "main_llm", Fake())
     monkeypatch.setattr(config, "MODEL_PROVIDER_INPUT_LIMIT_TOKENS", 1)
-    result = await nodes().answer_model(
+    result = await nodes().compose_answer(
         {"messages": [HumanMessage(content="查一下")], "system_prompt": "规则"},
         _RUN_CONFIG,
         writer=lambda event: None,
@@ -317,7 +325,7 @@ async def test_finish_planning_sentinel_routes_to_answer_without_tool_execution(
             )
 
     monkeypatch.setattr(ModelRegistry, "main_llm", Fake())
-    result = await nodes().call_model(
+    result = await nodes().plan_tools(
         {
             "messages": [HumanMessage(content="你好")],
             "intent": "knowledge",
@@ -339,7 +347,7 @@ async def test_knowledge_question_can_plan_and_execute_retrieval(monkeypatch):
     service = nodes()
     intent = "knowledge"
     state = {"messages": [HumanMessage(content=question)], "intent": intent}
-    prepared = await service.prepare_model(state, {})
+    prepared = await service.prepare_prompt(state, {})
     assert prepared["system_prompt"]
     model = AsyncMock()
     model.bind_tools = Mock(return_value=model)
@@ -354,8 +362,8 @@ async def test_knowledge_question_can_plan_and_execute_retrieval(monkeypatch):
         ],
     )
     monkeypatch.setattr(ModelRegistry, "main_llm", model)
-    planned = await service.call_model({**state, **prepared}, {}, writer=lambda e: None)
-    assert _route_after_model(planned) == "execute_tools"
+    planned = await service.plan_tools({**state, **prepared}, {}, writer=lambda e: None)
+    assert _route_after_plan(planned) == "execute_tools"
     schemas = model.bind_tools.call_args.args[0]
     assert any(
         item.get("name") == "knowledge_search"
@@ -430,9 +438,6 @@ async def test_compiled_knowledge_graph_reaches_actual_tool_before_streamed_answ
     )
     monkeypatch.setattr(
         identity, "guard_request_call", AsyncMock(return_value=object())
-    )
-    monkeypatch.setattr(
-        integration, "basic_qa_skill_catalog", AsyncMock(return_value=[])
     )
     monkeypatch.setattr(
         capabilities, "filter_capability_mcp_tools", lambda tools, *a, **k: tools
@@ -514,7 +519,4 @@ async def test_self_identity_questions_keep_native_model_decision(monkeypatch):
 def empty_session_projection(monkeypatch):
     from basic_qa.capabilities import projection
 
-    monkeypatch.setattr(
-        projection, "basic_qa_skill_catalog", AsyncMock(return_value=[])
-    )
     monkeypatch.setattr(projection, "current_material", AsyncMock(return_value=None))

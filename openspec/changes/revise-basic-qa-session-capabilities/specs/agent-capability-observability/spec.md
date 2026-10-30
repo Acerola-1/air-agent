@@ -11,13 +11,13 @@
 - **WHEN** data-analysis通过菜单映射执行Skill，Basic QA由模型选择其他图按自身策略执行
 - **THEN** 各自保留实际执行证据和真实选择来源，不把确定性路由或直接加载伪装成向量匹配
 
-#### Scenario: 用户选择但没有执行
-- **WHEN** 用户显式选择S1，服务端受理后运行在加载前取消
-- **THEN** 可回读用户意图和受理选择，不补造matched/loaded/executed，不增加实际Skill使用量
+#### Scenario: 模型选中但没有执行
+- **WHEN** search_skills 返回候选，模型选中 S1 后在加载前取消
+- **THEN** 记录候选与选中，不补造 loaded/executed，不制造用户事先指定 Skill 的受理事实
 
-#### Scenario: 用户选择与实际执行核对
-- **WHEN** 新submission以用户来源选择S1，并成功加载执行其确定版本
-- **THEN** 阶段观测可按选择引用、submission与实际Skill版本核对，模型/工具计费仍按原观测去重
+#### Scenario: 模型选择与实际执行核对
+- **WHEN** 模型从候选中加载并执行 S1 的确定版本
+- **THEN** 阶段观测按 tool_call、submission 与实际版本关联，不记为用户手动来源，模型和工具计费仍按原观测去重
 
 #### Scenario: 跨轮复用与独立工具
 - **WHEN** 第二轮复用A并补充一项独立加载工具T

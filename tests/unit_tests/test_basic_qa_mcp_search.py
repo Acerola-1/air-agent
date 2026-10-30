@@ -303,7 +303,7 @@ async def test_explicit_object_is_a_relevance_prior_not_permission_or_execution(
     assert index.relevance_score("站点气象数据", station, 0.6) > 0
 
 
-async def test_scoped_catalog_filters_before_embedding_and_honors_explicit_selection(
+async def test_scoped_catalog_filters_before_embedding_and_honors_mcp_selection(
     monkeypatch,
 ):
     import common.capabilities as capabilities
@@ -372,12 +372,10 @@ async def test_scoped_catalog_filters_before_embedding_and_honors_explicit_selec
     }
     result = await catalog_module.resolve_tool_catalog(cfg)
     assert [d.tool_id for d in result.documents] == [f"mcp:ipp:{target}"]
-    cfg["configurable"].update(
-        capability_mcp_mode="auto", capability_skill_mode="explicit"
-    )
+    cfg["configurable"].update(capability_mcp_mode="auto")
     assert [
         d.tool_id for d in (await catalog_module.resolve_tool_catalog(cfg)).documents
-    ] == [f"mcp:ipp:{target}"]
+    ] == [f"mcp:ipp:{target}", f"mcp:ipp:{excluded}"]
     cfg["configurable"].update(capability_mcp_mode="allowlist", capability_tool_ids=[])
     mcp.get_factory().tools_for.reset_mock()
     assert (await catalog_module.resolve_tool_catalog(cfg)).documents == ()

@@ -12,7 +12,7 @@ dotenv.load_dotenv()
 os.environ.setdefault("MCP_SERVER_URL", "http://127.0.0.1:8000/sse")
 os.environ.setdefault("MCP_SERVER_NAME", "ipp")
 
-from common.capabilities import BoundedSkillsBackend, filter_capability_mcp_tools
+from common.capabilities import filter_capability_mcp_tools
 from common.mcp_scoped import ScopedMCPToolFactory
 from common.skill_router import SkillSemanticRouter
 from langchain_core.tools import StructuredTool
@@ -27,25 +27,15 @@ def test_probe_modules():
     outside_candidate = router.resolve_skill_file("../../common/capabilities.py")
     router_res = {"outside_path_resolved": outside_candidate is not None}
 
-    # 2. R05: BoundedSkillsBackend 边界隔离
-    backend = BoundedSkillsBackend(root_dir=str(skills_dir))
-    backend.set_explicit_skill("air-quality-basic-query")
+    # Skill 材料加载器应拒绝包含路径穿越的伪造 ID。
+    from basic_qa.capabilities.skill_materials import SkillMaterialError, _directory
 
     try:
-        backend.read("../single-index-eval/SKILL.md")
-        read_other = False
-    except PermissionError:
-        read_other = True
-
-    download_other = backend.download_files(["../single-index-eval/SKILL.md"])
-    grep_res = backend.grep("", path="")
-    backend_res = {
-        "read_other_skill_blocked": read_other,
-        "download_other_skill_visible": any(getattr(d, "content", None) is not None for d in download_other),
-        "grep_root_non_selected_visible": any(
-            "single-index-eval" in str(m) for m in (getattr(grep_res, "matches", []) or [])
-        ),
-    }
+        _directory("skill:basic-qa:../single-index-eval")
+        traversal_blocked = False
+    except SkillMaterialError:
+        traversal_blocked = True
+    backend_res = {"material_path_traversal_blocked": traversal_blocked}
 
     # 3. R06: 别名碰撞与稳定 ID 代理
     factory = ScopedMCPToolFactory(server_urls={})
@@ -131,14 +121,12 @@ def test_probe_modules():
 
     report = {
         "router_path_escape": router_res,
-        "bounded_backend_isolation": backend_res,
+        "material_path_isolation": backend_res,
         "mcp_collision_and_proxies": r06_res,
         "cursor_pagination": pagination_res,
         "all_passed": (
             router_res["outside_path_resolved"] is False
-            and backend_res["read_other_skill_blocked"] is True
-            and backend_res["download_other_skill_visible"] is False
-            and backend_res["grep_root_non_selected_visible"] is False
+            and backend_res["material_path_traversal_blocked"] is True
             and alias_collision_res["resolved_server_on_collision"] is None
             and pagination_res["offset_decoded_matches"] is True
             and pagination_res["tampered_cursor_rejected"] is True

@@ -150,7 +150,7 @@ def checks(admin, http):
                     "graph_id": "basic-qa",
                     "content": question,
                     "capability_selection": {
-                        "skill": {"mode": "auto"},
+                        "schema_version": "agent.capability-selection.v2",
                         "mcp": {"mode": "allowlist", "tool_ids": []},
                     },
                 },

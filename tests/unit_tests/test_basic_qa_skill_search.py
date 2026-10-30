@@ -37,14 +37,11 @@ def identity(*, permitted=True):
     )
 
 
-def config(*, mode="auto", skill_id=None, version=None):
+def config():
     return {
         "configurable": {
             "capability_selection_id": "selection",
             "capability_selection_digest": "digest",
-            "capability_skill_mode": mode,
-            "capability_skill_id": skill_id,
-            "capability_material_version": version,
         }
     }
 
@@ -69,50 +66,22 @@ def setup_catalog(monkeypatch):
     return items, guard
 
 
-@pytest.mark.anyio
-async def test_catalog_auto_explicit_and_stale_scope(setup_catalog):
-    items, guard = setup_catalog
-    auto = await module.basic_qa_skill_catalog(config())
-    assert len(auto) == 8
-    assert set(auto[0]) == {
-        "skill_id",
-        "name",
-        "description",
-        "material_version",
-        "status",
-    }
-    assert "secret-tool" not in str(auto)
-    explicit = config(
-        mode="explicit", skill_id=items[1].id, version=items[1].material_version
-    )
-    assert [
-        entry["skill_id"] for entry in await module.basic_qa_skill_catalog(explicit)
-    ] == [items[1].id]
-    explicit["configurable"]["capability_material_version"] = "sha256:old"
-    with pytest.raises(module.SkillCatalogScopeError):
-        await module.basic_qa_skill_catalog(explicit)
-    assert guard.await_count == 3
-
-
-@pytest.mark.anyio
-async def test_scope_denies_missing_or_invalid_authority(monkeypatch, setup_catalog):
-    _, guard = setup_catalog
-    guard.return_value = None
+def test_server_catalog_checks_business_and_admission(setup_catalog):
+    items, _ = setup_catalog
+    assert module._scoped_catalog(config(), identity()) == items
     with pytest.raises(RuntimeIdentityError):
-        await module.basic_qa_skill_catalog(config())
-    guard.return_value = identity(permitted=False)
+        module._scoped_catalog(config(), None)
     with pytest.raises(BusinessAccessError):
-        await module.basic_qa_skill_catalog(config())
-    guard.return_value = identity()
+        module._scoped_catalog(config(), identity(permitted=False))
     missing = config()
     del missing["configurable"]["capability_selection_digest"]
     with pytest.raises(module.SkillCatalogScopeError):
-        await module.basic_qa_skill_catalog(missing)
-    forged = config(
-        mode="explicit", skill_id="skill:data-analysis:skill-0", version="sha256:0"
-    )
+        module._scoped_catalog(missing, identity())
+    from dataclasses import replace
+
+    other_graph = replace(identity(), business_graph="data-analysis")
     with pytest.raises(module.SkillCatalogScopeError):
-        await module.basic_qa_skill_catalog(forged)
+        module._scoped_catalog(config(), other_graph)
 
 
 @pytest.mark.anyio
@@ -147,15 +116,6 @@ async def test_search_matches_allowed_metadata_only_and_preserves_model_query(
     }
     assert "/private" not in str(result) and "secret" not in str(result)
     assert list(search.args) == ["query"]
-    result = await search.ainvoke(
-        {"query": query},
-        config=config(
-            mode="explicit", skill_id=items[6].id, version=items[6].material_version
-        ),
-    )
-    assert [candidate["skill_id"] for candidate in result["candidates"]] == [
-        items[6].id
-    ]
 
 
 @pytest.mark.anyio
@@ -222,18 +182,32 @@ async def test_real_router_receives_strict_flag_without_network(
 
 
 @pytest.mark.anyio
-async def test_actual_catalog_exposes_only_metadata(monkeypatch):
+async def test_large_server_catalog_search_returns_only_bounded_candidates(monkeypatch):
+    items = [item(index) for index in range(90)]
+    monkeypatch.setattr(module, "list_graph_skills", lambda _: items)
     monkeypatch.setattr(
         module, "guard_runtime_call", AsyncMock(return_value=identity())
     )
-    catalog = await module.basic_qa_skill_catalog(config())
-    assert len(catalog) == 9
-    assert all(entry["skill_id"].startswith("skill:basic-qa:") for entry in catalog)
-    assert all(
-        set(entry) == {"skill_id", "name", "description", "material_version", "status"}
-        for entry in catalog
+    router = SimpleNamespace(
+        amatch=AsyncMock(
+            return_value=[
+                SimpleNamespace(name=entry.name, similarity_score=0.9)
+                for entry in items
+            ]
+        )
     )
-    assert all(entry["material_version"].startswith("sha256:") for entry in catalog)
+    search = module.create_search_skills_tool(router)
+    result = await search.ainvoke({"query": "当前业务需求"}, config=config())
+    assert len(result["candidates"]) == 5
+    assert [entry["skill_id"] for entry in result["candidates"]] == [
+        entry.id for entry in items[:5]
+    ]
+    assert all(
+        set(entry)
+        == {"skill_id", "name", "description", "material_version", "status", "score"}
+        for entry in result["candidates"]
+    )
+    assert items[-1].id not in str(result)
 
 
 @pytest.mark.anyio

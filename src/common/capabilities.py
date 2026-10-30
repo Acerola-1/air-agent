@@ -1,4 +1,4 @@
-"""能力目录与用户选择基础模块（Change 4 核心契约与目录实现）.
+"""能力目录与用户选择基础模块.
 
 包含：
 - Skill 本地目录与材料指纹 (SHA-256) 计算与校验
@@ -15,14 +15,12 @@ import hashlib
 import hmac
 import json
 import os
-import posixpath
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from deepagents.backends import FilesystemBackend
 from fastapi import HTTPException
 from loguru import logger
 
@@ -226,39 +224,6 @@ def list_graph_skills(
             )
         )
     return items
-
-
-def validate_skill_selection(
-    graph_id: str, skill_id: str, *, menu_name: str | None = None
-) -> SkillCatalogItem:
-    """严格校验选中的 Skill ID 是否属于当前图、是否存在且与菜单一致.
-
-    防路径遍历与跨图引用：任何不匹配抛 422 或 404.
-    """
-    m = _SKILL_ID_PATTERN.match(skill_id)
-    if not m:
-        raise HTTPException(status_code=422, detail=f"非法的技能标识格式: {skill_id}")
-    g_id, slug = m.group(1), m.group(2)
-    if g_id != graph_id:
-        raise HTTPException(
-            status_code=422, detail=f"技能 {skill_id} 不属于当前图 {graph_id}"
-        )
-    if not _SLUG_PATTERN.match(slug) or ".." in slug:
-        raise HTTPException(status_code=422, detail="非法技能目录标识")
-
-    skills = list_graph_skills(graph_id, menu_name=menu_name)
-    matched = next((s for s in skills if s.id == skill_id), None)
-    if matched is None:
-        # 如果是 data-analysis 且因为菜单不匹配，返回 422
-        if menu_name:
-            all_skills = list_graph_skills(graph_id)
-            if any(s.id == skill_id for s in all_skills):
-                raise HTTPException(
-                    status_code=422,
-                    detail=f"所选技能 {skill_id} 与当前菜单 {menu_name} 映射不一致",
-                )
-        raise HTTPException(status_code=422, detail=f"技能 {skill_id} 不存在或不可用")
-    return matched
 
 
 # ---------------------------------------------------------------------------
@@ -722,7 +687,7 @@ async def get_capabilities_catalog(
 
 
 # ---------------------------------------------------------------------------
-# 执行侧收窄与边界防护（任务 4.3 / 4.4）
+# 执行侧收窄与边界防护
 # ---------------------------------------------------------------------------
 
 
@@ -746,338 +711,13 @@ async def refresh_authorized_mcp_tools(config: Any) -> None:
     configurable["capability_authorized_servers"] = servers
 
 
-class BoundedSkillsBackend(FilesystemBackend):
-    """带显式技能访问边界约束与路径安全检查的技能文件系统后端（任务 4.4）."""
-
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        """初始化边界约束文件系统后端."""
-        super().__init__(*args, **kwargs)
-        self._explicit_skill_override: str | None = None
-
-    def set_explicit_skill(self, skill_name: str | None) -> None:
-        """测试或手动设置显式技能范围."""
-        self._explicit_skill_override = skill_name
-
-    def _get_allowed_slug(self) -> str | None:
-        if self._explicit_skill_override:
-            return self._explicit_skill_override
-        try:
-            from langgraph.config import get_config
-
-            cfg = dict(get_config() or {})
-        except Exception:
-            cfg = {}
-        configurable = cfg.get("configurable") or {}
-        metadata = cfg.get("metadata") or {}
-        skill_mode = (
-            configurable.get("capability_skill_mode")
-            or metadata.get("capability_skill_mode")
-            or "auto"
-        )
-        if skill_mode == "explicit":
-            skill_id = (
-                configurable.get("capability_skill_id")
-                or metadata.get("capability_skill_id")
-                or ""
-            )
-            if skill_id:
-                return skill_id.split(":")[-1]
-        return None
-
-    def _is_path_in_allowed_slug(self, file_path: str, allowed_slug: str) -> bool:
-        clean = str(file_path or "").replace("\\", "/").strip().lstrip("/")
-        parts = [p for p in clean.split("/") if p and p != "."]
-        if ".." in parts:
-            return False
-        if parts and parts[0] == "skills":
-            target = parts[1] if len(parts) > 1 else None
-        elif parts:
-            target = parts[0]
-        else:
-            target = None
-        return target == allowed_slug
-
-    def _check_allowed(self, path: str) -> None:
-        # 1. 规范化路径并防路径穿越
-        clean_path = str(path or "").replace("\\", "/").strip()
-        parts = [p for p in clean_path.lstrip("/").split("/") if p and p != "."]
-        if ".." in parts:
-            raise PermissionError("非法路径穿越访问")
-
-        # 2. 检查显式技能限制
-        allowed_slug = self._get_allowed_slug()
-        if not allowed_slug:
-            return
-
-        if not parts:
-            return
-
-        if parts[0] == "skills":
-            target_slug = parts[1] if len(parts) > 1 else None
-        else:
-            target_slug = parts[0]
-
-        if target_slug and target_slug != allowed_slug:
-            raise PermissionError(
-                f"未授权访问技能文件: {target_slug} (当前显式选定限制: {allowed_slug})"
-            )
-
-    def read(self, file_path: str, offset: int = 0, limit: int = 2000) -> Any:
-        """同步读取文件内容（受边界约束防护）."""
-        self._check_allowed(file_path)
-        return super().read(file_path, offset, limit)
-
-    async def aread(self, file_path: str, offset: int = 0, limit: int = 2000) -> Any:
-        """异步读取文件内容（受边界约束防护）."""
-        self._check_allowed(file_path)
-        return await super().aread(file_path, offset, limit)
-
-    def ls(self, path: str = "") -> Any:
-        """同步列出目录条目（受边界约束防护）."""
-        self._check_allowed(path)
-        res = super().ls(path)
-        allowed_slug = self._get_allowed_slug()
-        if allowed_slug and getattr(res, "entries", None) is not None:
-            clean_p = str(path or "").replace("\\", "/").strip().lstrip("/")
-            if clean_p in ("", "skills"):
-                filtered_entries = [
-                    e
-                    for e in res.entries
-                    if (
-                        isinstance(e, dict)
-                        and e.get("path", "")
-                        .replace("\\", "/")
-                        .strip("/")
-                        .split("/")[0]
-                        == allowed_slug
-                    )
-                    or (
-                        hasattr(e, "path")
-                        and str(getattr(e, "path", ""))
-                        .replace("\\", "/")
-                        .strip("/")
-                        .split("/")[0]
-                        == allowed_slug
-                    )
-                ]
-                return type(res)(error=res.error, entries=filtered_entries)
-        return res
-
-    async def als(self, path: str = "") -> Any:
-        """异步列出目录条目（受边界约束防护）."""
-        self._check_allowed(path)
-        res = await super().als(path)
-        allowed_slug = self._get_allowed_slug()
-        if allowed_slug and getattr(res, "entries", None) is not None:
-            clean_p = str(path or "").replace("\\", "/").strip().lstrip("/")
-            if clean_p in ("", "skills"):
-                filtered_entries = [
-                    e
-                    for e in res.entries
-                    if (
-                        isinstance(e, dict)
-                        and e.get("path", "")
-                        .replace("\\", "/")
-                        .strip("/")
-                        .split("/")[0]
-                        == allowed_slug
-                    )
-                    or (
-                        hasattr(e, "path")
-                        and str(getattr(e, "path", ""))
-                        .replace("\\", "/")
-                        .strip("/")
-                        .split("/")[0]
-                        == allowed_slug
-                    )
-                ]
-                return type(res)(error=res.error, entries=filtered_entries)
-        return res
-
-    def glob(self, pattern: str, path: str | None = None) -> Any:
-        """受边界约束防护的同步通配文件，支持可选路径限制."""
-        if path is not None:
-            combined = posixpath.normpath(f"{path}/{pattern}")
-            self._check_allowed(combined)
-            return super().glob(pattern, path=path)
-        self._check_allowed(pattern)
-        return super().glob(pattern)
-
-    async def aglob(self, pattern: str, path: str | None = None) -> Any:
-        """受边界约束防护的异步通配文件，支持可选路径限制."""
-        if path is not None:
-            combined = posixpath.normpath(f"{path}/{pattern}")
-            self._check_allowed(combined)
-            return await super().aglob(pattern, path=path)
-        self._check_allowed(pattern)
-        return await super().aglob(pattern)
-
-    def write(self, file_path: str, content: str) -> Any:
-        """同步写入文件（受边界约束防护）."""
-        self._check_allowed(file_path)
-        return super().write(file_path, content)
-
-    async def awrite(self, file_path: str, content: str) -> Any:
-        """异步写入文件（受边界约束防护）."""
-        self._check_allowed(file_path)
-        return await super().awrite(file_path, content)
-
-    def edit(self, file_path: str, old_string: str, new_string: str) -> Any:
-        """同步编辑文件（受边界约束防护）."""
-        self._check_allowed(file_path)
-        return super().edit(file_path, old_string, new_string)
-
-    async def aedit(self, file_path: str, old_string: str, new_string: str) -> Any:
-        """异步编辑文件（受边界约束防护）."""
-        self._check_allowed(file_path)
-        return await super().aedit(file_path, old_string, new_string)
-
-    def delete(self, file_path: str) -> Any:
-        """同步删除文件（受边界约束防护）."""
-        self._check_allowed(file_path)
-        return super().delete(file_path)
-
-    async def adelete(self, file_path: str) -> Any:
-        """异步删除文件（受边界约束防护）."""
-        self._check_allowed(file_path)
-        return await super().adelete(file_path)
-
-    def download_files(self, paths: list[str]) -> Any:
-        """下载多个文件，未授权访问返回 permission_denied."""
-        from deepagents.backends.protocol import FileDownloadResponse
-
-        results: list[Any] = []
-        for p in paths:
-            try:
-                self._check_allowed(p)
-                res = super().download_files([p])
-                results.extend(res)
-            except PermissionError:
-                results.append(
-                    FileDownloadResponse(
-                        path=p, content=None, error="permission_denied"
-                    )
-                )
-        return results
-
-    async def adownload_files(self, paths: list[str]) -> Any:
-        """异步下载多个文件，未授权访问返回 permission_denied."""
-        from deepagents.backends.protocol import FileDownloadResponse
-
-        results: list[Any] = []
-        for p in paths:
-            try:
-                self._check_allowed(p)
-                res = await super().adownload_files([p])
-                results.extend(res)
-            except PermissionError:
-                results.append(
-                    FileDownloadResponse(
-                        path=p, content=None, error="permission_denied"
-                    )
-                )
-        return results
-
-    def upload_files(self, files: list[tuple[str, bytes]]) -> Any:
-        """上传文件，未授权访问返回 permission_denied."""
-        from deepagents.backends.protocol import FileUploadResponse
-
-        results: list[Any] = []
-        for p, data in files:
-            try:
-                self._check_allowed(p)
-                res = super().upload_files([(p, data)])
-                results.extend(res)
-            except PermissionError:
-                results.append(FileUploadResponse(path=p, error="permission_denied"))
-        return results
-
-    async def aupload_files(self, files: list[tuple[str, bytes]]) -> Any:
-        """异步上传文件，未授权访问返回 permission_denied."""
-        from deepagents.backends.protocol import FileUploadResponse
-
-        results: list[Any] = []
-        for p, data in files:
-            try:
-                self._check_allowed(p)
-                res = await super().aupload_files([(p, data)])
-                results.extend(res)
-            except PermissionError:
-                results.append(FileUploadResponse(path=p, error="permission_denied"))
-        return results
-
-    def grep(
-        self,
-        pattern: str,
-        path: str | None = None,
-        glob: str | None = None,
-        *,
-        max_count: int | None = None,
-        context_lines: int = 0,
-    ) -> Any:
-        """同步正则匹配文件内容（受边界约束防护，过滤非选定技能内容）."""
-        if path:
-            self._check_allowed(path)
-        res = super().grep(
-            pattern, path, glob, max_count=max_count, context_lines=context_lines
-        )
-        allowed_slug = self._get_allowed_slug()
-        if allowed_slug and getattr(res, "matches", None):
-            filtered = [
-                m
-                for m in res.matches
-                if self._is_path_in_allowed_slug(
-                    m.get("path") if isinstance(m, dict) else getattr(m, "path", ""),
-                    allowed_slug,
-                )
-            ]
-            from deepagents.backends.protocol import GrepResult
-
-            return GrepResult(
-                error=res.error, matches=filtered, truncated=res.truncated
-            )
-        return res
-
-    async def agrep(
-        self,
-        pattern: str,
-        path: str | None = None,
-        glob: str | None = None,
-        *,
-        max_count: int | None = None,
-        context_lines: int = 0,
-    ) -> Any:
-        """异步正则匹配文件内容（受边界约束防护，过滤非选定技能内容）."""
-        if path:
-            self._check_allowed(path)
-        res = await super().agrep(
-            pattern, path, glob, max_count=max_count, context_lines=context_lines
-        )
-        allowed_slug = self._get_allowed_slug()
-        if allowed_slug and getattr(res, "matches", None):
-            filtered = [
-                m
-                for m in res.matches
-                if self._is_path_in_allowed_slug(
-                    m.get("path") if isinstance(m, dict) else getattr(m, "path", ""),
-                    allowed_slug,
-                )
-            ]
-            from deepagents.backends.protocol import GrepResult
-
-            return GrepResult(
-                error=res.error, matches=filtered, truncated=res.truncated
-            )
-        return res
-
-
 def filter_capability_mcp_tools(
     tools: list[Any],
     config: Any = None,
     *,
     business_code: str | None = None,
 ) -> list[Any]:
-    """按已受理 capability_selection 过滤披露给模型的 MCP 工具（任务 4.3 披露层）.
+    """按已受理 capability_selection 过滤披露给模型的 MCP 工具（披露层）.
 
     - auto: 保持全量已授权 MCP 工具披露
     - allowlist 且 tool_ids 为空: 移除全部 MCP 工具（仅保留本地工具）

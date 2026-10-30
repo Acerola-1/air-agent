@@ -414,7 +414,7 @@ def run_checks(admin, native):
     )
     assert confirmed["confirmed"] is True
     selection = {
-        "skill": {"mode": "auto"},
+        "schema_version": "agent.capability-selection.v2",
         "mcp": {"mode": "allowlist", "tool_ids": []},
     }
     catalog = check_response(
@@ -510,7 +510,7 @@ def run_checks(admin, native):
     }
     altered = copy.deepcopy(resume_body)
     altered["capability_selection"] = {
-        "skill": {"mode": "auto"},
+        "schema_version": "agent.capability-selection.v2",
         "mcp": {"mode": "auto"},
     }
     check_response(admin.post("/agent/requests", json=altered), 409)

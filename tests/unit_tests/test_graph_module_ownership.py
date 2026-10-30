@@ -257,18 +257,17 @@ import os,sys,socket
 sys.path.insert(0,'admin/api')
 os.environ['DATABASE_URI']='postgresql://synthetic:synthetic@127.0.0.1:1/graph_ownership_test'
 os.environ['ADMIN_RUNTIME_DATABASE_URI']=os.environ['DATABASE_URI']
-from app.services.ledger import validate_skill_selection, CapabilityValidationError
+from app.services.ledger import validate_menu_selection, CapabilityValidationError
 from data_analysis import capability_policy
 calls=[]
 def no_network(*args,**kwargs): calls.append(1); raise AssertionError('network')
 socket.socket.connect=no_network
-# A valid same-menu selection is the positive control.
-item=validate_skill_selection('data-analysis','skill:data-analysis:broadcast-hour',menu_name='CityHourBroadcast')
-assert item['id']=='skill:data-analysis:broadcast-hour'
+# A valid same-menu selection passes menu validation and returns no Skill choice.
+assert validate_menu_selection('data-analysis','CityHourBroadcast') is None
 for failure in (AttributeError,TypeError,RuntimeError):
  def broken(*args): raise failure('synthetic policy failure')
- capability_policy.validate_selection=broken
- try: validate_skill_selection('data-analysis','skill:data-analysis:broadcast-hour',menu_name='CityHourBroadcast')
+ capability_policy.menu_skill=broken
+ try: validate_menu_selection('data-analysis','CityHourBroadcast')
  except CapabilityValidationError: pass
  else: raise AssertionError('menu exception was swallowed')
 assert calls==[]

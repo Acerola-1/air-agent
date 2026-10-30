@@ -17,11 +17,9 @@
 from __future__ import annotations
 
 import datetime as dt
-import hashlib
 import re
 import uuid
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 from urllib.parse import quote, unquote
 
@@ -211,20 +209,14 @@ def canonical_content_digest(*, graph_id: str, operation_kind: str, content: Any
 def canonical_selection_digest(
     *,
     graph_id: str,
-    skill_mode: str,
-    skill_id: str | None,
     mcp_mode: str,
     tool_ids: list[str],
-    material_version: str,
 ) -> str:
-    """能力选择快照规范摘要（Change 4 任务 3.4）."""
+    """当前能力选择摘要只冻结图与 MCP 范围，版本为 v3。"""
     return canonical_digest(
         {
             "graph_id": graph_id,
-            "material_version": material_version,
             "mcp_mode": mcp_mode,
-            "skill_id": skill_id,
-            "skill_mode": skill_mode,
             "tool_ids": sorted(list(dict.fromkeys(tool_ids))),
         }
     )
@@ -255,11 +247,10 @@ canonical_content_digest_v1 = canonical_content_digest
 def normalize_capability_selection(
     raw: CapabilitySelectionIn | dict[str, Any] | None,
 ) -> dict[str, Any]:
-    """规范化用户能力选择意图，未声明归一化为 auto/auto."""
+    """规范化 MCP 选择；Skill 由运行时模型按需发现和加载。"""
     if raw is None:
         return {
-            "schema_version": "agent.capability-selection.v1",
-            "skill": {"mode": "auto", "skill_id": None},
+            "schema_version": "agent.capability-selection.v2",
             "mcp": {"mode": "auto", "tool_ids": []},
             "catalog_version": None,
             "selection_source": "automatic",
@@ -268,21 +259,6 @@ def normalize_capability_selection(
         raw_model = CapabilitySelectionIn.model_validate(raw)
     else:
         raw_model = raw
-
-    skill_mode = raw_model.skill.mode
-    skill_id = raw_model.skill.skill_id
-    if skill_mode == "auto":
-        skill_id = None
-    elif skill_mode == "explicit":
-        if not skill_id or not isinstance(skill_id, str):
-            raise CapabilityValidationError(
-                "explicit 模式下 skill_id 不能为空", code="invalid_capability_selection"
-            )
-        skill_id = skill_id.strip()
-        if ".." in skill_id or any(ord(c) < 32 for c in skill_id):
-            raise CapabilityValidationError(
-                "skill_id 包含非法路径字符或控制字符", code="invalid_capability_selection"
-            )
 
     mcp_mode = raw_model.mcp.mode
     raw_tools = raw_model.mcp.tool_ids or []
@@ -308,15 +284,32 @@ def normalize_capability_selection(
     else:
         tool_ids = []
 
-    is_explicit = (skill_mode == "explicit") or (mcp_mode == "allowlist")
-    selection_source = "user_explicit" if is_explicit else "automatic"
+    selection_source = "user_explicit" if mcp_mode == "allowlist" else "automatic"
 
     return {
-        "schema_version": "agent.capability-selection.v1",
-        "skill": {"mode": skill_mode, "skill_id": skill_id},
+        "schema_version": "agent.capability-selection.v2",
         "mcp": {"mode": mcp_mode, "tool_ids": tool_ids},
         "catalog_version": raw_model.catalog_version,
         "selection_source": selection_source,
+    }
+
+
+def _selection_source_for_mcp(mcp_mode: str) -> str:
+    return "user_explicit" if mcp_mode == "allowlist" else "automatic"
+
+
+def capability_selection_snapshot(selection: AgentCapabilitySelection) -> dict[str, Any]:
+    """Public readback shape; retired Skill evidence is intentionally never projected."""
+    return {
+        "selection_id": str(selection.id),
+        "selection_digest": selection.selection_digest,
+        "digest_version": selection.digest_version,
+        "selection_status": "collected",
+        "schema_version": "agent.capability-selection.v2",
+        "mcp": {"mode": selection.mcp_mode, "tool_ids": selection.tool_ids or []},
+        "catalog_version": selection.catalog_version,
+        "selection_source": _selection_source_for_mcp(selection.mcp_mode),
+        "validation_time": selection.validation_time.isoformat(),
     }
 
 
@@ -365,107 +358,18 @@ def _validate_mcp_tool_authorization(
             )
 
 
-_SKILL_ID_PATTERN = re.compile(r"^skill:([a-zA-Z0-9_-]+):([a-zA-Z0-9_-]+)$")
-_SLUG_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+$")
-_GRAPH_DIR_MAP: dict[str, str] = {
-    "basic-qa": "basic_qa",
-    "data-analysis": "data_analysis",
-    "intelligent-tracing": "intelligent_tracing",
-}
-
-
-def _calculate_skill_material_version(skill_dir: Path) -> str:
-    if not skill_dir.is_dir():
-        return "sha256:empty"
-    hasher = hashlib.sha256()
-    files = sorted(
-        [p for p in skill_dir.rglob("*") if p.is_file() and not p.name.startswith(".")],
-        key=lambda p: p.relative_to(skill_dir).as_posix(),
-    )
-    for file_path in files:
-        rel_posix = file_path.relative_to(skill_dir).as_posix()
-        try:
-            content = file_path.read_bytes()
-        except OSError:
-            content = b""
-        hasher.update(f"{rel_posix}:".encode())
-        hasher.update(content)
-        hasher.update(b"\n")
-    return f"sha256:{hasher.hexdigest()}"
-
-
-def _parse_skill_frontmatter(content: str) -> dict[str, Any]:
-    if not content.startswith("---"):
-        return {"name": "", "description": "", "required-tools": []}
-    parts = content.split("---", 2)
-    if len(parts) < 3:
-        return {"name": "", "description": "", "required-tools": []}
-    frontmatter_raw = parts[1]
-    res: dict[str, Any] = {}
-    current_key: str | None = None
-    multiline_buf: list[str] = []
-
-    for line in frontmatter_raw.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-        if ":" in line and not line.startswith(" ") and not line.startswith("\t"):
-            if current_key and multiline_buf:
-                res[current_key] = "\n".join(multiline_buf).strip()
-                multiline_buf = []
-            k, v = line.split(":", 1)
-            current_key = k.strip()
-            v_str = v.strip()
-            if v_str.startswith("[") and v_str.endswith("]"):
-                items = [
-                    item.strip().strip("'\"") for item in v_str[1:-1].split(",") if item.strip()
-                ]
-                res[current_key] = items
-                current_key = None
-            elif v_str:
-                res[current_key] = v_str.strip("'\"")
-                current_key = None
-            else:
-                multiline_buf = []
-        elif current_key and (stripped.startswith("- ") or stripped.startswith("* ")):
-            if not isinstance(res.get(current_key), list):
-                res[current_key] = []
-            val = stripped[2:].strip().strip("'\"")
-            res[current_key].append(val)
-        elif current_key:
-            multiline_buf.append(stripped)
-
-    if current_key and multiline_buf and current_key not in res:
-        res[current_key] = "\n".join(multiline_buf).strip()
-    return res
-
-
-def validate_skill_selection(
-    graph_id: str, skill_id: str, *, menu_name: str | None = None
-) -> dict[str, Any]:
-    """受理与目录共用材料源，图专属规则由可信装配接入，异常失败关闭."""
+def validate_menu_selection(graph_id: str, menu_name: str | None) -> None:
+    """触发图专属菜单策略；未匹配是正常结果，策略异常则失败关闭。"""
+    if graph_id != "data-analysis" or menu_name is None:
+        return
     from application.business_policies import configure, resolve_policy
-    from common.capabilities import validate_skill_selection as validate
 
-    configure()
     try:
-        match = _SKILL_ID_PATTERN.fullmatch(skill_id)
-        if match is None or match.group(1) != graph_id:
-            raise CapabilityValidationError("技能不属于当前图", code="invalid_skill_selection")
-        resolve_policy(graph_id).validate_selection(match.group(2), menu_name)
-        # 菜单受理使用图策略验证；目录展示保留各图已有匹配语义。
-        item = validate(graph_id, skill_id)
-        return {
-            "id": item.id,
-            "name": match.group(2),
-            "material_version": item.material_version,
-            "required_tool_ids": item.required_tool_ids,
-        }
-    except CapabilityValidationError:
-        raise
+        configure()
+        resolve_policy(graph_id).menu_skill(menu_name)
     except Exception as exc:
         raise CapabilityValidationError(
-            "技能材料或菜单策略不可用", code="invalid_skill_selection"
+            "数据分析菜单策略不可用，已拒绝受理", code="menu_policy_unavailable"
         ) from exc
 
 
@@ -639,12 +543,9 @@ async def admit_request(
     user_id = identity.user.id
     membership_id = identity.membership.id
     grant = _business_grant(identity, graph_id)
+    validate_menu_selection(graph_id, menu_name)
 
     norm_sel = normalize_capability_selection(capability_selection)
-    if graph_id == "basic-qa" and norm_sel["selection_source"] == "user_explicit":
-        # 基础问答不提供技能/MCP 选择入口，统一由系统性路由决定；
-        # 旧客户端或手工请求即使带了显式选择也降级为自动，避免误报 409。
-        norm_sel = normalize_capability_selection(None)
     settings = get_settings()
     if (
         norm_sel["selection_source"] == "user_explicit"
@@ -703,28 +604,34 @@ async def admit_request(
             AgentCapabilitySelection, source_attempt.capability_selection_id
         )
         if inherited_source_selection is not None:
-            inherited_semantics = {
-                "skill": {
-                    "mode": inherited_source_selection.skill_mode,
-                    "skill_id": inherited_source_selection.skill_id,
-                },
-                "mcp": {
-                    "mode": inherited_source_selection.mcp_mode,
-                    "tool_ids": sorted(inherited_source_selection.tool_ids or []),
-                },
+            if (
+                operation_kind in ("retry", "resume")
+                and inherited_source_selection.digest_version < 3
+            ):
+                raise CapabilityConflict(
+                    "历史能力选择使用旧摘要版本，不能重试或恢复；请创建新请求",
+                    code="legacy_selection_retry_unsupported",
+                )
+            inherited_mcp = {
+                "mode": inherited_source_selection.mcp_mode,
+                "tool_ids": sorted(inherited_source_selection.tool_ids or []),
             }
-            if capability_selection is not None and any(
-                norm_sel[key] != inherited_semantics[key] for key in ("skill", "mcp")
+            if (
+                operation_kind in ("retry", "resume")
+                and capability_selection is not None
+                and norm_sel["mcp"] != inherited_mcp
             ):
                 raise CapabilityConflict(
                     "重试或恢复不允许修改能力选择，请使用重新生成",
                     code=f"{operation_kind}_selection_immutable",
                 )
-            norm_sel["skill"]["mode"] = inherited_source_selection.skill_mode
-            norm_sel["skill"]["skill_id"] = inherited_source_selection.skill_id
-            norm_sel["mcp"]["mode"] = inherited_source_selection.mcp_mode
-            norm_sel["mcp"]["tool_ids"] = list(inherited_source_selection.tool_ids or [])
-            norm_sel["selection_source"] = inherited_source_selection.selection_source
+            norm_sel["mcp"] = {
+                "mode": inherited_source_selection.mcp_mode,
+                "tool_ids": list(inherited_source_selection.tool_ids or []),
+            }
+            norm_sel["selection_source"] = _selection_source_for_mcp(
+                inherited_source_selection.mcp_mode
+            )
             norm_sel["catalog_version"] = inherited_source_selection.catalog_version
 
     existing = (
@@ -769,37 +676,26 @@ async def admit_request(
             if existing_sel is None:
                 existing_sel_digest = canonical_selection_digest(
                     graph_id=graph_id,
-                    skill_mode="auto",
-                    skill_id=None,
                     mcp_mode="auto",
                     tool_ids=[],
-                    material_version="auto",
                 )
             else:
-                existing_sel_digest = existing_sel.selection_digest
-
-            req_mat = "auto"
-            if norm_sel["skill"]["mode"] == "explicit":
-                if (
-                    inherited_source_selection is not None
-                    and norm_sel["skill"]["skill_id"] == inherited_source_selection.skill_id
-                ):
-                    req_mat = inherited_source_selection.material_version
-                else:
-                    item = validate_skill_selection(
-                        graph_id, norm_sel["skill"]["skill_id"], menu_name=menu_name
+                if existing_sel.digest_version < 3:
+                    if operation_kind in ("retry", "resume"):
+                        raise CapabilityConflict(
+                            "历史能力选择使用旧摘要版本，不能重试或恢复；请创建新请求",
+                            code="legacy_selection_retry_unsupported",
+                        )
+                    raise SubmissionConflict(
+                        "历史能力选择不能按新摘要版本重放，请使用新的提交键",
+                        code="legacy_selection_digest",
                     )
-                    req_mat = item["material_version"]
-            elif inherited_source_selection is not None:
-                req_mat = inherited_source_selection.material_version
+                existing_sel_digest = existing_sel.selection_digest
 
             req_sel_digest = canonical_selection_digest(
                 graph_id=graph_id,
-                skill_mode=norm_sel["skill"]["mode"],
-                skill_id=norm_sel["skill"]["skill_id"],
                 mcp_mode=norm_sel["mcp"]["mode"],
                 tool_ids=norm_sel["mcp"]["tool_ids"],
-                material_version=req_mat,
             )
             if req_sel_digest != existing_sel_digest:
                 raise SubmissionConflict("同一提交键已用于不同选择", code="submission_conflict")
@@ -823,17 +719,7 @@ async def admit_request(
                     "同一提交键已用于不同内容或操作类型", code="submission_conflict"
                 )
             if existing_sel:
-                sel_out = {
-                    "selection_id": str(existing_sel.id),
-                    "selection_digest": existing_sel.selection_digest,
-                    "digest_version": existing_sel.digest_version,
-                    "selection_status": "collected",
-                    "skill": {"mode": existing_sel.skill_mode, "skill_id": existing_sel.skill_id},
-                    "mcp": {"mode": existing_sel.mcp_mode, "tool_ids": existing_sel.tool_ids},
-                    "material_version": existing_sel.material_version,
-                    "selection_source": existing_sel.selection_source,
-                    "validation_time": existing_sel.validation_time.isoformat(),
-                }
+                sel_out = capability_selection_snapshot(existing_sel)
             else:
                 sel_out = {"selection_status": "not_collected"}
 
@@ -959,83 +845,23 @@ async def admit_request(
     if source_attempt is None and operation_kind in ("retry", "regenerate", "resume"):
         operation_kind = "initial"
 
-    mat_version = "auto"
-    if operation_kind == "resume" and source_attempt is not None:
-        source_selection = None
-        if source_attempt.capability_selection_id:
-            source_selection = await session.get(
-                AgentCapabilitySelection, source_attempt.capability_selection_id
-            )
-        if source_selection is not None:
-            if source_selection.skill_mode == "explicit" and source_selection.skill_id:
-                try:
-                    curr_skill = validate_skill_selection(graph_id, source_selection.skill_id)
-                    if curr_skill["material_version"] != source_selection.material_version:
-                        raise CapabilityConflict(
-                            "原技能规则材料已更新，无法恢复原运行",
-                            code="material_version_changed",
-                        )
-                except Exception as exc:
-                    if isinstance(exc, CapabilityConflict):
-                        raise
-                    raise CapabilityConflict(
-                        "原技能不可用，无法恢复原运行", code="skill_unavailable"
-                    ) from exc
-            if source_selection.tool_ids:
-                try:
-                    _validate_mcp_tool_authorization(
-                        business_code=grant.business_code,
-                        tenant_id=tenant_id,
-                        tool_ids=source_selection.tool_ids,
-                    )
-                except Exception as exc:
-                    raise CapabilityConflict(
-                        "原 MCP 服务授权已失效或撤销，无法恢复原运行",
-                        code="mcp_connection_invalidated",
-                    ) from exc
-            norm_sel["skill"]["mode"] = source_selection.skill_mode
-            norm_sel["skill"]["skill_id"] = source_selection.skill_id
-            norm_sel["mcp"]["mode"] = source_selection.mcp_mode
-            norm_sel["mcp"]["tool_ids"] = source_selection.tool_ids
-            norm_sel["selection_source"] = source_selection.selection_source
-            norm_sel["catalog_version"] = source_selection.catalog_version
-            mat_version = source_selection.material_version
-
-    elif operation_kind in ("retry", "regenerate") and source_attempt is not None:
-        if capability_selection is None and source_attempt.capability_selection_id:
-            source_selection = await session.get(
-                AgentCapabilitySelection, source_attempt.capability_selection_id
-            )
-            if source_selection is not None:
-                if source_selection.tool_ids and source_selection.mcp_mode == "allowlist":
-                    try:
-                        _validate_mcp_tool_authorization(
-                            business_code=grant.business_code,
-                            tenant_id=tenant_id,
-                            tool_ids=source_selection.tool_ids,
-                        )
-                    except Exception as exc:
-                        raise CapabilityConflict(
-                            "原 MCP 服务授权已失效或撤销，无法重试",
-                            code="mcp_connection_invalidated",
-                        ) from exc
-                norm_sel["skill"]["mode"] = source_selection.skill_mode
-                norm_sel["skill"]["skill_id"] = source_selection.skill_id
-                norm_sel["mcp"]["mode"] = source_selection.mcp_mode
-                norm_sel["mcp"]["tool_ids"] = source_selection.tool_ids
-                norm_sel["selection_source"] = source_selection.selection_source
-                norm_sel["catalog_version"] = source_selection.catalog_version
-                mat_version = source_selection.material_version
-
-    if norm_sel["skill"]["mode"] == "explicit":
+    if (
+        operation_kind in ("retry", "regenerate", "resume")
+        and inherited_source_selection is not None
+        and inherited_source_selection.mcp_mode == "allowlist"
+        and inherited_source_selection.tool_ids
+    ):
         try:
-            skill_item = validate_skill_selection(
-                graph_id, norm_sel["skill"]["skill_id"], menu_name=menu_name
+            _validate_mcp_tool_authorization(
+                business_code=grant.business_code,
+                tenant_id=tenant_id,
+                tool_ids=inherited_source_selection.tool_ids,
             )
-            mat_version = skill_item["material_version"]
         except Exception as exc:
-            detail = getattr(exc, "detail", str(exc))
-            raise CapabilityValidationError(detail, code="invalid_skill_selection") from exc
+            raise CapabilityConflict(
+                "原 MCP 范围授权已失效或撤销，无法继续该操作",
+                code="mcp_connection_invalidated",
+            ) from exc
 
     # 目录版本也约束仅选工具和显式空集合，不能仅在显式 Skill 分支核验。
     if norm_sel["selection_source"] == "user_explicit":
@@ -1093,19 +919,6 @@ async def admit_request(
                 code="catalog_verification_failed",
             ) from exc
 
-    if (
-        norm_sel["skill"]["mode"] == "explicit"
-        and skill_item.get("required_tool_ids")
-        and norm_sel["mcp"]["mode"] == "allowlist"
-    ):
-        chosen = set(norm_sel["mcp"]["tool_ids"])
-        for req in skill_item["required_tool_ids"]:
-            if req not in chosen:
-                msg = (
-                    f"所选技能 {norm_sel['skill']['skill_id']} 依赖工具 {req}，但未在已选工具列表中"
-                )
-                raise CapabilityValidationError(msg, code="required_tool_missing")
-
     if norm_sel["mcp"]["mode"] == "allowlist" and norm_sel["mcp"]["tool_ids"]:
         _validate_mcp_tool_authorization(
             business_code=grant.business_code,
@@ -1130,11 +943,8 @@ async def admit_request(
 
     selection_digest = canonical_selection_digest(
         graph_id=graph_id,
-        skill_mode=norm_sel["skill"]["mode"],
-        skill_id=norm_sel["skill"]["skill_id"],
         mcp_mode=norm_sel["mcp"]["mode"],
         tool_ids=norm_sel["mcp"]["tool_ids"],
-        material_version=mat_version,
     )
     v2_digest = canonical_content_digest_v2(
         graph_id=graph_id,
@@ -1284,15 +1094,12 @@ async def admit_request(
             attempt_id=attempt_id,
             submission_id=submission_id,
             graph_id=graph_id,
-            skill_mode=norm_sel["skill"]["mode"],
-            skill_id=norm_sel["skill"]["skill_id"],
             mcp_mode=norm_sel["mcp"]["mode"],
             tool_ids=norm_sel["mcp"]["tool_ids"],
             catalog_version=norm_sel.get("catalog_version"),
-            material_version=mat_version,
             selection_digest=selection_digest,
-            digest_version=2,
-            selection_source=norm_sel["selection_source"],
+            digest_version=3,
+            selection_source=_selection_source_for_mcp(norm_sel["mcp"]["mode"]),
             validation_time=now,
             created_at=now,
         )
@@ -1326,16 +1133,11 @@ async def admit_request(
             "selection_digest": selection_digest,
             "graph_id": graph_id,
             "submission_id": str(submission_id),
-            "skill_mode": norm_sel["skill"]["mode"],
             "mcp_mode": norm_sel["mcp"]["mode"],
-            "selection_source": norm_sel["selection_source"],
+            "selection_source": _selection_source_for_mcp(norm_sel["mcp"]["mode"]),
         }
-        if norm_sel["skill"]["skill_id"]:
-            sel_payload["skill_id"] = norm_sel["skill"]["skill_id"]
         if norm_sel["mcp"]["tool_ids"]:
             sel_payload["tool_ids"] = norm_sel["mcp"]["tool_ids"]
-        if mat_version:
-            sel_payload["material_version"] = mat_version
 
         await emit_fact(
             session,
@@ -1358,17 +1160,12 @@ async def admit_request(
         "id": str(selection_id),
         "selection_id": str(selection_id),
         "selection_digest": selection_digest,
-        "digest_version": 2,
+        "digest_version": 3,
         "selection_status": "collected",
-        "skill": {"mode": norm_sel["skill"]["mode"], "skill_id": norm_sel["skill"]["skill_id"]},
+        "schema_version": "agent.capability-selection.v2",
         "mcp": {"mode": norm_sel["mcp"]["mode"], "tool_ids": norm_sel["mcp"]["tool_ids"]},
-        "skill_mode": norm_sel["skill"]["mode"],
-        "skill_id": norm_sel["skill"]["skill_id"],
-        "mcp_mode": norm_sel["mcp"]["mode"],
-        "tool_ids": norm_sel["mcp"]["tool_ids"],
-        "catalog_version": norm_sel.get("catalog_version") or "cat_000000000000000000000000",
-        "material_version": mat_version,
-        "selection_source": norm_sel["selection_source"],
+        "catalog_version": norm_sel.get("catalog_version"),
+        "selection_source": _selection_source_for_mcp(norm_sel["mcp"]["mode"]),
         "validation_time": now.isoformat(),
     }
     return AdmissionResult(
@@ -2438,17 +2235,7 @@ async def get_request_detail(
         }
         sel = selections_map.get(a.capability_selection_id) if a.capability_selection_id else None
         if sel:
-            att_dict["capability_selection"] = {
-                "selection_id": str(sel.id),
-                "selection_digest": sel.selection_digest,
-                "digest_version": sel.digest_version,
-                "selection_status": "collected",
-                "skill": {"mode": sel.skill_mode, "skill_id": sel.skill_id},
-                "mcp": {"mode": sel.mcp_mode, "tool_ids": sel.tool_ids},
-                "material_version": sel.material_version,
-                "selection_source": sel.selection_source,
-                "validation_time": sel.validation_time.isoformat(),
-            }
+            att_dict["capability_selection"] = capability_selection_snapshot(sel)
         else:
             att_dict["capability_selection"] = {"selection_status": "not_collected"}
         formatted_attempts.append(att_dict)

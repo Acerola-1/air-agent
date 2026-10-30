@@ -111,7 +111,7 @@ async def test_sdk_retry_cannot_send_after_revision_revocation(monkeypatch) -> N
             http_async_client=client,
         )
         monkeypatch.setattr(nodes_mod, "ModelRegistry", SimpleNamespace(main_llm=model))
-        result = await _nodes().call_model(
+        result = await _nodes().plan_tools(
             {"messages": [HumanMessage(content="synthetic")]},
             _config(),
             writer=lambda *args: None,
@@ -199,7 +199,7 @@ async def test_model_retry_rechecks_identity_before_each_call(
     monkeypatch.setattr(nodes_mod, "ModelRegistry", models)
 
     nodes = _nodes()
-    result = await nodes.call_model(
+    result = await nodes.plan_tools(
         {"messages": [HumanMessage(content="q")]},
         _config(),
         writer=lambda *a: None,
@@ -240,7 +240,7 @@ async def test_empty_reply_nudge_rechecks_identity(
     monkeypatch.setattr(nodes_mod, "ModelRegistry", models)
 
     nodes = _nodes()
-    result = await nodes.call_model(
+    result = await nodes.plan_tools(
         {"messages": [HumanMessage(content="q")]},
         _config(),
         writer=lambda *a: None,
@@ -348,7 +348,4 @@ async def test_missing_snapshot_fails_closed_in_enforce_mode(
 def empty_session_projection(monkeypatch):
     from basic_qa.capabilities import projection
 
-    monkeypatch.setattr(
-        projection, "basic_qa_skill_catalog", AsyncMock(return_value=[])
-    )
     monkeypatch.setattr(projection, "current_material", AsyncMock(return_value=None))

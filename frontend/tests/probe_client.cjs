@@ -30,8 +30,7 @@ function runClientProbe() {
   const useCapabilityStore = loadStore();
   const store = useCapabilityStore.getState();
 
-  // 1. R02: toPayload() 不在 JSON.stringify 时序列化 selection_source (避免 extra="forbid" 拒绝)
-  store.setSkillMode('explicit', 'skill:basic-qa:air-quality-basic-query');
+  // 1. 当前协议只保留 MCP 选择；载荷不附带 Skill 或来源推断字段。
   store.setMcpMode('allowlist', ['mcp:business:query']);
   useCapabilityStore.setState({ catalog: { catalog_version: 'v1' } });
 
@@ -39,48 +38,46 @@ function runClientProbe() {
   const serialized = JSON.stringify(payload);
   const parsed = JSON.parse(serialized);
 
-  const r02_results = {
-    payload_selection_source_property: payload.selection_source,
-    serialized_has_selection_source: 'selection_source' in parsed,
+  const protocol_results = {
+    schema_version: parsed.schema_version,
     serialized_keys: Object.keys(parsed),
-    skill_mode: parsed.skill.mode,
-    skill_id: parsed.skill.skill_id,
     mcp_mode: parsed.mcp.mode,
     tool_ids: parsed.mcp.tool_ids,
   };
 
   // 2. R08: 租户切换重置草稿与快照
   store.setAcceptedSelection({
-    id: 'sel_123',
-    skill_mode: 'explicit',
-    skill_id: 'skill:basic-qa:air-quality-basic-query',
-    mcp_mode: 'allowlist',
-    tool_ids: ['mcp:business:query'],
-    selection_digest: 'digest_123',
-    selection_source: 'user_explicit',
+    selection_id: 'sel_123',
+    selection_digest: 'a'.repeat(64),
+    digest_version: 3,
+    selection_status: 'collected',
+    schema_version: 'agent.capability-selection.v2',
+    mcp: { mode: 'allowlist', tool_ids: ['mcp:business:query'] },
+    catalog_version: 'v1',
+    selection_source: 'user',
+    validation_time: '2026-10-30T00:00:00Z',
   });
 
   store.clearForScopeSwitch('basic-qa', 'new-tenant-id');
   const clearedState = useCapabilityStore.getState();
 
   const r08_results = {
-    draft_skill_mode: clearedState.selection.skillMode,
-    draft_skill_id: clearedState.selection.selectedSkillId,
     draft_mcp_mode: clearedState.selection.mcpMode,
     draft_tool_ids: clearedState.selection.selectedToolIds,
     accepted_selection: clearedState.acceptedSelection,
   };
 
   const allPassed =
-    r02_results.serialized_has_selection_source === false &&
-    r02_results.payload_selection_source_property === 'user_explicit' &&
-    r08_results.draft_skill_mode === 'auto' &&
+    protocol_results.schema_version === 'agent.capability-selection.v2' &&
+    protocol_results.serialized_keys.sort().join(',') === 'catalog_version,mcp,schema_version' &&
+    protocol_results.mcp_mode === 'allowlist' &&
+    protocol_results.tool_ids.length === 1 &&
     r08_results.draft_mcp_mode === 'auto' &&
     r08_results.draft_tool_ids.length === 0 &&
     r08_results.accepted_selection === null;
 
   const output = {
-    r02_payload_strictness: r02_results,
+    capability_selection_v2: protocol_results,
     r08_scope_switch_isolation: r08_results,
     all_passed: allPassed,
   };

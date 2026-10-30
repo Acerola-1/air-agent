@@ -3,13 +3,31 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from langchain_core.messages import ToolMessage
 
+from basic_qa.capabilities import tool_definitions
+from basic_qa.capabilities.errors import BasicQARuntimeError
 from basic_qa.capabilities.runtime import current_material, trusted_turn_key
-from basic_qa.capabilities.skill_search import basic_qa_skill_catalog
 from common.runtime_tools import tool_name
+
+if TYPE_CHECKING:
+    from basic_qa.context.preparation import PreparedRequest
+
+
+class CapabilityProjection(NamedTuple):
+    """一次模型请求的能力、工作状态和容量准备结果；不写入检查点."""
+
+    prepared: PreparedRequest
+    context: str
+    material: Any
+    state: dict[str, Any]
+    prepared_state: dict[str, Any]
+    tools: list[Any]
+    system_prompt: str
+    prepare_kwargs: dict[str, Any]
+
 
 _GENERAL = frozenset({"get_beijing_time", "knowledge_search", "create_artifact"})
 _EVIDENCE = frozenset({"compute_artifact"})
@@ -18,31 +36,10 @@ _CONTROL = frozenset(
 )
 
 
-def mcp_stable_id(name: str) -> str | None:
-    """Resolve only an unambiguous factory catalog identity, including aliases."""
-    from common.mcp_scoped import get_factory, server_clean_key
-
-    factory = get_factory()
-    if factory is None:
-        return None
-    server = factory.server_of(name)
-    if not server:
-        return None
-    for item in factory.catalog_entries():
-        original = item.get("name")
-        if item.get("server_key") == server and name in {
-            item.get("id"),
-            original,
-            f"mcp_{server_clean_key(server)}__{original}",
-        }:
-            return str(item["id"])
-    return None
-
-
 def _include_tool_schema(name: str, *, is_mcp: bool, material: Any) -> bool:
     """按需选择本次模型上下文中的工具定义；不作为执行权限判定."""
     if is_mcp:
-        identity = mcp_stable_id(name)
+        identity = tool_definitions.mcp_stable_id(name)
         return bool(material and identity in material.tool_scope.allowed_ids)
     if name in _GENERAL or name in _CONTROL or name in _EVIDENCE:
         return True
@@ -54,7 +51,7 @@ def disclosed_tools(tools: list[Any], material: Any) -> list[Any]:
     """按上下文需要筛选本次模型请求的工具定义."""
     from types import SimpleNamespace
 
-    from basic_qa.tool_policy import _is_mcp_tool
+    from common.tool_execution.mcp import _is_mcp_tool
 
     selected = []
     for item in tools:
@@ -68,38 +65,12 @@ def disclosed_tools(tools: list[Any], material: Any) -> list[Any]:
     return selected
 
 
-def disclosure_record(
-    schemas: list[dict[str, Any]], message_id: str, material: Any
-) -> dict[str, Any]:
-    """Record only the schemas actually sent for this model response."""
-    tools = {}
-    for schema in schemas:
-        name = (schema.get("function") or schema).get("name")
-        if not name:
-            continue
-        stable = mcp_stable_id(name)
-        tools[stable or f"local:{name}"] = name
-    versions = {
-        d.tool_id: d.schema_version for d in getattr(material, "domain_documents", ())
-    }
-    return {
-        "model_message_id": message_id,
-        "tools": tools,
-        "sources": getattr(material, "sources", {}),
-        "schema_versions": {
-            key: versions.get(key) for key in tools if key.startswith("mcp:")
-        },
-    }
-
-
 async def initialize(state: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
     """Reset attempt bookkeeping, keeping valid session references across turns."""
     from basic_qa.capabilities.runtime import resolve_session
 
     key = trusted_turn_key(config)
     if state.get("bqa_turn_key") == key:
-        from basic_qa.capabilities.runtime import BasicQARuntimeError
-
         if state.get("bqa_turn_digest") not in {
             None,
             (config.get("configurable") or {}).get("capability_selection_digest"),
@@ -125,48 +96,50 @@ async def initialize(state: dict[str, Any], config: dict[str, Any]) -> dict[str,
 async def prompt_context(
     state: dict[str, Any], config: dict[str, Any]
 ) -> tuple[str, Any]:
-    """复核受理及活动材料，构造本次发送的目录和规则."""
-    catalog = await basic_qa_skill_catalog(config)
+    """复核活动材料，构造本次发送的能力状态和规则."""
     material = await current_material(state, config)
     instructions = (
         "【基础问答会话规则】结合用户当前消息、历史与摘要判断需求；信息不足时澄清。"
-        "目录仅供选择，search_skills 可选；使用 skill_id 和 material_version 调用 load_skill，"
-        "成功后下一次再调用领域工具。允许多个 Skill 同时激活，完整保留各自适用规则。"
-        "优先预设 Skill：已激活且适用就直接复用，不必每轮搜索或加载；"
-        "任务类型变化时，先对照目录确认当前Skill是否仍适用；例如从基础查询转为同比、"
-        "趋势或排名，已有相应专用Skill时先激活它，不因基础工具也能查数据就跳过专用规则。"
-        "需要新能力时先考虑其他 Skill。仅对预设 Skill 仍未覆盖的需求或部分，"
-        "才使用 search_mcp 获取最多 Top 3 简介，自主选择零项、一项或多项，"
-        "Skill目录不是全部能力清单；工具搜索还可发现监测点位置、坐标行政区、网格及"
-        "气象等专业辅助能力。遇到这类未覆盖需求且当前无适用能力时，先search_mcp，"
-        "不要在未搜索的情况下断言系统不提供该能力。"
+        "已有已加载且适用的 Skill 就直接复用，无需每轮重复搜索或加载。"
+        "需要新业务能力或任务类型变化时，优先调用 search_skills，"
+        "结合会话需求形成查询，从返回候选中选择适用 Skill，"
+        "使用候选的 skill_id 和 material_version 调用 load_skill。"
+        "加载成功后，先阅读本次提供的完整规则，再调用对应领域工具。"
+        "允许多个 Skill 同时加载，分别遵循各自任务的完整规则。"
+        "若已有有效加载引用，可直接重新加载该 Skill；不要猜测未知 Skill 的 ID 或版本。"
+        "仅对 Skill 搜索未找到适用项，或已加载 Skill 仍未覆盖的需求或部分，"
+        "使用 search_mcp 获取最多 Top 3 工具简介，再自主选择零项、一项或多项。"
+        "搜索暂不可用时可重试、澄清或说明能力发现暂不可用，不凭猜测宣称系统没有该能力。"
         "用 load_mcp_tool(tool_id, expected_schema_version) 独立加载后再查询。"
         "搜索不会加载，加载不会查询。已知有效工具可直接加载或复用，无需再次搜索。"
         "自然语言指定 Skill 时优先遵循；规则冲突须按任务分别处理或澄清，不能覆盖。"
         "无证据不得编造城市、时间、数值、法规和污染原因。"
         "需要工具时继续调用；资料已足够时可调用 finish_planning 结束规划，"
         "或直接形成回答草稿。不需要额外声明查询对象、时间、指标或证据 ID。"
-        "接口返回结构按对应 Skill 和工具说明理解，不要求回显请求参数。"
-        "以下规则优先于任何旧的远程提示中禁止选择 Skill 或无 Skill 直接查询的内容。\n"
+        "接口返回结构按对应 Skill 和工具说明理解，不要求回显请求参数。\n"
     )
     if material:
-        instructions += (
-            "【当前激活状态】会话内已激活 "
-            + material.skill_id
-            + "；有效能力可以跨轮直接复用，领域查询仅使用本次提供的工具。\n"
+        active = {
+            "skills": [
+                {"skill_id": item.skill_id, "material_version": item.material_version}
+                for item in getattr(material, "skills", ())
+            ],
+            "tools": [item.tool_id for item in getattr(material, "tools", ())],
+        }
+        instructions += "【当前已加载业务能力】\n" + json.dumps(
+            active, ensure_ascii=False
         )
+        instructions += "\n有效能力可跨轮复用；领域查询仅使用本次提供的工具。\n"
     else:
         instructions += (
-            "【当前激活状态】暂无有效激活能力。历史加载回执本身不代表当前激活。"
-            "需要新的业务查询时优先加载适用 Skill；无适用 Skill 的部分可独立加载工具。"
-            "不确定哪个 Skill 合适时再 search_skills。纯聊天或复述不需要加载。\n"
+            "【当前已加载业务能力】暂无。需要业务能力时，先 search_skills，"
+            "选择候选后再 load_skill。纯聊天、澄清或复述不需要搜索或加载。\n"
         )
-    instructions += "【可用 Skill 目录】\n" + json.dumps(catalog, ensure_ascii=False)
     caps = state.get("bqa_capabilities") or {}
     dormant = {
         "skills": [
-            k
-            for k in caps.get("loaded_skills", {})
+            {"skill_id": k, "material_version": v.get("material_version")}
+            for k, v in caps.get("loaded_skills", {}).items()
             if k not in caps.get("active_skill_ids", [])
         ],
         "tools": [
@@ -197,8 +170,6 @@ async def prompt_context(
 
 async def verify_prompt_context(state, config, expected, material) -> None:
     """每次发送前重新读取许可和材料；变化时阻止使用已经准备好的请求."""
-    from basic_qa.capabilities.runtime import BasicQARuntimeError
-
     current, actual = await prompt_context(state, config)
     old_scope = material.tool_scope.allowed_ids if material else None
     new_scope = actual.tool_scope.allowed_ids if actual else None
@@ -238,14 +209,14 @@ def projected_state(state: dict[str, Any]) -> dict[str, Any]:
 
 async def prepare_projection(
     state, config, *, base_prompt, addenda, controls, role, prepare, business, tail=None
-):
+) -> CapabilityProjection:
     """Use one rules/schema projection for planning, answer and capacity dormancy."""
     from types import SimpleNamespace
 
     from basic_qa.capabilities.state import dormant_next
-    from basic_qa.tool_policy import _is_mcp_tool
     from basic_qa.tool_recovery import recoverable_tools
     from common.capabilities import filter_capability_mcp_tools
+    from common.tool_execution.mcp import _is_mcp_tool
 
     working = dict(state)
     accumulated = {}
@@ -284,7 +255,7 @@ async def prepare_projection(
         prepared.updates = dict(accumulated)
         prepared.message_updates = list(message_updates.values())
         if not prepared.over_capacity:
-            return (
+            return CapabilityProjection(
                 prepared,
                 context,
                 material,
@@ -296,7 +267,7 @@ async def prepare_projection(
             )
         caps = dormant_next(working, trusted_turn_key(config))
         if caps is None:
-            return (
+            return CapabilityProjection(
                 prepared,
                 context,
                 material,

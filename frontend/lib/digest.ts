@@ -1,6 +1,4 @@
-/**
- * 确定性规范选择摘要与选择 ID 生成器（Change 4 客户端回读规范）
- */
+/** 确定性能力选择摘要（SHA-256）。 */
 
 // 标准 SHA-256 实现（零外部依赖，Node/浏览器/测试通用）
 function sha256(ascii: string): string {
@@ -21,13 +19,14 @@ function sha256(ascii: string): string {
   let primeCounter = 0;
 
   const isComposite: Record<number, number> = {};
+  // SHA-256 的 64 个常量用到第 64 个素数 311；筛到 400 以覆盖 301 等合数。
   for (let candidate = 2; primeCounter < 64; candidate++) {
     if (!isComposite[candidate]) {
-      for (i = 0; i < 300; i += candidate) {
+      for (i = candidate * candidate; i < 400; i += candidate) {
         isComposite[i] = candidate;
       }
-      hash[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
-      k[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+      hash[primeCounter] = ((mathPow(candidate, 0.5) % 1) * maxWord) | 0;
+      k[primeCounter++] = ((mathPow(candidate, 1 / 3) % 1) * maxWord) | 0;
     }
   }
 
@@ -102,36 +101,31 @@ function sha256(ascii: string): string {
 export function computeCanonicalSelectionDigest(
   graphId: string,
   selection: Record<string, unknown>,
-  materialVersion: string = "auto",
 ): string {
-  const skill = (selection.skill as Record<string, unknown> | undefined) ?? {};
-  const mcp = (selection.mcp as Record<string, unknown> | undefined) ?? {};
-  const skillMode = (skill.mode as string) || (selection.skill_mode as string) || "auto";
-  const skillId = (skill.skill_id as string | null) ?? (selection.skill_id as string | null) ?? null;
-  const mcpMode = (mcp.mode as string) || (selection.mcp_mode as string) || "auto";
-  const rawTools = (mcp.tool_ids as string[]) || (selection.tool_ids as string[]) || [];
-  const uniqueTools = Array.from(new Set(rawTools)).sort();
-
-  const payload: Record<string, unknown> = {
+  const retiredFields = ["skill", "skill_mode", "skill_id", "material_version"];
+  if (retiredFields.some((field) => Object.hasOwn(selection, field))) {
+    throw new Error("能力选择包含已撤回的 Skill 字段");
+  }
+  if (selection.schema_version !== "agent.capability-selection.v2") {
+    throw new Error("能力选择协议版本不受支持");
+  }
+  const mcp = selection.mcp as { mode?: unknown; tool_ids?: unknown } | undefined;
+  if (
+    !mcp ||
+    (mcp.mode !== "auto" && mcp.mode !== "allowlist") ||
+    !Array.isArray(mcp.tool_ids) ||
+    !mcp.tool_ids.every((toolId) => typeof toolId === "string")
+  ) {
+    throw new Error("MCP 能力选择格式无效");
+  }
+  const mcpMode = mcp.mode;
+  const toolIds = mcpMode === "auto" ? [] : Array.from(new Set(mcp.tool_ids as string[])).sort();
+  const payload = {
     graph_id: graphId,
-    material_version: materialVersion,
     mcp_mode: mcpMode,
-    skill_id: skillMode === "auto" ? null : skillId,
-    skill_mode: skillMode,
-    tool_ids: mcpMode === "auto" ? [] : uniqueTools,
+    tool_ids: toolIds,
   };
 
   const canonicalJson = JSON.stringify(payload, Object.keys(payload).sort());
   return sha256(canonicalJson);
-}
-
-export function deriveSelectionId(selectionDigest: string): string {
-  const h = selectionDigest.slice(0, 32).padEnd(32, "0");
-  return [
-    h.slice(0, 8),
-    h.slice(8, 12),
-    "5" + h.slice(13, 16),
-    "a" + h.slice(17, 20),
-    h.slice(20, 32),
-  ].join("-");
 }

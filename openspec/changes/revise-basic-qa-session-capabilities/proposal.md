@@ -13,6 +13,7 @@
 - 新增 `search_mcp(query)` 与 `load_mcp_tool(tool_id, expected_schema_version)`：搜索每次最多返回 **Top 3** 合法候选简介，由模型决定使用零个、一个或多个；搜索不自动加载，加载不执行查询。首次搜索前优先考虑 Skill；已激活的适用工具可复用，无需反复检索。
 - 将当前 Basic QA 的21项工具子集扩展为当前受保护部署连接下、代码已审核查询清单所覆盖的专业工具目录；当前公共登记109项是代码基线，不承诺全部在线。未登记新工具不自动纳入，其他图的运行入口及分析报告工作流不因目录扩展被启动。
 - 在程序侧维护工具描述／schema摘要索引，按目录内容和 embedding 模型版本增量构建；不把全量工具定义交给模型，不在图导入时外呼，不要求每次启动全量重算。
+- **BREAKING**：撤回请求中事先指定 Skill 的旧协议，移除 Skill `auto/explicit`、全量目录入模及确定性规则注入；Skill 由 `search_skills` 返回少量候选后按需 `load_skill`，有效加载引用跨轮复用。请求选择仅保留 MCP 范围；旧受理快照保留为历史，不恢复已撤回的选择执行语义。
 - 继续使用现有企业业务资格、受保护连接、查询白名单及受理约束，不恢复人员→Skill/MCP授权，不新增地区权限或接口回显字段／回答证据校验。
 - 重写多轮验收：正常连续追问以零加载前置错误为目标；首次成功、恢复成功与用户可见异常分别统计，不再将“先报错后成功”记为无异常通过。
 
@@ -26,7 +27,7 @@
 ### Modified Capabilities
 
 - `agent-authorized-capability-catalog`：区分全量服务端检索目录、Top 3候选与实际模型工具集合，保留实时范围过滤。
-- `agent-request-capability-selection`：区分模型会话能力状态与用户受理选择；Basic QA允许有效Skill或独立工具加载，不新增前端选择器。
+- `agent-request-capability-selection`：撤销用户事先指定 Skill 的协议，仅冻结 MCP 范围；Basic QA 通过搜索发现并加载 Skill，不注入完整目录。
 - `agent-service-connections`：两种加载来源使用同一受保护业务连接和实际执行范围，不引入新的人员授权。
 - `agent-capability-observability`：区分搜索、加载、激活、复用与真实执行，记录独立工具来源；分别报告首次成功和报错后恢复。
 - `skill-three-layer-system`：Basic QA使用受控目录／材料加载与跨轮恢复，不要求使用Deep Agents中间件；保留模式文件边界。

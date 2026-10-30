@@ -92,8 +92,8 @@ async def resolve_timing_attempt(
                 text(
                     "SELECT s.attempt_id::text,s.id::text AS submission_id, "
                     "q.id::text AS request_id, "
-                    "c.id::text AS selection_id,c.selection_digest,c.skill_mode,c.skill_id, "
-                    "c.mcp_mode,c.tool_ids,c.material_version,c.catalog_version,c.selection_source "
+                    "c.id::text AS selection_id,c.selection_digest,c.digest_version, "
+                    "c.mcp_mode,c.tool_ids,c.catalog_version,c.validation_time "
                     "FROM agent_submissions s JOIN agent_requests q "
                     "ON q.tenant_id=s.tenant_id AND q.id=s.request_id "
                     "LEFT JOIN agent_capability_selections c "
@@ -121,18 +121,17 @@ async def resolve_timing_attempt(
     selection = None
     if row["selection_id"]:
         selection = {
-            key: row[key]
-            for key in (
-                "selection_id",
-                "selection_digest",
-                "skill_mode",
-                "skill_id",
-                "mcp_mode",
-                "tool_ids",
-                "material_version",
-                "catalog_version",
-                "selection_source",
-            )
+            "selection_id": row["selection_id"],
+            "selection_status": "collected",
+            "schema_version": "agent.capability-selection.v2",
+            "selection_digest": row["selection_digest"],
+            "digest_version": row["digest_version"],
+            "mcp": {"mode": row["mcp_mode"], "tool_ids": row["tool_ids"]},
+            "catalog_version": row["catalog_version"],
+            "selection_source": "user_explicit" if row["mcp_mode"] == "allowlist" else "automatic",
+            "validation_time": row["validation_time"].isoformat()
+            if row["validation_time"]
+            else None,
         }
         selection["id"] = row["selection_id"]
     return {

@@ -6005,7 +6005,7 @@
             ],
             "title": "Selection Id"
           },
-          "skill_mode": {
+          "schema_version": {
             "anyOf": [
               {
                 "type": "string"
@@ -6014,54 +6014,17 @@
                 "type": "null"
               }
             ],
-            "title": "Skill Mode"
+            "title": "Schema Version"
           },
-          "skill_id": {
+          "mcp": {
             "anyOf": [
               {
-                "type": "string"
+                "$ref": "#/components/schemas/ConsoleSelectionMcp"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Skill Id"
-          },
-          "mcp_mode": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Mcp Mode"
-          },
-          "tool_ids": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Tool Ids"
-          },
-          "material_version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Material Version"
+            ]
           },
           "catalog_version": {
             "anyOf": [
@@ -6123,6 +6086,32 @@
         "additionalProperties": false,
         "type": "object",
         "title": "ConsoleSelection"
+      },
+      "ConsoleSelectionMcp": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "allowlist"
+            ],
+            "title": "Mode"
+          },
+          "tool_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tool Ids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "mode",
+          "tool_ids"
+        ],
+        "title": "ConsoleSelectionMcp"
       },
       "ConsoleTraceRef": {
         "properties": {

@@ -14,6 +14,7 @@ import basic_qa.builder as builder
 import basic_qa.capabilities.projection as integration
 import basic_qa.capabilities.runtime as runtime
 import basic_qa.nodes as nodes
+from basic_qa.capabilities import tool_definitions
 from common.models import ModelRegistry
 
 pytestmark = pytest.mark.anyio
@@ -191,12 +192,7 @@ def controlled(monkeypatch, tmp_path):
     )
     monkeypatch.setattr(runtime, "resolve_material", AsyncMock(return_value=_MATERIAL))
     monkeypatch.setattr(
-        integration,
-        "basic_qa_skill_catalog",
-        AsyncMock(return_value=[{"skill_id": _SKILL, "material_version": _VERSION}]),
-    )
-    monkeypatch.setattr(
-        integration,
+        tool_definitions,
         "mcp_stable_id",
         lambda name: "mcp:ipp:demo" if name == "demo" else None,
     )
@@ -868,9 +864,6 @@ async def test_send_rechecks_skill_scope(monkeypatch):
     from basic_qa.capabilities.runtime import BasicQARuntimeError
 
     monkeypatch.setattr(
-        integration, "basic_qa_skill_catalog", AsyncMock(return_value=[])
-    )
-    monkeypatch.setattr(
         integration, "current_material", AsyncMock(return_value=_MATERIAL)
     )
     context, material = await integration.prompt_context({}, {})
@@ -1022,7 +1015,7 @@ async def test_search_candidates_independent_loads_and_reuse(
         ),
     )
     monkeypatch.setattr(
-        integration,
+        tool_definitions,
         "mcp_stable_id",
         lambda name: "mcp:ipp:" + name if name in names else None,
     )
@@ -1373,3 +1366,99 @@ async def test_compiled_overflow_retries_model_without_replaying_tool(
         assert "自动整理后模型上下文仍超限" in result["messages"][-1].content
     else:
         assert "杭州空气质量数据" in result["messages"][-1].content
+
+
+async def test_search_then_load_without_catalog_disclosure_and_followup_reuses(
+    controlled, monkeypatch, tmp_path
+):
+    from langgraph.checkpoint.memory import InMemorySaver
+
+    from basic_qa.capabilities import skill_search
+    from common.business_registry import BUSINESS_POLICY_VERSION, business_for_graph
+    from common.capabilities import SkillCatalogItem
+    from common.identity.runtime import RuntimeIdentity
+    from common.skill_router import SkillSemanticRouter
+
+    _, model, business_calls = controlled
+    business = business_for_graph("basic-qa")
+    identity = RuntimeIdentity(
+        user_id="user",
+        tenant_id="tenant",
+        membership_id="membership",
+        session_id="session",
+        permissions=frozenset({business.permission}),
+        business_graph="basic-qa",
+        business_code=business.code,
+        business_permission=business.permission,
+        business_policy_version=BUSINESS_POLICY_VERSION,
+    )
+    items = [
+        SkillCatalogItem(
+            id=_SKILL if index == 0 else f"skill:basic-qa:unseen-{index}",
+            name="test" if index == 0 else f"unseen-{index}",
+            description=f"PRIVATE_CATALOG_DESCRIPTION_{index}",
+            material_version=_VERSION,
+            status="available",
+            required_tool_ids=[],
+        )
+        for index in range(90)
+    ]
+    catalog_read = Mock(return_value=items)
+    monkeypatch.setattr(skill_search, "list_graph_skills", catalog_read)
+    monkeypatch.setattr(
+        skill_search, "guard_runtime_call", AsyncMock(return_value=identity)
+    )
+    search = AsyncMock(
+        return_value=[SimpleNamespace(name="test", similarity_score=0.9)]
+    )
+    monkeypatch.setattr(SkillSemanticRouter, "amatch", search)
+    graph = builder.build_basic_qa_graph(
+        skills_dir=tmp_path, name="basic-qa", checkpointer=InMemorySaver()
+    )
+    responses = [
+        call("search_skills", "search", {"query": "杭州实时空气质量"}),
+        call("load_skill", "load", {"skill_id": _SKILL, "expected_version": _VERSION}),
+        call("demo", "query", {"city": "杭州"}),
+        call("finish_planning", "finish", {}),
+    ]
+
+    async def decide(messages, *args, **kwargs):
+        if len(responses) == 4:
+            catalog_read.assert_not_called()
+        return responses.pop(0)
+
+    model.ainvoke.side_effect = decide
+    result = await graph.ainvoke(
+        {"messages": [HumanMessage(content="查询杭州空气质量")]}, _CONFIG
+    )
+    assert _SKILL in result["bqa_capabilities"]["active_skill_ids"]
+    first_request = model.ainvoke.await_args_list[0].args[0]
+    assert not any(
+        "PRIVATE_CATALOG_DESCRIPTION_" in str(m.content) for m in first_request
+    )
+    assert not any(_SKILL in str(m.content) for m in first_request)
+    after_search = model.ainvoke.await_args_list[1].args[0]
+    assert any("PRIVATE_CATALOG_DESCRIPTION_0" in str(m.content) for m in after_search)
+    assert not any(
+        "PRIVATE_CATALOG_DESCRIPTION_89" in str(m.content) for m in after_search
+    )
+    after_load = model.ainvoke.await_args_list[2].args[0]
+    assert _MATERIAL.rules in str(after_load[0].content)
+    search.assert_awaited_once_with("杭州实时空气质量", strict=True)
+    assert len(business_calls) == 1
+
+    model.ainvoke.side_effect = [
+        call("demo", "next-query", {"city": "湖州"}),
+        call("finish_planning", "next-finish", {}),
+    ]
+    next_config = {
+        "configurable": {
+            **_CONFIG["configurable"],
+            "ledger_attempt_id": "next-attempt",
+            "ledger_submission_id": "next-submission",
+            "capability_selection_id": "next-selection",
+        }
+    }
+    await graph.ainvoke({"messages": [HumanMessage(content="那湖州呢")]}, next_config)
+    assert len(business_calls) == 2
+    assert search.await_count == 1

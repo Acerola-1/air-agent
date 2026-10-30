@@ -77,29 +77,11 @@ function fixture(options = {}) {
     timingDisplayComplete:(id)=>timingCalls.push(['complete',id]),
     timingProgressSeen:(id)=>timingCalls.push(['progress',id]),
     timingAttachAttempt:(id,a)=>timingCalls.push(['attach',id,a]) };
-  const acceptedSnapshots = [];
-  const { acceptedSnapshot } = load("lib/capability-store.ts", { zustand });
   const outputStream = load("lib/agent-output-stream.ts", {});
-  const capStoreStub = {
-    getState: () => ({
-      setAcceptedSelection: (value) => acceptedSnapshots.push(value),
-      clearForScopeSwitch: () => {},
-      fetchCatalog: async () => {},
-      setSkillMode: () => {},
-      toPayload: () => ({
-        schema_version: 'agent.capability-selection.v1',
-        skill: { mode: 'auto', skill_id: null },
-        mcp: { mode: 'auto', tool_ids: [] },
-        catalog_version: null,
-        selection_source: 'automatic',
-      }),
-    }),
-  };
   const module = load('lib/chat-store.ts', { zustand, '@/lib/uuidv7':{ generateUuidV7:()=>`msg${++ids}` },
     '@/lib/user-identity':{getUserIdentity:()=> 'user'}, '@/lib/langgraph-api':api, '@/lib/feedback/client':timingStubs,
-    '@/lib/capability-store': { useCapabilityStore: capStoreStub, acceptedSnapshot },
     '@/lib/agent-output-stream': outputStream });
-  return { ...module, acceptedSnapshots, streams, canceled, stopIntents, navigationStops, state, api, timingCalls, getSubmissionContext: ()=> submissionContext };
+  return { ...module, streams, canceled, stopIntents, navigationStops, state, api, timingCalls, getSubmissionContext: ()=> submissionContext };
 }
 
 test('分析菜单进入正常运行配置且运行中不能变更', async()=>{
@@ -324,6 +306,130 @@ test('proxy: unified identity gates, ticket upstream, v2 scope, tenant checks', 
     global.fetch = async () => Response.json({ detail: '运行凭据无效' }, { status: 401 });
     const denied = await routes.GET(request('threads/own/state'));
     assert.equal(denied.status, 401);
+  } finally {
+    global.fetch = previous;
+    if (oldBase === undefined) delete process.env.LANGGRAPH_API_URL; else process.env.LANGGRAPH_API_URL = oldBase;
+  }
+});
+
+test('proxy accepts MCP-only v2 selections and explicitly rejects withdrawn Skill fields', async () => {
+  const previous = global.fetch, oldBase = process.env.LANGGRAPH_API_URL;
+  process.env.LANGGRAPH_API_URL = 'http://test-api';
+  const calls = [], admissions = [];
+  const selection = {
+    schema_version: 'agent.capability-selection.v2',
+    mcp: { mode: 'allowlist', tool_ids: ['mcp:business:query'] },
+    catalog_version: 'catalog-v2',
+  };
+  const accepted = {
+    selection_id: 'selection-v3',
+    selection_digest: 'a'.repeat(64),
+    digest_version: 3,
+    selection_status: 'collected',
+    schema_version: 'agent.capability-selection.v2',
+    mcp: { mode: 'allowlist', tool_ids: ['mcp:business:query'] },
+    catalog_version: 'catalog-v2',
+    selection_source: 'user',
+    validation_time: '2026-10-30T00:00:00Z',
+  };
+  const routes = proxyFixture(makeCtx(), {
+    admit: async (input) => {
+      admissions.push(input);
+      return {
+        request_id: 'req-v2', attempt_id: 'att-v2', submission_id: 'sub-v2',
+        admission_status: 'admitting', operation_kind: input.operationKind, reused: false,
+        thread_id: input.threadId, graph_id: input.graphId, ledger_marker: 'lr:req-v2:att-v2',
+        capability_selection: accepted,
+      };
+    },
+  });
+  global.fetch = async (url, options) => {
+    calls.push({ url, options });
+    return new Response('data: stream\n\n', { headers: { 'content-type': 'text/event-stream' } });
+  };
+  try {
+    const body = {
+      assistant_id: 'basic-qa',
+      input: { messages: [{ role: 'user', content: 'MCP 查询' }] },
+      capability_selection: selection,
+      config: { configurable: { chat_mode: 'fast', capability_selection: selection } },
+    };
+    const headers = {
+      'x-tenant-id': 'tenant-a',
+      'x-tenant-context-version': '1',
+      'x-capability-selection': JSON.stringify(selection),
+    };
+    const response = await routes.POST(request('threads/thread-v2/runs/stream', body, 'POST', headers));
+    assert.equal(response.status, 200);
+    assert.equal(admissions.length, 1);
+    assert.deepEqual(admissions[0].capabilitySelection, selection);
+    const upstream = calls.find((call) => String(call.url).endsWith('/threads/thread-v2/runs/stream'));
+    assert.ok(upstream);
+    const forwarded = JSON.parse(upstream.options.body);
+    assert.equal(forwarded.capability_selection, undefined);
+    assert.equal(forwarded.config.configurable.capability_selection, undefined);
+    assert.equal(forwarded.config.configurable.capability_selection_id, 'selection-v3');
+    assert.equal(forwarded.config.configurable.capability_selection_digest, accepted.selection_digest);
+    assert.equal(forwarded.config.configurable.capability_mcp_mode, 'allowlist');
+    assert.deepEqual(forwarded.config.configurable.capability_tool_ids, ['mcp:business:query']);
+    assert.equal('capability_skill_mode' in forwarded.config.configurable, false);
+    assert.equal('capability_skill_id' in forwarded.config.configurable, false);
+    assert.equal('capability_material_version' in forwarded.config.configurable, false);
+
+    const staleReadbackRoutes = proxyFixture(makeCtx(), {
+      admit: async (input) => ({
+        request_id: 'req-old-digest', attempt_id: 'att-old-digest', submission_id: 'sub-old-digest',
+        admission_status: 'admitting', operation_kind: input.operationKind, reused: false,
+        thread_id: input.threadId, graph_id: input.graphId, ledger_marker: 'lr:req-old-digest:att-old-digest',
+        capability_selection: { ...accepted, digest_version: 2 },
+      }),
+    });
+    const staleReadback = await staleReadbackRoutes.POST(request('threads/thread-v2/runs/stream', {
+      assistant_id: 'basic-qa', input: {}, capability_selection: selection,
+    }, 'POST'));
+    assert.equal(staleReadback.status, 503);
+    assert.equal((await staleReadback.json()).code, 'capability_selection_protocol_mismatch');
+    assert.equal(calls.length, 1, '旧摘要回读不得启动平台运行');
+
+    const oldSkill = await routes.POST(request('threads/thread-v2/runs/stream', {
+      assistant_id: 'basic-qa', input: {},
+      capability_selection: {
+        schema_version: 'agent.capability-selection.v1',
+        skill: { mode: 'explicit', skill_id: 'old-skill' },
+        mcp: { mode: 'allowlist', tool_ids: ['mcp:business:query'] },
+        catalog_version: 'catalog-v1',
+      },
+    }, 'POST'));
+    assert.equal(oldSkill.status, 400);
+    assert.equal((await oldSkill.json()).code, 'capability_selection_retired_field');
+
+    for (const field of ['capability_skill_mode', 'capability_skill_id', 'capability_material_version']) {
+      const rejected = await routes.POST(request('threads/thread-v2/runs/stream', {
+        assistant_id: 'basic-qa', input: {}, config: { configurable: { [field]: 'legacy' } },
+      }, 'POST'));
+      assert.equal(rejected.status, 400, `${field} must be rejected before override`);
+      assert.equal((await rejected.json()).code, 'capability_selection_retired_field');
+    }
+
+    const forgedMcpScope = await routes.POST(request('threads/thread-v2/runs/stream', {
+      assistant_id: 'basic-qa', input: {},
+      config: { configurable: { capability_mcp_mode: 'allowlist', capability_tool_ids: ['unapproved:tool'] } },
+    }, 'POST'));
+    assert.equal(forgedMcpScope.status, 400);
+    assert.equal((await forgedMcpScope.json()).code, 'capability_selection_server_owned_field');
+
+    const invalidAuto = await routes.POST(request('threads/thread-v2/runs/stream', {
+      assistant_id: 'basic-qa', input: {},
+      capability_selection: {
+        schema_version: 'agent.capability-selection.v2',
+        mcp: { mode: 'auto', tool_ids: ['mcp:business:query'] },
+        catalog_version: null,
+      },
+    }, 'POST'));
+    assert.equal(invalidAuto.status, 400);
+    assert.equal((await invalidAuto.json()).code, 'capability_selection_invalid');
+    assert.equal(admissions.length, 1, '拒绝的选择不得到达台账受理');
+    assert.equal(calls.length, 1, '拒绝的选择不得创建平台运行');
   } finally {
     global.fetch = previous;
     if (oldBase === undefined) delete process.env.LANGGRAPH_API_URL; else process.env.LANGGRAPH_API_URL = oldBase;
@@ -691,7 +797,7 @@ test('官方 interrupt 的权威状态确认本次已停止执行，不冒充业
 });
 
 
-test('基础问答提交不携带技能/MCP选择，统一由服务端自动路由', async () => {
+test('基础问答聊天不合成旧 Skill 选择协议', async () => {
   const f = fixture();
   const work = f.useChatStore.getState().sendMessage('问题', 'fast');
   await tick();
@@ -699,16 +805,10 @@ test('基础问答提交不携带技能/MCP选择，统一由服务端自动路�
   assert.ok(ctx && ctx.submissionKey);
   assert.equal('capabilitySelection' in ctx, false);
   assert.equal(ctx.operationKind, 'initial');
+  assert.equal('capability_selection' in f.streams[0].config, false);
+  assert.equal('capability_skill_mode' in f.streams[0].config.configurable, false);
   f.streams[0].wait.resolve();
   await work;
-});
-
-test('确认回读不再向前端暴露能力选择，自动路由状态由服务端保存', async () => {
-  const f = fixture();
-  const work = f.useChatStore.getState().sendMessage('问题', 'fast'); await tick();
-  f.streams[0].handlers.onRun('run');
-  f.streams[0].wait.resolve(); await work;
-  assert.equal(f.acceptedSnapshots.length, 0);
 });
 
 test('停止首条 metadata 丢失后按本次提交键找回已 interrupted 的运行', async()=>{

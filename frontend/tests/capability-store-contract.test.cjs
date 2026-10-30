@@ -9,7 +9,7 @@ const tick = () => new Promise(setImmediate);
 const ok = (body) => ({ ok: true, status: 200, json: async () => body });
 const defer = () => { let resolve; const promise = new Promise((r) => (resolve = r)); return { promise, resolve }; };
 
-function loadStore() {
+function loadCapabilityModule() {
   const result = swc.transformSync(
     fs.readFileSync(path.join(root, 'lib/capability-store.ts'), 'utf8'),
     {
@@ -24,26 +24,42 @@ function loadStore() {
     throw new Error(`Unmocked dependency ${name}`);
   };
   new Function('require', 'module', 'exports', result.code)(localRequire, module, module.exports);
-  return module.exports.useCapabilityStore;
+  return module.exports;
 }
 
-test('默认草稿为自动模式，toPayload 输出规范标准 agent.capability-selection.v1', () => {
+function loadStore() {
+  return loadCapabilityModule().useCapabilityStore;
+}
+
+function loadDigest() {
+  const result = swc.transformSync(
+    fs.readFileSync(path.join(root, 'lib/digest.ts'), 'utf8'),
+    {
+      filename: 'digest.ts',
+      jsc: { parser: { syntax: 'typescript' }, target: 'es2022' },
+      module: { type: 'commonjs' },
+    }
+  );
+  const module = { exports: {} };
+  new Function('require', 'module', 'exports', result.code)(require, module, module.exports);
+  return module.exports;
+}
+
+test('默认草稿只保留 MCP 自动选择并输出 agent.capability-selection.v2', () => {
   const useStore = loadStore();
   const state = useStore.getState();
-  assert.equal(state.selection.skillMode, 'auto');
-  assert.equal(state.selection.selectedSkillId, null);
   assert.equal(state.selection.mcpMode, 'auto');
   assert.deepEqual(state.selection.selectedToolIds, []);
+  assert.equal('setSkillMode' in state, false);
 
   const payload = state.toPayload();
-  assert.equal(payload.schema_version, 'agent.capability-selection.v1');
-  assert.equal(payload.selection_source, 'automatic');
-  assert.deepEqual(payload.skill, { mode: 'auto', skill_id: null });
+  assert.equal(payload.schema_version, 'agent.capability-selection.v2');
   assert.deepEqual(payload.mcp, { mode: 'auto', tool_ids: [] });
   assert.equal(payload.catalog_version, null);
+  assert.deepEqual(Object.keys(payload).sort(), ['catalog_version', 'mcp', 'schema_version']);
 });
 
-test('用户显式选择 Skill 与 MCP 工具列表，toPayload 标注 user_explicit 并按字母序去重', () => {
+test('MCP allowlist 只发送用户选择的工具并按字母序去重', () => {
   const useStore = loadStore();
   useStore.setState({
     catalog: {
@@ -59,22 +75,19 @@ test('用户显式选择 Skill 与 MCP 工具列表，toPayload 标注 user_expl
     },
   });
 
-  useStore.getState().setSkillMode('explicit', 'air-quality-basic-query');
   useStore.getState().setMcpMode('allowlist', ['tool_z', 'tool_a', 'tool_z']);
 
   const payload = useStore.getState().toPayload();
-  assert.equal(payload.selection_source, 'user_explicit');
   assert.equal(payload.catalog_version, 'cat-20261015-v1');
-  assert.deepEqual(payload.skill, { mode: 'explicit', skill_id: 'air-quality-basic-query' });
   assert.equal(payload.mcp.mode, 'allowlist');
   assert.deepEqual(payload.mcp.tool_ids, ['tool_a', 'tool_z']); // 规范排序与去重
+  assert.deepEqual(Object.keys(payload).sort(), ['catalog_version', 'mcp', 'schema_version']);
 });
 
 test('选择 MCP allowlist 空集代表禁用 MCP，toggleTool 可添加与移除工具', () => {
   const useStore = loadStore();
   useStore.getState().setMcpMode('allowlist', []);
   let payload = useStore.getState().toPayload();
-  assert.equal(payload.selection_source, 'user_explicit');
   assert.deepEqual(payload.mcp, { mode: 'allowlist', tool_ids: [] });
 
   useStore.getState().toggleTool('srv:tool1');
@@ -86,17 +99,21 @@ test('选择 MCP allowlist 空集代表禁用 MCP，toggleTool 可添加与移�
   assert.equal(useStore.getState().selection.mcpMode, 'allowlist'); // 移除后仍保留为已选模式空集（禁用）
 });
 
+test('MCP auto 模式不携带工具范围，allowlist 空集代表不允许调用任何 MCP 工具', () => {
+  const useStore = loadStore();
+  useStore.getState().setMcpMode('allowlist', []);
+  assert.deepEqual(useStore.getState().toPayload().mcp, { mode: 'allowlist', tool_ids: [] });
+  useStore.getState().setMcpMode('auto', ['must-not-leak']);
+  assert.deepEqual(useStore.getState().toPayload().mcp, { mode: 'auto', tool_ids: [] });
+});
+
 test('切换图或租户时，旧草稿被清空重置为默认，且目录异步加载有 loading/error 状态', async (t) => {
   const originalFetch = global.fetch;
   t.after(() => { global.fetch = originalFetch; });
 
   const useStore = loadStore();
-  useStore.getState().setSkillMode('explicit', 'some-skill');
-  assert.equal(useStore.getState().selection.skillMode, 'explicit');
-
   useStore.getState().clearForScopeSwitch('data-analysis', 'tenant-b');
-  assert.equal(useStore.getState().selection.skillMode, 'auto');
-  assert.equal(useStore.getState().selection.selectedSkillId, null);
+  assert.deepEqual(useStore.getState().selection, { mcpMode: 'auto', selectedToolIds: [] });
   assert.equal(useStore.getState().catalog, null);
 
   // 模拟目录加载
@@ -191,4 +208,47 @@ test('目录分页完整合并，版本变化时拒绝拼接', async (t) => {
   await useStore.getState().fetchCatalog('basic-qa', 'tenant-a');
   assert.match(useStore.getState().catalogError, /目录已变化/);
   assert.equal(useStore.getState().catalog.catalog_version, 'cat-current');
+});
+
+test('能力选择摘要 v3 只哈希 graph_id、MCP 模式与规范工具范围', () => {
+  const { computeCanonicalSelectionDigest } = loadDigest();
+  const { createHash } = require('node:crypto');
+  const selection = {
+    schema_version: 'agent.capability-selection.v2',
+    mcp: { mode: 'allowlist', tool_ids: ['tool_z', 'tool_a', 'tool_z'] },
+    catalog_version: 'catalog-v1',
+  };
+  const digest = computeCanonicalSelectionDigest('basic-qa', selection);
+  const canonical = JSON.stringify({ graph_id: 'basic-qa', mcp_mode: 'allowlist', tool_ids: ['tool_a', 'tool_z'] });
+  assert.equal(digest, createHash('sha256').update(canonical).digest('hex'));
+  assert.equal(digest, computeCanonicalSelectionDigest('basic-qa', { ...selection, catalog_version: 'catalog-v2' }));
+  assert.notEqual(digest, computeCanonicalSelectionDigest('intelligent-tracing', selection));
+  assert.throws(() => computeCanonicalSelectionDigest('basic-qa', {
+    ...selection,
+    skill: { mode: 'explicit', skill_id: 'old-skill' },
+  }), /已撤回的 Skill 字段/);
+});
+
+test('只回读 v2/digest v3 的 MCP 受理快照，拒绝旧 Skill 字段和旧摘要版本', () => {
+  const { acceptedSnapshot } = loadCapabilityModule();
+  const snapshot = {
+    selection_id: 'selection-1',
+    selection_digest: 'a'.repeat(64),
+    digest_version: 3,
+    selection_status: 'collected',
+    schema_version: 'agent.capability-selection.v2',
+    mcp: { mode: 'allowlist', tool_ids: ['tool_z', 'tool_a', 'tool_z'] },
+    catalog_version: 'catalog-v2',
+    selection_source: 'user',
+    validation_time: '2026-10-30T00:00:00Z',
+  };
+  const accepted = acceptedSnapshot(snapshot);
+  assert.ok(accepted);
+  assert.equal(accepted.selection_id, 'selection-1');
+  assert.equal(accepted.selection_digest, 'a'.repeat(64));
+  assert.deepEqual(accepted.mcp, { mode: 'allowlist', tool_ids: ['tool_a', 'tool_z'] });
+  assert.equal('skill_mode' in accepted, false);
+  assert.equal(acceptedSnapshot({ ...snapshot, skill_id: 'old-skill' }), null);
+  assert.equal(acceptedSnapshot({ ...snapshot, digest_version: 2 }), null);
+  assert.equal(acceptedSnapshot({ ...snapshot, id: 'legacy-id', selection_id: undefined }).selection_id, 'legacy-id');
 });

@@ -1,6 +1,6 @@
 """实测本地保护开销（至少 35 样本 × 2 轮 + 5 次预热）、全路径受理开销及目录故障上界.
 
-验收项 A24 / 任务 7.2 / 审计项 R10:
+验收项 A24 / 审计项 R10:
 - 本地保护开销至少 35 样本 × 2 轮 (P50/P95/Mean/Delta P95)
 - 全路径受理与调用保护真实开销（含 HTTP、身份上下文、材料校验、v2 摘要比对、原子持久化与事实发射）
 - 实测故障上界与错误率（无常量填充）
@@ -32,7 +32,7 @@ from common.capabilities import (
     discover_authorized_mcp_catalog,
     filter_capability_mcp_tools,
     list_graph_skills,
-    validate_skill_selection,
+    calculate_skill_material_version,
 )
 
 
@@ -109,9 +109,9 @@ def run_full_benchmark():
     p50_auto_1, p95_auto_1, mean_auto_1, _ = measure_times(
         lambda: list_graph_skills("basic-qa"), 35, 5
     )
-    p50_exp_1, p95_exp_1, mean_exp_1, _ = measure_times(
-        lambda: validate_skill_selection(
-            "basic-qa", "skill:basic-qa:air-quality-basic-query"
+    p50_material_1, p95_material_1, mean_material_1, _ = measure_times(
+        lambda: calculate_skill_material_version(
+            Path(__file__).resolve().parents[1] / "src/basic_qa/skills/air-quality-basic-query"
         ),
         35,
         5,
@@ -121,9 +121,9 @@ def run_full_benchmark():
     p50_auto_2, p95_auto_2, mean_auto_2, _ = measure_times(
         lambda: list_graph_skills("basic-qa"), 35, 5
     )
-    p50_exp_2, p95_exp_2, mean_exp_2, _ = measure_times(
-        lambda: validate_skill_selection(
-            "basic-qa", "skill:basic-qa:air-quality-basic-query"
+    p50_material_2, p95_material_2, mean_material_2, _ = measure_times(
+        lambda: calculate_skill_material_version(
+            Path(__file__).resolve().parents[1] / "src/basic_qa/skills/air-quality-basic-query"
         ),
         35,
         5,
@@ -147,8 +147,8 @@ def run_full_benchmark():
         lambda: filter_capability_mcp_tools(all_tools, cfg), 35, 5
     )
 
-    delta_p95_r1 = p95_exp_1 - p95_auto_1
-    delta_p95_r2 = p95_exp_2 - p95_auto_2
+    delta_p95_r1 = p95_material_1 - p95_auto_1
+    delta_p95_r2 = p95_material_2 - p95_auto_2
 
     # 2. 实测目录故障上界与限时
     fault_bounds_result = asyncio.run(test_directory_fault_bounds())
@@ -183,7 +183,7 @@ def run_full_benchmark():
         "threshold": "本地及受理保护新增 P95 ≤ 50ms",
         "external_wait_seconds": 0.0,
         "local_helper_overhead": {
-            "description": "本地内存/文件层 helper 开销（list_graph_skills, validate_skill_selection, filter_capability_mcp_tools）",
+            "description": "本地内存/文件层 helper 开销（list_graph_skills, calculate_skill_material_version, filter_capability_mcp_tools）",
             "rounds": [
                 {
                     "round": 1,
@@ -193,11 +193,11 @@ def run_full_benchmark():
                         "p95": round(p95_auto_1, 4),
                         "mean": round(mean_auto_1, 4),
                     },
-                    "explicit_protected_ms": {
+                    "material_protected_ms": {
                         "samples": 35,
-                        "p50": round(p50_exp_1, 4),
-                        "p95": round(p95_exp_1, 4),
-                        "mean": round(mean_exp_1, 4),
+                        "p50": round(p50_material_1, 4),
+                        "p95": round(p95_material_1, 4),
+                        "mean": round(mean_material_1, 4),
                     },
                     "tool_filtering_ms": {
                         "samples": 35,
@@ -215,11 +215,11 @@ def run_full_benchmark():
                         "p95": round(p95_auto_2, 4),
                         "mean": round(mean_auto_2, 4),
                     },
-                    "explicit_protected_ms": {
+                    "material_protected_ms": {
                         "samples": 35,
-                        "p50": round(p50_exp_2, 4),
-                        "p95": round(p95_exp_2, 4),
-                        "mean": round(mean_exp_2, 4),
+                        "p50": round(p50_material_2, 4),
+                        "p95": round(p95_material_2, 4),
+                        "mean": round(mean_material_2, 4),
                     },
                     "tool_filtering_ms": {
                         "samples": 35,

@@ -1,15 +1,15 @@
 ## MODIFIED Requirements
 
 ### Requirement: SKILL.md 总纲自动注入
-每个Skill SHALL 包含SKILL.md总纲。Basic QA SHALL 从本图登记目录向模型提供稳定ID、名称、受限简介和材料版本，按需加载正文并在会话中复用；不自动注入全部正文，不要求使用SkillsMiddleware。使用该中间件的其他代理保留按配置目录扫描frontmatter并注入简介的机制。
+每个Skill SHALL 包含SKILL.md总纲。Basic QA SHALL 将登记目录保留在服务端，仅通过 search_skills 向模型返回最多五个候选的稳定 ID、名称、简介和材料版本，选择后按需加载正文并在会话中复用；初始提示 MUST NOT 注入全量目录或全部正文，不要求使用 SkillsMiddleware。使用该中间件的其他代理保留按配置目录扫描frontmatter并注入简介的机制。
 
 #### Scenario: SkillsMiddleware 加载 Skill 元数据
 - **WHEN** 使用SkillsMiddleware的代理指定技能来源目录
 - **THEN** 提取各SKILL.md的name和description形成目录；该机制不作为Basic QA必须迁移框架的要求
 
-#### Scenario: Skill 元数据列表注入格式
-- **WHEN** 某代理发现两个可用Skill
-- **THEN** 提供两个能力简介；Basic QA以稳定ID和版本引用材料，不向模型开放任意文件路径
+#### Scenario: 大目录按需发现
+- **WHEN** Basic QA 服务端登记 90 个可用 Skill，模型尚未搜索或加载
+- **THEN** 实际模型请求不含这 90 项目录；search_skills 仅返回至多五项候选，load_skill 使用候选 ID 与版本，不开放任意文件路径
 
 #### Scenario: 任意轮次按需加载
 - **WHEN** Basic QA在第十轮才首次需要某项预设能力

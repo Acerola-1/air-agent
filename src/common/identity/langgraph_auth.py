@@ -1,4 +1,4 @@
-"""LangGraph 原生 Auth：票据认证 + 资源级授权（任务 5.1/5.2/5.5）.
+"""LangGraph 原生 Auth：票据认证 + 资源级授权.
 
 安全模型：
 - `@auth.authenticate` 校验 admin API 签发的运行票据（签名/受众/时效），随后
@@ -56,7 +56,7 @@ logger = logging.getLogger(__name__)
 _TRUSTED_METADATA_KEYS = ("tenant_id", "user_id", "membership_id", "session_id")
 
 
-# ------------------------------------------------------- 平台可信执行图解析（F03）
+# ------------------------------------------------------- 平台可信执行图解析
 
 _GRAPH_NAMES_CACHE: tuple[str, ...] | None = None
 
@@ -116,7 +116,7 @@ def resolve_executing_graph(assistant_id: str) -> str:
 
 
 def _migration_ctx(claims) -> dict[str, Any]:  # noqa: ANN001 - mt-v1 claims
-    """R06 受限迁移上下文：只允许对票据绑定的单个线程更新可信 metadata 键."""
+    """受限迁移上下文：只允许对票据绑定的单个线程更新可信 metadata 键."""
     return {
         "identity": claims.user_id,
         "display_name": "thread-metadata-migration",
@@ -192,7 +192,7 @@ def _payload_value(value: Any, key: str) -> str:  # noqa: ANN401
 def _payload_values(value: Any, key: str) -> list[str]:  # noqa: ANN401
     """按 metadata / kwargs.config.configurable / 顶层 config 取**全部**声明值.
 
-    F03 需要检出"metadata 与 config 自报不一致"的形态，因此不能只取首个命中值。
+    需要检出"metadata 与 config 自报不一致"的形态，因此不能只取首个命中值。
     去重并保持出现顺序；空值忽略。
     """
     if not isinstance(value, dict):
@@ -220,19 +220,21 @@ def _payload_values(value: Any, key: str) -> list[str]:  # noqa: ANN401
 
 
 def assert_capability_payload_matches(value: dict, snapshot: dict) -> None:
-    """在消耗启动权之前拒绝显式声明与受理快照冲突，不能仅靠覆盖载荷纠正."""
+    """拒绝已撤回的 Skill 选择字段和与受理快照冲突的声明."""
+    if snapshot.get("digest_version") != 3:
+        raise Auth.exceptions.HTTPException(
+            status_code=409,
+            detail="原受理选择协议已撤回，请发起新请求",
+        )
     expected = {
         "capability_selection_id": str(snapshot["id"]),
         "capability_selection_digest": str(snapshot["selection_digest"]),
-        "capability_skill_mode": snapshot.get("skill_mode") or "auto",
-        "capability_skill_id": snapshot.get("skill_id"),
         "capability_mcp_mode": snapshot.get("mcp_mode") or "auto",
         "capability_tool_ids": list(snapshot.get("tool_ids") or []),
         "capability_catalog_version": snapshot.get("catalog_version"),
-        "capability_material_version": snapshot.get("material_version"),
         "capability_selection_source": snapshot.get("selection_source") or "automatic",
     }
-    candidates = [value.get("metadata")]
+    candidates = [value, value.get("metadata")]
     kwargs = value.get("kwargs")
     for config in (
         kwargs.get("config") if isinstance(kwargs, dict) else None,
@@ -243,6 +245,18 @@ def assert_capability_payload_matches(value: dict, snapshot: dict) -> None:
     for fields in candidates:
         if not isinstance(fields, dict):
             continue
+        if any(
+            key in fields
+            for key in (
+                "capability_skill_mode",
+                "capability_skill_id",
+                "capability_material_version",
+            )
+        ):
+            raise Auth.exceptions.HTTPException(
+                status_code=409,
+                detail="事先指定 Skill 的协议已撤回，请移除旧选择字段",
+            )
         for key, accepted in expected.items():
             if key not in fields:
                 continue
@@ -410,8 +424,8 @@ def _pin_ledger_ids(
     """把服务端裁决过的关联写入 metadata 与 config.configurable（覆盖客户端自报值）.
 
     `ledger_graph_id` 固定为**平台可信映射解析出的实际执行图**，而不是客户端自报值：
-    图内收尾节点的换图比对因此以事实为基准（F03）。
-    同时注入权威的能力选择快照字段（任务 4.1），执行层仅消费服务端注入的值。
+    图内收尾节点的换图比对因此以事实为基准。
+    同时注入权威的能力选择快照字段，执行层仅消费服务端注入的值。
     """
     pinned: dict[str, Any] = {
         "ledger_request_id": request_id,
@@ -427,19 +441,12 @@ def _pin_ledger_ids(
         pinned["capability_selection_digest"] = str(
             capability_snapshot["selection_digest"]
         )
-        pinned["capability_skill_mode"] = str(
-            capability_snapshot.get("skill_mode") or "auto"
-        )
-        pinned["capability_skill_id"] = capability_snapshot.get("skill_id")
         pinned["capability_mcp_mode"] = str(
             capability_snapshot.get("mcp_mode") or "auto"
         )
         pinned["capability_tool_ids"] = list(capability_snapshot.get("tool_ids") or [])
         pinned["capability_catalog_version"] = capability_snapshot.get(
             "catalog_version"
-        )
-        pinned["capability_material_version"] = capability_snapshot.get(
-            "material_version"
         )
         pinned["capability_selection_source"] = str(
             capability_snapshot.get("selection_source") or "automatic"
@@ -555,7 +562,7 @@ async def authenticate(request):  # noqa: ANN001 - 平台注入 starlette Reques
         keys = parse_keys(os.environ.get("RUNTIME_TICKET_KEYS", ""))
         claims = verify_ticket(token, keys, expected_audience=audience)
     except TicketError:
-        # R06：受限迁移票据（mt-v1）——只授权单线程 metadata 窄更新，其余资源
+        # 受限迁移票据（mt-v1）——只授权单线程 metadata 窄更新，其余资源
         # 在资源钩子处一律拒绝；伪造/过期/错受众同样 401。
         migration_audience = os.environ.get(
             "RUNTIME_TICKET_MIGRATION_AUDIENCE", "langgraph-migration"
@@ -715,7 +722,7 @@ async def authenticate(request):  # noqa: ANN001 - 平台注入 starlette Reques
         "tenant_id": claims.tenant_id,
         "membership_id": claims.membership_id,
         "session_id": claims.session_id,
-        # R04：入站核验时的修订快照，运行中每次外呼与实时状态比较
+        # 入站核验时的修订快照，运行中每次外呼与实时状态比较
         "session_ctx_version": state.session_ctx_version,
         "user_auth_revision": state.user_auth_revision,
         "tenant_auth_revision": state.tenant_auth_revision,
@@ -763,7 +770,7 @@ async def on_thread_create(
         raise Auth.exceptions.HTTPException(
             status_code=400, detail="线程标识非法"
         ) from exc
-    # R01：只允许严格创建。do_nothing/update 会在"线程已存在"时静默吸收平台
+    # 只允许严格创建。do_nothing/update 会在"线程已存在"时静默吸收平台
     # 既有对象，使未知历史归属可被认领；平台层 409 与本侧认领协议共同裁决。
     if_exists = value.get("if_exists")
     if if_exists is not None and str(if_exists) != "raise":
@@ -799,7 +806,7 @@ async def on_thread_read(
 ):
     """线程读取：按归属表放行本人本企业的线程.
 
-    F05：服务级只读校准主体（rs-v1）按**票据绑定的租户**放行（可再以线程清单收窄）——
+    服务级只读校准主体（rs-v1）按**票据绑定的租户**放行（可再以线程清单收窄）——
     只读运行状态，不恢复任何业务权限；其它一切动作仍由各自钩子拒绝。
     """
     _deny_migration(ctx)
@@ -863,7 +870,7 @@ async def on_thread_update(
     ids = _claims_from_ctx(ctx)
     thread_id = str(value.get("thread_id") or "")
     if _is_migration_ctx(ctx):
-        # R06：受限迁移路径——票据绑定单线程，且该线程必须已有迁移台账登记的
+        # 受限迁移路径——票据绑定单线程，且该线程必须已有迁移台账登记的
         # 归属行；平台按受支持的 PATCH 语义写 metadata，脚本不再触碰私有表。
         mig_thread = str(_user_attr(ctx, "migration_thread_id", "") or "")
         if not mig_thread or mig_thread != thread_id:
@@ -915,7 +922,7 @@ async def on_thread_delete(
         raise Auth.exceptions.HTTPException(status_code=403, detail="无权删除此会话")
     from common.identity.db import delete_thread_ownership
 
-    # F04：直连原生删除同样必须先落**持久删除标记**（立即禁读/禁新写、排入受限清理），
+    # 直连原生删除同样必须先落**持久删除标记**（立即禁读/禁新写、排入受限清理），
     # 否则"删了却仍能读/继续写"。标记失败则拒绝删除（避免删了但没登记）。
     scope = _ledger_scope(ids)
     if scope is not None:
@@ -969,7 +976,7 @@ async def on_thread_create_run(
         raise Auth.exceptions.HTTPException(status_code=403, detail="无权在此会话运行")
     await _validate_thread_knowledge(ctx, thread_id)
 
-    # F04：**已删除会话不得再产生运行**。删除是永久语义（存在标记即已删除，清理完成
+    # **已删除会话不得再产生运行**。删除是永久语义（存在标记即已删除，清理完成
     # 也不放行），新受理在管理端就被拒；这里封住"旧预留 + 直连原生"的旁路。
     deletion_scope = _ledger_scope(ids)
     if deletion_scope is not None:
@@ -984,7 +991,7 @@ async def on_thread_create_run(
                 status_code=403, detail="该会话已删除，不得再创建运行"
             )
 
-    # 台账受理预留校验 + 启动权原子裁决（change add-agent-event-ledger，R01 修复）。
+    # 台账受理预留校验 + 启动权原子裁决。
     # 覆盖流式/非流式与恢复路径——任何获准的业务运行都必须先经可信台账受理，
     # 否则会被记成"未统计的获准业务运行"。除"预留真实存在且归属本人本线程"外，
     # 还要求：
@@ -1005,10 +1012,8 @@ async def on_thread_create_run(
         raise Auth.exceptions.HTTPException(
             status_code=403, detail="运行创建缺少可信身份"
         )
-    # F03：实际执行图必须由**平台可信映射**解析，且在任何业务节点执行前判定。
-    # 早先实现只信任客户端自报的 `ledger_graph_id`，导致"预留 basic-qa + 自报
-    # basic-qa + assistant_id 实为 data-analysis"被 200 受理并创建运行，
-    # 结束时的图名比对无法阻止已经发生的模型/工具副作用。现在：
+    # 实际执行图必须由**平台可信映射**解析，且在任何业务节点执行前判定。
+    # 仅在结束时比对图名无法阻止模型/工具副作用；创建运行前必须满足：
     #   1) `actual` 由 assistant_id 经平台图注册表解析（客户端不可写入）；
     #   2) 预留图必须是 `actual`，否则 409；
     #   3) 客户端所有自报图（metadata 与 config 分别检查）不得与 `actual` 冲突，
@@ -1071,7 +1076,7 @@ async def on_thread_create_run(
     declared_kind = _ledger_operation_kind(value)
     content = _run_input_content(value)
 
-    # 任务 4.1：核对 metadata、kwargs.config 与顶层 config 里的能力选择声明（防多层不一致与伪造）
+    # 核对 metadata、kwargs.config 与顶层 config 里的能力选择声明（防多层不一致与伪造）
     declared_sel_ids = _payload_values(value, "capability_selection_id")
     if len(declared_sel_ids) > 1:
         raise Auth.exceptions.HTTPException(
@@ -1085,7 +1090,7 @@ async def on_thread_create_run(
             detail="运行请求在 metadata 与 config 中声明了冲突的 capability_selection_digest，拒绝创建",
         )
 
-    # 任务 4.1：从数据库读取已受理的不可变能力选择快照
+    # 从数据库读取已受理的不可变能力选择快照
     from common.event_ledger.store import fetch_capability_selection_snapshot
 
     snapshot = None
@@ -1102,6 +1107,14 @@ async def on_thread_create_run(
             },
         ) from exc
 
+    if snapshot is None:
+        raise Auth.exceptions.HTTPException(
+            status_code=409,
+            detail={
+                "code": "capability_selection_missing",
+                "error": "缺少当前协议的受理快照，请重新发起请求",
+            },
+        )
     if snapshot is not None:
         assert_capability_payload_matches(value, snapshot)
         if str(snapshot.get("graph_id") or "") != actual_graph:
@@ -1125,27 +1138,8 @@ async def on_thread_create_run(
                 detail="声明的 capability_selection_digest 与台账已受理快照不一致，拒绝创建",
             )
 
-        # 任务 4.5：恢复 (resume) 保护——必须继承原选择与材料，变更或授权撤销即阻断
+        # 恢复 (resume) 保护——必须继承原选择与材料，变更或授权撤销即阻断
         if declared_kind == "resume":
-            if snapshot.get("skill_mode") == "explicit" and snapshot.get("skill_id"):
-                from common.capabilities import (
-                    GRAPH_SKILLS_DIRS,
-                    calculate_skill_material_version,
-                )
-
-                skill_slug = snapshot["skill_id"].split(":")[-1]
-                base_dir = GRAPH_SKILLS_DIRS.get(actual_graph)
-                skill_dir = base_dir / skill_slug if base_dir else None
-                current_mat = (
-                    calculate_skill_material_version(skill_dir)
-                    if skill_dir
-                    else "sha256:missing"
-                )
-                if current_mat != snapshot.get("material_version"):
-                    raise Auth.exceptions.HTTPException(
-                        status_code=409,
-                        detail="恢复执行失败：所选技能的规则材料版本已发生变更，请重新发起请求",
-                    )
             if snapshot.get("mcp_mode") == "allowlist" and snapshot.get("tool_ids"):
                 from common.mcp_authorization import (
                     McpAuthorizationError,
@@ -1345,7 +1339,7 @@ async def _owner_or_deny(
         # 未知/跨企业归属一律按不可访问处理（404 语义由资源层体现为拒绝）
         raise Auth.exceptions.HTTPException(status_code=404, detail="会话不可访问")
     if str(owner.get("source") or "") == "native_pending":
-        # R01：认领未确认（平台从未确认创建成功，或试图吸收未知历史线程后
+        # 认领未确认（平台从未确认创建成功，或试图吸收未知历史线程后
         # 创建失败留下的残留行）——该资源仍按未知归属处理，不可读写。
         raise Auth.exceptions.HTTPException(status_code=404, detail="会话不可访问")
     return {"tenant_id": str(owner["tenant_id"]), "user_id": str(owner["user_id"])}

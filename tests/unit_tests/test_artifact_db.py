@@ -1,4 +1,4 @@
-"""归档迁移、租户/用户/线程归属、保留期和处理配额回归（任务 6.2/6.3）."""
+"""归档迁移、租户/用户/线程归属、保留期和处理配额回归."""
 
 from __future__ import annotations
 
@@ -152,9 +152,11 @@ async def test_attempt_and_total_deadline(storage):
 
 @pytest.mark.anyio
 async def test_pg_failure_never_falls_back(storage, monkeypatch):
-    monkeypatch.setenv(
-        "DATABASE_URI", "postgresql://invalid:invalid@127.0.0.1:1/unavailable"
-    )
+    unreachable = "postgresql://invalid:invalid@127.0.0.1:1/unavailable"
+    # 部署环境变量可能指向真实库；逐个覆盖，保证本用例只验证失败关闭。
+    monkeypatch.setenv("DATABASE_URI", unreachable)
+    monkeypatch.setenv("RUNTIME_DATABASE_URI", unreachable)
+    monkeypatch.setenv("MAINTENANCE_DATABASE_URI", unreachable)
     with pytest.raises(Exception):
         await save()
     assert not storage.exists()

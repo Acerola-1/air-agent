@@ -11,3 +11,6 @@
 - 加载后取消没有业务执行事实。模型规划正文、接口没有时间／城市回显或返回文本均不会受到本扩展的回答校验。
 
 字段、动作与类型以event-registry.json的`capability_fact`为源，Agent、admin、TS读取同一规则；生成副本和合法／非法样本已同步。OpenAPI仍为原通用事件结构，没有新增API或正文SSE字段。共享样本、来源反例、台账API和OpenAPI快照分别验证；契约通过不能代替产品整链验收。
+
+
+`capability.selection_accepted` 新事件不再写入 `skill_mode`、`skill_id` 或受理时锁定的 `material_version`。这些字段只在旧事件读取白名单中保留，`skill_mode` 不再是必填项。真实 Skill 搜索／加载的材料版本仍通过能力运行事实记录，不能与已撤回的用户选择混同；新请求协议见 OpenAPI 冻结件。

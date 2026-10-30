@@ -8,6 +8,7 @@
 - 数据分析 `data-analysis` 暂时封存：暂停该图的新功能、专项重构、优化与专项验收，不因历史计划或未完成任务自动继续开发；恢复专项开发需用户明确调整范围。
 - 封存保留 `src/data_analysis/`、Skill、测试、历史证据、菜单约束及 `langgraph.json` 注册；这是开发范围调整，不表示已删除、隐藏或停用运行入口，也不表示历史未完成项已验收。
 - 共享身份、台账、MCP、上下文、前端等改动仍须保持已保留图的兼容与安全。必要的兼容或安全修复可最小范围涉及封存图，并在交付中说明；相关回归不因封存而删除或跳过。
+- Basic QA 新业务能力优先 `search_skills` 发现候选后 `load_skill`；全量 Skill 目录只留服务端，不进入初始系统提示。已撤回事先指定 Skill 及 Skill `auto/explicit` 协议，不得以兼容为由恢复；有效加载引用仍可跨轮复用。
 - Basic QA 当前实施以 `revise-basic-qa-session-capabilities` 为准；旧 `add-basic-qa-conversational-skill-loop` 保留历史状态，不同时应用冲突要求。新版允许多个 Skill 及独立工具跨轮复用，模型按需搜索／加载，优先 Skill、未覆盖部分补工具；不得恢复逐轮清空、单 Skill 限制或接口回显字段门禁。实施／验收／正式发布须分别报告，参见[生命周期说明](docs/testing/bqa-session-capabilities-v2/runtime-design.md)。
 
 ## 正式运行态（始终适用）
@@ -55,6 +56,8 @@
 | `openspec/specs/` | 主规格；`changes/`存活动计划，`changes/archive/`存已关闭阶段 |
 
 所有公开图的实际路径以 `langgraph.json` 为准。Skill目录采用 `SKILL.md` 及可选 `references/fast.md` / `expert.md`；空目录不能算已有业务技能。空气质量日期与等级的历史约定已移至 [领域参考](docs/domain/air-quality-level-reference.md)，涉及计算/规则时必须核对该文档、具体Skill、实现与测试，不能猜补法规边界。
+
+Basic QA 的当前模块职责、实现名称与检查点标识对照见 [架构说明](docs/architecture/basic-qa-graph.md)。
 
 ## 不可回退的边界
 

@@ -603,9 +603,8 @@ async def get_run(
             await session.execute(
                 text(
                     """
-                SELECT s.id::text AS selection_id, s.skill_mode, s.skill_id, s.mcp_mode,
-                       s.tool_ids, s.material_version, s.catalog_version,
-                       s.selection_digest, s.digest_version, s.selection_source,
+                SELECT s.id::text AS selection_id, s.mcp_mode, s.tool_ids, s.catalog_version,
+                       s.selection_digest, s.digest_version,
                        s.validation_time
                 FROM agent_capability_selections s
                 WHERE s.tenant_id = :tenant AND s.attempt_id = :attempt
@@ -674,10 +673,22 @@ async def get_run(
         "traces": [dict(item) for item in traces],
         "capability_selection": (
             {
-                **{
-                    key: (value.isoformat() if isinstance(value, dt.datetime) else value)
-                    for key, value in dict(selection).items()
-                }
+                "selection_status": "collected",
+                "selection_id": selection["selection_id"],
+                "schema_version": "agent.capability-selection.v2",
+                "mcp": {
+                    "mode": selection["mcp_mode"],
+                    "tool_ids": selection["tool_ids"],
+                },
+                "catalog_version": selection["catalog_version"],
+                "selection_digest": selection["selection_digest"],
+                "digest_version": selection["digest_version"],
+                "selection_source": "user_explicit"
+                if selection["mcp_mode"] == "allowlist"
+                else "automatic",
+                "validation_time": selection["validation_time"].isoformat()
+                if isinstance(selection["validation_time"], dt.datetime)
+                else selection["validation_time"],
             }
             if selection
             else {"selection_status": "not_collected"}

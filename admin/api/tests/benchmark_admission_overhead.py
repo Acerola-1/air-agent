@@ -112,7 +112,6 @@ async def run_benchmark():
         )
         await session.commit()
 
-
     account = f"{PREFIX}{suffix}"
     client = await _login(account, tenant_a)
 
@@ -147,8 +146,7 @@ async def run_benchmark():
             "operation_kind": "initial",
             "content": f"基线自动测试问题 {key}",
             "capability_selection": {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "auto"},
+                "schema_version": "agent.capability-selection.v2",
                 "mcp": {"mode": "auto"},
             },
         }
@@ -162,8 +160,7 @@ async def run_benchmark():
             "operation_kind": "initial",
             "content": f"显式受保护测试问题 {key}",
             "capability_selection": {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
+                "schema_version": "agent.capability-selection.v2",
                 "mcp": {"mode": "allowlist", "tool_ids": []},
                 "catalog_version": "v1",
             },
@@ -194,8 +191,7 @@ async def run_benchmark():
             "operation_kind": "initial",
             "content": "故障探针未授权服务",
             "capability_selection": {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
+                "schema_version": "agent.capability-selection.v2",
                 "mcp": {"mode": "allowlist", "tool_ids": ["mcp:unauthorized_ext:query"]},
                 "catalog_version": "v1",
             },
@@ -208,22 +204,21 @@ async def run_benchmark():
             "operation_kind": "initial",
             "content": "故障探针伪造目录版本",
             "capability_selection": {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
+                "schema_version": "agent.capability-selection.v2",
                 "mcp": {"mode": "allowlist", "tool_ids": []},
                 "catalog_version": "not-a-real-catalog-forged",
             },
         },
-        # 3. 不存在技能
+        # 3. 旧 Skill 选择协议被拒绝
         {
             "thread_id": thread_id,
             "submission_key": f"key_fault_noskill_{uuid.uuid4().hex[:4]}",
             "graph_id": "basic-qa",
             "operation_kind": "initial",
-            "content": "故障探针不存在技能",
+            "content": "故障探针旧 Skill 协议",
             "capability_selection": {
                 "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:non_existent_skill_404"},
+                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:retired"},
                 "mcp": {"mode": "allowlist", "tool_ids": []},
                 "catalog_version": "v1",
             },
@@ -236,25 +231,21 @@ async def run_benchmark():
             "operation_kind": "initial",
             "content": "故障探针过期目录",
             "capability_selection": {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
+                "schema_version": "agent.capability-selection.v2",
                 "mcp": {"mode": "allowlist", "tool_ids": []},
                 "catalog_version": "expired",
             },
         },
-        # 5. 跨图技能选择
+        # 5. 旧 Skill 字段即使带合法 MCP，也不能静默降级
         {
             "thread_id": thread_id,
             "submission_key": f"key_fault_crossgraph_{uuid.uuid4().hex[:4]}",
             "graph_id": "basic-qa",
             "operation_kind": "initial",
-            "content": "故障探针跨图技能",
+            "content": "故障探针旧 Skill 字段",
             "capability_selection": {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {
-                    "mode": "explicit",
-                    "skill_id": "skill:basic-qa:air-quality-basic-query",
-                },
+                "schema_version": "agent.capability-selection.v2",
+                "skill": {"mode": "auto"},
                 "mcp": {"mode": "allowlist", "tool_ids": []},
                 "catalog_version": "v1",
             },
@@ -287,27 +278,15 @@ async def run_benchmark():
         await session.execute(
             text("DELETE FROM agent_capability_selections WHERE tenant_id = :t"), t_dict
         )
-        await session.execute(
-            text("DELETE FROM agent_submissions WHERE tenant_id = :t"), t_dict
-        )
-        await session.execute(
-            text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), t_dict
-        )
-        await session.execute(
-            text("DELETE FROM agent_requests WHERE tenant_id = :t"), t_dict
-        )
-        await session.execute(
-            text("DELETE FROM agent_events WHERE tenant_id = :t"), t_dict
-        )
+        await session.execute(text("DELETE FROM agent_submissions WHERE tenant_id = :t"), t_dict)
+        await session.execute(text("DELETE FROM agent_run_attempts WHERE tenant_id = :t"), t_dict)
+        await session.execute(text("DELETE FROM agent_requests WHERE tenant_id = :t"), t_dict)
+        await session.execute(text("DELETE FROM agent_events WHERE tenant_id = :t"), t_dict)
         await session.execute(
             text("DELETE FROM mcp_identity_bindings WHERE tenant_id = :t"), t_dict
         )
-        await session.execute(
-            text("DELETE FROM thread_ownership WHERE tenant_id = :t"), t_dict
-        )
-        await session.execute(
-            text("DELETE FROM tenant_memberships WHERE tenant_id = :t"), t_dict
-        )
+        await session.execute(text("DELETE FROM thread_ownership WHERE tenant_id = :t"), t_dict)
+        await session.execute(text("DELETE FROM tenant_memberships WHERE tenant_id = :t"), t_dict)
         await session.execute(text("DELETE FROM tenants WHERE id = :t"), t_dict)
         await session.execute(text("DELETE FROM users WHERE id = :u"), {"u": str(user_a)})
         await session.commit()

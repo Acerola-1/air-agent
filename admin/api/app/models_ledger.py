@@ -462,10 +462,6 @@ class AgentCapabilitySelection(Base):
             "tenant_id", "submission_id", name="uq_agent_selections_tenant_submission"
         ),
         CheckConstraint(
-            "skill_mode IN ('auto', 'explicit')",
-            name="ck_agent_selections_skill_mode",
-        ),
-        CheckConstraint(
             "mcp_mode IN ('auto', 'allowlist')",
             name="ck_agent_selections_mcp_mode",
         ),
@@ -509,14 +505,13 @@ class AgentCapabilitySelection(Base):
     attempt_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
     submission_id: Mapped[uuid.UUID] = mapped_column(UUIDColumn, nullable=False)
     graph_id: Mapped[str] = mapped_column(Text, nullable=False)
-    skill_mode: Mapped[str] = mapped_column(Text, nullable=False, server_default="auto")
-    skill_id: Mapped[str | None] = mapped_column(Text)
     mcp_mode: Mapped[str] = mapped_column(Text, nullable=False, server_default="auto")
     tool_ids: Mapped[list[str]] = mapped_column(JSONB, nullable=False, server_default="[]")
     catalog_version: Mapped[str | None] = mapped_column(Text)
-    material_version: Mapped[str] = mapped_column(Text, nullable=False)
+    # Upgrade-retained evidence only. Runtime selection, readback, and retry flows never inspect it.
+    retired_skill_selection: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     selection_digest: Mapped[str] = mapped_column(Text, nullable=False)
-    digest_version: Mapped[int] = mapped_column(Integer, nullable=False, server_default="2")
+    digest_version: Mapped[int] = mapped_column(Integer, nullable=False, server_default="3")
     selection_source: Mapped[str] = mapped_column(Text, nullable=False, server_default="automatic")
     validation_time: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[dt.datetime] = mapped_column(DateTime(timezone=True), nullable=False)

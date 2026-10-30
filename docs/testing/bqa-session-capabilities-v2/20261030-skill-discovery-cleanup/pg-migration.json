@@ -1,0 +1,31 @@
+{
+  "created_at": "2026-10-30T11:36:01.557979+00:00",
+  "resource": "task-owned container air-agent-skill-cleanup-1030-a7f2; database skill_cleanup_empty; loopback port 25493",
+  "checks": [
+    {
+      "name": "empty_database_upgrade_from_0030_and_rls_preserved",
+      "passed": true
+    },
+    {
+      "name": "valid_legacy_auto_and_explicit_rows_seeded_with_real_foreign_keys",
+      "passed": true
+    },
+    {
+      "name": "existing_upgrade_archives_skill_fields_without_rewriting_frozen_digests",
+      "passed": true
+    },
+    {
+      "name": "legacy_only_downgrade_restores_exact_original_fields_and_digests",
+      "passed": true
+    },
+    {
+      "name": "new_selection_uses_digest_v3_and_no_retired_skill_choice",
+      "passed": true
+    },
+    {
+      "name": "downgrade_with_v3_data_rejected_without_partial_schema_or_data_changes",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

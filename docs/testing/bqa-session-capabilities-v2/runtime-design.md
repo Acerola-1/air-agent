@@ -2,6 +2,8 @@
 
 Basic QA保留原生LangGraph。会话能力引用、当前attempt及当次实际模型披露分别保存在`bqa_capabilities`、`bqa_turn_key/bqa_turn_digest`及`bqa_disclosure`，不再以新用户消息清空能力。客户端仍只能提交消息或合法resume，不能写这些字段。
 
+代码职责与实现方法／持久化节点ID对照以 [当前架构](../../architecture/basic-qa-graph.md) 为准；本轮修正后行为测试待 DeepSeek 执行。
+
 ## 当前图流程
 
 正常执行为：准备会话 → 准备模型上下文 → 模型决策 ⇄ 工具执行 → 流式最终回答 → 台账收尾。模型决策阶段可以按需搜索／加载 Skill 或独立工具，也可以直接决定资料已足够；搜索不是固定前置步骤。普通交流和复述可以不执行工具，但仍先经过模型决策，再进入最终回答。授权、容量等控制消息可提前结束并收尾。
@@ -41,3 +43,10 @@ Basic QA业务登记从21项扩为冻结的109项已审核查询操作；仍与�
 ## 2026-10-30 执行门槛清理
 
 search／load管理模型上下文，不授予工具权限。执行层不再调用current_material，不读取Skill归属或bqa_capabilities判定是否可执行；只核对服务端当次提供的定义、模型消息／tool_call、schema和真实发送参数。公共身份／业务／连接／不可变选择／删除与逐发送核验继续生效。若已有调用之后仅激活状态改变，当前定义与授权仍有效则继续执行；后续模型请求仍按上下文状态提供定义。未在本次提供定义的猜测调用仍拒绝。实现与计数验证见 [本次清理记录](../graph-module-ownership/20261030-remove-load-execution-gate.md)。
+
+
+## Skill 发现与受理边界
+
+新能力优先 `search_skills`，从至多五项候选中 `load_skill`；首次请求不含完整 Skill 目录、简介或触发词。有效加载引用跨轮复用，休眠引用可重新加载。search/load 管理模型上下文，不授予权限，未覆盖部分继续按需搜索独立工具。
+
+请求使用 `agent.capability-selection.v2`，只保留 MCP 范围和可选目录版本；不再接受 Skill auto/explicit 或事先指定 Skill。旧运行配置字段被拒绝，选择摘要版本升级为 3；历史快照原摘要保留，旧选择不能 retry/resume。新迁移只准备在业务库升级时应用，本次代码修改不代表已升级正式库或部署。

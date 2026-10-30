@@ -489,11 +489,10 @@ export const EVENT_REGISTRY: EventRegistry = {
         "selection_digest",
         "graph_id",
         "submission_id",
-        "skill_mode",
         "mcp_mode",
         "selection_source"
       ],
-      "summary": "用户或默认能力选择已可信受理"
+      "summary": "MCP 范围已可信受理；旧 Skill 选择字段仅用于读取历史事件"
     },
     "runtime.capability": {
       "enabled": true,

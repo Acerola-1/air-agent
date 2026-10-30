@@ -48,9 +48,6 @@ async def test_node_overflow_recovery_sends_at_most_twice(
         from basic_qa.capabilities import projection
 
         monkeypatch.setattr(
-            projection, "basic_qa_skill_catalog", AsyncMock(return_value=[])
-        )
-        monkeypatch.setattr(
             projection, "current_material", AsyncMock(return_value=None)
         )
     target_preparation = preparation if graph == "basic-qa" else data_preparation
@@ -75,7 +72,7 @@ async def test_node_overflow_recovery_sends_at_most_twice(
             AIMessage(content=f"回答{index}", id=f"a{index}"),
         )
     ]
-    call = service.call_model if graph == "basic-qa" else analysis.call_model
+    call = service.plan_tools if graph == "basic-qa" else analysis.call_model
     result = await call(
         {"messages": history, "system_prompt": "规则", "intent": "chitchat"},
         {},

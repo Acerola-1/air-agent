@@ -317,13 +317,30 @@ async def selection_env(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
-async def test_task_3_1_schema_validation(selection_env):
-    """3.1: auto/explicit/空MCP、未知字段、超限20、非法字符、required-tools缺失校验."""
+def test_task_3_1_schema_validation():
+    """v2 只接受 MCP 选择，并明确拒绝旧 Skill 字段与过量工具."""
     # 1. 未知字段被 Pydantic 严格拒绝 (extra="forbid")
     with pytest.raises(ValidationError):
         CapabilitySelectionIn.model_validate(
             {
+                "schema_version": "agent.capability-selection.v2",
+                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:legacy"},
+                "mcp": {"mode": "auto"},
+            }
+        )
+    with pytest.raises(ValidationError):
+        CapabilitySelectionIn.model_validate(
+            {
                 "schema_version": "agent.capability-selection.v1",
+                "skill": {"mode": "auto"},
+                "mcp": {"mode": "auto"},
+            }
+        )
+
+    with pytest.raises(ValidationError):
+        CapabilitySelectionIn.model_validate(
+            {
+                "schema_version": "agent.capability-selection.v2",
                 "unknown_extra": "forbidden",
             }
         )
@@ -333,15 +350,14 @@ async def test_task_3_1_schema_validation(selection_env):
     with pytest.raises(ValidationError):
         CapabilitySelectionIn.model_validate(
             {
-                "schema_version": "agent.capability-selection.v1",
+                "schema_version": "agent.capability-selection.v2",
                 "mcp": {"mode": "allowlist", "tool_ids": too_many_tools},
             }
         )
 
     # 3. 规范化 auto/auto
     norm = ledger_service.normalize_capability_selection(None)
-    assert norm["skill"]["mode"] == "auto"
-    assert norm["skill"]["skill_id"] is None
+    assert norm["schema_version"] == "agent.capability-selection.v2"
     assert norm["mcp"]["mode"] == "auto"
     assert norm["mcp"]["tool_ids"] == []
     assert norm["selection_source"] == "automatic"
@@ -349,7 +365,7 @@ async def test_task_3_1_schema_validation(selection_env):
     # 4. 空 MCP allowlist 允许（表示 0 MCP 工具）
     norm_empty = ledger_service.normalize_capability_selection(
         {
-            "schema_version": "agent.capability-selection.v1",
+            "schema_version": "agent.capability-selection.v2",
             "mcp": {"mode": "allowlist", "tool_ids": []},
         }
     )
@@ -357,91 +373,83 @@ async def test_task_3_1_schema_validation(selection_env):
     assert norm_empty["mcp"]["tool_ids"] == []
     assert norm_empty["selection_source"] == "user_explicit"
 
-    # 5. 路径遍历在 skill_id 或 tool_id 中被拒绝
+    # 5. MCP 工具标识仍拒绝路径穿越
     with pytest.raises(ledger_service.CapabilityValidationError):
         ledger_service.normalize_capability_selection(
             {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:../../etc/passwd"},
-            }
-        )
-
-    with pytest.raises(ledger_service.CapabilityValidationError):
-        ledger_service.normalize_capability_selection(
-            {
-                "schema_version": "agent.capability-selection.v1",
+                "schema_version": "agent.capability-selection.v2",
                 "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:../evil"]},
             }
         )
 
 
-async def test_task_3_1_allowed_tools_non_mandatory_and_required_tools_conflict(selection_env):
-    """3.1: allowed-tools 非必需样本通过，明确 required-tools 缺失抛 422."""
-    env = selection_env
-    thread_id = str(uuid.uuid4())
-    await _grant_thread(env["tenant_a"], env["user_a"], thread_id)
-    client = await _login(env["account_a"], env["tenant_a"])
+def test_v3_selection_digest_and_v2_submission_digest_boundaries():
+    selection_digest = ledger_service.canonical_selection_digest(
+        graph_id="basic-qa",
+        mcp_mode="allowlist",
+        tool_ids=["mcp:ipp:stats", "mcp:ipp:query", "mcp:ipp:query"],
+    )
+    expected_selection_digest = ledger_service.canonical_digest(
+        {
+            "graph_id": "basic-qa",
+            "mcp_mode": "allowlist",
+            "tool_ids": ["mcp:ipp:query", "mcp:ipp:stats"],
+        }
+    )
+    assert selection_digest == expected_selection_digest
 
-    try:
-        # 1. 显式选择 air-quality-basic-query，MCP 为空（仅 allowed-tools 无必需工具，应成功）
-        from common.capabilities import (
-            compute_catalog_version,
-            discover_authorized_mcp_catalog,
-            list_graph_skills,
-        )
-        from common.identity.runtime import RuntimeIdentity
+    legacy_digest = ledger_service.canonical_digest(
+        {
+            "graph_id": "basic-qa",
+            "material_version": "auto",
+            "mcp_mode": "allowlist",
+            "skill_id": None,
+            "skill_mode": "auto",
+            "tool_ids": ["mcp:ipp:query", "mcp:ipp:stats"],
+        }
+    )
+    assert selection_digest != legacy_digest
 
-        r_id = RuntimeIdentity(
-            user_id=str(env["user_a"]),
-            tenant_id=str(env["tenant_a"]),
-            membership_id=str(env["mem_a1"]),
-            session_id="",
-            permissions=frozenset({"agent:business:basic-qa:use"}),
-            business_code="basic-qa",
-            business_policy_version="2026-10-19.1",
-            business_permission="agent:business:basic-qa:use",
-            business_graph="basic-qa",
-        )
-        curr_mcp_services, curr_mcp_tools = await discover_authorized_mcp_catalog(
-            r_id, business_code="basic-qa"
-        )
-        cat_ver = compute_catalog_version(
-            graph_id="basic-qa",
-            identity=r_id,
-            auth_revisions={"tenant": 1, "user": 1, "membership": 1},
-            skills=list_graph_skills("basic-qa"),
-            mcp_services=curr_mcp_services,
-            tools=curr_mcp_tools,
-        )
-        payload = {
-            "thread_id": thread_id,
-            "submission_key": "k_allowed_non_mandatory_01",
+    expected_submission_digest = ledger_service.canonical_digest(
+        {
+            "capability_selection_digest": selection_digest,
+            "content": "question",
             "graph_id": "basic-qa",
             "operation_kind": "initial",
-            "content": "测试 allowed-tools 非必需",
-            "capability_selection": {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "explicit", "skill_id": "skill:basic-qa:air-quality-basic-query"},
-                "mcp": {"mode": "allowlist", "tool_ids": []},
-                "catalog_version": cat_ver,
-            },
         }
-        res = await client.post("/agent/requests", json=payload)
-        assert res.status_code == 200, res.text
-        body = res.json()
-        assert body["capability_selection"]["selection_source"] == "user_explicit"
-        expected_skill = "skill:basic-qa:air-quality-basic-query"
-        assert body["capability_selection"]["skill"]["skill_id"] == expected_skill
-        assert body["capability_selection"]["mcp"]["tool_ids"] == []
+    )
+    assert (
+        ledger_service.canonical_content_digest_v2(
+            graph_id="basic-qa",
+            operation_kind="initial",
+            content=" question ",
+            capability_selection_digest=selection_digest,
+        )
+        == expected_submission_digest
+    )
 
-        # 2. 模拟一个声明了 required-tools 的 Skill（如单指标对比），若缺失必选工具则 422
-        # 我们用直接调用 ledger_service.admit_request 测试依赖冲突
-        with pytest.raises(ledger_service.CapabilityValidationError) as exc_info:
-            ledger_service.validate_skill_selection("basic-qa", "skill:basic-qa:non-existent")
-        assert "不存在或不可用" in str(exc_info.value)
 
-    finally:
-        await client.aclose()
+def test_data_analysis_menu_policy_fail_closed(monkeypatch):
+    """菜单正常未匹配可返回 None；策略故障必须明确拒绝受理."""
+    from types import SimpleNamespace
+
+    import application.business_policies as policies
+
+    monkeypatch.setattr(policies, "configure", lambda: None)
+    monkeypatch.setattr(
+        policies,
+        "resolve_policy",
+        lambda _graph: SimpleNamespace(menu_skill=lambda _menu: None),
+    )
+    assert ledger_service.validate_menu_selection("data-analysis", "unmatched-menu") is None
+
+    def fail_policy(_graph):
+        raise RuntimeError("policy unavailable")
+
+    monkeypatch.setattr(policies, "resolve_policy", fail_policy)
+    with pytest.raises(ledger_service.CapabilityValidationError) as exc_info:
+        ledger_service.validate_menu_selection("data-analysis", "known-menu")
+    assert exc_info.value.code == "menu_policy_unavailable"
 
 
 # ---------------------------------------------------------------------------
@@ -486,12 +494,10 @@ async def test_task_3_2_composite_foreign_key_and_rls(selection_env):
                 attempt_id=att_id,
                 submission_id=sub_id,
                 graph_id="basic-qa",
-                skill_mode="auto",
                 mcp_mode="auto",
                 tool_ids=[],
-                material_version="auto",
                 selection_digest="dummy",
-                digest_version=2,
+                digest_version=3,
                 selection_source="automatic",
                 validation_time=dt.datetime.now(dt.UTC),
                 created_at=dt.datetime.now(dt.UTC),
@@ -528,8 +534,7 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
                 "operation_kind": "initial",
                 "content": "测试原子事务",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
-                    "skill": {"mode": "auto"},
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
@@ -544,16 +549,26 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
             sel_row = (
                 await session.execute(
                     text(
-                        "SELECT skill_mode, mcp_mode, tool_ids"
-                        " FROM agent_capability_selections WHERE submission_id = :s"
+                        "SELECT c.mcp_mode, c.tool_ids, c.digest_version,"
+                        " c.retired_skill_selection, c.selection_digest, s.digest_version"
+                        " FROM agent_capability_selections c JOIN agent_submissions s"
+                        " ON s.tenant_id=c.tenant_id AND s.id=c.submission_id"
+                        " WHERE c.submission_id = :s"
                     ),
                     {"s": str(sub_id)},
                 )
             ).first()
             assert sel_row is not None
-            assert sel_row[0] == "auto"
-            assert sel_row[1] == "allowlist"
-            assert sel_row[2] == ["mcp:ipp:query"]
+            assert sel_row[0] == "allowlist"
+            assert sel_row[1] == ["mcp:ipp:query"]
+            assert sel_row[2] == 3
+            assert sel_row[3] is None
+            assert sel_row[4] == ledger_service.canonical_selection_digest(
+                graph_id="basic-qa",
+                mcp_mode="allowlist",
+                tool_ids=["mcp:ipp:query"],
+            )
+            assert sel_row[5] == 2
 
             # 验证 capability.selection_accepted 事实已落库
             event_row = (
@@ -570,6 +585,16 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
             assert event_row[1] == "server"
             assert event_row[2]["mcp_mode"] == "allowlist"
             assert event_row[2]["tool_ids"] == ["mcp:ipp:query"]
+            assert not {"skill_mode", "skill_id", "material_version"}.intersection(event_row[2])
+
+        snapshot = body["capability_selection"]
+        assert snapshot["digest_version"] == 3
+        assert snapshot["schema_version"] == "agent.capability-selection.v2"
+        assert snapshot["mcp"] == {
+            "mode": "allowlist",
+            "tool_ids": ["mcp:ipp:query"],
+        }
+        assert not {"skill", "skill_mode", "skill_id", "material_version"}.intersection(snapshot)
 
         # 2. 模拟事务回滚：若在 commit 之前抛异常，所有表均不残留
         async with OwnerSessionLocal() as session:
@@ -609,8 +634,7 @@ async def test_task_3_3_atomic_transaction_and_rollback(selection_env):
                 operation_kind="initial",
                 content="探针",
                 capability_selection={
-                    "schema_version": "agent.capability-selection.v1",
-                    "skill": {"mode": "auto"},
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
@@ -661,8 +685,7 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
             "operation_kind": "initial",
             "content": "测试幂等",
             "capability_selection": {
-                "schema_version": "agent.capability-selection.v1",
-                "skill": {"mode": "auto"},
+                "schema_version": "agent.capability-selection.v2",
                 "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                 "catalog_version": env["catalog_version"],
             },
@@ -682,8 +705,7 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
         # 4. 同 key 但修改选择为不同的工具 T2 -> 409 冲突
         payload_diff = dict(payload_1)
         payload_diff["capability_selection"] = {
-            "schema_version": "agent.capability-selection.v1",
-            "skill": {"mode": "auto"},
+            "schema_version": "agent.capability-selection.v2",
             "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:stats"]},
             "catalog_version": env["catalog_version"],
         }
@@ -777,7 +799,7 @@ async def test_task_3_4_idempotency_digest_and_conflict(selection_env):
                 "operation_kind": "initial",
                 "content": "旧历史问题",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
@@ -810,7 +832,7 @@ async def test_task_3_4_delivery_switch_fallback(selection_env):
                 "operation_kind": "initial",
                 "content": "测试开关关闭显式请求",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
@@ -862,8 +884,7 @@ async def test_task_3_5_readback_deletion_and_resume(selection_env):
                 "operation_kind": "initial",
                 "content": "测试安全回读",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
-                    "skill": {"mode": "auto"},
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
                     "catalog_version": env["catalog_version"],
                 },
@@ -904,7 +925,7 @@ async def test_task_3_5_readback_deletion_and_resume(selection_env):
                 "source_attempt_id": att_id,
                 "content": "用户补充输入",
                 "capability_selection": {
-                    "schema_version": "agent.capability-selection.v1",
+                    "schema_version": "agent.capability-selection.v2",
                     "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:stats"]},  # 试图篡改
                     "catalog_version": env["catalog_version"],
                 },
@@ -959,8 +980,7 @@ async def test_catalog_scope_and_operation_inheritance(selection_env):
     await _grant_thread(env["tenant_a"], env["user_a"], thread)
     client = await _login(env["account_a"], env["tenant_a"])
     selection = {
-        "schema_version": "agent.capability-selection.v1",
-        "skill": {"mode": "auto"},
+        "schema_version": "agent.capability-selection.v2",
         "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
         "catalog_version": env["catalog_version"],
     }
@@ -988,8 +1008,7 @@ async def test_catalog_scope_and_operation_inheritance(selection_env):
         assert original.status_code == 200, original.text
         first = original.json()
         automatic = {
-            "schema_version": "agent.capability-selection.v1",
-            "skill": {"mode": "auto"},
+            "schema_version": "agent.capability-selection.v2",
             "mcp": {"mode": "auto"},
         }
         assert (
@@ -1019,6 +1038,97 @@ async def test_catalog_scope_and_operation_inheritance(selection_env):
         assert (
             await submit("resume-auto", "resume", automatic, first["attempt_id"])
         ).status_code == 409
+    finally:
+        await client.aclose()
+
+
+async def test_legacy_selection_retry_resume_rejected_and_regenerate_reaccepted(selection_env):
+    """v2 冻结选择不能 retry/resume；regenerate 忽略退休 Skill 证据并生成 v3."""
+    env = selection_env
+    thread = str(uuid.uuid4())
+    await _grant_thread(env["tenant_a"], env["user_a"], thread)
+    client = await _login(env["account_a"], env["tenant_a"])
+    selection = {
+        "schema_version": "agent.capability-selection.v2",
+        "mcp": {"mode": "allowlist", "tool_ids": ["mcp:ipp:query"]},
+        "catalog_version": env["catalog_version"],
+    }
+
+    async def submit(key, operation, source=None):
+        return await client.post(
+            "/agent/requests",
+            json={
+                "thread_id": thread,
+                "submission_key": key,
+                "graph_id": "basic-qa",
+                "operation_kind": operation,
+                "content": "legacy digest boundary",
+                "source_attempt_id": source,
+            },
+        )
+
+    try:
+        initial = await client.post(
+            "/agent/requests",
+            json={
+                "thread_id": thread,
+                "submission_key": "legacy-source",
+                "graph_id": "basic-qa",
+                "operation_kind": "initial",
+                "content": "legacy digest boundary",
+                "capability_selection": selection,
+            },
+        )
+        assert initial.status_code == 200, initial.text
+        first = initial.json()
+
+        async with OwnerSessionLocal() as session:
+            await session.execute(
+                text(
+                    "UPDATE agent_capability_selections SET digest_version=2, "
+                    "retired_skill_selection=CAST(:legacy AS jsonb) WHERE attempt_id=:attempt"
+                ),
+                {
+                    "legacy": (
+                        '{"skill_mode":"explicit","skill_id":"skill:basic-qa:retired",'
+                        '"material_version":"sha256:historical"}'
+                    ),
+                    "attempt": first["attempt_id"],
+                },
+            )
+            await session.execute(
+                text("UPDATE agent_run_attempts SET state='waiting_input' WHERE id=:attempt"),
+                {"attempt": first["attempt_id"]},
+            )
+            await session.commit()
+
+        retry = await submit("legacy-retry", "retry", first["attempt_id"])
+        assert retry.status_code == 409, retry.text
+        assert "旧摘要版本" in retry.json()["detail"]
+
+        resume = await submit("legacy-resume", "resume", first["attempt_id"])
+        assert resume.status_code == 409, resume.text
+        assert "旧摘要版本" in resume.json()["detail"]
+
+        regenerated = await client.post(
+            "/agent/requests",
+            json={
+                "thread_id": thread,
+                "submission_key": "legacy-regenerate",
+                "graph_id": "basic-qa",
+                "operation_kind": "regenerate",
+                "content": "legacy digest boundary",
+                "source_attempt_id": first["attempt_id"],
+            },
+        )
+        assert regenerated.status_code == 200, regenerated.text
+        snapshot = regenerated.json()["capability_selection"]
+        assert snapshot["digest_version"] == 3
+        assert snapshot["mcp"] == {
+            "mode": "allowlist",
+            "tool_ids": ["mcp:ipp:query"],
+        }
+        assert not {"skill", "skill_mode", "skill_id", "material_version"}.intersection(snapshot)
     finally:
         await client.aclose()
 
@@ -1076,6 +1186,12 @@ async def test_confirmed_selection_resolve_is_server_owned(selection_env):
             assert (
                 selection["selection_digest"]
                 == admission["capability_selection"]["selection_digest"]
+            )
+            assert selection["schema_version"] == "agent.capability-selection.v2"
+            assert selection["mcp"] == {"mode": "auto", "tool_ids": []}
+            assert selection["selection_source"] == "automatic"
+            assert not {"skill", "skill_mode", "skill_id", "material_version"}.intersection(
+                selection
             )
             assert (
                 await other.get("/agent/feedback/attempts/resolve", params=params)
