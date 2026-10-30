@@ -1,0 +1,876 @@
+{
+  "version": "tracing-conversation-v1",
+  "model": "hy3",
+  "identity": "controlled",
+  "data": "frozen fixture",
+  "checkpoint": "owned temporary SQLite (removed after run)",
+  "rows": [
+    {
+      "case": "complete_analysis",
+      "repeat": 1,
+      "expected": "analysis",
+      "route": "analysis",
+      "reason": "",
+      "passed": true,
+      "error": null,
+      "seconds": 72.962,
+      "model_calls": 8,
+      "tools": [
+        "freeze_tracing_request",
+        "task",
+        "task",
+        "task",
+        "task",
+        "build_validated_report"
+      ],
+      "source_fetches": 1,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "inherit_previous": false,
+            "slots": [
+              {
+                "field": "station_code",
+                "source_text": "S001",
+                "value": "S001"
+              },
+              {
+                "field": "region_name",
+                "source_text": "测试市",
+                "value": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "source_text": "pm2.5",
+                "value": "pm2.5"
+              },
+              {
+                "field": "start",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "source_text": "2026-10-02T00:00:00+08:00",
+                "value": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "source_text": "10",
+                "value": "10"
+              },
+              {
+                "field": "baseline_start",
+                "source_text": "2026-09-24T00:00:00+08:00",
+                "value": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              }
+            ],
+            "blocks": []
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1863,
+          "output_tokens": 1462,
+          "total_tokens": 3325,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1124
+          }
+        },
+        {
+          "input_tokens": 2279,
+          "output_tokens": 607,
+          "total_tokens": 2886,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 434
+          }
+        },
+        {
+          "input_tokens": 3454,
+          "output_tokens": 379,
+          "total_tokens": 3833,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 13
+          }
+        },
+        {
+          "input_tokens": 4873,
+          "output_tokens": 546,
+          "total_tokens": 5419,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 178
+          }
+        },
+        {
+          "input_tokens": 530,
+          "output_tokens": 2017,
+          "total_tokens": 2547,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1589
+          }
+        },
+        {
+          "input_tokens": 548,
+          "output_tokens": 3794,
+          "total_tokens": 4342,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 3207
+          }
+        },
+        {
+          "input_tokens": 6207,
+          "output_tokens": 527,
+          "total_tokens": 6734,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 256
+          }
+        },
+        {
+          "input_tokens": 6665,
+          "output_tokens": 692,
+          "total_tokens": 7357,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 444
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "## PM2.5 污染过程与来向线索分析\n\n分析对象：目标站（S001）  \n\n时间范围：2026年10月01日00时至2026年10月02日00时  \n\n分析策略：analysis-policy-v2\n\n### 数据覆盖\n数据完整率 100.0%（有效 24 / 应有 24 小时，最大连续缺口 0 小时）。\n\n### 异常过程\n发现异常时段：2026年10月01日07时至2026年10月01日16时，持续 9 小时，峰值 110.0 微克/立方米。该结论只描述统计异常，不等于法规超标或污染来源确认。\n\n### 峰值\n峰值 110.0 微克/立方米，出现在 2026年10月01日10时。\n\n### 持续时间\n异常持续 9 小时。\n\n### 变化幅度\n时段首末变化率 -18.2%。\n\n### 评价口径\n24小时滑动均值：47.4 微克/立方米，有效小时 18/24；该指标仅作补充统计，不是自然日均或法规评价。\n\n### 空间格局\n空间格局：区域连片（有效邻站 4 个，同步邻站 3 个，连片网格 4 个）。该描述只证明观测到的区域现象，不单独证明传输或来源方向。\n\n### 风场关联\n主导来向扇区 270°–315°，该扇区平均浓度 40.8 微克/立方米，样本 24 个，静风比例 0.0%。相关不等于来源或距离，不能据此推导源距离。\n\n### 滞后关联\n邻站 S002 领先 3 小时，r=0.99，配对样本 21 个；仅为统计关联，不是因果或概率。\n\n### 滞后关联\n邻站 S003 领先 3 小时，r=0.98，配对样本 21 个；仅为统计关联，不是因果或概率。\n\n### 过程解释\n过程判断：与上风向传输相符（仅为关联，不是因果确认）。支持与反证、替代解释均按冻结策略保留。\n\n支持组件：spatial_sync、independent_grid_contiguous、wind_direction_stable、upwind_geometry、temporal_lead、lag_correlation、upwind_gradient。\n\n替代解释：common_stagnation_can_also_produce_multistation_sync、instrument_or_siting_effects_not_excluded。\n\n### 待核查假设\n上风向可能存在未识别的排放活动，需结合排放清单与独立轨迹资料核查（未识别源类，待核查；不是已识别企业、源类或贡献率）。\n\n- 限制：当前不提供轨迹/PSCF分析，不能据此判断传输路径。\n\n- 限制：缺少排放源清单，不能确认具体企业或排口。\n\n- 限制：缺少化学组分资料，不能判断二次生成或源类贡献。\n\n- 限制：模式气象产品可用，但风场配对优先使用观测气象序列。\n\n- 限制：风场关联不等于来源或距离。\n\n- 限制：过程解释仅为关联，不是因果确认或贡献率。\n\n### 限制与口径\n\n无法计算贡献率：当前缺少排放清单、化学组分和轨迹证据，不能确认具体企业、源类、贡献率或来源概率。\n\n以上统计百分比仅描述数据覆盖或观测特征，不是源贡献率。\n\n本报告不包含轨迹/PSCF 分析，轨迹能力当前不可用。",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    },
+    {
+      "case": "after_report_conversation",
+      "repeat": 1,
+      "expected": "conversation",
+      "route": "conversation",
+      "reason": "",
+      "passed": true,
+      "error": null,
+      "seconds": 8.648,
+      "model_calls": 1,
+      "tools": [],
+      "source_fetches": 0,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "inherit_previous": false,
+            "slots": [
+              {
+                "field": "station_code",
+                "source_text": "S001",
+                "value": "S001"
+              },
+              {
+                "field": "region_name",
+                "source_text": "测试市",
+                "value": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "source_text": "pm2.5",
+                "value": "pm2.5"
+              },
+              {
+                "field": "start",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "source_text": "2026-10-02T00:00:00+08:00",
+                "value": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "source_text": "10",
+                "value": "10"
+              },
+              {
+                "field": "baseline_start",
+                "source_text": "2026-09-24T00:00:00+08:00",
+                "value": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              }
+            ],
+            "blocks": []
+          }
+        },
+        {
+          "plan": {
+            "intent": "conversation",
+            "inherit_previous": false,
+            "blocks": [
+              "overview",
+              "pollutants",
+              "station",
+              "spatial",
+              "weather",
+              "report",
+              "canvas",
+              "knowledge",
+              "boundary",
+              "workflow"
+            ],
+            "tone": "friendly"
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 6540,
+          "output_tokens": 775,
+          "total_tokens": 7315,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 692
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "我可以辅助复盘站点污染过程，结合周边站点、空间分布和气象条件寻找关联线索，并说明证据与限制。实际结果取决于数据是否可用。\n\n当前支持的污染物包括：CO、NO2、O3、PM10、PM2.5、SO2。\n\n可以分析站点浓度变化、异常时段与数据覆盖，并对比周边站点。\n\n可以结合网格数据观察热点与区域连片现象；空间同步本身不证明来源。\n\n可以分析风场、滞后及静稳条件等关联；相关线索不等于因果或来源确认。\n\n分析结论经证据校验后发布报告；证据不足时会明确说明可判断与不可判断的部分。\n\n已确认的分析报告可以在画布中展示。\n\n涉及具体法规与限值时，需要检索并引用可核验的知识依据；知识依据与本次监测证据分开使用。\n\n当前不提供轨迹或PSCF分析，也不能确认具体企业、排口、源贡献率或来源概率。\n\n你可以提供站点、所在城市、污染物、起止时间和调查半径。我会先确认条件，再根据可用证据分析。",
+      "sha256": "68cb9bfe49e65cf93a0f3bc1902473b854ab88afa2a7cc99657b43e35948a19a"
+    },
+    {
+      "case": "complete_analysis",
+      "repeat": 2,
+      "expected": "analysis",
+      "route": "analysis",
+      "reason": "",
+      "passed": true,
+      "error": null,
+      "seconds": 102.816,
+      "model_calls": 9,
+      "tools": [
+        "freeze_tracing_request",
+        "task",
+        "task",
+        "task",
+        "task",
+        "build_validated_report"
+      ],
+      "source_fetches": 1,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "inherit_previous": false,
+            "slots": [
+              {
+                "field": "station_code",
+                "value": "S001",
+                "source_text": "S001"
+              },
+              {
+                "field": "region_name",
+                "value": "测试市",
+                "source_text": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "value": "PM2.5",
+                "source_text": "pm2.5"
+              },
+              {
+                "field": "start",
+                "value": "2026-10-01T00:00:00+08:00",
+                "source_text": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "value": "2026-10-02T00:00:00+08:00",
+                "source_text": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "value": "10",
+                "source_text": "10"
+              },
+              {
+                "field": "baseline_start",
+                "value": "2026-09-24T00:00:00+08:00",
+                "source_text": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "value": "2026-10-01T00:00:00+08:00",
+                "source_text": "2026-10-01T00:00:00+08:00"
+              }
+            ]
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1863,
+          "output_tokens": 1998,
+          "total_tokens": 3861,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1664
+          }
+        },
+        {
+          "input_tokens": 2278,
+          "output_tokens": 165,
+          "total_tokens": 2443,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 3442,
+          "output_tokens": 360,
+          "total_tokens": 3802,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 4860,
+          "output_tokens": 456,
+          "total_tokens": 5316,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 252
+          }
+        },
+        {
+          "input_tokens": 517,
+          "output_tokens": 2578,
+          "total_tokens": 3095,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1981
+          }
+        },
+        {
+          "input_tokens": 5643,
+          "output_tokens": 166,
+          "total_tokens": 5809,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 558,
+          "output_tokens": 4199,
+          "total_tokens": 4757,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 3348
+          }
+        },
+        {
+          "input_tokens": 6613,
+          "output_tokens": 584,
+          "total_tokens": 7197,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 296
+          }
+        },
+        {
+          "input_tokens": 7097,
+          "output_tokens": 483,
+          "total_tokens": 7580,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 108
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "## PM2.5 污染过程与来向线索分析\n\n分析对象：目标站（S001）  \n\n时间范围：2026年10月01日00时至2026年10月02日00时  \n\n分析策略：analysis-policy-v2\n\n### 数据覆盖\n数据完整率 100.0%（有效 24 / 应有 24 小时，最大连续缺口 0 小时）。\n\n### 异常过程\n发现异常时段：2026年10月01日07时至2026年10月01日16时，持续 9 小时，峰值 110.0 微克/立方米。该结论只描述统计异常，不等于法规超标或污染来源确认。\n\n### 峰值\n峰值 110.0 微克/立方米，出现在 2026年10月01日10时。\n\n### 持续时间\n异常持续 9 小时。\n\n### 变化幅度\n时段首末变化率 -18.2%。\n\n### 评价口径\n24小时滑动均值：47.4 微克/立方米，有效小时 18/24；该指标仅作补充统计，不是自然日均或法规评价。\n\n### 空间格局\n空间格局：区域连片（有效邻站 4 个，同步邻站 3 个，连片网格 4 个）。该描述只证明观测到的区域现象，不单独证明传输或来源方向。\n\n### 风场关联\n主导来向扇区 270°–315°，该扇区平均浓度 40.8 微克/立方米，样本 24 个，静风比例 0.0%。相关不等于来源或距离，不能据此推导源距离。\n\n### 滞后关联\n邻站 S002 领先 3 小时，r=0.99，配对样本 21 个；仅为统计关联，不是因果或概率。\n\n### 滞后关联\n邻站 S003 领先 3 小时，r=0.98，配对样本 21 个；仅为统计关联，不是因果或概率。\n\n### 过程解释\n过程判断：与上风向传输相符（仅为关联，不是因果确认）。支持与反证、替代解释均按冻结策略保留。\n\n支持组件：spatial_sync、independent_grid_contiguous、wind_direction_stable、upwind_geometry、temporal_lead、lag_correlation、upwind_gradient。\n\n替代解释：common_stagnation_can_also_produce_multistation_sync、instrument_or_siting_effects_not_excluded。\n\n### 待核查假设\n上风向可能存在未识别的排放活动，需结合排放清单与独立轨迹资料核查（未识别源类，待核查；不是已识别企业、源类或贡献率）。\n\n- 限制：当前不提供轨迹/PSCF分析，不能据此判断传输路径。\n\n- 限制：缺少排放源清单，不能确认具体企业或排口。\n\n- 限制：缺少化学组分资料，不能判断二次生成或源类贡献。\n\n- 限制：模式气象产品可用，但风场配对优先使用观测气象序列。\n\n- 限制：风场关联不等于来源或距离。\n\n- 限制：过程解释仅为关联，不是因果确认或贡献率。\n\n### 限制与口径\n\n无法计算贡献率：当前缺少排放清单、化学组分和轨迹证据，不能确认具体企业、源类、贡献率或来源概率。\n\n以上统计百分比仅描述数据覆盖或观测特征，不是源贡献率。\n\n本报告不包含轨迹/PSCF 分析，轨迹能力当前不可用。",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    },
+    {
+      "case": "after_report_conversation",
+      "repeat": 2,
+      "expected": "conversation",
+      "route": "conversation",
+      "reason": "",
+      "passed": true,
+      "error": null,
+      "seconds": 9.816,
+      "model_calls": 1,
+      "tools": [],
+      "source_fetches": 0,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "inherit_previous": false,
+            "slots": [
+              {
+                "field": "station_code",
+                "value": "S001",
+                "source_text": "S001"
+              },
+              {
+                "field": "region_name",
+                "value": "测试市",
+                "source_text": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "value": "PM2.5",
+                "source_text": "pm2.5"
+              },
+              {
+                "field": "start",
+                "value": "2026-10-01T00:00:00+08:00",
+                "source_text": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "value": "2026-10-02T00:00:00+08:00",
+                "source_text": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "value": "10",
+                "source_text": "10"
+              },
+              {
+                "field": "baseline_start",
+                "value": "2026-09-24T00:00:00+08:00",
+                "source_text": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "value": "2026-10-01T00:00:00+08:00",
+                "source_text": "2026-10-01T00:00:00+08:00"
+              }
+            ]
+          }
+        },
+        {
+          "plan": {
+            "intent": "conversation",
+            "blocks": [
+              "overview",
+              "station",
+              "spatial",
+              "weather",
+              "report",
+              "canvas",
+              "knowledge",
+              "pollutants",
+              "boundary"
+            ],
+            "tone": "friendly"
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 6972,
+          "output_tokens": 766,
+          "total_tokens": 7738,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 694
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "我可以辅助复盘站点污染过程，结合周边站点、空间分布和气象条件寻找关联线索，并说明证据与限制。实际结果取决于数据是否可用。\n\n可以分析站点浓度变化、异常时段与数据覆盖，并对比周边站点。\n\n可以结合网格数据观察热点与区域连片现象；空间同步本身不证明来源。\n\n可以分析风场、滞后及静稳条件等关联；相关线索不等于因果或来源确认。\n\n分析结论经证据校验后发布报告；证据不足时会明确说明可判断与不可判断的部分。\n\n已确认的分析报告可以在画布中展示。\n\n涉及具体法规与限值时，需要检索并引用可核验的知识依据；知识依据与本次监测证据分开使用。\n\n当前支持的污染物包括：CO、NO2、O3、PM10、PM2.5、SO2。\n\n当前不提供轨迹或PSCF分析，也不能确认具体企业、排口、源贡献率或来源概率。",
+      "sha256": "d6be6976dd991e9b94955eae2c76732abf38fa0e26127280b0ace533db52bd84"
+    },
+    {
+      "case": "complete_analysis",
+      "repeat": 3,
+      "expected": "analysis",
+      "route": "analysis",
+      "reason": "",
+      "passed": true,
+      "error": null,
+      "seconds": 87.594,
+      "model_calls": 9,
+      "tools": [
+        "freeze_tracing_request",
+        "task",
+        "task",
+        "task",
+        "task",
+        "build_validated_report"
+      ],
+      "source_fetches": 1,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "inherit_previous": false,
+            "reset_fields": [],
+            "tone": "friendly",
+            "slots": [
+              {
+                "field": "station_code",
+                "source_text": "S001",
+                "value": "S001"
+              },
+              {
+                "field": "region_name",
+                "source_text": "测试市",
+                "value": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "source_text": "pm2.5",
+                "value": "pm2.5"
+              },
+              {
+                "field": "start",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "source_text": "2026-10-02T00:00:00+08:00",
+                "value": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "source_text": "10",
+                "value": "10"
+              },
+              {
+                "field": "baseline_start",
+                "source_text": "2026-09-24T00:00:00+08:00",
+                "value": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              }
+            ]
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1863,
+          "output_tokens": 1467,
+          "total_tokens": 3330,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1120
+          }
+        },
+        {
+          "input_tokens": 2288,
+          "output_tokens": 203,
+          "total_tokens": 2491,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 33
+          }
+        },
+        {
+          "input_tokens": 3459,
+          "output_tokens": 318,
+          "total_tokens": 3777,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 45
+          }
+        },
+        {
+          "input_tokens": 4792,
+          "output_tokens": 268,
+          "total_tokens": 5060,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 50
+          }
+        },
+        {
+          "input_tokens": 511,
+          "output_tokens": 2341,
+          "total_tokens": 2852,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1800
+          }
+        },
+        {
+          "input_tokens": 5517,
+          "output_tokens": 196,
+          "total_tokens": 5713,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        },
+        {
+          "input_tokens": 588,
+          "output_tokens": 3080,
+          "total_tokens": 3668,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 2412
+          }
+        },
+        {
+          "input_tokens": 6336,
+          "output_tokens": 696,
+          "total_tokens": 7032,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 599
+          }
+        },
+        {
+          "input_tokens": 6626,
+          "output_tokens": 419,
+          "total_tokens": 7045,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "## PM2.5 污染过程与来向线索分析\n\n分析对象：目标站（S001）  \n\n时间范围：2026年10月01日00时至2026年10月02日00时  \n\n分析策略：analysis-policy-v2\n\n### 数据覆盖\n数据完整率 100.0%（有效 24 / 应有 24 小时，最大连续缺口 0 小时）。\n\n### 异常过程\n发现异常时段：2026年10月01日07时至2026年10月01日16时，持续 9 小时，峰值 110.0 微克/立方米。该结论只描述统计异常，不等于法规超标或污染来源确认。\n\n### 峰值\n峰值 110.0 微克/立方米，出现在 2026年10月01日10时。\n\n### 持续时间\n异常持续 9 小时。\n\n### 变化幅度\n时段首末变化率 -18.2%。\n\n### 评价口径\n24小时滑动均值：47.4 微克/立方米，有效小时 18/24；该指标仅作补充统计，不是自然日均或法规评价。\n\n### 空间格局\n空间格局：区域连片（有效邻站 4 个，同步邻站 3 个，连片网格 4 个）。该描述只证明观测到的区域现象，不单独证明传输或来源方向。\n\n### 风场关联\n主导来向扇区 270°–315°，该扇区平均浓度 40.8 微克/立方米，样本 24 个，静风比例 0.0%。相关不等于来源或距离，不能据此推导源距离。\n\n### 滞后关联\n邻站 S002 领先 3 小时，r=0.99，配对样本 21 个；仅为统计关联，不是因果或概率。\n\n### 滞后关联\n邻站 S003 领先 3 小时，r=0.98，配对样本 21 个；仅为统计关联，不是因果或概率。\n\n### 过程解释\n过程判断：与上风向传输相符（仅为关联，不是因果确认）。支持与反证、替代解释均按冻结策略保留。\n\n支持组件：spatial_sync、independent_grid_contiguous、wind_direction_stable、upwind_geometry、temporal_lead、lag_correlation、upwind_gradient。\n\n替代解释：common_stagnation_can_also_produce_multistation_sync、instrument_or_siting_effects_not_excluded。\n\n### 待核查假设\n上风向可能存在未识别的排放活动，需结合排放清单与独立轨迹资料核查（未识别源类，待核查；不是已识别企业、源类或贡献率）。\n\n- 限制：当前不提供轨迹/PSCF分析，不能据此判断传输路径。\n\n- 限制：缺少排放源清单，不能确认具体企业或排口。\n\n- 限制：缺少化学组分资料，不能判断二次生成或源类贡献。\n\n- 限制：模式气象产品可用，但风场配对优先使用观测气象序列。\n\n- 限制：风场关联不等于来源或距离。\n\n- 限制：过程解释仅为关联，不是因果确认或贡献率。\n\n### 限制与口径\n\n无法计算贡献率：当前缺少排放清单、化学组分和轨迹证据，不能确认具体企业、源类、贡献率或来源概率。\n\n以上统计百分比仅描述数据覆盖或观测特征，不是源贡献率。\n\n本报告不包含轨迹/PSCF 分析，轨迹能力当前不可用。",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    },
+    {
+      "case": "after_report_conversation",
+      "repeat": 3,
+      "expected": "conversation",
+      "route": "conversation",
+      "reason": "",
+      "passed": true,
+      "error": null,
+      "seconds": 8.152,
+      "model_calls": 1,
+      "tools": [],
+      "source_fetches": 0,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "inherit_previous": false,
+            "reset_fields": [],
+            "tone": "friendly",
+            "slots": [
+              {
+                "field": "station_code",
+                "source_text": "S001",
+                "value": "S001"
+              },
+              {
+                "field": "region_name",
+                "source_text": "测试市",
+                "value": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "source_text": "pm2.5",
+                "value": "pm2.5"
+              },
+              {
+                "field": "start",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "source_text": "2026-10-02T00:00:00+08:00",
+                "value": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "source_text": "10",
+                "value": "10"
+              },
+              {
+                "field": "baseline_start",
+                "source_text": "2026-09-24T00:00:00+08:00",
+                "value": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              }
+            ]
+          }
+        },
+        {
+          "plan": {
+            "intent": "conversation",
+            "inherit_previous": false,
+            "reset_fields": [],
+            "tone": "friendly",
+            "blocks": [
+              "overview",
+              "pollutants",
+              "station",
+              "spatial",
+              "weather",
+              "report",
+              "canvas",
+              "knowledge",
+              "boundary"
+            ]
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 6501,
+          "output_tokens": 706,
+          "total_tokens": 7207,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 621
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "我可以辅助复盘站点污染过程，结合周边站点、空间分布和气象条件寻找关联线索，并说明证据与限制。实际结果取决于数据是否可用。\n\n当前支持的污染物包括：CO、NO2、O3、PM10、PM2.5、SO2。\n\n可以分析站点浓度变化、异常时段与数据覆盖，并对比周边站点。\n\n可以结合网格数据观察热点与区域连片现象；空间同步本身不证明来源。\n\n可以分析风场、滞后及静稳条件等关联；相关线索不等于因果或来源确认。\n\n分析结论经证据校验后发布报告；证据不足时会明确说明可判断与不可判断的部分。\n\n已确认的分析报告可以在画布中展示。\n\n涉及具体法规与限值时，需要检索并引用可核验的知识依据；知识依据与本次监测证据分开使用。\n\n当前不提供轨迹或PSCF分析，也不能确认具体企业、排口、源贡献率或来源概率。",
+      "sha256": "733b2725e05be962a6ee11aaf7beca855c2b8517638f1e28196117929a41c892"
+    }
+  ]
+}

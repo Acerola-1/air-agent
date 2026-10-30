@@ -411,7 +411,7 @@ async def test_public_state_write_and_resume_update_cannot_forge_sources():
     ],
 )
 def test_knowledge_metrics_use_business_outcome(outcome, expected):
-    from common.business_graph.tool_wrappers import _obs_service_key
+    from basic_qa.tool_runtime import _obs_service_key
     from common.observability.tool_adapter import classify_tool_output
 
     payload = {

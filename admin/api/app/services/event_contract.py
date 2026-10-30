@@ -84,6 +84,56 @@ def _enums() -> dict[str, tuple[str, ...]]:
     }
 
 
+def capability_payload_valid(payload: dict[str, Any], rules: dict[str, Any]) -> bool:
+    """Validate only the new metadata fact; never inspect business result fields."""
+    if (
+        payload.get("capability_kind") not in rules["kinds"]
+        or payload.get("action") not in rules["actions"]
+        or payload.get("status") not in rules["statuses"]
+    ):
+        return False
+    for key in ("capability_id",):
+        if key in payload and (
+            not isinstance(payload[key], str) or not re.fullmatch(rules["id_pattern"], payload[key])
+        ):
+            return False
+    for key in ("capability_version", "catalog_version"):
+        if key in payload and (
+            not isinstance(payload[key], str)
+            or not re.fullmatch(rules["version_pattern"], payload[key])
+        ):
+            return False
+    for key in ("candidate_ids", "source_ids"):
+        if key in payload:
+            value = payload[key]
+            if (
+                not isinstance(value, list)
+                or len(value) > 128
+                or any(
+                    not isinstance(v, str)
+                    or not (
+                        v == "independent"
+                        and key == "source_ids"
+                        or re.fullmatch(rules["id_pattern"], v)
+                    )
+                    for v in value
+                )
+            ):
+                return False
+    for key in rules["counts"]:
+        if key in payload and (type(payload[key]) is not int or payload[key] < 0):
+            return False
+    if "candidate_count" in payload and payload["candidate_count"] != len(
+        payload.get("candidate_ids", [])
+    ):
+        return False
+    if payload["action"] in {"selected", "loaded", "activated", "reused", "executed"} and (
+        not payload.get("capability_id") or not payload.get("capability_version")
+    ):
+        return False
+    return True
+
+
 def validate_event(event: Any, *, trusted_source: str | None = None) -> tuple[bool, str, str]:
     """返回 (valid, reason, detail)。语义与 Agent 侧一致。"""
     reg = registry()
@@ -137,6 +187,10 @@ def validate_event(event: Any, *, trusted_source: str | None = None) -> tuple[bo
     for field in entry.get("required_payload_fields") or []:
         if payload.get(field) is None:
             return False, "missing_required_payload_field", field
+    if event_type == "runtime.capability" and not capability_payload_valid(
+        payload, reg["capability_fact"]
+    ):
+        return False, "invalid_enum_value", "runtime.capability metadata"
     enums = _enums()
     for field in _ENUM_FIELDS:
         if field in payload and payload[field] not in enums[field]:

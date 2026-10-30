@@ -443,57 +443,30 @@ def _parse_skill_frontmatter(content: str) -> dict[str, Any]:
 def validate_skill_selection(
     graph_id: str, skill_id: str, *, menu_name: str | None = None
 ) -> dict[str, Any]:
-    m = _SKILL_ID_PATTERN.match(skill_id)
-    if not m:
-        raise CapabilityValidationError(
-            f"非法的技能标识格式: {skill_id}", code="invalid_skill_selection"
-        )
-    g_id, slug = m.group(1), m.group(2)
-    if g_id != graph_id:
-        raise CapabilityValidationError(
-            f"技能 {skill_id} 不属于当前图 {graph_id}", code="invalid_skill_selection"
-        )
-    if graph_id not in _GRAPH_DIR_MAP:
-        raise CapabilityValidationError(f"未知图标识: {graph_id}", code="invalid_skill_selection")
+    """受理与目录共用材料源，图专属规则由可信装配接入，异常失败关闭."""
+    from application.business_policies import configure, resolve_policy
+    from common.capabilities import validate_skill_selection as validate
 
-    if graph_id == "data-analysis" and menu_name:
-        try:
-            from data_analysis.menu_skill_mapping import match_menu_skill
-
-            matched = match_menu_skill(menu_name)
-            if matched and matched.skill_name != slug:
-                raise CapabilityValidationError(
-                    f"所选技能 {skill_id} 与当前菜单 {menu_name} 映射不一致",
-                    code="menu_skill_mismatch",
-                )
-        except (ImportError, CapabilityValidationError):
-            raise
-        except Exception:
-            pass
-
-    repo_root = Path(__file__).resolve().parents[4]
-    skill_dir = repo_root / "src" / _GRAPH_DIR_MAP[graph_id] / "skills" / slug
-    skill_file = skill_dir / "SKILL.md"
-    if not skill_file.exists():
-        raise CapabilityValidationError(
-            f"技能 {skill_id} 不存在或不可用", code="invalid_skill_selection"
-        )
-
+    configure()
     try:
-        text = skill_file.read_text(encoding="utf-8")
-    except OSError as exc:
+        match = _SKILL_ID_PATTERN.fullmatch(skill_id)
+        if match is None or match.group(1) != graph_id:
+            raise CapabilityValidationError("技能不属于当前图", code="invalid_skill_selection")
+        resolve_policy(graph_id).validate_selection(match.group(2), menu_name)
+        # 菜单受理使用图策略验证；目录展示保留各图已有匹配语义。
+        item = validate(graph_id, skill_id)
+        return {
+            "id": item.id,
+            "name": match.group(2),
+            "material_version": item.material_version,
+            "required_tool_ids": item.required_tool_ids,
+        }
+    except CapabilityValidationError:
+        raise
+    except Exception as exc:
         raise CapabilityValidationError(
-            f"技能文件读取失败: {exc}", code="invalid_skill_selection"
+            "技能材料或菜单策略不可用", code="invalid_skill_selection"
         ) from exc
-
-    meta = _parse_skill_frontmatter(text)
-    mat_version = _calculate_skill_material_version(skill_dir)
-    return {
-        "id": skill_id,
-        "name": slug,
-        "material_version": mat_version,
-        "required_tool_ids": meta.get("required-tools") or [],
-    }
 
 
 # ---------------------------------------------------------------- 事件与 outbox
@@ -2280,9 +2253,7 @@ async def request_thread_deletion(
         )
     ).scalar_one_or_none()
     if existing is not None:
-        same_user = existing.user_id is not None and str(existing.user_id) == str(
-            identity.user.id
-        )
+        same_user = existing.user_id is not None and str(existing.user_id) == str(identity.user.id)
         if not same_user and "agent:thread:delete" not in identity.permissions:
             raise NotFound("对象不存在", code="not_found")
         return {"thread_id": thread_id, "deletion_state": existing.state}

@@ -1,0 +1,8 @@
+....ssssssssssssssssssssssss.......................                      [100%]
+=============================== warnings summary ===============================
+tests/unit_tests/test_business_graph_nodes.py::test_compiled_knowledge_graph_reaches_actual_tool_before_streamed_answer[asyncio]
+  /Users/acerola/Dev/Python/air_agent/src/common/business_graph/builder.py:138: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+27 passed, 24 skipped, 1 warning in 4.35s

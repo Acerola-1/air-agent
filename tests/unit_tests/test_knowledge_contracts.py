@@ -280,7 +280,7 @@ def test_policy_blocks_unknown_citation_id() -> None:
 
 def test_analysis_without_menu_keeps_only_generic_tools() -> None:
     from common.runtime_tools import get_business_tools
-    from data_analysis.prompt_builder import filter_business_tools
+    from data_analysis.prompts import filter_business_tools
 
     tools = get_business_tools(include_computation=True)
     names = {tool.name for tool in filter_business_tools(tools, [])}

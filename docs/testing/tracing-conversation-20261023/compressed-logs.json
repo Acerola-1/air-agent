@@ -1,0 +1,26 @@
+[
+  {
+    "path": "browser-run-04/browser-admin.log",
+    "gzip": "browser-run-04/browser-admin.log.gz",
+    "bytes": 17011413,
+    "sha256": "5ed98e827838bde57fe964e7ade309686a6a9e70c2bdb0478324cfb696e515db"
+  },
+  {
+    "path": "browser-run-04/browser-frontend.log",
+    "gzip": "browser-run-04/browser-frontend.log.gz",
+    "bytes": 14121179,
+    "sha256": "9f613a215ed58231f31c9f24e19ac423a0930f11e4a1f5160a24ff15c0c38de7"
+  },
+  {
+    "path": "browser-run-02/browser-admin.log",
+    "gzip": "browser-run-02/browser-admin.log.gz",
+    "bytes": 9178904,
+    "sha256": "42d5905a8f8bc227e3f216175bd53204d6117d16a905f9255b1c59a0fe241111"
+  },
+  {
+    "path": "browser-run-02/browser-frontend.log",
+    "gzip": "browser-run-02/browser-frontend.log.gz",
+    "bytes": 7129069,
+    "sha256": "43f5c9802b9a7f1770a37ae69b416019a55935c0b2fb9bb60815192f075414f0"
+  }
+]

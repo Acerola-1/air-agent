@@ -73,12 +73,12 @@ class TenantRuntimeGuardMiddleware(AgentMiddleware):
             # 确定性加载，不能依赖模型是否主动调用 find_skill。
             from langchain_core.messages import SystemMessage
 
-            from common.business_graph.skill_content import load_skill_rules
             from common.capabilities import GRAPH_SKILLS_DIRS, validate_skill_selection
-            from common.context import get_routing_context
             from common.model_budget import enforce_request_budget
             from common.observability.skill_adapter import emit_skill_stage
+            from common.runtime_context import get_routing_context
             from common.skill_router import SkillSemanticRouter
+            from common.skills.materials import load_skill_rules
 
             skill_id = str(cfg.get("capability_skill_id") or "")
             parts = skill_id.split(":")
@@ -150,7 +150,7 @@ class TenantRuntimeGuardMiddleware(AgentMiddleware):
         MCP 远程工具改走企业授权执行层（DeepAgents 与显式图共用同一 helper）；
         本地工具保持原 handler。
         """
-        from common.business_graph.tool_wrappers import (
+        from common.tool_execution.mcp import (
             _is_mcp_tool,
             execute_mcp_tool_request,
         )

@@ -9,9 +9,9 @@
     },
     "env": ".env",
     "http": {
-        "app": "./src/common/artifact_http.py:app"
+        "app": "./src/application/http.py:app"
     },
     "auth": {
-        "path": "./src/common/identity/langgraph_auth.py:auth"
+        "path": "./src/application/langgraph_auth.py:auth"
     }
 }

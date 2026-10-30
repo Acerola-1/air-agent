@@ -1,0 +1,55 @@
+npm notice run air-agent-admin-web@0.1.0 build
+npm notice run next build --webpack
+▲ Next.js 16.3.4 (webpack)
+✓ Running next.config.ts took 126ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1701ms
+  Running TypeScript ...
+  Finished TypeScript in 303ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/28) ...
+  Generating static pages using 9 workers (7/28) 
+  Generating static pages using 9 workers (14/28) 
+  Generating static pages using 9 workers (21/28) 
+✓ Generating static pages using 9 workers (28/28) in 198ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/[...path]
+├ ƒ /api/auth/iam/callback
+├ ƒ /api/auth/iam/start
+├ ƒ /api/config
+├ ○ /business/followed
+├ ○ /business/regions
+├ ○ /enterprise/departments
+├ ○ /enterprise/members
+├ ○ /enterprise/roles
+├ ○ /login
+├ ○ /operations
+├ ○ /operations/capabilities
+├ ○ /operations/costs
+├ ○ /operations/feedback
+├ ○ /operations/insights
+├ ƒ /operations/insights/[clusterId]
+├ ○ /operations/insights/jobs
+├ ○ /operations/insights/unclassified
+├ ○ /operations/performance
+├ ○ /operations/runs
+├ ƒ /operations/runs/[attemptId]
+├ ○ /operations/users
+├ ○ /platform/tenants
+├ ○ /profile
+├ ○ /select-tenant
+├ ○ /system/audit
+├ ○ /system/permissions
+├ ○ /system/roles
+└ ○ /system/users
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -43,6 +43,9 @@ BUSINESS = "test-fixture"
 PERMISSION = "agent:business:test-fixture:use"
 TENANT_A = "11111111-1111-4111-8111-111111111111"
 TENANT_B = "22222222-2222-4222-8222-222222222222"
+_TEST_SELECTIONS = {}
+
+
 TOOLS = [
     "helper_get_latest_time",
     "query_air",
@@ -87,10 +90,61 @@ async def fixture_server():
 
 @pytest.fixture
 def factory(fixture_server, monkeypatch):
+    from unittest.mock import AsyncMock
+
+    from common.identity.db import IdentityState
+
+    monkeypatch.setattr(
+        "common.knowledge.validation.validate_thread_knowledge",
+        AsyncMock(return_value=None),
+    )
+
+    monkeypatch.setattr(
+        "common.identity.runtime.fetch_identity_state",
+        AsyncMock(
+            return_value=IdentityState(
+                session_active=True,
+                session_unexpired=True,
+                session_ctx_version=1,
+                user_active=True,
+                account="fixture",
+                user_auth_revision=1,
+                tenant_status="active",
+                tenant_auth_revision=1,
+                tenant_code="fixture",
+                membership_status="active",
+                membership_revision=1,
+            )
+        ),
+    )
+    from common.tool_execution import policy
+
+    monkeypatch.setattr(policy, "_POLICIES", {})
+    policy.register_execution_policy(
+        BUSINESS, policy.admitted_business_policy, requires_request=False
+    )
+    from application.business_policies import resolve_policy
+
+    resolve_policy("basic-qa")
+    resolve_policy("intelligent-tracing")
+
+    async def accepted(scope, *, attempt_id, submission_id=None):
+        from copy import deepcopy
+
+        return deepcopy(
+            _TEST_SELECTIONS.get(
+                (scope.tenant_id, scope.user_id, attempt_id, submission_id)
+            )
+        )
+
+    monkeypatch.setattr(
+        "common.event_ledger.store.fetch_capability_selection_snapshot", accepted
+    )
+    _TEST_SELECTIONS.clear()
     fac = ScopedMCPToolFactory({SERVER_KEY: fixture_server.url})
     set_factory(fac)
     monkeypatch.setattr(
-        "common.business_graph.tool_wrappers.get_mcp_tool_names",
+        "common.tool_execution.mcp.get_mcp_tool_names",
         lambda: sorted(fac.known_tool_names()),
     )
     yield fac
@@ -165,7 +219,7 @@ def _identity(
 
 
 def _run_config(identity: RuntimeIdentity) -> dict[str, Any]:
-    return {
+    config = {
         "configurable": {
             "thread_id": "th",
             "ledger_business_code": identity.business_code,
@@ -186,6 +240,16 @@ def _run_config(identity: RuntimeIdentity) -> dict[str, Any]:
             },
         }
     }
+    config["configurable"].update(
+        ledger_attempt_id="fixture-attempt:" + identity.business_graph,
+        ledger_submission_id="fixture-submission:" + identity.business_graph,
+        capability_selection_id="fixture-selection:" + identity.business_graph,
+        capability_selection_digest="fixture-digest",
+        capability_mcp_mode="auto",
+        capability_tool_ids=[],
+    )
+    _register_selection(identity, config)
+    return config
 
 
 async def test_missing_connection_rejected_without_network(
@@ -225,6 +289,161 @@ async def test_unlisted_business_tool_rejected(
     with pytest.raises(McpAuthorizationError):
         await execute_mcp_tool(SERVER_KEY, "evil_tool", {}, _run_config(_identity()))
     assert await fixture_server.call_count("subject-a") == 0
+
+
+async def test_basic_qa_dynamic_independent_tool_and_actual_disclosure_counter(
+    factory, fixture_server, monkeypatch, tmp_path
+):
+    """Use a real MCP SDK connection behind the actual compiled Basic QA graph."""
+    from dataclasses import replace
+    from unittest.mock import AsyncMock, Mock
+
+    from langchain_core.messages import (
+        AIMessage,
+        AIMessageChunk,
+        HumanMessage,
+        ToolMessage,
+    )
+    from langgraph.checkpoint.memory import InMemorySaver
+
+    import common.identity.runtime as identity_module
+    import common.runtime_tools as runtime_tools
+    from basic_qa import builder, nodes
+    from basic_qa.capabilities import runtime as basic_qa_runtime
+    from basic_qa.capabilities.mcp_catalog import document_for
+    from common import business_registry as registry
+    from common.mcp_scoped import build_proxy_tools
+    from common.models import ModelRegistry
+
+    _configure(monkeypatch)
+    monkeypatch.setenv("FIXTURE_TOK_A", "tok-tenant-a")
+    monkeypatch.setenv("LANGFUSE_PROMPTS_ENABLED", "false")
+    monkeypatch.setenv("LANGFUSE_ENABLED", "false")
+    # This fixture business intentionally has tools without any preset Skill.
+    monkeypatch.setattr(
+        "basic_qa.capabilities.skill_search.list_graph_skills", lambda _: []
+    )
+    item = BusinessDefinition(
+        code="basic-qa",
+        name_zh="受控基础问答",
+        permission="agent:business:basic-qa:use",
+        graph="basic-qa",
+        connections=(
+            BusinessConnection(server_key=SERVER_KEY, allowed_tools=frozenset(TOOLS)),
+        ),
+    )
+    monkeypatch.setitem(registry.BUSINESSES, "basic-qa", item)
+    monkeypatch.setitem(registry.BUSINESS_BY_GRAPH, "basic-qa", item)
+    identity = replace(
+        _identity(),
+        business_code="basic-qa",
+        business_graph="basic-qa",
+        business_permission=item.permission,
+        permissions=frozenset({item.permission}),
+    )
+    monkeypatch.setattr(
+        identity_module, "guard_runtime_call", AsyncMock(return_value=identity)
+    )
+    monkeypatch.setattr(
+        identity_module, "guard_request_call", AsyncMock(return_value=identity)
+    )
+    monkeypatch.setattr(identity_module, "revalidate", AsyncMock())
+    monkeypatch.setattr(
+        basic_qa_runtime, "guard_runtime_call", AsyncMock(return_value=identity)
+    )
+    monkeypatch.setattr(builder, "get_business_tools", lambda **_: [])
+    monkeypatch.setattr(nodes, "get_business_tools", lambda **_: [])
+    monkeypatch.setattr(
+        runtime_tools, "get_business_tools", lambda **_: build_proxy_tools()
+    )
+
+    async def finalize(state, config):
+        return {}
+
+    monkeypatch.setattr(builder, "make_ledger_finalize_node", lambda _: finalize)
+    graph = builder.build_basic_qa_graph(
+        skills_dir=tmp_path, name="basic-qa", checkpointer=InMemorySaver()
+    )
+    assert factory.known_tool_ids() == set()
+    definitions = await factory.tools_for(identity, SERVER_KEY)
+    target = next(t for t in definitions if t.name == "query_air")
+    document = document_for(SERVER_KEY, target)
+
+    def call(name, ref, args):
+        return AIMessage(
+            content="", tool_calls=[{"name": name, "id": ref, "args": args}]
+        )
+
+    model = AsyncMock()
+    model.bind_tools = Mock(return_value=model)
+    model.ainvoke.side_effect = [
+        call("query_air", "unpublished", {"user_id": "ignored", "region": "杭州"}),
+        call(
+            "load_mcp_tool",
+            "load",
+            {
+                "tool_id": document.tool_id,
+                "expected_schema_version": document.schema_version,
+            },
+        ),
+        call("query_air", "positive", {"user_id": "ignored", "region": "杭州"}),
+        call("finish_planning", "finish", {}),
+        call("query_air", "empty-selection", {"user_id": "ignored", "region": "金华"}),
+        call("finish_planning", "finish2", {}),
+    ]
+
+    async def answer(*args, **kwargs):
+        yield AIMessageChunk(content="合成计数服务结果。")
+
+    model.astream = answer
+    monkeypatch.setattr(ModelRegistry, "main_llm", model)
+    cfg = _run_config(identity)
+    cfg["configurable"].update(
+        ledger_attempt_id="attempt-1",
+        ledger_submission_id="submission",
+        capability_selection_id="selection",
+        capability_selection_digest="digest",
+        capability_skill_mode="auto",
+        capability_mcp_mode="auto",
+    )
+    _register_selection(identity, cfg)
+    result = await graph.ainvoke({"messages": [HumanMessage(content="查询杭州")]}, cfg)
+    assert await fixture_server.call_count("subject-a") == 1, [
+        str(m) for m in result["messages"]
+    ]
+    receipts = {
+        m.tool_call_id: m for m in result["messages"] if isinstance(m, ToolMessage)
+    }
+    assert (
+        receipts["unpublished"].status == "error"
+        and receipts["positive"].status == "success"
+    )
+    assert receipts["positive"].additional_kwargs["network_attempted"] is True
+    # A schema changing at the final factory send also has zero new requests.
+    target.description += " updated definition"
+    stale_cfg = {
+        **cfg,
+        "metadata": {
+            "mcp_disclosed_schema": {
+                "tool_id": document.tool_id,
+                "schema_version": document.schema_version,
+            }
+        },
+    }
+    with pytest.raises(McpAuthorizationError):
+        await execute_mcp_tool(
+            SERVER_KEY, "query_air", {"user_id": "ignored", "region": "杭州"}, stale_cfg
+        )
+    assert await fixture_server.call_count("subject-a") == 1
+    cfg["configurable"].update(
+        ledger_attempt_id="attempt-2",
+        capability_mcp_mode="allowlist",
+        capability_tool_ids=[],
+    )
+    _register_selection(identity, cfg)
+    result = await graph.ainvoke({"messages": [HumanMessage(content="那金华呢")]}, cfg)
+    assert await fixture_server.call_count("subject-a") == 1
+    assert not result["bqa_capabilities"]["independent_active_tool_ids"]
 
 
 async def test_disclosure_and_execution_share_business_scope_without_transient_config(
@@ -587,7 +806,7 @@ async def test_discovery_deduplicates_per_connection_scope(
 async def test_request_helper_degrades_readably(factory, monkeypatch) -> None:
     from langchain_core.messages import ToolMessage
 
-    from common.business_graph.tool_wrappers import execute_mcp_tool_request
+    from common.tool_execution.mcp import execute_mcp_tool_request
 
     _configure(monkeypatch, disable_a=True)
     request = type(
@@ -649,3 +868,30 @@ async def test_tracing_business_rejects_trajectory_with_zero_calls(
         SERVER_KEY, "helper_get_latest_time", {"user_id": "u-1", "region": "r"}, config
     )
     assert await fixture_server.call_count("subject-a") == 1
+
+
+def _register_selection(identity, config):
+    """显式模拟受理服务写入的独立选择存储；不调用正式数据库."""
+    from copy import deepcopy
+
+    c = config["configurable"]
+    _TEST_SELECTIONS[
+        (
+            identity.tenant_id,
+            identity.user_id,
+            c["ledger_attempt_id"],
+            c["ledger_submission_id"],
+        )
+    ] = deepcopy(
+        {
+            "membership_id": identity.membership_id,
+            "thread_id": c["thread_id"],
+            "id": c["capability_selection_id"],
+            "selection_digest": c["capability_selection_digest"],
+            "graph_id": identity.business_graph,
+            "attempt_id": c["ledger_attempt_id"],
+            "submission_id": c["ledger_submission_id"],
+            "mcp_mode": c.get("capability_mcp_mode", "auto"),
+            "tool_ids": c.get("capability_tool_ids", []),
+        }
+    )

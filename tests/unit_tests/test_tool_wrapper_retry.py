@@ -14,7 +14,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from langchain_core.messages import ToolMessage
 
-import common.business_graph.tool_wrappers as tw
+import basic_qa.tool_runtime as tw
 
 pytestmark = pytest.mark.anyio
 
@@ -64,7 +64,9 @@ async def _run(request: SimpleNamespace, handler: Any) -> Any:
         membership_revision=1,
     )
     with (
-        patch.object(tw, "get_mcp_tool_names", return_value=["mcp_tool_a"]),
+        patch(
+            "common.tool_execution.mcp.get_mcp_tool_names", return_value=["mcp_tool_a"]
+        ),
         patch.object(tw.asyncio, "sleep", new=AsyncMock()) as sleep_mock,
         patch.object(scoped, "execute_mcp_tool", handler),
         patch.object(scoped.get_factory(), "server_of", return_value="ipp"),
@@ -73,7 +75,14 @@ async def _run(request: SimpleNamespace, handler: Any) -> Any:
             new=AsyncMock(return_value=ok_state),
         ),
     ):
-        result = await tw.composed_tool_wrapper(request, handler)
+        from basic_qa.tool_recovery import exhausted_tools
+
+        blocked = exhausted_tools(
+            (getattr(request, "state", None) or {}).get("messages", [])
+        )
+        result = await tw.composed_tool_wrapper(
+            request, handler, exhausted_tools=blocked
+        )
     return result, sleep_mock
 
 

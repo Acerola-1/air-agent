@@ -48,3 +48,8 @@ def _clear_permission_fact_caches():
     clear_permission_fact_caches()
     yield
     clear_permission_fact_caches()
+
+
+from application.business_policies import configure as configure_business_policies  # noqa: E402
+
+configure_business_policies()

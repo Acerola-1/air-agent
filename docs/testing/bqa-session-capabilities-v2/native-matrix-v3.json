@@ -1,0 +1,96 @@
+{
+  "started_at": "2026-10-29T01:08:34.641755+00:00",
+  "checks": [
+    {
+      "name": "owned_all_registered_graphs_drain",
+      "live_owned_runs": 0,
+      "known_affected_graphs": [
+        "basic-qa",
+        "data-analysis",
+        "intelligent-tracing"
+      ],
+      "limitation": "only Basic QA had runs in this owned fixture; formal runs were not inspected or stopped"
+    },
+    {
+      "name": "coordinated_policy_lifecycle_prompt_cache_upgrade",
+      "load_skill": 0,
+      "policy_before": "2026-10-19.1",
+      "policy_after": "2026-10-28.1",
+      "checkpoint_version": 2,
+      "history_retained": true
+    },
+    {
+      "name": "same_attempt_mode_change_rejected",
+      "actual_platform_status": "error",
+      "sdk_error_type": null,
+      "new_business_calls": 0
+    },
+    {
+      "name": "same_attempt_schema_connection_change_rejected",
+      "actual_platform_status": "error",
+      "sdk_error_type": null,
+      "new_business_calls": 0
+    },
+    {
+      "name": "new_round_schema_and_connection_change",
+      "reloads": 1,
+      "business_calls": 1
+    },
+    {
+      "name": "same_attempt_material_change_rejected",
+      "actual_platform_status": "error",
+      "sdk_error_type": null,
+      "new_business_calls": 0
+    },
+    {
+      "name": "new_round_material_change",
+      "reloads": 1,
+      "new_complete_rules_sent": true
+    },
+    {
+      "name": "persistent_summary_then_capability_reuse",
+      "reloads": 0,
+      "full_current_rules": true,
+      "old_receipt_outside_projection": true
+    },
+    {
+      "name": "owned_all_registered_graphs_drain",
+      "live_owned_runs": 0,
+      "known_affected_graphs": [
+        "basic-qa",
+        "data-analysis",
+        "intelligent-tracing"
+      ],
+      "limitation": "only Basic QA had runs in this owned fixture; formal runs were not inspected or stopped"
+    },
+    {
+      "name": "coordinated_rollback_preserves_history_and_cache",
+      "policy_restored": "2026-10-19.1",
+      "legacy_reload": 1,
+      "cache_rows_retained": 1
+    }
+  ],
+  "controlled_iam_llm": true,
+  "runtime_role": [
+    "air_agent_runtime",
+    false,
+    false
+  ],
+  "limitations": [
+    "only owned Basic QA runs existed; no formal runs drained or deployment performed",
+    "controlled IAM/model/MCP; real model and browser are separate evidence",
+    "cached schemas are refreshed through the tested protected connection revision/redeployment; out-of-band remote hot schema changes were not tested"
+  ],
+  "passed": true,
+  "resources_created": [
+    "bqa-cap-v2-matrix-20261029-pg",
+    "bqa-cap-v2-matrix-20261029-redis",
+    "bqa-cap-v2-matrix-20261029-api"
+  ],
+  "cleanup": {
+    "bqa-cap-v2-matrix-20261029-api": true,
+    "bqa-cap-v2-matrix-20261029-redis": true,
+    "bqa-cap-v2-matrix-20261029-pg": true
+  },
+  "ended_at": "2026-10-29T01:11:01.723154+00:00"
+}

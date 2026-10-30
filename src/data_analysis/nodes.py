@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import yaml
+from common.runtime_context import get_message_content, get_routing_context
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import StreamWriter
@@ -16,14 +17,6 @@ from loguru import logger
 
 from common.capabilities import refresh_authorized_mcp_tools
 from common.config import config as app_config
-from common.context import get_message_content, get_routing_context
-from common.context_preparation import (
-    ContextRecoveryFailed,
-    PreparedRequest,
-    call_with_context_recovery,
-    merge_prepared_updates,
-    prepare_model_request,
-)
 from common.data_governance import DataProcessingFailure, invoke_with_data_deadline
 from common.model_budget import ContextBudgetExceeded, request_metrics
 from common.model_errors import is_context_overflow
@@ -37,8 +30,15 @@ from common.output_streaming.publisher import (
 )
 from common.runtime_events import emit_event
 from common.runtime_tools import get_business_tools
+from data_analysis.context.preparation import (
+    ContextRecoveryFailed,
+    PreparedRequest,
+    merge_prepared_updates,
+    prepare_model_request,
+)
+from data_analysis.context.recovery import call_with_context_recovery
 from data_analysis.menu_skill_mapping import match_menu_skill
-from data_analysis.prompt_builder import (
+from data_analysis.prompts import (
     build_system_prompt,
     filter_business_tools,
 )
@@ -400,7 +400,7 @@ async def call_model(
     available = filter_capability_mcp_tools(
         available, config, business_code="data-analysis"
     )
-    from common.business_graph.tool_recovery import (
+    from data_analysis.tool_policy import (
         planning_exhausted,
         recoverable_tools,
     )

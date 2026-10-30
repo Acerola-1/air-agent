@@ -294,6 +294,25 @@ def test_safety_buffer_rejects_unterminated_reasoning():
         buffer.flush()
 
 
+@pytest.mark.parametrize("split", range(1, len("<｜｜DSML｜｜") + 1))
+def test_raw_provider_tool_protocol_never_becomes_answer_text(split):
+    marker = "<｜｜DSML｜｜"
+    buffer = SafeTextStream()
+    with pytest.raises(StreamSafetyError, match="tool_calls_in_answer_role"):
+        buffer.feed(marker[:split])
+        buffer.feed(marker[split:] + ' calls>\ninvoke name="query"')
+    assert "<｜" not in buffer.emitted
+
+
+def test_truncated_provider_tool_marker_and_hidden_reasoning():
+    buffer = SafeTextStream()
+    assert buffer.feed("<｜｜DSM") == []
+    with pytest.raises(StreamSafetyError, match="tool_calls_in_answer_role"):
+        buffer.flush()
+    hidden = SafeTextStream()
+    assert hidden.feed("<think><｜｜DSML｜｜ calls></think>正文。") == ["正文。"]
+
+
 @pytest.mark.anyio
 async def test_done_text_equals_joined_deltas_and_hash():
     recorder = Recorder()

@@ -1,0 +1,5918 @@
+{
+  "dataset_version": "bqa-session-capabilities-v2",
+  "clock": "2026-10-28T16:00:00+08:00",
+  "model": "cn:deepseek-v4.1-flash",
+  "source_fingerprint": "5e3455f5952697480dd1f18dd824a3241eca27425049b905fea1a55759e52c01",
+  "model_config_fingerprint": "40f81ad9354149e419c09b68e9646f8ff0a5710b3f9ccc7d3dc91d37997face9",
+  "tools": "controlled frozen sanitized schemas and synthetic data",
+  "auth": "controlled identity, not native acceptance",
+  "skill_search": "controlled catalog scores",
+  "mcp_search": "controlled Top3, not embedding acceptance",
+  "evidence_kind": "configured_real_model_controlled_tools_offline_scenario_review",
+  "raw_evidence": ".local/bqa-session-capabilities-v2/model-import-20261029-final-core-v3",
+  "runs": [
+    {
+      "case_id": "A02",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "A02-1-1",
+          "input": "湖州市今天的空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 18467.36809199865,
+          "total_ms": 19954.310134999105,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 141,
+                  "total_tokens": 7621,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 36
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 36,
+                  "total_tokens": 10222,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 11
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 391,
+                  "total_tokens": 10698,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 218
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11669,
+                  "output_tokens": 234,
+                  "total_tokens": 11903,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11520
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 114
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11922,
+                  "output_tokens": 484,
+                  "total_tokens": 12406,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 153
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11026,
+                  "output_tokens": 459,
+                  "total_tokens": 11485,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 120
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A02-1-2",
+          "input": "那杭州呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 11356.748879999941,
+          "total_ms": 12786.814422001044,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12271,
+                  "output_tokens": 213,
+                  "total_tokens": 12484,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 42
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13630,
+                  "output_tokens": 760,
+                  "total_tokens": 14390,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12160
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 333
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 12825,
+                  "output_tokens": 399,
+                  "total_tokens": 13224,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A02-1-3",
+          "input": "那金华呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 9517.121337998105,
+          "total_ms": 10982.832462999795,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14039,
+                  "output_tokens": 182,
+                  "total_tokens": 14221,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13568
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 11
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15398,
+                  "output_tokens": 480,
+                  "total_tokens": 15878,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13952
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 34
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14609,
+                  "output_tokens": 484,
+                  "total_tokens": 15093,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 32
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A02",
+      "repeat": 2,
+      "turns": [
+        {
+          "input_id": "A02-2-1",
+          "input": "湖州市今天的空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 6,
+          "network_attempts": null,
+          "controlled_business_calls": 5,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 20209.190425997804,
+          "total_ms": 21851.792260000366,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 152,
+                  "total_tokens": 7632,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 47
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 34,
+                  "total_tokens": 10220,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 490,
+                  "total_tokens": 10797,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 265
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12777,
+                  "output_tokens": 230,
+                  "total_tokens": 13007,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 110
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13030,
+                  "output_tokens": 460,
+                  "total_tokens": 13490,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12672
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 115
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 12148,
+                  "output_tokens": 459,
+                  "total_tokens": 12607,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 138
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A02-2-2",
+          "input": "那杭州呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 10232.115545997658,
+          "total_ms": 11799.878671998158,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13361,
+                  "output_tokens": 240,
+                  "total_tokens": 13601,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12928
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 69
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14720,
+                  "output_tokens": 634,
+                  "total_tokens": 15354,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13312
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 212
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 13911,
+                  "output_tokens": 456,
+                  "total_tokens": 14367,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 46
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A02-2-3",
+          "input": "那金华呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 9165.830087000359,
+          "total_ms": 10614.23554599969,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15140,
+                  "output_tokens": 180,
+                  "total_tokens": 15320,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14592
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 16499,
+                  "output_tokens": 444,
+                  "total_tokens": 16943,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15104
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 38
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 15670,
+                  "output_tokens": 423,
+                  "total_tokens": 16093,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 13
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A02",
+      "repeat": 3,
+      "turns": [
+        {
+          "input_id": "A02-3-1",
+          "input": "湖州市今天的空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 4,
+          "network_attempts": null,
+          "controlled_business_calls": 3,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 15687.656465001055,
+          "total_ms": 17094.39134100103,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 184,
+                  "total_tokens": 7664,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 79
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 34,
+                  "total_tokens": 10220,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 233,
+                  "total_tokens": 10540,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 60
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11669,
+                  "output_tokens": 420,
+                  "total_tokens": 12089,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 395
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10418,
+                  "output_tokens": 448,
+                  "total_tokens": 10866,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8960
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 181
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A02-3-2",
+          "input": "那杭州呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 12969.39117200236,
+          "total_ms": 14611.489214999892,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11946,
+                  "output_tokens": 206,
+                  "total_tokens": 12152,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 35
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13305,
+                  "output_tokens": 757,
+                  "total_tokens": 14062,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 280
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 12553,
+                  "output_tokens": 686,
+                  "total_tokens": 13239,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 248
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A02-3-3",
+          "input": "那金华呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 9163.547170999664,
+          "total_ms": 10815.116005000164,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13753,
+                  "output_tokens": 183,
+                  "total_tokens": 13936,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13184
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 10
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15115,
+                  "output_tokens": 511,
+                  "total_tokens": 15626,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13696
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 95
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14298,
+                  "output_tokens": 456,
+                  "total_tokens": 14754,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 26
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A03",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "A03-1-1",
+          "input": "湖州市今天空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 17385.555592001765,
+          "total_ms": 18803.267466999387,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 127,
+                  "total_tokens": 7607,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 22
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 34,
+                  "total_tokens": 10220,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 301,
+                  "total_tokens": 10608,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 128
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11669,
+                  "output_tokens": 240,
+                  "total_tokens": 11909,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11520
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 87
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11955,
+                  "output_tokens": 397,
+                  "total_tokens": 12352,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 70
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11055,
+                  "output_tokens": 437,
+                  "total_tokens": 11492,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 90
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-1-2",
+          "input": "那杭州呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 10001.035503999447,
+          "total_ms": 12176.491796999471,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12312,
+                  "output_tokens": 231,
+                  "total_tokens": 12543,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 60
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13671,
+                  "output_tokens": 299,
+                  "total_tokens": 13970,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12288
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 274
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 12414,
+                  "output_tokens": 736,
+                  "total_tokens": 13150,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8960
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 220
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-1-3",
+          "input": "那金华呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 10205.373296998005,
+          "total_ms": 12000.307047997921,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14197,
+                  "output_tokens": 180,
+                  "total_tokens": 14377,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13568
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15556,
+                  "output_tokens": 665,
+                  "total_tokens": 16221,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14080
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 130
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14856,
+                  "output_tokens": 594,
+                  "total_tokens": 15450,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 68
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-1-4",
+          "input": "缩成两句",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 4800.028752000799,
+          "total_ms": 5691.54441900173,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 16091,
+                  "output_tokens": 175,
+                  "total_tokens": 16266,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15488
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 19
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 15010,
+                  "output_tokens": 217,
+                  "total_tokens": 15227,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 34
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-1-5",
+          "input": "谢谢",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 3852.897626999038,
+          "total_ms": 4266.282501997921,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 16281,
+                  "output_tokens": 44,
+                  "total_tokens": 16325,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 16000
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 15086,
+                  "output_tokens": 49,
+                  "total_tokens": 15135,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-1-6",
+          "input": "再查湖州",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 9589.125170998159,
+          "total_ms": 10874.876963000133,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 16340,
+                  "output_tokens": 215,
+                  "total_tokens": 16555,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 16128
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 42
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 17702,
+                  "output_tokens": 367,
+                  "total_tokens": 18069,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 16256
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 12
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 16813,
+                  "output_tokens": 469,
+                  "total_tokens": 17282,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 127
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A03",
+      "repeat": 2,
+      "turns": [
+        {
+          "input_id": "A03-2-1",
+          "input": "湖州市今天空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 4,
+          "network_attempts": null,
+          "controlled_business_calls": 3,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 13472.42279800048,
+          "total_ms": 14766.574174002017,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 199,
+                  "total_tokens": 7679,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 94
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 34,
+                  "total_tokens": 10220,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 231,
+                  "total_tokens": 10538,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 58
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11669,
+                  "output_tokens": 218,
+                  "total_tokens": 11887,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11520
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 193
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10418,
+                  "output_tokens": 293,
+                  "total_tokens": 10711,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 63
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-2-2",
+          "input": "那杭州呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 10421.570505001,
+          "total_ms": 12228.173923002032,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11909,
+                  "output_tokens": 202,
+                  "total_tokens": 12111,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 31
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13268,
+                  "output_tokens": 536,
+                  "total_tokens": 13804,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 137
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 12438,
+                  "output_tokens": 544,
+                  "total_tokens": 12982,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 120
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-2-3",
+          "input": "那金华呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 10806.86729700028,
+          "total_ms": 12293.894548001845,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13702,
+                  "output_tokens": 202,
+                  "total_tokens": 13904,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13184
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 31
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15061,
+                  "output_tokens": 523,
+                  "total_tokens": 15584,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13696
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 65
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14286,
+                  "output_tokens": 587,
+                  "total_tokens": 14873,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 205
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-2-4",
+          "input": "缩成两句",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 5912.889420000283,
+          "total_ms": 6279.794378002407,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15452,
+                  "output_tokens": 196,
+                  "total_tokens": 15648,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14976
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 34
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14379,
+                  "output_tokens": 138,
+                  "total_tokens": 14517,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 69
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-2-5",
+          "input": "谢谢",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 4784.401084998535,
+          "total_ms": 5226.3232939985755,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15528,
+                  "output_tokens": 22,
+                  "total_tokens": 15550,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15360
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14313,
+                  "output_tokens": 21,
+                  "total_tokens": 14334,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-2-6",
+          "input": "再查湖州",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 4,
+          "logical_tool_calls": 3,
+          "network_attempts": null,
+          "controlled_business_calls": 3,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 19384.374467997986,
+          "total_ms": 20418.28838499714,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15559,
+                  "output_tokens": 138,
+                  "total_tokens": 15697,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15360
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 113
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15680,
+                  "output_tokens": 196,
+                  "total_tokens": 15876,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15488
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 23
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 17042,
+                  "output_tokens": 361,
+                  "total_tokens": 17403,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15616
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 128
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 16032,
+                  "output_tokens": 297,
+                  "total_tokens": 16329,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 44
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A03",
+      "repeat": 3,
+      "turns": [
+        {
+          "input_id": "A03-3-1",
+          "input": "湖州市今天空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 15080.281423000997,
+          "total_ms": 16477.693007000198,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 126,
+                  "total_tokens": 7606,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 21
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 189,
+                  "total_tokens": 10375,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 10
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11641,
+                  "output_tokens": 205,
+                  "total_tokens": 11846,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 85
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11894,
+                  "output_tokens": 214,
+                  "total_tokens": 12108,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11520
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 189
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10643,
+                  "output_tokens": 367,
+                  "total_tokens": 11010,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8704
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 125
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-3-2",
+          "input": "那杭州呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 9402.362213000742,
+          "total_ms": 11022.745838999981,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12146,
+                  "output_tokens": 194,
+                  "total_tokens": 12340,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11776
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 24
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13504,
+                  "output_tokens": 427,
+                  "total_tokens": 13931,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12032
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 94
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 12608,
+                  "output_tokens": 458,
+                  "total_tokens": 13066,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 87
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-3-3",
+          "input": "那金华呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 8198.210963000747,
+          "total_ms": 10095.340504998603,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13885,
+                  "output_tokens": 185,
+                  "total_tokens": 14070,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13440
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 12
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15247,
+                  "output_tokens": 92,
+                  "total_tokens": 15339,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13824
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 67
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 13988,
+                  "output_tokens": 503,
+                  "total_tokens": 14491,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10624
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 40
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-3-4",
+          "input": "缩成两句",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 6017.259460997593,
+          "total_ms": 6446.552293997229,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15719,
+                  "output_tokens": 106,
+                  "total_tokens": 15825,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15232
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 11
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14579,
+                  "output_tokens": 298,
+                  "total_tokens": 14877,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 199
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-3-5",
+          "input": "谢谢",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 4339.251460998639,
+          "total_ms": 4753.260211000452,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15825,
+                  "output_tokens": 27,
+                  "total_tokens": 15852,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15616
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14615,
+                  "output_tokens": 24,
+                  "total_tokens": 14639,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A03-3-6",
+          "input": "再查湖州",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 3,
+          "network_attempts": null,
+          "controlled_business_calls": 3,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 9084.530962998542,
+          "total_ms": 10002.75442199927,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 15859,
+                  "output_tokens": 228,
+                  "total_tokens": 16087,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15616
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 40
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 17327,
+                  "output_tokens": 237,
+                  "total_tokens": 17564,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 15744
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 53
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 16270,
+                  "output_tokens": 403,
+                  "total_tokens": 16673,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 190
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A05",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "A05-1-1",
+          "input": "湖州市今天空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 14827.817339999456,
+          "total_ms": 16037.529298999289,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 134,
+                  "total_tokens": 7614,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 29
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 32,
+                  "total_tokens": 10218,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 7
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 412,
+                  "total_tokens": 10719,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 155
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11881,
+                  "output_tokens": 386,
+                  "total_tokens": 12267,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 125
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10917,
+                  "output_tokens": 337,
+                  "total_tokens": 11254,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 33
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A05-1-2",
+          "input": "帮我写一首爱情诗",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "missing_professional_scope_explanation",
+            "scope_explanation_not_brief"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 5093.229001999134,
+          "total_ms": 5968.650544000411,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12196,
+                  "output_tokens": 169,
+                  "total_tokens": 12365,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11776
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 36
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11014,
+                  "output_tokens": 110,
+                  "total_tokens": 11124,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8960
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A05-1-3",
+          "input": "讲解Python装饰器",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "scope_explanation_not_brief"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 5490.840001999459,
+          "total_ms": 6279.8776689996885,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12316,
+                  "output_tokens": 186,
+                  "total_tokens": 12502,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12160
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 59
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11214,
+                  "output_tokens": 147,
+                  "total_tokens": 11361,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 24
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A05",
+      "repeat": 2,
+      "turns": [
+        {
+          "input_id": "A05-2-1",
+          "input": "湖州市今天空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 18264.656592000392,
+          "total_ms": 19532.38909299762,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 148,
+                  "total_tokens": 7628,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 43
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 341,
+                  "total_tokens": 10527,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 153
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11654,
+                  "output_tokens": 277,
+                  "total_tokens": 11931,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 157
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11907,
+                  "output_tokens": 479,
+                  "total_tokens": 12386,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 175
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10986,
+                  "output_tokens": 403,
+                  "total_tokens": 11389,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 114
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A05-2-2",
+          "input": "帮我写一首爱情诗",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "scope_explanation_not_brief"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 5705.593210997904,
+          "total_ms": 6114.211295000132,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12207,
+                  "output_tokens": 139,
+                  "total_tokens": 12346,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 16
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11103,
+                  "output_tokens": 142,
+                  "total_tokens": 11245,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 18
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A05-2-3",
+          "input": "讲解Python装饰器",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "scope_explanation_not_brief"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 4817.122751999705,
+          "total_ms": 5848.6052109983575,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12341,
+                  "output_tokens": 125,
+                  "total_tokens": 12466,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12160
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 13
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11157,
+                  "output_tokens": 179,
+                  "total_tokens": 11336,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8832
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 28
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A05",
+      "repeat": 3,
+      "turns": [
+        {
+          "input_id": "A05-3-1",
+          "input": "湖州市今天空气质量如何？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 16277.874299998075,
+          "total_ms": 17726.66813399701,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 141,
+                  "total_tokens": 7621,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 36
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 33,
+                  "total_tokens": 10219,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 8
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 284,
+                  "total_tokens": 10591,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 111
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11669,
+                  "output_tokens": 310,
+                  "total_tokens": 11979,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11520
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 190
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11922,
+                  "output_tokens": 59,
+                  "total_tokens": 11981,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 34
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10669,
+                  "output_tokens": 385,
+                  "total_tokens": 11054,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10368
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 126
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A05-3-2",
+          "input": "帮我写一首爱情诗",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "scope_explanation_not_brief"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 5285.5389609976555,
+          "total_ms": 6178.756668999995,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12192,
+                  "output_tokens": 143,
+                  "total_tokens": 12335,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 21
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11085,
+                  "output_tokens": 154,
+                  "total_tokens": 11239,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 29
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A05-3-3",
+          "input": "讲解Python装饰器",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "scope_explanation_not_brief"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 4810.914836001757,
+          "total_ms": 5877.141836001101,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12327,
+                  "output_tokens": 163,
+                  "total_tokens": 12490,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12160
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 19
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11141,
+                  "output_tokens": 164,
+                  "total_tokens": 11305,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9088
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 22
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A06",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "A06-1-1",
+          "input": "查询湖州市今天空气质量，并分析2026年10月21日至27日PM2.5逐日趋势。",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": true,
+          "scenario_failures": [
+            "raw_internal_tool_protocol_in_answer"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 2,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 7,
+          "network_attempts": null,
+          "controlled_business_calls": 5,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+            "skill:basic-qa:trend-analysis": "sha256:ef3f5c6e509d9e6a9d804c253894f89c69cc247621642053055aa05b27d7eaa8"
+          },
+          "first_answer_ms": 17095.345549998456,
+          "total_ms": 17398.665592001635,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7499,
+                  "output_tokens": 247,
+                  "total_tokens": 7746,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 47
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12000,
+                  "output_tokens": 33,
+                  "total_tokens": 12033,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11776
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 8
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12121,
+                  "output_tokens": 441,
+                  "total_tokens": 12562,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 75
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14994,
+                  "output_tokens": 263,
+                  "total_tokens": 15257,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12032
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 238
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 13638,
+                  "output_tokens": 239,
+                  "total_tokens": 13877,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10624
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 147
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A06",
+      "repeat": 2,
+      "turns": [
+        {
+          "input_id": "A06-2-1",
+          "input": "查询湖州市今天空气质量，并分析2026年10月21日至27日PM2.5逐日趋势。",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 2,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 8,
+          "network_attempts": null,
+          "controlled_business_calls": 6,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+            "skill:basic-qa:trend-analysis": "sha256:ef3f5c6e509d9e6a9d804c253894f89c69cc247621642053055aa05b27d7eaa8"
+          },
+          "first_answer_ms": 22776.984259999153,
+          "total_ms": 25836.904136998783,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7499,
+                  "output_tokens": 254,
+                  "total_tokens": 7753,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 54
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12000,
+                  "output_tokens": 68,
+                  "total_tokens": 12068,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11776
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 43
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12121,
+                  "output_tokens": 474,
+                  "total_tokens": 12595,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 109
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14993,
+                  "output_tokens": 225,
+                  "total_tokens": 15218,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12032
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 163
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 16116,
+                  "output_tokens": 355,
+                  "total_tokens": 16471,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14976
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 330
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 14758,
+                  "output_tokens": 1077,
+                  "total_tokens": 15835,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10752
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 410
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A06",
+      "repeat": 3,
+      "turns": [
+        {
+          "input_id": "A06-3-1",
+          "input": "查询湖州市今天空气质量，并分析2026年10月21日至27日PM2.5逐日趋势。",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 2,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 9,
+          "network_attempts": null,
+          "controlled_business_calls": 7,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+            "skill:basic-qa:trend-analysis": "sha256:ef3f5c6e509d9e6a9d804c253894f89c69cc247621642053055aa05b27d7eaa8"
+          },
+          "first_answer_ms": 23886.597136999626,
+          "total_ms": 26918.240512997727,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7499,
+                  "output_tokens": 283,
+                  "total_tokens": 7782,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 83
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12000,
+                  "output_tokens": 36,
+                  "total_tokens": 12036,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11776
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 11
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12121,
+                  "output_tokens": 507,
+                  "total_tokens": 12628,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 137
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14998,
+                  "output_tokens": 424,
+                  "total_tokens": 15422,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12032
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 275
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 17264,
+                  "output_tokens": 309,
+                  "total_tokens": 17573,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14976
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 284
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 15906,
+                  "output_tokens": 1065,
+                  "total_tokens": 16971,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10752
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 454
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A07",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "A07-1-1",
+          "input": "查询湖州市今天空气质量",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 16283.709923998686,
+          "total_ms": 17848.75075799937,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7479,
+                  "output_tokens": 137,
+                  "total_tokens": 7616,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 32
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10185,
+                  "output_tokens": 41,
+                  "total_tokens": 10226,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 16
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10306,
+                  "output_tokens": 242,
+                  "total_tokens": 10548,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 69
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11668,
+                  "output_tokens": 215,
+                  "total_tokens": 11883,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 95
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11921,
+                  "output_tokens": 118,
+                  "total_tokens": 12039,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 93
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10668,
+                  "output_tokens": 412,
+                  "total_tokens": 11080,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8960
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 85
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A07-1-2",
+          "input": "比较湖州2026年9月和2025年9月的综合指数及PM2.5",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:comparison-composition": "sha256:a7b42de38370d848a5babb2dd7e3ec3d8a787c769d6c294fea4aa80de5490b82"
+          },
+          "first_answer_ms": 16320.303674998286,
+          "total_ms": 17674.762008999096,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12274,
+                  "output_tokens": 189,
+                  "total_tokens": 12463,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 82
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14269,
+                  "output_tokens": 240,
+                  "total_tokens": 14509,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 68
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14626,
+                  "output_tokens": 357,
+                  "total_tokens": 14983,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14208
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 185
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 16915,
+                  "output_tokens": 132,
+                  "total_tokens": 17047,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14592
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 107
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 15476,
+                  "output_tokens": 418,
+                  "total_tokens": 15894,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10496
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 120
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A07-1-3",
+          "input": "再查杭州市今天空气质量",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 11423.56846400071,
+          "total_ms": 12754.13217300229,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 17224,
+                  "output_tokens": 204,
+                  "total_tokens": 17428,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 16896
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 33
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 18583,
+                  "output_tokens": 490,
+                  "total_tokens": 19073,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 17152
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 169
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 17487,
+                  "output_tokens": 648,
+                  "total_tokens": 18135,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 306
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A07",
+      "repeat": 2,
+      "turns": [
+        {
+          "input_id": "A07-2-1",
+          "input": "查询湖州市今天空气质量",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 4,
+          "network_attempts": null,
+          "controlled_business_calls": 3,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 14622.38646500191,
+          "total_ms": 15864.016465999157,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7479,
+                  "output_tokens": 122,
+                  "total_tokens": 7601,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 17
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10185,
+                  "output_tokens": 34,
+                  "total_tokens": 10219,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10306,
+                  "output_tokens": 344,
+                  "total_tokens": 10650,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 171
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11668,
+                  "output_tokens": 249,
+                  "total_tokens": 11917,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11520
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 224
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10417,
+                  "output_tokens": 430,
+                  "total_tokens": 10847,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 166
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A07-2-2",
+          "input": "比较湖州2026年9月和2025年9月的综合指数及PM2.5",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:comparison-composition": "sha256:a7b42de38370d848a5babb2dd7e3ec3d8a787c769d6c294fea4aa80de5490b82"
+          },
+          "first_answer_ms": 14931.329674000153,
+          "total_ms": 16257.398049001495,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11958,
+                  "output_tokens": 160,
+                  "total_tokens": 12118,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 53
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13953,
+                  "output_tokens": 172,
+                  "total_tokens": 14125,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13184
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14310,
+                  "output_tokens": 223,
+                  "total_tokens": 14533,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 13952
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 51
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 16599,
+                  "output_tokens": 146,
+                  "total_tokens": 16745,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 14208
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 121
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 15162,
+                  "output_tokens": 388,
+                  "total_tokens": 15550,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11776
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 91
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A07-2-3",
+          "input": "再查杭州市今天空气质量",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 12486.599797000963,
+          "total_ms": 13746.03654800012,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 16907,
+                  "output_tokens": 221,
+                  "total_tokens": 17128,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 16512
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 50
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 18266,
+                  "output_tokens": 565,
+                  "total_tokens": 18831,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 16896
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 258
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 17157,
+                  "output_tokens": 503,
+                  "total_tokens": 17660,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 196
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A07",
+      "repeat": 3,
+      "turns": [
+        {
+          "input_id": "A07-3-1",
+          "input": "查询湖州市今天空气质量",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 20436.561508999148,
+          "total_ms": 21587.633300998277,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7479,
+                  "output_tokens": 123,
+                  "total_tokens": 7602,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 18
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10185,
+                  "output_tokens": 30,
+                  "total_tokens": 10215,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 5
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10306,
+                  "output_tokens": 327,
+                  "total_tokens": 10633,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 164
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11654,
+                  "output_tokens": 343,
+                  "total_tokens": 11997,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 223
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11907,
+                  "output_tokens": 394,
+                  "total_tokens": 12301,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 129
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10945,
+                  "output_tokens": 408,
+                  "total_tokens": 11353,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 143
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A07-3-2",
+          "input": "比较湖州2026年9月和2025年9月的综合指数及PM2.5",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "dedicated_comparison_skill_bypassed"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 2,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 16672.972799999116,
+          "total_ms": 18244.313508999767,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12198,
+                  "output_tokens": 279,
+                  "total_tokens": 12477,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 67
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12663,
+                  "output_tokens": 1473,
+                  "total_tokens": 14136,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12160
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 1136
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11769,
+                  "output_tokens": 638,
+                  "total_tokens": 12407,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 275
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        },
+        {
+          "input_id": "A07-3-3",
+          "input": "再查杭州市今天空气质量",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "dedicated_comparison_skill_bypassed"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 3,
+          "logical_tool_calls": 3,
+          "network_attempts": null,
+          "controlled_business_calls": 3,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 11114.024839000194,
+          "total_ms": 12774.213673001213,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 13037,
+                  "output_tokens": 330,
+                  "total_tokens": 13367,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12544
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 60
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 14618,
+                  "output_tokens": 584,
+                  "total_tokens": 15202,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12928
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 184
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 13783,
+                  "output_tokens": 535,
+                  "total_tokens": 14318,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 109
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B01",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "B01-1-1",
+          "input": "湖州市今天空气质量怎么样？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 6,
+          "network_attempts": null,
+          "controlled_business_calls": 5,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 18059.105634001753,
+          "total_ms": 19117.16117600008,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 126,
+                  "total_tokens": 7606,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 21
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 34,
+                  "total_tokens": 10220,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 352,
+                  "total_tokens": 10659,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 68
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11908,
+                  "output_tokens": 223,
+                  "total_tokens": 12131,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 112
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12148,
+                  "output_tokens": 357,
+                  "total_tokens": 12505,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11904
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 101
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11177,
+                  "output_tokens": 305,
+                  "total_tokens": 11482,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8576
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 48
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B01",
+      "repeat": 2,
+      "turns": [
+        {
+          "input_id": "B01-2-1",
+          "input": "湖州市今天空气质量怎么样？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 5,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 13050.375255999825,
+          "total_ms": 14563.471714998741,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 130,
+                  "total_tokens": 7610,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 25
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 187,
+                  "total_tokens": 10373,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 8
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11641,
+                  "output_tokens": 239,
+                  "total_tokens": 11880,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 119
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11894,
+                  "output_tokens": 186,
+                  "total_tokens": 12080,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11520
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 161
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10643,
+                  "output_tokens": 346,
+                  "total_tokens": 10989,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8832
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 32
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B01",
+      "repeat": 3,
+      "turns": [
+        {
+          "input_id": "B01-3-1",
+          "input": "湖州市今天空气质量怎么样？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 5,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037"
+          },
+          "first_answer_ms": 16683.287840998673,
+          "total_ms": 18339.598632999696,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7480,
+                  "output_tokens": 134,
+                  "total_tokens": 7614,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 29
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10186,
+                  "output_tokens": 33,
+                  "total_tokens": 10219,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 8
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10307,
+                  "output_tokens": 339,
+                  "total_tokens": 10646,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 166
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11669,
+                  "output_tokens": 319,
+                  "total_tokens": 11988,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 199
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11922,
+                  "output_tokens": 50,
+                  "total_tokens": 11972,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11648
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 25
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 10669,
+                  "output_tokens": 468,
+                  "total_tokens": 11137,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8960
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 136
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B02",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "B02-1-1",
+          "input": "查询湖州今天空气质量，并核对坐标（120.15,30.27）所属行政区",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 1,
+          "load_skill": 1,
+          "load_mcp_tool": 1,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 9,
+          "network_attempts": null,
+          "controlled_business_calls": 6,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat": "sha256:755254d5d5cf72683e2a21c4da45dc7582e5dd821752de2aa1d10b7734354ba6"
+          },
+          "first_answer_ms": 18841.56717500082,
+          "total_ms": 20574.004259000503,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7494,
+                  "output_tokens": 302,
+                  "total_tokens": 7796,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 158
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10665,
+                  "output_tokens": 140,
+                  "total_tokens": 10805,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9856
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 10
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11135,
+                  "output_tokens": 569,
+                  "total_tokens": 11704,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 211
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12854,
+                  "output_tokens": 309,
+                  "total_tokens": 13163,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11008
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 224
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12988,
+                  "output_tokens": 216,
+                  "total_tokens": 13204,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12800
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 191
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11638,
+                  "output_tokens": 450,
+                  "total_tokens": 12088,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8704
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 87
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B02",
+      "repeat": 2,
+      "turns": [
+        {
+          "input_id": "B02-2-1",
+          "input": "查询湖州今天空气质量，并核对坐标（120.15,30.27）所属行政区",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 1,
+          "load_skill": 1,
+          "load_mcp_tool": 1,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 9,
+          "network_attempts": null,
+          "controlled_business_calls": 6,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat": "sha256:755254d5d5cf72683e2a21c4da45dc7582e5dd821752de2aa1d10b7734354ba6"
+          },
+          "first_answer_ms": 23386.70676000038,
+          "total_ms": 26388.8304280008,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7494,
+                  "output_tokens": 264,
+                  "total_tokens": 7758,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 123
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10662,
+                  "output_tokens": 130,
+                  "total_tokens": 10792,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10496
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11132,
+                  "output_tokens": 422,
+                  "total_tokens": 11554,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10624
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 174
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12613,
+                  "output_tokens": 393,
+                  "total_tokens": 13006,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11008
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 233
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12866,
+                  "output_tokens": 451,
+                  "total_tokens": 13317,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12544
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 426
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 11516,
+                  "output_tokens": 906,
+                  "total_tokens": 12422,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9344
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 368
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B02",
+      "repeat": 3,
+      "turns": [
+        {
+          "input_id": "B02-3-1",
+          "input": "查询湖州今天空气质量，并核对坐标（120.15,30.27）所属行政区",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 1,
+          "load_skill": 1,
+          "load_mcp_tool": 1,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 9,
+          "network_attempts": null,
+          "controlled_business_calls": 6,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:air-quality-basic-query": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat": "sha256:755254d5d5cf72683e2a21c4da45dc7582e5dd821752de2aa1d10b7734354ba6"
+          },
+          "first_answer_ms": 18852.97692599852,
+          "total_ms": 19824.776508998184,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7494,
+                  "output_tokens": 267,
+                  "total_tokens": 7761,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 123
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10665,
+                  "output_tokens": 139,
+                  "total_tokens": 10804,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9856
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 9
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 11135,
+                  "output_tokens": 335,
+                  "total_tokens": 11470,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10112
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 87
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12616,
+                  "output_tokens": 295,
+                  "total_tokens": 12911,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 11008
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 135
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 12869,
+                  "output_tokens": 190,
+                  "total_tokens": 13059,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 12544
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 165
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B03",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "B03-1-1",
+          "input": "核对监测点坐标（120.15,30.27）所属行政区",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 1,
+          "load_skill": 0,
+          "load_mcp_tool": 1,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 4,
+          "network_attempts": null,
+          "controlled_business_calls": 2,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat": "sha256:755254d5d5cf72683e2a21c4da45dc7582e5dd821752de2aa1d10b7734354ba6"
+          },
+          "first_answer_ms": 13908.948215001146,
+          "total_ms": 14960.38413199858,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7489,
+                  "output_tokens": 174,
+                  "total_tokens": 7663,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 123
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7971,
+                  "output_tokens": 120,
+                  "total_tokens": 8091,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7424
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 5
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 8310,
+                  "output_tokens": 106,
+                  "total_tokens": 8416,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7424
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 21
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 8444,
+                  "output_tokens": 199,
+                  "total_tokens": 8643,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8192
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 114
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 8578,
+                  "output_tokens": 25,
+                  "total_tokens": 8603,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8320
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 0
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 7847,
+                  "output_tokens": 211,
+                  "total_tokens": 8058,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 6656
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 76
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B03",
+      "repeat": 2,
+      "turns": [
+        {
+          "input_id": "B03-2-1",
+          "input": "核对监测点坐标（120.15,30.27）所属行政区",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 1,
+          "search_mcp": 1,
+          "load_skill": 0,
+          "load_mcp_tool": 1,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 7,
+          "network_attempts": null,
+          "controlled_business_calls": 4,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat": "sha256:755254d5d5cf72683e2a21c4da45dc7582e5dd821752de2aa1d10b7734354ba6"
+          },
+          "first_answer_ms": 17212.882840998645,
+          "total_ms": 18665.398883000307,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7489,
+                  "output_tokens": 275,
+                  "total_tokens": 7764,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 187
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 9517,
+                  "output_tokens": 119,
+                  "total_tokens": 9636,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7424
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 4
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 9856,
+                  "output_tokens": 244,
+                  "total_tokens": 10100,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7424
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 84
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10109,
+                  "output_tokens": 236,
+                  "total_tokens": 10345,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9728
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 76
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10362,
+                  "output_tokens": 116,
+                  "total_tokens": 10478,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9984
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 91
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 9631,
+                  "output_tokens": 382,
+                  "total_tokens": 10013,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 6656
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 150
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "B03",
+      "repeat": 3,
+      "turns": [
+        {
+          "input_id": "B03-3-1",
+          "input": "核对监测点坐标（120.15,30.27）所属行政区",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": false,
+          "recovered_completed": false,
+          "incomplete": true,
+          "user_visible_error": false,
+          "scenario_failures": [
+            "independent_coordinate_query_not_executed",
+            "independent_tool_not_loaded"
+          ],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 6334.416002999205,
+          "total_ms": 7271.366544999182,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7489,
+                  "output_tokens": 214,
+                  "total_tokens": 7703,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7296
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 189
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 6863,
+                  "output_tokens": 359,
+                  "total_tokens": 7222,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 6656
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 239
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "not native SDK, live MCP, embedding or browser acceptance",
+    "scenario assertions are offline tests and never block product answers",
+    "answer factual quality is not fully assessed by these structural assertions",
+    "request captures exclude authentication headers; private raw evidence stays ignored"
+  ],
+  "totals": {
+    "first_pass_completed": 47,
+    "recovered_completed": 0,
+    "incomplete": 10,
+    "user_visible_error": 1,
+    "runs": 24,
+    "turns": 57
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "containers": [
+    "aa-conversation-20261023-r04-pg",
+    "aa-conversation-20261023-r04-redis",
+    "aa-conversation-20261023-r04-api"
+  ],
+  "ports": {
+    "native": 12625,
+    "admin": 18125,
+    "frontend": 13125
+  },
+  "temp": "/var/folders/sl/97x01_kj0xvcq_k7zhb7w4dm0000gn/T/aa-conversation-browser-d05dux0g",
+  "pids": [
+    50539,
+    50540
+  ],
+  "identity": "controlled",
+  "model": "scripted fixture",
+  "native": "official LangGraph API",
+  "formal_resources_used": false
+}

@@ -1,0 +1,10 @@
+{
+  "owned_containers_remaining": [],
+  "only_removed_since_last_snapshot": [
+    "bqa-cap-v2-pg-20261028"
+  ],
+  "other_container_ids_unchanged": true,
+  "owned_model_directories_removed_after_preservation": true,
+  "browser_task_space_finished": true,
+  "formal_restart_or_migration_performed": false
+}

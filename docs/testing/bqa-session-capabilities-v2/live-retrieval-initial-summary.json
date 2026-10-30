@@ -1,0 +1,48 @@
+{
+  "evidence_kind": "real_configured_embedding+live_protected_catalog+owned_postgres",
+  "business_model": "NOT_RUN",
+  "browser": "NOT_RUN",
+  "mcp_samples": [
+    {
+      "tool_id": "mcp:ipp:mcp_city_base_get_district_by_lnglat",
+      "arguments": {
+        "longitude": "120.15",
+        "latitude": "30.27",
+        "level": "1"
+      },
+      "payload_bytes": 190,
+      "outcome": "succeeded",
+      "mcp_is_error": false,
+      "elapsed_ms": 787.5584580033319
+    },
+    {
+      "tool_id": "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat",
+      "arguments": {
+        "region": "湖州市",
+        "type": "daily_count",
+        "sTime": "2026-10-28 15:00"
+      },
+      "payload_bytes": 760,
+      "outcome": "succeeded",
+      "mcp_is_error": false,
+      "elapsed_ms": 514.3223330087494
+    }
+  ],
+  "catalog_count": 109,
+  "catalog_version": "sha256:d2ce14fc42070341fbaa810337c8544d2b18988e11fd6c885c0b8f35c7bb27bc",
+  "recall_at_3": 0.9166666666666666,
+  "status": "COMPLETED_WITH_RECORDED_RESULTS",
+  "evidence_retention_note": "初次逐题完整JSON被诊断脚本错误覆盖；原命令日志、真实接口原始响应、首次失败候选及逐题耗时计数仍可追溯。未保留的逐题候选不作已保存声称。第二次完整结果另存live-retrieval-purpose.json。",
+  "failed_seed": {
+    "query": "查询站点实时空气质量",
+    "gold": [
+      "mcp:ipp:mcp_station_common_air_real_data"
+    ],
+    "candidates": [
+      "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat",
+      "mcp:ipp:broadcastHour",
+      "mcp:ipp:text2sql_today_single_city_aqi_route"
+    ],
+    "hit": false
+  }
+}

@@ -80,13 +80,13 @@ services:
       LANGGRAPH_API_URL: "http://localhost:2024"
       # 企业模式：原生 custom auth（运行票据 + 资源级授权）。noop 已退出。
       LANGGRAPH_AUTH_TYPE: "custom"
-      LANGGRAPH_AUTH: '{"path":"/deps/air_agent/src/common/identity/langgraph_auth.py:auth","disable_studio_auth":true}'
+      LANGGRAPH_AUTH: '{"path":"/deps/air_agent/src/application/langgraph_auth.py:auth","disable_studio_auth":true}'
       # 身份库运行角色连接（RLS 生效；与 admin API 同角色）
       # All native-process configuration comes from one complete env_file.
       # Apple Container Compose reads literal key=value lines (no shell quotes).
       # Keep host .env separate: its loopback URLs are invalid in the VM.
       RUNTIME_TICKET_AUDIENCE: "langgraph-runtime"
-      LANGGRAPH_HTTP: '{"app":"/deps/air_agent/src/common/artifact_http.py:app"}'
+      LANGGRAPH_HTTP: '{"app":"/deps/air_agent/src/application/http.py:app"}'
       DB_MIGRATION_BY_CORE_API: "false"
 
       # --- API keys（从 .env 注入）---

@@ -1,0 +1,79 @@
+{
+  "change": "refactor-graph-module-ownership",
+  "recorded_date": "2026-10-30",
+  "baseline_head": "98ce4ff33aecdcdcec6ef87a9c190ee1e14eefe1",
+  "progress": {
+    "total": 31,
+    "complete": 29,
+    "remaining": 2
+  },
+  "open_tasks": [
+    "7.1",
+    "7.4"
+  ],
+  "affected_regression": {
+    "passed": 165,
+    "failed": 0,
+    "seconds": 47.57
+  },
+  "root_unit_snapshot": {
+    "passed": 1218,
+    "skipped": 79,
+    "failed_existing": 6,
+    "seconds": 103.36,
+    "additional_data_compiled_cases_verified_separately": 2
+  },
+  "send_and_connection": {
+    "passed": 36,
+    "real_counting_mcp": true,
+    "ledger_mock_in_this_suite": true
+  },
+  "postgres_mcp_and_sdk_observation": {
+    "passed": 3,
+    "runtime_owner": false,
+    "runtime_bypass_rls": false
+  },
+  "old_and_new_frozen_native": {
+    "model_requests_each": 39,
+    "tool_requests_each": 8,
+    "success": true
+  },
+  "configured_model_native": {
+    "model": "cn:deepseek-v4.1-flash",
+    "turns": 7,
+    "provider_calls": [
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3
+    ],
+    "business_tool_requests": 0,
+    "summary_and_followup": true,
+    "synthetic_data": true,
+    "test_summary_trigger_ratio": 0.05,
+    "source_stage": "before final unreachable branch removal"
+  },
+  "upgrade_and_rollback_read": {
+    "success": true,
+    "expanded_data_resume_gold": "failed identically before and after: model 2, new forecast tool 0"
+  },
+  "checks": {
+    "ruff": true,
+    "format": true,
+    "openspec_strict": true,
+    "diff_whitespace": true,
+    "maintained_links": true,
+    "skill_drift": false,
+    "unrelated_preexisting_diff_sections_unchanged": 23
+  },
+  "remaining_owned_containers": 0,
+  "independent_final_acceptance": false,
+  "committed": false,
+  "pushed": false,
+  "deployed": false,
+  "archived": false,
+  "langgraph_sdk_version": "0.4.8"
+}

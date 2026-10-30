@@ -1036,6 +1036,16 @@ async def on_thread_create_run(
                 ),
             )
     graph_id = actual_graph
+    from common.capability_policy import policy_for
+
+    try:
+        policy_for(actual_graph).validate_input(value)
+    except Auth.exceptions.HTTPException:
+        raise
+    except Exception as exc:
+        raise Auth.exceptions.HTTPException(
+            status_code=503, detail="业务输入策略不可用"
+        ) from exc
     # 业务准入：实际执行图 → 稳定业务 → 当前身份精确权限求交。
     from common.identity.business_access import (
         BusinessAccessError,

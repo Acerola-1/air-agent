@@ -65,7 +65,7 @@ async def main() -> None:
     parser.add_argument("--graph", choices=["basic-qa", "data-analysis"], default="basic-qa")
     args = parser.parse_args()
     _load_env()
-    from common.business_graph.builder import build_business_graph
+    from basic_qa.builder import build_basic_qa_graph
     from common.output_streaming.contract import OutputStreamValidator
 
     if args.graph == "data-analysis":
@@ -80,7 +80,7 @@ async def main() -> None:
             }
         }
     else:
-        graph = build_business_graph(
+        graph = build_basic_qa_graph(
             skills_dir=str(ROOT / "src/basic_qa/skills"), name="basic-qa"
         )
         config = {"configurable": {"thread_id": "real-config-thread"}}

@@ -22,10 +22,11 @@ from langgraph.graph import START, StateGraph
 from langgraph.prebuilt import ToolNode
 from loguru import logger
 
-from common.business_graph.tool_wrappers import composed_tool_wrapper
+from application.business_policies import configure
 from common.event_ledger.lifecycle import make_ledger_finalize_node
 from common.langfuse_tracing import with_langfuse_tracing
 from common.runtime_tools import get_business_tools
+from common.tool_execution.policy import register_execution_policy
 from data_analysis.nodes import (
     call_model,
     finalize_output,
@@ -34,6 +35,11 @@ from data_analysis.nodes import (
     validate_input,
 )
 from data_analysis.state import DataAnalysisState
+from data_analysis.tool_policy import authorize_send, composed_tool_wrapper
+
+configure()
+
+register_execution_policy("data-analysis", authorize_send, requires_request=False)
 
 SKILLS_DIR = Path(__file__).parent / "skills"
 

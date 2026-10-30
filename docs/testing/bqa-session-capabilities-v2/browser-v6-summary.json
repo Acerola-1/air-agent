@@ -1,0 +1,120 @@
+{
+  "date": "2026-10-29",
+  "evidence_kind": "actual_ego_browser_frontend_bff_native_sdk_with_controlled_iam_model_mcp_knowledge",
+  "task_space": 25,
+  "task_space_finished": true,
+  "checks": [
+    {
+      "name": "A02_three_cities",
+      "passed": true,
+      "observed_control_loads": [
+        1,
+        0,
+        0
+      ],
+      "observed_business_calls": [
+        1,
+        1,
+        1
+      ],
+      "user_visible_tool_errors": 0,
+      "screenshot_private": ".local/bqa-session-capabilities-v2/native-browser-v5/three-cities.png"
+    },
+    {
+      "name": "A03_restate_thanks_return_city",
+      "passed": true,
+      "restate_business_calls": 0,
+      "thanks_business_calls": 0,
+      "return_city_business_calls": 1,
+      "return_city_loads": 0,
+      "screenshot_private": ".local/bqa-session-capabilities-v2/native-browser-v5/restate-scope.png"
+    },
+    {
+      "name": "A05_scope_redirection",
+      "passed": true,
+      "unrelated_tasks_completed": false,
+      "new_tool_calls": 0,
+      "model": "controlled policy; intelligence evaluated separately"
+    },
+    {
+      "name": "refresh_select_persisted_thread_then_city_followup",
+      "passed": true,
+      "thread_id": "1582a76a-6f79-44d8-93d3-6aa896ceb2fb",
+      "tool_names": [
+        "mcp_city_common_get_air_quality_realtime_stat"
+      ],
+      "region": "杭州市",
+      "time": "2026-10-28 15:00",
+      "load_skill": 0,
+      "state_next": [],
+      "state_tasks": [],
+      "screenshot_private": ".local/bqa-session-capabilities-v2/native-browser-v6/refresh-reuse.png"
+    },
+    {
+      "name": "cancel_while_model_pending",
+      "passed": true,
+      "new_business_calls": 0,
+      "returned_to_idle": true,
+      "new_thread_disabled_during_run": true,
+      "graph_choice_disabled_during_run": true,
+      "mode_buttons_disabled_during_run": false,
+      "screenshot_private": ".local/bqa-session-capabilities-v2/native-browser-v6/cancelled.png"
+    },
+    {
+      "name": "graph_A_B_A",
+      "passed": true,
+      "old_answer_visible_in_new_B_context": false,
+      "old_thread_restored_when_explicitly_selected": true,
+      "selection_only_no_data_analysis_run": true
+    },
+    {
+      "name": "knowledge_citation_original_text",
+      "passed": true,
+      "original_text_http_status": 200,
+      "delegation_and_reference_validation": true,
+      "source_text": "合成臭氧资料：臭氧可以在阳光作用下，经由氮氧化物与挥发性有机物参与的光化学反应形成。",
+      "screenshot_private": ".local/bqa-session-capabilities-v2/native-browser-v6/citation-source.png"
+    },
+    {
+      "name": "narrow_390x844",
+      "passed": true,
+      "composer_and_send_visible": true,
+      "screenshot_private": ".local/bqa-session-capabilities-v2/native-browser-v6/narrow.png"
+    }
+  ],
+  "controlled_business_executions_v6": [
+    {
+      "name": "mcp_city_common_get_air_quality_realtime_stat",
+      "params": {
+        "region": "湖州市",
+        "type": "daily_count",
+        "sTime": "2026-10-28 15:00",
+        "eTime": null
+      }
+    },
+    {
+      "name": "mcp_city_common_get_air_quality_realtime_stat",
+      "params": {
+        "region": "杭州市",
+        "type": "daily_count",
+        "sTime": "2026-10-28 15:00",
+        "eTime": null
+      }
+    }
+  ],
+  "exclusions": [
+    {
+      "name": "canvas",
+      "reason": "用户在2026-10-29明确要求停止画布验收；7.4按此缩小，未声称画布通过。",
+      "earlier_observation": "此前sidebar工具200且已持久化，但页面画布为空；默认canvas_window复测未进行。",
+      "retained_private_screenshot": ".local/bqa-session-capabilities-v2/native-browser-v6/sidebar-empty.png"
+    }
+  ],
+  "limitations": [
+    "受控模型、IAM、MCP和知识样本；真实浏览器链路不等于正式服务全真实业务验收。",
+    "刷新当前产品返回空新会话；需在列表重新选中持久化线程，本次复用验证按该实际交互执行。",
+    "此前以全页文本计数或未就绪输入判断的超时已保留，不能当产品通过或失败。",
+    "模式按钮运行期间仍可点击，源自本次未修改的ModeSwitcher；当次受理模式由服务端冻结，SDK反例已验证不可换模式恢复。未宣称该UI已修复。",
+    "未验证PDF下载、系统输入法或物理剪贴板。"
+  ]
+}

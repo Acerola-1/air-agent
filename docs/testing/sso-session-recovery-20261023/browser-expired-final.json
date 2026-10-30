@@ -1,0 +1,7 @@
+{
+  "account": true,
+  "focused": "username",
+  "notice": "登录已过期，请使用账号和密码重新登录。",
+  "passwordType": "password",
+  "url": "http://127.0.0.1:13126/login"
+}

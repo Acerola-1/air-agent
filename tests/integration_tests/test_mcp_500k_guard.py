@@ -14,7 +14,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from typing_extensions import TypedDict
 
-from common.business_graph.tool_wrappers import composed_tool_wrapper
+from basic_qa.tool_runtime import composed_tool_wrapper
 from common.storage.artifact_db import get_tool_artifact
 
 
@@ -61,7 +61,7 @@ def test_mcp_500k_overflow_end_to_end(tmp_path, monkeypatch):
             content="【海淀区空气质量提炼】从全量数据中检索到海淀区指标：AQI 35，优，PM2.5 为 10μg/m³。"
         )
         monkeypatch.setattr(
-            "common.business_graph.subagent_summarizer.ModelRegistry.main_llm",
+            "common.tool_output_summary.ModelRegistry.main_llm",
             mock_subagent_llm,
         )
 

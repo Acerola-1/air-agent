@@ -1,5 +1,6 @@
 """MCP 实际 HTTP 发送守卫；缓存 SDK 工具不得缓存调用者身份或撤销结果."""
 
+from collections.abc import Awaitable, Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 
@@ -10,6 +11,19 @@ from common.identity.runtime import RuntimeIdentity, revalidate
 _CURRENT_IDENTITY: ContextVar[RuntimeIdentity | None] = ContextVar(
     "mcp_send_identity", default=None
 )
+_DISPATCH_GUARD: ContextVar[Callable[[], Awaitable[None]] | None] = ContextVar(
+    "mcp_dispatch_guard", default=None
+)
+
+
+@contextmanager
+def mcp_dispatch_scope(guard: Callable[[], Awaitable[None]]):
+    """Bind an invocation's final guard to every HTTP send in that invocation."""
+    token = _DISPATCH_GUARD.set(guard)
+    try:
+        yield
+    finally:
+        _DISPATCH_GUARD.reset(token)
 
 
 @contextmanager
@@ -56,4 +70,12 @@ class MCPOutboundAuth(httpx.Auth):
         headers = DEFAULT_PROVIDER.auth_headers(current.connection)
         if headers:
             request.headers.update(headers)
+        guard = _DISPATCH_GUARD.get()
+        if guard is not None:
+            try:
+                await guard()
+            except McpAuthorizationError:
+                raise
+            except Exception as exc:
+                raise McpAuthorizationError("无法确认最终发送授权") from exc
         yield request

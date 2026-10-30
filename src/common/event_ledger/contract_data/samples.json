@@ -1251,6 +1251,172 @@
           "submission_id": "55555555-5555-4555-8555-555555555555"
         }
       }
+    },
+    {
+      "name": "bqa-capability-search-valid",
+      "expect": {
+        "valid": true,
+        "reason": "ok"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "runtime.capability",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "thread_id": "t-1001",
+        "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "capability_kind": "mcp_tool",
+          "action": "searched",
+          "status": "succeeded",
+          "candidate_ids": [
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat"
+          ],
+          "candidate_count": 1,
+          "embedding_document_count": 109,
+          "embedding_query_count": 1
+        }
+      }
+    },
+    {
+      "name": "bqa-capability-bad-action",
+      "expect": {
+        "valid": false,
+        "reason": "invalid_enum_value"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "runtime.capability",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "thread_id": "t-1001",
+        "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "capability_kind": "mcp_tool",
+          "action": "invented",
+          "status": "succeeded",
+          "candidate_ids": [
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat"
+          ],
+          "candidate_count": 1,
+          "embedding_document_count": 109,
+          "embedding_query_count": 1
+        }
+      }
+    },
+    {
+      "name": "bqa-capability-count-string",
+      "expect": {
+        "valid": false,
+        "reason": "invalid_enum_value"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "runtime.capability",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "thread_id": "t-1001",
+        "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "capability_kind": "mcp_tool",
+          "action": "searched",
+          "status": "succeeded",
+          "candidate_ids": [
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat"
+          ],
+          "candidate_count": "1",
+          "embedding_document_count": 109,
+          "embedding_query_count": 1
+        }
+      }
+    },
+    {
+      "name": "bqa-capability-private-query",
+      "expect": {
+        "valid": false,
+        "reason": "payload_field_not_allowed"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "runtime.capability",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "thread_id": "t-1001",
+        "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "capability_kind": "mcp_tool",
+          "action": "searched",
+          "status": "succeeded",
+          "candidate_ids": [
+            "mcp:ipp:mcp_city_base_get_district_by_lnglat"
+          ],
+          "candidate_count": 1,
+          "embedding_document_count": 109,
+          "embedding_query_count": 1,
+          "query": "private-marker"
+        }
+      }
+    },
+    {
+      "name": "bqa-capability-secret-nested",
+      "expect": {
+        "valid": false,
+        "reason": "forbidden_payload_key"
+      },
+      "event": {
+        "schema_version": "1.0",
+        "event_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "event_type": "runtime.capability",
+        "occurred_at": "2026-10-13T02:00:00.000Z",
+        "source": "runtime",
+        "tenant_id": "11111111-1111-4111-8111-111111111111",
+        "user_id": "22222222-2222-4222-8222-222222222222",
+        "membership_id": "33333333-3333-4333-8333-333333333333",
+        "thread_id": "t-1001",
+        "request_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "payload": {
+          "attempt_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+          "observation_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          "capability_kind": "mcp_tool",
+          "action": "searched",
+          "status": "succeeded",
+          "candidate_ids": {
+            "secret": "private-marker"
+          },
+          "candidate_count": 1,
+          "embedding_document_count": 109,
+          "embedding_query_count": 1
+        }
+      }
     }
   ],
   "major_version": 1,

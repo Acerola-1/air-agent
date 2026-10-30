@@ -9,7 +9,7 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
 from common.config import config
-from common.turn_tool_governance import (
+from basic_qa.context.tool_results import (
     apply_replacements,
     govern_current_turn_tools,
 )
@@ -33,7 +33,7 @@ def turn_messages(count: int = 4, size: int = 6000):
 async def test_cumulative_results_are_archived_and_replaced(monkeypatch):
     monkeypatch.setattr(config, "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000)
     monkeypatch.setattr(
-        "common.turn_tool_governance.runtime_scope",
+        "basic_qa.context.tool_results.runtime_scope",
         lambda config: ("tenant", "user", "thread", "run"),
     )
     saved = []
@@ -45,9 +45,9 @@ async def test_cumulative_results_are_archived_and_replaced(monkeypatch):
     async def summarize(**kwargs):
         return ("摘要内容" * 20, {"complete": True})
 
-    monkeypatch.setattr("common.turn_tool_governance.save_tool_artifact", save)
+    monkeypatch.setattr("basic_qa.context.tool_results.save_tool_artifact", save)
     monkeypatch.setattr(
-        "common.turn_tool_governance.summarize_large_tool_output", summarize
+        "basic_qa.context.tool_results.summarize_large_tool_output", summarize
     )
 
     messages = turn_messages()
@@ -66,7 +66,7 @@ async def test_cumulative_results_are_archived_and_replaced(monkeypatch):
 async def test_structured_results_use_manifest_not_raw(monkeypatch):
     monkeypatch.setattr(config, "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000)
     monkeypatch.setattr(
-        "common.turn_tool_governance.runtime_scope",
+        "basic_qa.context.tool_results.runtime_scope",
         lambda config: ("tenant", "user", "thread", "run"),
     )
     rows = [{"station": f"s{i}", "pm25": i} for i in range(2000)]
@@ -75,12 +75,12 @@ async def test_structured_results_use_manifest_not_raw(monkeypatch):
     async def save(**kwargs):
         return "art_json"
 
-    monkeypatch.setattr("common.turn_tool_governance.save_tool_artifact", save)
+    monkeypatch.setattr("basic_qa.context.tool_results.save_tool_artifact", save)
     summarize = AsyncMock(
         side_effect=AssertionError("structured data must not summarize")
     )
     monkeypatch.setattr(
-        "common.turn_tool_governance.summarize_large_tool_output", summarize
+        "basic_qa.context.tool_results.summarize_large_tool_output", summarize
     )
     messages = [
         HumanMessage(content="统计", id="h"),
@@ -103,12 +103,12 @@ async def test_structured_results_use_manifest_not_raw(monkeypatch):
 async def test_failure_returns_none_without_partial_truth(monkeypatch):
     monkeypatch.setattr(config, "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000)
     monkeypatch.setattr(
-        "common.turn_tool_governance.runtime_scope",
+        "basic_qa.context.tool_results.runtime_scope",
         lambda config: ("tenant", "user", "thread", "run"),
     )
 
     async def save(**kwargs):
         raise RuntimeError("db unavailable")
 
-    monkeypatch.setattr("common.turn_tool_governance.save_tool_artifact", save)
+    monkeypatch.setattr("basic_qa.context.tool_results.save_tool_artifact", save)
     assert await govern_current_turn_tools(turn_messages(), {}) is None

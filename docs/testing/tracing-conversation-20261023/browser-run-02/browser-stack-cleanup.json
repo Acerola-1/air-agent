@@ -1,0 +1,9 @@
+{
+  "owned_containers": [
+    "aa-conversation-20261023-r02-pg",
+    "aa-conversation-20261023-r02-redis",
+    "aa-conversation-20261023-r02-api"
+  ],
+  "removed": true,
+  "temp_removed_on_exit": "/var/folders/sl/97x01_kj0xvcq_k7zhb7w4dm0000gn/T/aa-conversation-browser-jmvq6erv"
+}

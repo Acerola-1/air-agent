@@ -1,0 +1,14 @@
+{
+  "python": "3.13.3",
+  "packages": {
+    "deepagents": "0.7.28",
+    "langgraph": "1.2.16",
+    "langgraph-sdk": "0.4.8",
+    "langchain": "1.4.6",
+    "langchain-core": "1.6.12",
+    "pytest": "9.1.1",
+    "ruff": "0.15.9"
+  },
+  "policy": "analysis-policy-v2",
+  "catalog_version": "03787c19b9ba2c2eb5183adc5a8f43d1a8851dccaccbc27c79b4978368cf966e"
+}

@@ -1,0 +1,13 @@
+{
+  "owned_names": [
+    "aa-conversation-20261023-r02-pg",
+    "aa-conversation-20261023-r02-redis",
+    "aa-conversation-20261023-r02-api",
+    "aa-conversation-20261023-r04-pg",
+    "aa-conversation-20261023-r04-redis",
+    "aa-conversation-20261023-r04-api"
+  ],
+  "owned_remaining": [],
+  "temporary_frontend_removed": true,
+  "formal_resources_modified": false
+}

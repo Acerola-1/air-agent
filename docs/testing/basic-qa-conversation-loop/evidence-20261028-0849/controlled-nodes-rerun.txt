@@ -1,0 +1,17 @@
+2026-10-28 08:49:41.375 | WARNING  | common.config.settings:warn_deprecated_context_settings:236 - 检测到已停用的上下文配置键：MODEL_CONTEXT_BUDGET_TOKENS, CONVERSATION_SUMMARY_THRESHOLD_TOKENS；请改用 MODEL_MAX_CONTEXT_TOKENS 与 CONVERSATION_SUMMARY_TRIGGER_RATIO，旧值不再参与请求或工具配额。
+2026-10-28 08:49:41 +0800 | INFO     | common.models:<module>:15 - 模型注册表初始化开始
+2026-10-28 08:49:41 +0800 | INFO     | common.business_graph.nodes:classify_intent:176 - 业务图意图车道: graph=basic-qa-baseline，intent=data_query，reason=fail_open
+2026-10-28 08:49:41 +0800 | INFO     | common.business_graph.nodes:resolve_skill:250 - 业务图 Skill 未命中，降级通用能力: graph=basic-qa-baseline
+question='湖州市今天的空气质量如何？' intent=data_query branch=resolve_skill query='湖州市今天的空气质量如何？'
+.2026-10-28 08:49:41 +0800 | INFO     | common.business_graph.nodes:classify_intent:176 - 业务图意图车道: graph=basic-qa-baseline，intent=data_query，reason=fail_open
+2026-10-28 08:49:41 +0800 | INFO     | common.business_graph.nodes:resolve_skill:250 - 业务图 Skill 未命中，降级通用能力: graph=basic-qa-baseline
+question='那杭州呢？' intent=data_query branch=resolve_skill query='那杭州呢？'
+.2026-10-28 08:49:41 +0800 | INFO     | common.business_graph.nodes:classify_intent:176 - 业务图意图车道: graph=basic-qa-baseline，intent=knowledge，reason=knowledge_pattern
+question='可能原因是什么？' intent=knowledge branch=prepare_model query=None
+.2026-10-28 08:49:41 +0800 | INFO     | common.business_graph.nodes:classify_intent:176 - 业务图意图车道: graph=basic-qa-baseline，intent=data_query，reason=fail_open
+2026-10-28 08:49:41 +0800 | INFO     | common.business_graph.nodes:resolve_skill:250 - 业务图 Skill 未命中，降级通用能力: graph=basic-qa-baseline
+question='缩成两句。' intent=data_query branch=resolve_skill query='缩成两句。'
+.2026-10-28 08:49:41 +0800 | INFO     | common.business_graph.nodes:classify_intent:176 - 业务图意图车道: graph=basic-qa-baseline，intent=chitchat，reason=greeting_whitelist
+question='谢谢。' intent=chitchat branch=prepare_model query=None
+.
+5 passed in 2.70s

@@ -25,6 +25,8 @@ description: |
     - 小时播报：帮我分析一下xx市六参数据在2026-05-27的情况
 
 allowed-tools: helper_get_latest_time broadcastHour mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history mcp_city_common_get_air_quality_forecast chart_city_broadcastHour
+required-tools: helper_get_latest_time broadcastHour mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history mcp_city_common_get_air_quality_forecast
+optional-tools: chart_city_broadcastHour
 ---
 
 # 小时播报

@@ -28,7 +28,7 @@ if str(ROOT / "tests/unit_tests/tracing") not in sys.path:
 from langchain_core.messages import AIMessage, HumanMessage  # noqa: E402
 from loguru import logger  # noqa: E402
 
-from common.business_graph.builder import build_business_graph  # noqa: E402
+from basic_qa.builder import build_basic_qa_graph  # noqa: E402
 from common.models import ModelRegistry  # noqa: E402
 from data_analysis.graph import build_graph as build_data_graph  # noqa: E402
 from scripts.streaming_probe.controlled import ControlledChatModel  # noqa: E402
@@ -222,7 +222,7 @@ def _controlled_model() -> ControlledChatModel:
 
 
 def _install_revocation_probe() -> None:
-    from common.business_graph import nodes as bg_nodes
+    from basic_qa import nodes as bg_nodes
     from data_analysis import nodes as data_nodes
     from intelligent_tracing import section_publishing
 
@@ -241,7 +241,7 @@ def _build_probe_graph():
     _install_revocation_probe()
     if GRAPH == "basic-qa":
         ModelRegistry.main_llm = _controlled_model()
-        graph = build_business_graph(
+        graph = build_basic_qa_graph(
             skills_dir=str(ROOT / "src/basic_qa/skills"), name="basic-qa"
         )
         return graph, {"messages": [HumanMessage(content="你好")]}

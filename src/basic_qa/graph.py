@@ -1,8 +1,8 @@
-"""基础问答空气质量查询图入口（LangGraph 显式节点流实现）.
+"""基础问答的官方 Agent Server 入口.
 
-原 deepagents 中间件链实现已由 common.business_graph 节点流替代：
-权限审查、技能路由、提示词组装为确定性前置节点，
-最终输出由 finalize_output 节点统一推送 final_output_delta/done 事件。
+构图和条件边在 builder.py，节点实现在 nodes.py。
+持久化由运行服务按部署配置注入，本项目正式运行使用 PostgreSQL；
+本入口只构建业务图，不自行创建数据库连接或 checkpointer。
 """
 
 from __future__ import annotations
@@ -12,14 +12,23 @@ from pathlib import Path
 from langchain_core.runnables import RunnableConfig
 from loguru import logger
 
-from common.business_graph import build_business_graph
+from application.business_policies import configure
+from basic_qa.builder import build_basic_qa_graph
+from basic_qa.tool_policy import authorize_send
 from common.langfuse_tracing import with_langfuse_tracing
+from common.tool_execution.policy import register_execution_policy
+
+configure()
 
 SKILLS_DIR = Path(__file__).parent / "skills"
 
-_graph = build_business_graph(
+register_execution_policy("basic-qa", authorize_send)
+
+_graph = build_basic_qa_graph(
     skills_dir=SKILLS_DIR,
     name="basic-qa",
+    # 正式 Agent Server 按 POSTGRES_URI 注入 PG checkpointer。
+    # None 表示这里不自行绑定后端；单独在 Python 中调用时不会自动持久化。
     checkpointer=None,
 )
 

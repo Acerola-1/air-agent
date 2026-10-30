@@ -1,0 +1,19 @@
+{
+  "b": {
+    "status": 404,
+    "answers": 0,
+    "body": "Air Agent\n空气质量智能助手 · Powered by LangGraph\nNew Thread\n\n暂无会话，点击 New Thread 开始\n\n空气质量智能专家 Agent\n\n基于 LangGraph 状态图与专属 MCP 工具，支持实时查询、达标研判、综合分析与报告生成。\n\n今日空气质量\n查询石家庄今天实时 AQI 与六因子浓度\n区域竞比对标\n对比北京与天津本月的空气质量优劣与排名\n达标分析研判\n研判某城市今天是否有望实现 PM2.5 保良达标\n环保标准法规\n解答《环境空气质量标准》各因子等级分界限值\n溯源追踪\nintelligent-tracing\n快速\n专家\n用量待更新\n切换企业\n隔离企业A\n隔离企业B\nprobe\n退出\n按 Enter 发送\n\n当前没有画布内容\n\nAgent 在生成报告、图表、长文分析时会自动在这里打开画布.\n\n快捷键 ⌘ ⇧ K 随时切换画布.\n\n关闭窗口"
+  },
+  "caveat": "controlled identity facade; real frontend/BFF/native filter",
+  "a": {
+    "answers": 6,
+    "ids": [
+      "msg_28f811fed57951ac94ed9b1a4e1841e9",
+      "msg_fca837e1d55450888a4b9e9ed5e3abe4",
+      "msg_ade97c2bee115bc2bc16d1b0c06b8bc3",
+      "rep_9966df2b98fb4724a35d2800e6e9cbb0",
+      "msg_216493c5c8a2576b8a84ec08402bbd45",
+      "rep_00ce6755a4234f8ba0ac055d2a1ebe0f"
+    ]
+  }
+}

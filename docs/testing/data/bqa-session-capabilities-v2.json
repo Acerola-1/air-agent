@@ -1,0 +1,3180 @@
+{
+  "dataset_version": "bqa-session-capabilities-v2",
+  "status": "冻结验收定义，非运行结果",
+  "graph_id": "basic-qa",
+  "parent": {
+    "path": "docs/testing/data/basic-qa-conversation-loop.v1.json",
+    "sha256": "8ae94a340a21def265732f0d996eac5595d4b712e53451ee5dd62c715f6a62c6",
+    "count": 47,
+    "preserve": true
+  },
+  "migration": {
+    "retain": "九Skill×fast/expert原题原数据；原47例保留",
+    "replace": [
+      "每轮重载→有效会话复用",
+      "单Skill→多个激活",
+      "必须属于Skill→独立工具可加载",
+      "先报错后恢复→恢复完成单列"
+    ]
+  },
+  "cases": [
+    {
+      "id": "A01",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "你好",
+          "你能做什么"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "新线程“你好→你能做什么”，search/load/业务请求均为0，能力介绍仅专业范围。",
+        "no_query_turns": [
+          0,
+          1
+        ]
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "新线程“你好→你能做什么”，search/load/业务请求均为0，能力介绍仅专业范围。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "A02",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "湖州市今天的空气质量如何？",
+          "那杭州呢？",
+          "那金华呢？"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "city_sequence": [
+          "湖州市",
+          "杭州市",
+          "金华市"
+        ],
+        "followup_zero": [
+          "search_skills",
+          "search_mcp",
+          "load_skill",
+          "load_mcp_tool",
+          "prerequisite_errors"
+        ]
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "同线程“湖州今天空气质量→那杭州呢→那金华呢”，首轮加载基础Skill，后两轮search/load均为0、加载前置错误为0，城市与实际时段参数正确；气象等Skill必需步骤仍遵守原材料。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "A03",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "湖州市今天的空气质量如何？",
+          "那杭州呢？",
+          "那金华呢？",
+          "缩成两句",
+          "谢谢",
+          "再查湖州"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "A02后“缩成两句→谢谢→再查湖州”，复述／感谢业务请求为0，再查询复用有效能力，不用旧杭州结果替代湖州。",
+        "no_query_turns": [
+          3,
+          4
+        ]
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "A02后“缩成两句→谢谢→再查湖州”，复述／感谢业务请求为0，再查询复用有效能力，不用旧杭州结果替代湖州。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "A04",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "那杭州呢？"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "新线程仅“那杭州呢”，澄清且不发领域请求。",
+        "no_query_turns": [
+          0
+        ]
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "新线程仅“那杭州呢”，澄清且不发领域请求。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "A05",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "湖州今天空气质量",
+          "写首诗",
+          "解释通用Python装饰器"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "专业查询后要求写诗或讲通用编程，简短说明范围，不承担通用任务，不调用业务数据工具。",
+        "no_query_turns": [
+          1,
+          2
+        ]
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "专业查询后要求写诗或讲通用编程，简短说明范围，不承担通用任务，不调用业务数据工具。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "A06",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "查询湖州今天空气质量并分析2026年10月21日至27日PM2.5逐日趋势"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "固定选取真实目录中的两项不同Skill任务组合，两个均激活且各自完整模式规则可见；已有Skill覆盖的部分不改走独立工具。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "固定选取真实目录中的两项不同Skill任务组合，两个均激活且各自完整模式规则可见；已有Skill覆盖的部分不改走独立工具。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "A07",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "查询湖州今天空气质量",
+          "比较湖州2026年9月与2025年9月综合指数",
+          "再查杭州今天空气质量"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "先A后B再回A，未休眠的A不重新加载；休眠A只重新激活、不重复embedding，结果参数来自当前问题。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "先A后B再回A，未休眠的A不重新加载；休眠A只重新激活、不重复embedding，结果参数来自当前问题。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "A08",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "请使用站点极值Skill分析湖州站点PM2.5极值"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "用户自然语言指定某个真实Skill，优先采用其覆盖流程；不新增前端选择动作或伪造显式受理选择。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "用户自然语言指定某个真实Skill，优先采用其覆盖流程；不新增前端选择动作或伪造显式受理选择。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "B01",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "湖州今天空气质量"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "问题完全被现有Skill覆盖，优先Skill，search_mcp为0；也不强制每轮search_skills。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "问题完全被现有Skill覆盖，优先Skill，search_mcp为0；也不强制每轮search_skills。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "B02",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "查询湖州今天空气质量，并核对坐标（120.15,30.27）所属行政区"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "“查询湖州今天空气质量，并核对坐标（120.15,30.27）所属行政区”，基础查询Skill覆盖主任务，独立工具仅补行政区核对，主任务规则保留；输入及目标见tool-scope.md。",
+        "independent_tool_id": "mcp:ipp:mcp_city_base_get_district_by_lnglat",
+        "coordinates": [
+          120.15,
+          30.27
+        ]
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "“查询湖州今天空气质量，并核对坐标（120.15,30.27）所属行政区”，基础查询Skill覆盖主任务，独立工具仅补行政区核对，主任务规则保留；输入及目标见tool-scope.md。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "B03",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "核对坐标（120.15,30.27）所属行政区"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "固定无Skill引用的新增登记工具`mcp_city_base_get_district_by_lnglat`及坐标行政区问题，搜索→独立加载→执行成功，无“必须属于Skill”拒绝；实际服务不可用标BLOCKED，不偷换目标。",
+        "independent_tool_id": "mcp:ipp:mcp_city_base_get_district_by_lnglat",
+        "coordinates": [
+          120.15,
+          30.27
+        ]
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "固定无Skill引用的新增登记工具`mcp_city_base_get_district_by_lnglat`及坐标行政区问题，搜索→独立加载→执行成功，无“必须属于Skill”拒绝；实际服务不可用标BLOCKED，不偷换目标。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "B04",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "合法池3项",
+          "模型分别选0/1/2/3项",
+          "核对load前业务请求0"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "候选足够时每次恰为Top 3；分别让受控模型选0／1／2／3项，未选候选不激活，所有搜索和加载阶段业务请求为0。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "候选足够时每次恰为Top 3；分别让受控模型选0／1／2／3项，未选候选不激活，所有搜索和加载阶段业务请求为0。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "B05",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "非法条目高分先排除",
+          "同名跨服务保留稳定ID",
+          "分别0/1/2项候选"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "候选不足3、同名跨服务、重复候选、非法条目高分、无命中分别验证；合法池先过滤后求Top 3，不跨范围填充。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "候选不足3、同名跨服务、重复候选、非法条目高分、无命中分别验证；合法池先过滤后求Top 3，不跨范围填充。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "B06",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "按tool-scope.md十二个冻结种子检索",
+          "固定gold，逐题计算Recall@3"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "固定工具检索问题集及每题人工确定的可接受工具ID，记录Recall@3和模型实际选用准确率；冻结集合中每个受支持问题至少召回一个可用目标，否则列为失败而非改写gold。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "固定工具检索问题集及每题人工确定的可接受工具ID，记录Recall@3和模型实际选用准确率；冻结集合中每个受支持问题至少召回一个可用目标，否则列为失败而非改写gold。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "B07",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "先编译图再发现",
+          "已知ID独立加载",
+          "旧schema/未知ID拒绝"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "图先构建再发现工具、已知ID直接重激活、旧schema和未知ID分别验证；未知工具没有业务外呼。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "图先构建再发现工具、已知ID直接重激活、旧schema和未知ID分别验证；未知工具没有业务外呼。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "B08",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "核对坐标（120.15,30.27）所属行政区",
+          "那（120.2,30.3）呢？"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "已有独立工具跨轮直接复用，切换／停用某Skill不会误删它；同工具多来源只有一份schema和一次实际调用。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "已有独立工具跨轮直接复用，切换／停用某Skill不会误删它；同工具多来源只有一份schema和一次实际调用。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C01",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "同版本load两次",
+          "休眠后load",
+          "核对简短回执及零embedding"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "重复激活同版本Skill／工具，简短回执且没有重复规则、schema、embedding或业务调用。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "重复激活同版本Skill／工具，简短回执且没有重复规则、schema、embedding或业务调用。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C02",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "同批两个Skill",
+          "同批三个独立工具一项失败",
+          "两个已披露查询并行"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "同批两个Skill加载、同批多个工具加载及一项失败，成功项不丢、其他有效能力不清；独立业务查询仍可并行。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "同批两个Skill加载、同批多个工具加载及一项失败，成功项不丢、其他有效能力不清；独立业务查询仍可并行。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C03",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "同批加载与未披露查询",
+          "核对配对错误及业务请求0"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "加载＋未披露业务工具同批不外呼，配对结果完整；列为异常纠错，不代替A02通过。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "加载＋未披露业务工具同批不外呼，配对结果完整；列为异常纠错，不代替A02通过。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C04",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "服务端109项",
+          "只加载2项",
+          "捕获实际序列化请求及预算"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "固定上百项目录，实际只激活两项工具；检查真正序列化请求，不含其他完整schema和全量目录说明，完整规则及schema全部计入预算。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "固定上百项目录，实际只激活两项工具；检查真正序列化请求，不含其他完整schema和全量目录说明，完整规则及schema全部计入预算。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C05",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "摘要覆盖回执",
+          "降低容量触发LRU休眠",
+          "重激活",
+          "必要组合超限"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "摘要覆盖加载回执、上下文压力休眠、按需重激活、刚性组合无法容纳，规则与工具同步进出；复用引用不依赖历史正文仍在窗口内。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "摘要覆盖加载回执、上下文压力休眠、按需重激活、刚性组合无法容纳，规则与工具同步进出；复用引用不依赖历史正文仍在窗口内。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C06",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "冷构建",
+          "进程重启",
+          "单项变化",
+          "embedding模型变化",
+          "服务删除",
+          "并发构建"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "冷索引、同目录重启、仅一个定义变化、embedding模型变化、服务删除及并发首次搜索；未变向量不重复生成，代次发布一致。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "冷索引、同目录重启、仅一个定义变化、embedding模型变化、服务删除及并发首次搜索；未变向量不重复生成，代次发布一致。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C07",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "构建期间撤权/连接修订",
+          "超时/异常",
+          "核对迟到不发布及Skill直接加载仍有效"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "索引构建中撤权／连接修订变化、超时或失败，迟到结果不发布到新范围、不倾倒全目录；有效Skill直接加载路径不被索引故障一并禁用。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "索引构建中撤权／连接修订变化、超时或失败，迟到结果不发布到新范围、不倾倒全目录；有效Skill直接加载路径不被索引故障一并禁用。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C08",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "缺非chart必需项",
+          "缺chart可选项",
+          "主数据返回空"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "非chart依赖缺失与chart缺失分别验证，前者目标Skill不可完整激活、后者正文正常；实际数据为空遵循原缺失规则。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "非chart依赖缺失与chart缺失分别验证，前者目标Skill不可完整激活、后者正文正常；实际数据为空遵循原缺失规则。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "C09",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "材料版本变化",
+          "fast改expert",
+          "schema变化",
+          "同结论规则冲突须澄清"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "schema／材料／fast-expert变化和多个Skill指导冲突，不能混用旧新规则或静默覆盖；独立工具加载不绕过领域约束。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "schema／材料／fast-expert变化和多个Skill指导冲突，不能混用旧新规则或静默覆盖；独立工具加载不绕过领域约束。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "D01",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "真实SDK连接自建持久化",
+          "跨轮重启/断开恢复",
+          "可信/无证明v1迁移",
+          "同attempt不升级"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "实际LangGraph SDK＋自建持久化资源，跨轮、断开重连、进程重启及v1→v2旧会话；只用服务端状态，恢复不混淆新attempt和同attempt resume。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "实际LangGraph SDK＋自建持久化资源，跨轮、断开重连、进程重启及v1→v2旧会话；只用服务端状态，恢复不混淆新attempt和同attempt resume。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "D02",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "伪造能力输入",
+          "显式MCP空集合",
+          "撤权/取消/删除",
+          "有效正控",
+          "拒绝后计数服务新增请求0"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "能力字段注入、MCP空集合、同名服务、身份／业务撤权、取消及删除，使用自有计数MCP和有效正对照；被拒绝之后尚未发送的业务请求为0。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "能力字段注入、MCP空集合、同名服务、身份／业务撤权、取消及删除，使用自有计数MCP和有效正对照；被拒绝之后尚未发送的业务请求为0。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "D03",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "空库升级",
+          "已有head升级",
+          "非owner A/B并发隔离",
+          "回收过期代次不跨租户"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "索引缓存表FORCE RLS、A/B并发、连接修订、过期代次、空库与存量迁移；不连接正式业务库做测试seed。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "索引缓存表FORCE RLS、A/B并发、连接修订、过期代次、空库与存量迁移；不连接正式业务库做测试seed。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "D04",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "冻结显式Skill及MCP选择",
+          "受理摘要不变",
+          "data-analysis菜单",
+          "tracing主/真实子任务"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "旧受理显式Skill／MCP协议与新自动多能力兼容，能力更新不改变幂等摘要；共享data-analysis菜单和tracing主／真实子任务必要回归。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "旧受理显式Skill／MCP协议与新自动多能力兼容，能力更新不改变幂等摘要；共享data-analysis菜单和tracing主／真实子任务必要回归。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "D05",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [
+          "湖州今天空气质量",
+          "把已有解释缩成两句"
+        ],
+        "operations": []
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "工具JSON／列表／文本无城市时间回显，仍进入原终答；概念解释后复述有历史／摘要，不复活已撤销的结果字段校验。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "工具JSON／列表／文本无城市时间回显，仍进入原终答；概念解释后复述有历史／摘要，不复活已撤销的结果字段校验。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "D06",
+      "mode": "fast",
+      "clock": {
+        "instant": "2026-10-28T16:00:00+08:00",
+        "timezone": "Asia/Shanghai"
+      },
+      "input": {
+        "turns": [],
+        "operations": [
+          "真实浏览器湖州→杭州→金华",
+          "复述/感谢",
+          "刷新",
+          "取消",
+          "上下文切换",
+          "知识引用及画布"
+        ]
+      },
+      "initial_state": "空线程；同case轮次共享服务端checkpoint，业务/Skill/MCP自动；反例由operations显式改变",
+      "parameters": {
+        "assertion": "真实浏览器连续追问、刷新、取消、切上下文、知识引用和画布；正常复用无前置错误、正文不泄露控制消息或重复流。不能只检查最终一条消息。"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": "真实浏览器连续追问、刷新、取消、切上下文、知识引用和画布；正常复用无前置错误、正文不泄露控制消息或重复流。不能只检查最终一条消息。",
+      "judgment": [
+        "逐项检查expected和parameters；未采集计数填null",
+        "首次无异常/恢复完成/未完成/用户可见异常分别登记"
+      ],
+      "evidence_required": [
+        "命令",
+        "时钟/输入摘要",
+        "原始输出路径",
+        "每轮计数",
+        "真实模型/受控服务/SDK/浏览器类型"
+      ]
+    },
+    {
+      "id": "R-BQA-011-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI、空气质量等级和首要污染物分别是什么？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "洛阳市AQI80、良、首要污染物PM2.5；注明2026-05-07。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-011 与 basic-qa-reference-fixtures.v1.json 中 day, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-011",
+      "expected_skill": "skill:basic-qa:air-quality-basic-query",
+      "fixture_refs": [
+        "day",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "洛阳市AQI80、良、首要污染物PM2.5；注明2026-05-07。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-011-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI、空气质量等级和首要污染物分别是什么？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "洛阳市AQI80、良、首要污染物PM2.5；注明2026-05-07。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-011 与 basic-qa-reference-fixtures.v1.json 中 day, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-011",
+      "expected_skill": "skill:basic-qa:air-quality-basic-query",
+      "fixture_refs": [
+        "day",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "洛阳市AQI80、良、首要污染物PM2.5；注明2026-05-07。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-015-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市PM2.5在河南省参评城市中排名第几？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "第2/3位，浓度50；明确测试数据仅3个参评城市，不说全省所有城市。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-015 与 basic-qa-reference-fixtures.v1.json 中 rank, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-015",
+      "expected_skill": "skill:basic-qa:ranking-assessment",
+      "fixture_refs": [
+        "rank",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "第2/3位，浓度50；明确测试数据仅3个参评城市，不说全省所有城市。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-015-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市PM2.5在河南省参评城市中排名第几？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "第2/3位，浓度50；明确测试数据仅3个参评城市，不说全省所有城市。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-015 与 basic-qa-reference-fixtures.v1.json 中 rank, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-015",
+      "expected_skill": "skill:basic-qa:ranking-assessment",
+      "fixture_refs": [
+        "rank",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "第2/3位，浓度50；明确测试数据仅3个参评城市，不说全省所有城市。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-016-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市国控站中AQI最高的是哪个站？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "站点AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "测试国控乙，AQI120、轻度污染；不能选AQI150的测试省控丙。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-016 与 basic-qa-reference-fixtures.v1.json 中 stations, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-016",
+      "expected_skill": "skill:basic-qa:station-extreme",
+      "fixture_refs": [
+        "stations",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "站点AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "测试国控乙，AQI120、轻度污染；不能选AQI150的测试省控丙。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-016-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市国控站中AQI最高的是哪个站？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "站点AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "测试国控乙，AQI120、轻度污染；不能选AQI150的测试省控丙。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-016 与 basic-qa-reference-fixtures.v1.json 中 stations, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-016",
+      "expected_skill": "skill:basic-qa:station-extreme",
+      "fixture_refs": [
+        "stations",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "站点AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "测试国控乙，AQI120、轻度污染；不能选AQI150的测试省控丙。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-018-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日河南省测试范围内O3-8h不超过160微克/立方米的城市有哪些？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": null,
+        "date_or_period": "2026-05-07",
+        "metric": "O3-8h",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "测试范围3城；洛阳100、郑州90达标，平顶山170不达标；2/3=66.7%。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-018 与 basic-qa-reference-fixtures.v1.json 中 regional, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-018",
+      "expected_skill": "skill:basic-qa:regional-benchmark",
+      "fixture_refs": [
+        "regional",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": null,
+        "date_or_period": "2026-05-07",
+        "metric": "O3-8h",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "测试范围3城；洛阳100、郑州90达标，平顶山170不达标；2/3=66.7%。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-018-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日河南省测试范围内O3-8h不超过160微克/立方米的城市有哪些？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": null,
+        "date_or_period": "2026-05-07",
+        "metric": "O3-8h",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "测试范围3城；洛阳100、郑州90达标，平顶山170不达标；2/3=66.7%。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-018 与 basic-qa-reference-fixtures.v1.json 中 regional, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-018",
+      "expected_skill": "skill:basic-qa:regional-benchmark",
+      "fixture_refs": [
+        "regional",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": null,
+        "date_or_period": "2026-05-07",
+        "metric": "O3-8h",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "测试范围3城；洛阳100、郑州90达标，平顶山170不达标；2/3=66.7%。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-019-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "研判2026年5月8日截至15时洛阳市PM2.5能否保良，列出累计值和剩余控制值。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "累计50、当前小时45、总体剩余控制值70；采信主工具明确结论大概率可实现；气象与预报分别说明。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-019 与 basic-qa-reference-fixtures.v1.json 中 compliance, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-019",
+      "expected_skill": "skill:basic-qa:compliance-feasibility",
+      "fixture_refs": [
+        "compliance",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "累计50、当前小时45、总体剩余控制值70；采信主工具明确结论大概率可实现；气象与预报分别说明。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-019-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "研判2026年5月8日截至15时洛阳市PM2.5能否保良，列出累计值和剩余控制值。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "累计50、当前小时45、总体剩余控制值70；采信主工具明确结论大概率可实现；气象与预报分别说明。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-019 与 basic-qa-reference-fixtures.v1.json 中 compliance, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-019",
+      "expected_skill": "skill:basic-qa:compliance-feasibility",
+      "fixture_refs": [
+        "compliance",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "累计50、当前小时45、总体剩余控制值70；采信主工具明确结论大概率可实现；气象与预报分别说明。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-020-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "小时播报：查询洛阳市2026年5月7日PM2.5的峰值小时和低值小时。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "00—23时完整24点；峰值15时80，低值03时20；历史日期不调用空气质量预报。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-020 与 basic-qa-reference-fixtures.v1.json 中 hourly, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-020",
+      "expected_skill": "skill:basic-qa:broadcast-hour",
+      "fixture_refs": [
+        "hourly",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "00—23时完整24点；峰值15时80，低值03时20；历史日期不调用空气质量预报。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-020-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "小时播报：查询洛阳市2026年5月7日PM2.5的峰值小时和低值小时。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "00—23时完整24点；峰值15时80，低值03时20；历史日期不调用空气质量预报。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-020 与 basic-qa-reference-fixtures.v1.json 中 hourly, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-020",
+      "expected_skill": "skill:basic-qa:broadcast-hour",
+      "fixture_refs": [
+        "hourly",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "00—23时完整24点；峰值15时80，低值03时20；历史日期不调用空气质量预报。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-021-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "对比洛阳市2026年4月与2025年4月综合指数及PM2.5，分别改善了多少？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-04 对 2025-04",
+        "metric": "综合指数、PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "综合指数4.0降到3.2，改善20.0%；PM2.5由50降到40，改善20.0%；不得称环比。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-021 与 basic-qa-reference-fixtures.v1.json 中 monthly, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-021",
+      "expected_skill": "skill:basic-qa:comparison-composition",
+      "fixture_refs": [
+        "monthly",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-04 对 2025-04",
+        "metric": "综合指数、PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "综合指数4.0降到3.2，改善20.0%；PM2.5由50降到40，改善20.0%；不得称环比。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-021-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "对比洛阳市2026年4月与2025年4月综合指数及PM2.5，分别改善了多少？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-04 对 2025-04",
+        "metric": "综合指数、PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "综合指数4.0降到3.2，改善20.0%；PM2.5由50降到40，改善20.0%；不得称环比。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-021 与 basic-qa-reference-fixtures.v1.json 中 monthly, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-021",
+      "expected_skill": "skill:basic-qa:comparison-composition",
+      "fixture_refs": [
+        "monthly",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-04 对 2025-04",
+        "metric": "综合指数、PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "综合指数4.0降到3.2，改善20.0%；PM2.5由50降到40，改善20.0%；不得称环比。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-023-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "综合指数占比分析：洛阳市2026年5月6日至7日六因子贡献排序和占比是多少？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-06至07",
+        "metric": "六因子分指数",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "分指数总和5.0；PM2.5=30.0%、O3-8h=25.0%、PM10=20.0%、SO2/NO2各10.0%、CO=5.0%；并列如实列出。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-023 与 basic-qa-reference-fixtures.v1.json 中 ratio, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-023",
+      "expected_skill": "skill:basic-qa:integrated-index-ratio",
+      "fixture_refs": [
+        "ratio",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-06至07",
+        "metric": "六因子分指数",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "分指数总和5.0；PM2.5=30.0%、O3-8h=25.0%、PM10=20.0%、SO2/NO2各10.0%、CO=5.0%；并列如实列出。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-023-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "综合指数占比分析：洛阳市2026年5月6日至7日六因子贡献排序和占比是多少？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-06至07",
+        "metric": "六因子分指数",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "分指数总和5.0；PM2.5=30.0%、O3-8h=25.0%、PM10=20.0%、SO2/NO2各10.0%、CO=5.0%；并列如实列出。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-023 与 basic-qa-reference-fixtures.v1.json 中 ratio, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-023",
+      "expected_skill": "skill:basic-qa:integrated-index-ratio",
+      "fixture_refs": [
+        "ratio",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-06至07",
+        "metric": "六因子分指数",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "分指数总和5.0；PM2.5=30.0%、O3-8h=25.0%、PM10=20.0%、SO2/NO2各10.0%、CO=5.0%；并列如实列出。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-025-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "分析2026年5月1日至7日洛阳市PM2.5逐日变化趋势，给出峰值、低值和均值。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-01至07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "序列30,40,50,60,50,40,50；峰值5月4日60，低值5月1日30，均值45.7；先升后降/波动，不能说持续上升。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-025 与 basic-qa-reference-fixtures.v1.json 中 daily_series, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-025",
+      "expected_skill": "skill:basic-qa:trend-analysis",
+      "fixture_refs": [
+        "daily_series",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-01至07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "序列30,40,50,60,50,40,50；峰值5月4日60，低值5月1日30，均值45.7；先升后降/波动，不能说持续上升。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    },
+    {
+      "id": "R-BQA-025-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "分析2026年5月1日至7日洛阳市PM2.5逐日变化趋势，给出峰值、低值和均值。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-01至07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "序列30,40,50,60,50,40,50；峰值5月4日60，低值5月1日30，均值45.7；先升后降/波动，不能说持续上升。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-025 与 basic-qa-reference-fixtures.v1.json 中 daily_series, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-025",
+      "expected_skill": "skill:basic-qa:trend-analysis",
+      "fixture_refs": [
+        "daily_series",
+        "weather"
+      ],
+      "clock": {
+        "instant": "2026-05-08T16:00:00+08:00",
+        "timezone": "Asia/Shanghai",
+        "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+      },
+      "initial_state": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。",
+      "parameters": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-01至07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "counters": {
+        "search_skills": null,
+        "search_mcp": null,
+        "embedding_documents": null,
+        "embedding_queries": null,
+        "load_skill": null,
+        "load_mcp_tool": null,
+        "model_requests": null,
+        "logical_tool_calls": null,
+        "network_attempts": null,
+        "prerequisite_errors": null,
+        "user_visible_errors": null
+      },
+      "expected": [
+        "序列30,40,50,60,50,40,50；峰值5月4日60，低值5月1日30，均值45.7；先升后降/波动，不能说持续上升。"
+      ],
+      "judgment": [
+        "沿用原题原fixture和Skill领域规则；新生命周期按v2检查"
+      ]
+    }
+  ]
+}

@@ -22,6 +22,8 @@ description: |
     - 今日某省各城市六因子贡献率对比
 
 allowed-tools: helper_get_latest_time integratedIndexRatio mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history mcp_city_common_get_air_quality_forecast chart_city_integrated_index_percentage
+required-tools: helper_get_latest_time integratedIndexRatio mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history mcp_city_common_get_air_quality_forecast
+optional-tools: chart_city_integrated_index_percentage
 ---
 
 # 综合指数占比分析

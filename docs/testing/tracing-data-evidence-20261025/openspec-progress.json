@@ -1,0 +1,202 @@
+{
+  "changeName": "improve-tracing-data-evidence-pipeline",
+  "changeDir": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline",
+  "schemaName": "spec-driven",
+  "contextFiles": {
+    "proposal": [
+      "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/proposal.md"
+    ],
+    "specs": [
+      "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/specs/tracing-data-products/spec.md",
+      "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/specs/tracing-layered-evidence/spec.md"
+    ],
+    "design": [
+      "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/design.md"
+    ],
+    "tasks": [
+      "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md"
+    ]
+  },
+  "progress": {
+    "total": 24,
+    "complete": 12,
+    "remaining": 12
+  },
+  "tasks": [
+    {
+      "id": "1",
+      "description": "1.1 冻结工作区边界及现有溯源测试基线，在新验收目录保存结果与已有失败。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 7
+    },
+    {
+      "id": "2",
+      "description": "1.2 实现目标、基线、滑动前置窗口规划和显式数据分区，测试重叠合并、非相邻区间、旧数据兼容与空基线。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 8
+    },
+    {
+      "id": "3",
+      "description": "1.3 使用现有 MCP 分别获取目标及辅助时窗，按返回时间裁剪；测试严格范围执行器、基线局部失败及鉴权错误不可降级。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 9
+    },
+    {
+      "id": "4",
+      "description": "1.4 按独立数据用途计算基线与滑动评价，测试目标统计不受基线污染、评价不输出基线日期及来源可追踪。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 10
+    },
+    {
+      "id": "5",
+      "description": "1.5 将峰值、均值、最低值、首末变化从异常结论中拆开，验证基线不足仍能发布可信事实且未知不会显示为无异常。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 11
+    },
+    {
+      "id": "6",
+      "description": "1.6 为本步骤提供使用与数据口径说明，并以固定样本验证整个可信发布链及旧报告兼容。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 12
+    },
+    {
+      "id": "7",
+      "description": "2.1 邻站按冻结半径内实际距离稳定排序并有界读取，测试目录乱序、缺坐标、截断和距离边界。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 16
+    },
+    {
+      "id": "8",
+      "description": "2.2 网格改为同刻快照并约束半径与拓扑，测试跨时峰值不可拼接、未知拓扑不能产生连片结论。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 17
+    },
+    {
+      "id": "9",
+      "description": "2.3 保留现有历史模式起报、有效时间与时效信息，测试已知、未知、矛盾时效且不冒充观测资料。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 18
+    },
+    {
+      "id": "10",
+      "description": "2.4 独立发布合格气象背景事实，测试不足以支持风向/传输的样本只能发布背景且不产生来源推断。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 19
+    },
+    {
+      "id": "11",
+      "description": "2.5 记录现有 MCP 的气象/空间数据能力与限制，复核受影响门禁与回放测试。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 20
+    },
+    {
+      "id": "12",
+      "description": "2.6 接通独立授权观测气象或再分析渠道，完成真实字段、单位、分辨率和时效验收；无渠道保持未完成。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 21
+    },
+    {
+      "id": "13",
+      "description": "3.1 确认授权数据渠道及许可，登记真实企业/排口/清单/CEMS 样本、更新时间与覆盖；以可核验渠道清单验收。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 25
+    },
+    {
+      "id": "14",
+      "description": "3.2 实现清单和工况独立数据产品，测试坐标、量纲、时间对齐、重复与失效资料；不以环境浓度代替排放。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 26
+    },
+    {
+      "id": "15",
+      "description": "3.3 实现候选源支持/反证核查与可信发布，验证无企业因果确认、贡献率或来源概率。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 27
+    },
+    {
+      "id": "16",
+      "description": "3.4 完成真实渠道正向及越权零外呼验收，提供样本来源与接入说明。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 28
+    },
+    {
+      "id": "17",
+      "description": "4.1 确认轨迹驱动、计算服务及 FIRMS 等授权渠道，保存真实样本及许可/时效说明。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 32
+    },
+    {
+      "id": "18",
+      "description": "4.2 协调固定禁用规格、业务注册与受保护配置，测试未配置/未选择/越权情况下零外呼且旧失败工具继续禁用。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 33
+    },
+    {
+      "id": "19",
+      "description": "4.3 实现并验证多起点/高度轨迹与卫星质量控制，记录分辨率、过境、气象驱动和检出限制。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 34
+    },
+    {
+      "id": "20",
+      "description": "4.4 接入分层假设审查与可信报告，验证轨迹/火点不能直接确认十公里内企业或定量贡献。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 35
+    },
+    {
+      "id": "21",
+      "description": "4.5 完成真实轨迹/卫星样本、授权正反例及使用文档验收。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 36
+    },
+    {
+      "id": "22",
+      "description": "5.1 完成首批定向检查、全部溯源回归与受控 HTTP 查询/拒绝计数，保存新报告并区分受控和真实验收。",
+      "done": true,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 40
+    },
+    {
+      "id": "23",
+      "description": "5.2 以合法受理身份回放郑州 41fe79bb1 原问题，保存真实 MCP 参数、覆盖与最终报告；无可用身份/数据保持未完成。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 41
+    },
+    {
+      "id": "24",
+      "description": "5.3 完成真实配置模型、实际 SDK 持久化运行和浏览器可见内容验收，记录环境及剩余局限。",
+      "done": false,
+      "sourcePath": "/Users/acerola/Dev/Python/air_agent/openspec/changes/improve-tracing-data-evidence-pipeline/tasks.md",
+      "line": 42
+    }
+  ],
+  "taskTrackingConfigured": true,
+  "state": "ready",
+  "instruction": "Read context files, work through pending tasks, mark complete as you go.\nPause if you hit blockers or need clarification.",
+  "root": {
+    "path": "/Users/acerola/Dev/Python/air_agent",
+    "source": "nearest"
+  }
+}

@@ -1,0 +1,277 @@
+EEEEEEEEEEEEE....................                                        [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of test_missing_connection_rejected_without_network[asyncio] __
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_ ERROR at setup of test_missing_credential_rejected_without_anonymous_fallback[asyncio] _
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_______ ERROR at setup of test_unlisted_business_tool_rejected[asyncio] ________
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_ ERROR at setup of test_disclosure_and_execution_share_business_scope_without_transient_config[asyncio] _
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+___ ERROR at setup of test_real_bearer_auth_and_no_user_id_spoofing[asyncio] ___
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+____ ERROR at setup of test_ab_cache_and_credentials_are_isolated[asyncio] _____
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_ ERROR at setup of test_handshake_succeeds_then_revocation_blocks_tool_call_without_network[asyncio] _
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_______ ERROR at setup of test_retry_after_revocation_not_sent[asyncio] ________
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_ ERROR at setup of test_connection_rotation_rediscovers_and_uses_new_credential[asyncio] _
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_ ERROR at setup of test_discovery_deduplicates_per_connection_scope[asyncio] __
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_______ ERROR at setup of test_request_helper_degrades_readably[asyncio] _______
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+___ ERROR at setup of test_user_empty_mcp_set_blocks_before_network[asyncio] ___
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+_ ERROR at setup of test_tracing_business_rejects_trajectory_with_zero_calls[asyncio] _
+
+    @pytest.fixture
+    async def fixture_server():
+        srv = fx.FixtureServer()
+>       await srv.start()
+
+tests/unit_tests/test_mcp_connection_execution.py:82: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/mcp_fixture/server.py:420: in start
+    self.port = _free_port()
+                ^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _free_port() -> int:
+        with socket.socket() as sock:
+>           sock.bind(("127.0.0.1", 0))
+E           PermissionError: [Errno 1] Operation not permitted
+
+tests/mcp_fixture/server.py:407: PermissionError
+=========================== short test summary info ============================
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_missing_connection_rejected_without_network[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_missing_credential_rejected_without_anonymous_fallback[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_unlisted_business_tool_rejected[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_disclosure_and_execution_share_business_scope_without_transient_config[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_real_bearer_auth_and_no_user_id_spoofing[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_ab_cache_and_credentials_are_isolated[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_handshake_succeeds_then_revocation_blocks_tool_call_without_network[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_retry_after_revocation_not_sent[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_connection_rotation_rediscovers_and_uses_new_credential[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_discovery_deduplicates_per_connection_scope[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_request_helper_degrades_readably[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_user_empty_mcp_set_blocks_before_network[asyncio]
+ERROR tests/unit_tests/test_mcp_connection_execution.py::test_tracing_business_rejects_trajectory_with_zero_calls[asyncio]
+20 passed, 13 errors in 0.56s

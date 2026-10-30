@@ -5,11 +5,9 @@ from __future__ import annotations
 import pytest
 from langchain_core.messages import HumanMessage
 
-from common.context_preparation import (
-    ContextRecoveryFailed,
-    PreparedRequest,
-    call_with_context_recovery,
-)
+from basic_qa.context.preparation import ContextRecoveryFailed
+from basic_qa.context.preparation import PreparedRequest
+from basic_qa.context.recovery import call_with_context_recovery
 from common.model_budget import ContextBudgetExceeded
 from common.model_errors import is_context_overflow
 
@@ -50,7 +48,7 @@ async def test_overflow_compacts_once_and_retries_only_model(monkeypatch):
         return recovered
 
     monkeypatch.setattr(
-        "common.context_preparation.prepare_model_request", fake_prepare
+        "basic_qa.context.recovery.prepare_model_request", fake_prepare
     )
 
     async def guard(config):
@@ -89,7 +87,7 @@ async def test_non_overflow_error_is_not_retried(monkeypatch):
         raise AssertionError("must not compact for auth errors")
 
     monkeypatch.setattr(
-        "common.context_preparation.prepare_model_request", fake_prepare
+        "basic_qa.context.recovery.prepare_model_request", fake_prepare
     )
     with pytest.raises(ProviderError):
         await call_with_context_recovery(
@@ -114,7 +112,7 @@ async def test_second_overflow_stops_without_loop(monkeypatch):
         return None
 
     monkeypatch.setattr(
-        "common.context_preparation.prepare_model_request", fake_prepare
+        "basic_qa.context.recovery.prepare_model_request", fake_prepare
     )
     monkeypatch.setattr("common.identity.runtime.guard_runtime_call", guard)
 
@@ -144,7 +142,7 @@ async def test_no_compaction_available_is_bounded(monkeypatch):
         return None
 
     monkeypatch.setattr(
-        "common.context_preparation.prepare_model_request", fake_prepare
+        "basic_qa.context.recovery.prepare_model_request", fake_prepare
     )
     monkeypatch.setattr("common.identity.runtime.guard_runtime_call", guard)
 

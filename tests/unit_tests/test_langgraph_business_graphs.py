@@ -31,7 +31,7 @@ def test_container_graph_and_http_registration_match_langgraph_json() -> None:
 
     assert f"ENV LANGSERVE_GRAPHS='{expected_graphs_json}'" in dockerfile
     configuration = json.loads(Path("langgraph.json").read_text(encoding="utf-8"))
-    assert configuration["http"]["app"] == "./src/common/artifact_http.py:app"
-    assert "/deps/air_agent/src/common/artifact_http.py:app" in compose
-    assert "/deps/air_agent/src/common/artifact_http.py:app" in dockerfile
+    assert configuration["http"]["app"] == "./src/application/http.py:app"
+    assert "/deps/air_agent/src/application/http.py:app" in compose
+    assert "/deps/air_agent/src/application/http.py:app" in dockerfile
     assert "src/data_analysis_assistant/graph.py" not in compose

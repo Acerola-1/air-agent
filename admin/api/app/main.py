@@ -10,6 +10,7 @@ import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+from application.business_policies import configure as configure_business_policies
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -164,6 +165,8 @@ app.include_router(console.router, prefix="/agent")
 app.include_router(demand_insights.router, prefix="/agent")
 # change complete-agent-observability：观测查询/价格管理（本域新增；不改既有 19 路径）
 from app.routers import observability as observability_router  # noqa: E402
+
+configure_business_policies()
 
 app.include_router(observability_router.router, prefix="/agent")
 

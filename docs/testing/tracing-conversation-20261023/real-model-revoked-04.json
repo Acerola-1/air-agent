@@ -1,0 +1,64 @@
+{
+  "version": "tracing-conversation-v1",
+  "model": "hy3",
+  "identity": "controlled",
+  "data": "frozen fixture",
+  "checkpoint": "owned temporary SQLite (removed after run)",
+  "rows": [
+    {
+      "case": "revoked_before_publish",
+      "repeat": 1,
+      "expected": "suppressed",
+      "route": "conversation",
+      "reason": "",
+      "passed": true,
+      "error": null,
+      "seconds": 10.823,
+      "model_calls": 1,
+      "tools": [],
+      "source_fetches": 0,
+      "plans": [
+        {
+          "plan": {
+            "intent": "conversation",
+            "blocks": [
+              "greeting",
+              "overview",
+              "pollutants",
+              "station",
+              "spatial",
+              "weather",
+              "report",
+              "canvas",
+              "knowledge",
+              "boundary",
+              "workflow",
+              "next_step"
+            ],
+            "slots": [],
+            "inherit_previous": false,
+            "tone": "friendly"
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1787,
+          "output_tokens": 1002,
+          "total_tokens": 2789,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 907
+          }
+        }
+      ],
+      "done": 0,
+      "answer": "",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -111,6 +111,7 @@ def test_enabled_types_are_the_integrated_v1_family() -> None:
         "runtime.ttft",
         "runtime.cost",
         "runtime.span",
+        "runtime.capability",
         "runtime.tool_call",
     }
 

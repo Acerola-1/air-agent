@@ -1,0 +1,2943 @@
+{
+  "dataset_version": "bqa-conversation-loop-v1",
+  "graph_id": "basic-qa",
+  "status": "验收输入及预期，未运行",
+  "clock": {
+    "instant": "2026-05-08T16:00:00+08:00",
+    "timezone": "Asia/Shanghai",
+    "policy": "仅隔离环境注入；真实环境不改系统时钟，非同日今日分支标未验收"
+  },
+  "reference": {
+    "cases": "docs/testing/data/basic-qa-reference-cases.v1.json",
+    "dataset_version": "bqa-reference-202605-v1",
+    "fixtures": "docs/testing/data/basic-qa-reference-fixtures.v1.json",
+    "fixture_version": "bqa-fixture-202605-v1",
+    "rule": "引用原题、检查项及对应数据；引用文件发生变动时必须核对并冻结摘要"
+  },
+  "synthetic_extensions": {
+    "cities_today": {
+      "date": "2026-05-08",
+      "cutoff_hour": 15,
+      "updated_at": "2026-05-08T15:10:00+08:00",
+      "cities": {
+        "湖州市": {
+          "aqi": 75,
+          "level": "良",
+          "primary": "PM2.5"
+        },
+        "杭州市": {
+          "aqi": 95,
+          "level": "良",
+          "primary": "PM2.5"
+        }
+      }
+    },
+    "weather": {
+      "city": "杭州市",
+      "date": "2026-05-08",
+      "wind_speed_m_s": 2,
+      "wind_direction": "东北风",
+      "statement": "仅气象描述，不证明污染来源"
+    }
+  },
+  "count_policy": "范围均含端点，null为未设上限；按单case全部轮次累计（干预后0及单轮0另由检查项约束）。domain_requests计测试服务真实请求含重试；search计调用，embedding_attempts计实际网络尝试；load计尝试；model_requests计实际发送；planning_tool_batches计含工具调用批次。范围是受控模型脚本的验收约束，不是性能上限。",
+  "cases": [
+    {
+      "id": "C01",
+      "group": "1",
+      "title": "城市追问、原因、压缩与寒暄",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "湖州市今天的空气质量如何？",
+          "那杭州呢？",
+          "可能原因是什么？",
+          "缩成两句。",
+          "谢谢。"
+        ],
+        "setup": "各轮顺序执行并保留前轮真实结果；今天由隔离时钟解析。"
+      },
+      "expected_target": {
+        "city": [
+          "湖州市",
+          "杭州市"
+        ],
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "AQI",
+        "scope": "两城各自数据"
+      },
+      "allowed_actions": [
+        "首两轮可搜索或直接分别加载基础查询并查询；后续可复述或限于已有气象说明"
+      ],
+      "forbidden_actions": [
+        "串用城市数据、以气象相关性认定污染源、自动跨图启动、复述/寒暄时新业务查询"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          2,
+          8
+        ],
+        "domain_requests": [
+          2,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "湖州AQI75，杭州AQI95，均为良；杭州应使用其自身调用结果；原因明确证据不足或有限解释；压缩不新增事实"
+      ],
+      "evidence_basis": "本文件 cities_today 和独立气象样本；逐轮记录目标参数和证据来源",
+      "positive_control": null
+    },
+    {
+      "id": "C02",
+      "group": "2",
+      "title": "无历史省略",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "那杭州呢？"
+        ],
+        "setup": "新线程，无摘要、无历史。"
+      },
+      "expected_target": {
+        "city": "杭州市",
+        "date_or_period": null,
+        "metric": null,
+        "scope": null
+      },
+      "allowed_actions": [
+        "询问具体查询内容"
+      ],
+      "forbidden_actions": [
+        "猜空气质量、天气、时间或调用领域工具"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          8
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "澄清查询内容，不提供虚构结果"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": null
+    },
+    {
+      "id": "C03",
+      "group": "2",
+      "title": "切换知识问题",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI是多少？",
+          "什么是PM2.5，它和PM10有什么区别？"
+        ],
+        "setup": "首轮经测试服务取得数据。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "首轮；第二轮为概念"
+      },
+      "allowed_actions": [
+        "首轮加载并查询；第二轮回答概念"
+      ],
+      "forbidden_actions": [
+        "第二轮自动重复领域查询、引用旧AQI冒充概念"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "首轮AQI80；第二轮解释粒径且不新增城市数据"
+      ],
+      "evidence_basis": "reference fixtures day；第二轮 count 单独为0",
+      "positive_control": null
+    },
+    {
+      "id": "C04",
+      "group": "2",
+      "title": "多城市指代不明",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳和郑州的AQI分别是多少？",
+          "那里呢？"
+        ],
+        "setup": "首轮取得两个城市的结果。"
+      },
+      "expected_target": {
+        "city": [
+          "洛阳市",
+          "郑州市"
+        ],
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "指代城市待确认"
+      },
+      "allowed_actions": [
+        "首轮查询；第二轮澄清“那里”及需要什么"
+      ],
+      "forbidden_actions": [
+        "第二轮擅选城市或新业务查询"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "首轮80、60；第二轮不把任一城市当唯一指代"
+      ],
+      "evidence_basis": "reference fixtures day；第二轮领域请求为0",
+      "positive_control": null
+    },
+    {
+      "id": "C05",
+      "group": "3",
+      "title": "基础查询转排名和趋势",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？",
+          "同一天洛阳PM2.5在河南省测试城市排第几？",
+          "再看洛阳5月1日至7日PM2.5趋势、峰值和均值。"
+        ],
+        "setup": "自动选择，三轮顺序执行。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07；2026-05-01至07",
+        "metric": "AQI、PM2.5",
+        "scope": "河南省3个测试城市；趋势一周"
+      },
+      "allowed_actions": [
+        "每轮重新加载；依次基础、排名、趋势；允许缓存"
+      ],
+      "forbidden_actions": [
+        "旧Skill工具并集、历史证据更改归属、假称全省"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          3,
+          8
+        ],
+        "domain_requests": [
+          3,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "80；排名第2/3、50；峰值5月4日60、均值45.7；证据来源分别归属"
+      ],
+      "evidence_basis": "reference fixtures day、rank、daily_series",
+      "positive_control": null
+    },
+    {
+      "id": "C06",
+      "group": "3",
+      "title": "显式锁定冲突",
+      "mode": "fast",
+      "selection": {
+        "skill": "skill:basic-qa:air-quality-basic-query",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市PM2.5在河南省参评城市排第几？"
+        ],
+        "setup": "可信受理显式选择 air-quality-basic-query；当前能力含排名但未选择。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "河南省测试城市"
+      },
+      "allowed_actions": [
+        "说明当前选择限制并提示新提交改选"
+      ],
+      "forbidden_actions": [
+        "切换 ranking-assessment、绕过锁定查询排名"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          1
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "解释限制，不给排名"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C05"
+    },
+    {
+      "id": "C07",
+      "group": "4",
+      "title": "摘要后追问",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "湖州市今天的空气质量如何？",
+          "那杭州呢？"
+        ],
+        "setup": "首轮完成后触发受控上下文整理，使首轮加载消息被摘要覆盖；可用摘要仍包含任务与日期。"
+      },
+      "expected_target": {
+        "city": "杭州市",
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "AQI",
+        "scope": "城市单独查询"
+      },
+      "allowed_actions": [
+        "使用摘要理解任务；本轮重新加载，逐次发送重建完整规则"
+      ],
+      "forbidden_actions": [
+        "用摘要或旧规则字符串直接激活、截断必需规则、串用湖州数据"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          2,
+          8
+        ],
+        "domain_requests": [
+          2,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "杭州AQI95；检查每次发送规则与实际工具参数"
+      ],
+      "evidence_basis": "cities_today 与发送快照",
+      "positive_control": null
+    },
+    {
+      "id": "C08",
+      "group": "4",
+      "title": "原生持久化与重开",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "湖州市今天的空气质量如何？",
+          "那杭州呢？"
+        ],
+        "setup": "自建临时持久化与真实SDK，首轮完成后关闭并重开客户端，原线程恢复。"
+      },
+      "expected_target": {
+        "city": "杭州市",
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "AQI",
+        "scope": "同一可信线程"
+      },
+      "allowed_actions": [
+        "恢复历史，本轮重载规则后查询"
+      ],
+      "forbidden_actions": [
+        "复制人工合成历史冒充持久化、沿用旧活动资格"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          2,
+          8
+        ],
+        "domain_requests": [
+          2,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "实际checkpoint可回读；杭州95；隔离资源清理证据"
+      ],
+      "evidence_basis": "cities_today，SDK/checkpointer记录",
+      "positive_control": null
+    },
+    {
+      "id": "C09",
+      "group": "4",
+      "title": "旧checkpoint和模式变化",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "隔离旧checkpoint仅含旧规则字符串、无新活动状态；新提交服务端模式设 expert。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "旧线程新用户轮"
+      },
+      "allowed_actions": [
+        "以expert重新加载总纲与expert材料后查询"
+      ],
+      "forbidden_actions": [
+        "历史字符串激活、读取fast冒充expert"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "实际发送含完整expert材料，结果80"
+      ],
+      "evidence_basis": "reference fixtures day，材料指纹及发送快照",
+      "positive_control": null
+    },
+    {
+      "id": "C10",
+      "group": "4",
+      "title": "同轮恢复材料变化",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "加载后中断同一attempt，隔离测试材料版本变化，再恢复。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "原受理版本"
+      },
+      "allowed_actions": [
+        "拒绝旧状态恢复并要求新提交"
+      ],
+      "forbidden_actions": [
+        "同一attempt静默替换材料、发起业务外呼"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "明确恢复失效；拒绝后新增外呼0"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C11",
+      "group": "5",
+      "title": "搜索无命中",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "受控搜索返回空候选；目录中基础查询有效。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "洛阳"
+      },
+      "allowed_actions": [
+        "直接从目录加载后查询，或说明局限"
+      ],
+      "forbidden_actions": [
+        "搜索top1自动加载、开放所有工具"
+      ],
+      "count_ranges": {
+        "search": [
+          1,
+          1
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          1
+        ],
+        "domain_requests": [
+          0,
+          1
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "若查询须为80并有证据；若局限不得伪造"
+      ],
+      "evidence_basis": "reference fixtures day 与搜索记录",
+      "positive_control": null
+    },
+    {
+      "id": "C12",
+      "group": "5",
+      "title": "搜索超时",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "受控搜索超时；目录基础查询有效。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "洛阳"
+      },
+      "allowed_actions": [
+        "目录直接加载后查询或说明局限"
+      ],
+      "forbidden_actions": [
+        "无限重试、搜索失败放开工具"
+      ],
+      "count_ranges": {
+        "search": [
+          1,
+          2
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          1
+        ],
+        "domain_requests": [
+          0,
+          1
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "记录超时；成功须有洛阳80的实际证据"
+      ],
+      "evidence_basis": "reference fixtures day 与搜索记录",
+      "positive_control": null
+    },
+    {
+      "id": "C13",
+      "group": "5",
+      "title": "目录直接加载",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "受控模型直接使用有效目录 ID 和版本。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "洛阳"
+      },
+      "allowed_actions": [
+        "直接加载然后查询"
+      ],
+      "forbidden_actions": [
+        "搜索或伪造matched事件、加载时外呼"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          0
+        ],
+        "embedding_attempts": [
+          0,
+          0
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          1,
+          1
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "search与embedding为0；加载成功后才外呼；结果80"
+      ],
+      "evidence_basis": "reference fixtures day",
+      "positive_control": null
+    },
+    {
+      "id": "C14",
+      "group": "5",
+      "title": "缺必需非图表依赖",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "在隔离计数服务配置中保留其余已声明必需工具，并移除 air-quality-basic-query 的非图表主数据依赖 mcp_city_common_get_air_quality_realtime_stat；按可信服务映射注入，不通过同名其他服务补位。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "洛阳"
+      },
+      "allowed_actions": [
+        "加载失败并说明缺失"
+      ],
+      "forbidden_actions": [
+        "加载成功、退回全量工具、伪造数据"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          2
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "加载失败且领域外呼0；移除前须证明同一可信服务依赖可用，C13为正向对照；若无法接通隔离工具映射则标BLOCKED。"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C13"
+    },
+    {
+      "id": "C15",
+      "group": "5",
+      "title": "缺可选图表依赖",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "隔离目录保留 air-quality-basic-query 全部非 chart 必需依赖，移除可选图表 chart_city_concentration_line_chart；通过可信服务映射提供其他依赖。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "洛阳"
+      },
+      "allowed_actions": [
+        "缺图表时仍加载规则并查询主数据、回答正文；按需说明图表不可用"
+      ],
+      "forbidden_actions": [
+        "仅因图表缺失拒绝加载或阻断正文、编造图表或主数据"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "加载成功；查询结果洛阳AQI80；不伪称图表已生成；若无法接通隔离必需依赖映射则标BLOCKED。"
+      ],
+      "evidence_basis": "reference fixtures day；Skill材料的 required-tools 与 optional-tools 声明及隔离服务调用记录",
+      "positive_control": "C13"
+    },
+    {
+      "id": "C16",
+      "group": "5",
+      "title": "重复失败止损",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "受控模型重复同参数失败加载。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "洛阳"
+      },
+      "allowed_actions": [
+        "一次纠正重试后止损"
+      ],
+      "forbidden_actions": [
+        "第三次同参数同失败、重启顶层attempt或编造结果"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          2,
+          2
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          2,
+          2
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "正常终态且未得数据"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C13"
+    },
+    {
+      "id": "C29",
+      "group": "5",
+      "title": "预算耗尽",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "受控模型发起不同但无结果的工具调用填满八个批次，不重复相同失败。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "洛阳"
+      },
+      "allowed_actions": [
+        "八批次后受限结束"
+      ],
+      "forbidden_actions": [
+        "第九批或重启顶层attempt、编造结果"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          8
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          8,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "规划工具批次恰为8且正常终态"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C13"
+    },
+    {
+      "id": "C17",
+      "group": "6",
+      "title": "load与查询同批",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "同批注入有效load与该Skill领域查询。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "测试仅一次被拒调用"
+      },
+      "allowed_actions": [
+        "对每个tool_call_id返回配对拒绝；允许后续独立正确加载后重试正控"
+      ],
+      "forbidden_actions": [
+        "执行领域请求或提交活动状态"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          2
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "受控拒绝期间真实计数服务新增外呼0；正控C23单独运行"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C18",
+      "group": "6",
+      "title": "load与finish同批",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "同批注入有效load与finish。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "测试仅一次被拒调用"
+      },
+      "allowed_actions": [
+        "对每个tool_call_id返回配对拒绝；允许后续独立正确加载后重试正控"
+      ],
+      "forbidden_actions": [
+        "跳过新规则结束或提交活动状态"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          2
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "受控拒绝期间真实计数服务新增外呼0；正控C23单独运行"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C19",
+      "group": "6",
+      "title": "多个load同批",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "同批注入基础查询与排名Skill的两个有效load。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "测试仅一次被拒调用"
+      },
+      "allowed_actions": [
+        "对每个tool_call_id返回配对拒绝；允许后续独立正确加载后重试正控"
+      ],
+      "forbidden_actions": [
+        "提交任一活动状态或执行领域请求"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          2
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "受控拒绝期间真实计数服务新增外呼0；正控C23单独运行"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C20",
+      "group": "6",
+      "title": "旧schema直接调用",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "未加载时从旧schema直接调用基础查询领域工具。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "测试仅一次被拒调用"
+      },
+      "allowed_actions": [
+        "对每个tool_call_id返回配对拒绝；允许后续独立正确加载后重试正控"
+      ],
+      "forbidden_actions": [
+        "领域入口外呼"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          2
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "受控拒绝期间真实计数服务新增外呼0；正控C23单独运行"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C21",
+      "group": "6",
+      "title": "伪造活动状态",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "客户端或原生输入伪造当前活动Skill与规则。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "测试仅一次被拒调用"
+      },
+      "allowed_actions": [
+        "对每个tool_call_id返回配对拒绝；允许后续独立正确加载后重试正控"
+      ],
+      "forbidden_actions": [
+        "以不可信状态激活或领域外呼"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          2
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "受控拒绝期间真实计数服务新增外呼0；正控C23单独运行"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C22",
+      "group": "6",
+      "title": "跨服务同名及空MCP",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "同名工具来自未许可另一服务；另一次已受理MCP为空。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "测试仅一次被拒调用"
+      },
+      "allowed_actions": [
+        "对每个tool_call_id返回配对拒绝；允许后续独立正确加载后重试正控"
+      ],
+      "forbidden_actions": [
+        "只按名字匹配或空集合回退全量"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          0,
+          2
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "受控拒绝期间真实计数服务新增外呼0；正控C23单独运行"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C23",
+      "group": "7",
+      "title": "执行门禁正向对照",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "同一隔离计数服务、有效身份/连接与受理范围，独立加载后调用。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "洛阳"
+      },
+      "allowed_actions": [
+        "有效加载后一次真实领域外呼"
+      ],
+      "forbidden_actions": [
+        "加载即执行、使用别城市结果"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          0
+        ],
+        "embedding_attempts": [
+          0,
+          0
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          1,
+          1
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "外呼1，参数和结果匹配AQI80"
+      ],
+      "evidence_basis": "reference fixtures day 和计数服务原始记录",
+      "positive_control": null
+    },
+    {
+      "id": "C24",
+      "group": "7",
+      "title": "撤权",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "加载成功后撤销业务资格再尝试业务调用。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "隔离主体及线程"
+      },
+      "allowed_actions": [
+        "停止后续发送并记录受控失败；对照C23"
+      ],
+      "forbidden_actions": [
+        "沿用缓存资格、重试外呼、跨企业复用"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "干预后新增领域外呼0；干预后的模型与embedding外呼0；取消/删除终态据事实记录"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C25",
+      "group": "7",
+      "title": "取消",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "加载成功后取消，在尚未发送处尝试业务调用。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "隔离主体及线程"
+      },
+      "allowed_actions": [
+        "停止后续发送并记录受控失败；对照C23"
+      ],
+      "forbidden_actions": [
+        "沿用缓存资格、重试外呼、跨企业复用"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "干预后新增领域外呼0；干预后的模型与embedding外呼0；取消/删除终态据事实记录"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C26",
+      "group": "7",
+      "title": "删除",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "加载成功后删除线程，在尚未发送处尝试业务调用。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "隔离主体及线程"
+      },
+      "allowed_actions": [
+        "停止后续发送并记录受控失败；对照C23"
+      ],
+      "forbidden_actions": [
+        "沿用缓存资格、重试外呼、跨企业复用"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "干预后新增领域外呼0；干预后的模型与embedding外呼0；取消/删除终态据事实记录"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C27",
+      "group": "7",
+      "title": "企业上下文切换",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "A企业加载后切换B企业并尝试使用A的状态与工具；含A→B→A。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "隔离主体及线程"
+      },
+      "allowed_actions": [
+        "停止后续发送并记录受控失败；对照C23"
+      ],
+      "forbidden_actions": [
+        "沿用缓存资格、重试外呼、跨企业复用"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "干预后新增领域外呼0；干预后的模型与embedding外呼0；取消/删除终态据事实记录"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "C28",
+      "group": "7",
+      "title": "身份后端不可用",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI多少？"
+        ],
+        "setup": "加载后使隔离IAM不可用再尝试业务调用。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "隔离主体及线程"
+      },
+      "allowed_actions": [
+        "停止后续发送并记录受控失败；对照C23"
+      ],
+      "forbidden_actions": [
+        "沿用缓存资格、重试外呼、跨企业复用"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          1
+        ],
+        "domain_requests": [
+          0,
+          0
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "干预后新增领域外呼0；干预后的模型与embedding外呼0；取消/删除终态据事实记录"
+      ],
+      "evidence_basis": "无领域数据；以用户输入及受控调用记录为依据",
+      "positive_control": "C23"
+    },
+    {
+      "id": "R-BQA-011-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI、空气质量等级和首要污染物分别是什么？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "洛阳市AQI80、良、首要污染物PM2.5；注明2026-05-07。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-011 与 basic-qa-reference-fixtures.v1.json 中 day, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-011",
+      "expected_skill": "skill:basic-qa:air-quality-basic-query",
+      "fixture_refs": [
+        "day",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-011-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市AQI、空气质量等级和首要污染物分别是什么？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "洛阳市AQI80、良、首要污染物PM2.5；注明2026-05-07。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-011 与 basic-qa-reference-fixtures.v1.json 中 day, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-011",
+      "expected_skill": "skill:basic-qa:air-quality-basic-query",
+      "fixture_refs": [
+        "day",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-015-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市PM2.5在河南省参评城市中排名第几？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "第2/3位，浓度50；明确测试数据仅3个参评城市，不说全省所有城市。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-015 与 basic-qa-reference-fixtures.v1.json 中 rank, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-015",
+      "expected_skill": "skill:basic-qa:ranking-assessment",
+      "fixture_refs": [
+        "rank",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-015-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市PM2.5在河南省参评城市中排名第几？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "第2/3位，浓度50；明确测试数据仅3个参评城市，不说全省所有城市。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-015 与 basic-qa-reference-fixtures.v1.json 中 rank, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-015",
+      "expected_skill": "skill:basic-qa:ranking-assessment",
+      "fixture_refs": [
+        "rank",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-016-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市国控站中AQI最高的是哪个站？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "站点AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "测试国控乙，AQI120、轻度污染；不能选AQI150的测试省控丙。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-016 与 basic-qa-reference-fixtures.v1.json 中 stations, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-016",
+      "expected_skill": "skill:basic-qa:station-extreme",
+      "fixture_refs": [
+        "stations",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-016-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日洛阳市国控站中AQI最高的是哪个站？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "站点AQI",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "测试国控乙，AQI120、轻度污染；不能选AQI150的测试省控丙。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-016 与 basic-qa-reference-fixtures.v1.json 中 stations, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-016",
+      "expected_skill": "skill:basic-qa:station-extreme",
+      "fixture_refs": [
+        "stations",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-018-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日河南省测试范围内O3-8h不超过160微克/立方米的城市有哪些？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": null,
+        "date_or_period": "2026-05-07",
+        "metric": "O3-8h",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "测试范围3城；洛阳100、郑州90达标，平顶山170不达标；2/3=66.7%。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-018 与 basic-qa-reference-fixtures.v1.json 中 regional, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-018",
+      "expected_skill": "skill:basic-qa:regional-benchmark",
+      "fixture_refs": [
+        "regional",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-018-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "2026年5月7日河南省测试范围内O3-8h不超过160微克/立方米的城市有哪些？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": null,
+        "date_or_period": "2026-05-07",
+        "metric": "O3-8h",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "测试范围3城；洛阳100、郑州90达标，平顶山170不达标；2/3=66.7%。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-018 与 basic-qa-reference-fixtures.v1.json 中 regional, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-018",
+      "expected_skill": "skill:basic-qa:regional-benchmark",
+      "fixture_refs": [
+        "regional",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-019-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "研判2026年5月8日截至15时洛阳市PM2.5能否保良，列出累计值和剩余控制值。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "累计50、当前小时45、总体剩余控制值70；采信主工具明确结论大概率可实现；气象与预报分别说明。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-019 与 basic-qa-reference-fixtures.v1.json 中 compliance, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-019",
+      "expected_skill": "skill:basic-qa:compliance-feasibility",
+      "fixture_refs": [
+        "compliance",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-019-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "研判2026年5月8日截至15时洛阳市PM2.5能否保良，列出累计值和剩余控制值。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-08 截至15时",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "累计50、当前小时45、总体剩余控制值70；采信主工具明确结论大概率可实现；气象与预报分别说明。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-019 与 basic-qa-reference-fixtures.v1.json 中 compliance, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-019",
+      "expected_skill": "skill:basic-qa:compliance-feasibility",
+      "fixture_refs": [
+        "compliance",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-020-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "小时播报：查询洛阳市2026年5月7日PM2.5的峰值小时和低值小时。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "00—23时完整24点；峰值15时80，低值03时20；历史日期不调用空气质量预报。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-020 与 basic-qa-reference-fixtures.v1.json 中 hourly, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-020",
+      "expected_skill": "skill:basic-qa:broadcast-hour",
+      "fixture_refs": [
+        "hourly",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-020-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "小时播报：查询洛阳市2026年5月7日PM2.5的峰值小时和低值小时。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "00—23时完整24点；峰值15时80，低值03时20；历史日期不调用空气质量预报。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-020 与 basic-qa-reference-fixtures.v1.json 中 hourly, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-020",
+      "expected_skill": "skill:basic-qa:broadcast-hour",
+      "fixture_refs": [
+        "hourly",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-021-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "对比洛阳市2026年4月与2025年4月综合指数及PM2.5，分别改善了多少？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-04 对 2025-04",
+        "metric": "综合指数、PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "综合指数4.0降到3.2，改善20.0%；PM2.5由50降到40，改善20.0%；不得称环比。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-021 与 basic-qa-reference-fixtures.v1.json 中 monthly, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-021",
+      "expected_skill": "skill:basic-qa:comparison-composition",
+      "fixture_refs": [
+        "monthly",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-021-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "对比洛阳市2026年4月与2025年4月综合指数及PM2.5，分别改善了多少？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-04 对 2025-04",
+        "metric": "综合指数、PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "综合指数4.0降到3.2，改善20.0%；PM2.5由50降到40，改善20.0%；不得称环比。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-021 与 basic-qa-reference-fixtures.v1.json 中 monthly, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-021",
+      "expected_skill": "skill:basic-qa:comparison-composition",
+      "fixture_refs": [
+        "monthly",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-023-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "综合指数占比分析：洛阳市2026年5月6日至7日六因子贡献排序和占比是多少？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-06至07",
+        "metric": "六因子分指数",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "分指数总和5.0；PM2.5=30.0%、O3-8h=25.0%、PM10=20.0%、SO2/NO2各10.0%、CO=5.0%；并列如实列出。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-023 与 basic-qa-reference-fixtures.v1.json 中 ratio, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-023",
+      "expected_skill": "skill:basic-qa:integrated-index-ratio",
+      "fixture_refs": [
+        "ratio",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-023-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "综合指数占比分析：洛阳市2026年5月6日至7日六因子贡献排序和占比是多少？"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-06至07",
+        "metric": "六因子分指数",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "分指数总和5.0；PM2.5=30.0%、O3-8h=25.0%、PM10=20.0%、SO2/NO2各10.0%、CO=5.0%；并列如实列出。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-023 与 basic-qa-reference-fixtures.v1.json 中 ratio, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-023",
+      "expected_skill": "skill:basic-qa:integrated-index-ratio",
+      "fixture_refs": [
+        "ratio",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-025-fast",
+      "group": "reference",
+      "title": "九Skill参考题 / fast",
+      "mode": "fast",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "分析2026年5月1日至7日洛阳市PM2.5逐日变化趋势，给出峰值、低值和均值。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-01至07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "序列30,40,50,60,50,40,50；峰值5月4日60，低值5月1日30，均值45.7；先升后降/波动，不能说持续上升。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-025 与 basic-qa-reference-fixtures.v1.json 中 daily_series, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-025",
+      "expected_skill": "skill:basic-qa:trend-analysis",
+      "fixture_refs": [
+        "daily_series",
+        "weather"
+      ]
+    },
+    {
+      "id": "R-BQA-025-expert",
+      "group": "reference",
+      "title": "九Skill参考题 / expert",
+      "mode": "expert",
+      "selection": {
+        "skill": "auto",
+        "mcp": "auto"
+      },
+      "input": {
+        "turns": [
+          "分析2026年5月1日至7日洛阳市PM2.5逐日变化趋势，给出峰值、低值和均值。"
+        ],
+        "setup": "新线程；自动Skill和MCP；主数据通过适配后的隔离计数服务。"
+      },
+      "expected_target": {
+        "city": "洛阳市",
+        "date_or_period": "2026-05-01至07",
+        "metric": "PM2.5",
+        "scope": "按原题和参考fixture"
+      },
+      "allowed_actions": [
+        "选择并加载正确Skill后查询；可选搜索"
+      ],
+      "forbidden_actions": [
+        "显式指定正确Skill充当自动路由、编造答案或扩大测试范围"
+      ],
+      "count_ranges": {
+        "search": [
+          0,
+          8
+        ],
+        "embedding_attempts": [
+          0,
+          null
+        ],
+        "load": [
+          1,
+          8
+        ],
+        "domain_requests": [
+          1,
+          16
+        ],
+        "planning_tool_batches": [
+          0,
+          8
+        ],
+        "model_requests": [
+          1,
+          null
+        ]
+      },
+      "answer_and_evidence_checks": [
+        "序列30,40,50,60,50,40,50；峰值5月4日60，低值5月1日30，均值45.7；先升后降/波动，不能说持续上升。"
+      ],
+      "evidence_basis": "basic-qa-reference-cases.v1.json#BQA-025 与 basic-qa-reference-fixtures.v1.json 中 daily_series, weather",
+      "positive_control": null,
+      "reference_case_id": "BQA-025",
+      "expected_skill": "skill:basic-qa:trend-analysis",
+      "fixture_refs": [
+        "daily_series",
+        "weather"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "database": "aa_lf_session_b15f13ba617d",
+  "role": "aa_lf_reader_b15f13ba617d",
+  "scope": "self-owned empty resources",
+  "checks": {
+    "bound_account_a": true,
+    "bound_account_b": true,
+    "missing_reference_omits_label": true,
+    "missing_ticket_denied": true,
+    "expired_ticket_denied": true,
+    "non_owner_non_bypass_role": true,
+    "positive_own_reference": true,
+    "denied_other_reference_rows": 0
+  },
+  "resources_removed": true
+}

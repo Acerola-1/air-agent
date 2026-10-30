@@ -1,0 +1,10 @@
+[
+  {
+    "path": "/login",
+    "http_status": 200
+  },
+  {
+    "path": "/api/threads",
+    "http_status": 401
+  }
+]

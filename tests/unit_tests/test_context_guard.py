@@ -6,7 +6,7 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 from common.config import config
-from common.context_guard import prepare_model_context
+from basic_qa.context.projection import prepare_model_context
 from common.model_budget import (
     ContextBudgetExceeded,
     enforce_request_budget,

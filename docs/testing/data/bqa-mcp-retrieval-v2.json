@@ -1,0 +1,190 @@
+{
+  "dataset_version": "bqa-mcp-retrieval-v2",
+  "catalog_version": "sha256:d2ce14fc42070341fbaa810337c8544d2b18988e11fd6c885c0b8f35c7bb27bc",
+  "seeds": [
+    {
+      "query": "按坐标反查行政区，用于核对监测点位置",
+      "gold": [
+        "mcp:ipp:mcp_city_base_get_district_by_lnglat"
+      ]
+    },
+    {
+      "query": "查询某城市下辖区县列表",
+      "gold": [
+        "mcp:ipp:mcp_city_base_get_child_district_by_parent"
+      ]
+    },
+    {
+      "query": "查询某行政区的上级行政区",
+      "gold": [
+        "mcp:ipp:mcp_city_base_get_parent_district_by_child"
+      ]
+    },
+    {
+      "query": "查询站点一个月内的优良天数",
+      "gold": [
+        "mcp:ipp:mcp_station_common_good_days_query"
+      ]
+    },
+    {
+      "query": "给定网格编码查询网格资料",
+      "gold": [
+        "mcp:ipp:mcp_grid_base_grid_info_by_code"
+      ]
+    },
+    {
+      "query": "查询指定行政区的网格列表",
+      "gold": [
+        "mcp:ipp:mcp_grid_base_grid_list_by_region"
+      ]
+    },
+    {
+      "query": "查询网格空气质量数据",
+      "gold": [
+        "mcp:ipp:mcp_grid_common_air_data"
+      ]
+    },
+    {
+      "query": "查找某站点附近网格",
+      "gold": [
+        "mcp:ipp:mcp_grid_base_grid_by_station_proximity"
+      ]
+    },
+    {
+      "query": "查询某区域告警网格数量",
+      "gold": [
+        "mcp:ipp:mcp_grid_common_alarm_grid_count"
+      ]
+    },
+    {
+      "query": "查询某城市空气质量预报",
+      "gold": [
+        "mcp:ipp:mcp_city_common_get_air_quality_forecast"
+      ]
+    },
+    {
+      "query": "查询城市历史逐小时气象数据",
+      "gold": [
+        "mcp:ipp:mcp_weather_forecast_hourly_history"
+      ]
+    },
+    {
+      "query": "查询站点实时空气质量",
+      "gold": [
+        "mcp:ipp:mcp_station_common_air_real_data"
+      ]
+    }
+  ],
+  "schema_versions": {
+    "mcp:ipp:mcp_city_common_city_area_ranking": "sha256:57f16189d367ec4b11fc281b38723331fe6d16380ae1a350cfa2340ab973bce3",
+    "mcp:ipp:mcp_city_base_get_district_by_lnglat": "sha256:e8e848373cedfaacbc887a042500060d853dc38c019e32f3636d3690838cdcc4",
+    "mcp:ipp:mcp_city_base_get_parent_district_by_child": "sha256:8322f8f51e4b481e2148a7f38acafabea6bba8a04cb5e3cc709626d492a5a495",
+    "mcp:ipp:mcp_city_common_factor_area_ranking": "sha256:37f38ec1d847f61bad6ba865d137caa3e8f7c6150878db44957110e1f2eda946",
+    "mcp:ipp:mcp_city_common_factor_province_ranking": "sha256:d35b42ede9f76eac5ddf1b517905b819da85941a1c95f585f1799b0fcb437570",
+    "mcp:ipp:mcp_city_base_get_child_district_by_parent": "sha256:aad013324bfa8dece856999d41702a848fd6d7a4b3af0b07126abda5291da9fe",
+    "mcp:ipp:mcp_city_common_get_air_quality_forecast": "sha256:eb07ceafae293fc752ba55158f01d55fe7db50290f65bb1d061a89ee49ecaee1",
+    "mcp:ipp:mcp_city_common_area_city_ranking": "sha256:2298a727480f6e4e05e31ff737045bd337abb89472812881c9d2f5321329f9c8",
+    "mcp:ipp:mcp_city_common_area_province_ranking": "sha256:5382019976dc2c0cce3d806890e07f7a8ca4df5c9807c31f5d27bbf170aa11d4",
+    "mcp:ipp:mcp_city_common_area_multi_ranking": "sha256:a9759fa5ac1bebc015519dd2ee778b05389194e4c7e5de26a60031bc55ce9dfa",
+    "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat": "sha256:8f1e04c76fc57e703b20fb26fb33d82de7ee963fabd57f5e44150bcf624121a8",
+    "mcp:ipp:mcp_station_base_air_station_list": "sha256:78ae1b288849614fd6c4aaa377341c89367606f89cb02ba4f79a707c30fc79f7",
+    "mcp:ipp:mcp_station_common_air_quality_forecast": "sha256:4a399bc5fac86e4c02c165ca9512e385285bc7794d3b92dce97a8eff0e32e3ee",
+    "mcp:ipp:mcp_station_base_lng_lat_near_national_province_station": "sha256:91957638467c2da42c29417386571f490cdc914909acdec995491707e6213d10",
+    "mcp:ipp:mcp_station_base_range_site_list": "sha256:a519e7da027ceefddd7d19da45bb66cfb13cb14bc7f4853d7378769c5347bf37",
+    "mcp:ipp:mcp_station_common_lng_lat_scope_air_data": "sha256:4312a340daa5b1d5170e36da4057992971ee7e605b8fa583e878d76dbe9f049f",
+    "mcp:ipp:mcp_station_common_air_data": "sha256:d48d45d182a9b35bdb36146cfb66e6c2eb479487ab0722100cb9f1774c50ac70",
+    "mcp:ipp:mcp_station_base_get_info_by_code_name": "sha256:0797e510e57ce2faa91812912dd213167d75c0fa355916a809941f648b248cb8",
+    "mcp:ipp:mcp_station_common_air_real_data": "sha256:6b2013f0279523a127aaa2eaaea59e6d446d57fc7775bde2546791c968ee81b4",
+    "mcp:ipp:mcp_station_common_good_days_query": "sha256:0690003e2a65f30fe989635322c3bc551bd350a4e13e9017512dcb51661890c3",
+    "mcp:ipp:mcp_weather_nwp_city_forecas": "sha256:d9026eebe8a3a04412b4027eca280e40df361304f60e68238888e490c2e8797d",
+    "mcp:ipp:mcp_weather_nwp_city_history": "sha256:8ecd2b19880e1bf0263ec7acdb7d7951dec6ee31f4d10275e4d7e5e7d61e002d",
+    "mcp:ipp:mcp_weather_numeric_forecast": "sha256:815606bfcd8686713e4629237adf427d2c0aac8bfd2ed6fa5b2d8489a26fabe0",
+    "mcp:ipp:mcp_weather_numeric_forecast_history": "sha256:3a25c36d17410cd43a951f715f9237970552752410d078a7231639d321655e32",
+    "mcp:ipp:mcp_weather_forecast_daily": "sha256:64a1af45eec3b8c7c0f42ae73e203459dbaff3873c5a140e354b3aefb2a8d58c",
+    "mcp:ipp:mcp_weather_forecast_hourly": "sha256:2a057d265c7d307dbe31b990c2014e83b316b312960547325d720dd47c237e4b",
+    "mcp:ipp:mcp_weather_forecast_daily_history": "sha256:a7030bcdc65f6a6ef2273b910fc1f795fc4dcc232d17a5263d466317256b1849",
+    "mcp:ipp:mcp_weather_forecast_hourly_history": "sha256:13cdc63b499d97038e83a8f6ee99f22714ff8bd4aac0587351b14e7a7d554761",
+    "mcp:ipp:helper_get_latest_time": "sha256:5e6f35dc363d3955ea8d6c5e6ad8ae24aa0dca9768ae878706da5603da9e9ceb",
+    "mcp:ipp:helper_getLatestTime2": "sha256:943016903e9011b01439d9879a6de0dca6ab89e3e454a218000ea3016e36a38b",
+    "mcp:ipp:mcp_city_analysis_border": "sha256:ae7a615cb1be98bcd2be4d615237110c4ed4233d6e722a41c6e37eb47d54669a",
+    "mcp:ipp:mcp_city_analysis_boxPlot": "sha256:cb059a011316de1b118978c6ecff5892fafded8c1a77fcd3c5e4f39abcdd9408",
+    "mcp:ipp:broadcastHour": "sha256:4ffc7c897a0d4c3435add9233aa0bcd9e00d37ac14310c5c1c8b88e6ea9c5e18",
+    "mcp:ipp:mcp_city_analysis_calendar_day": "sha256:cd774eacbeb9006bd133560b7c79bf97358671286a46222e4721c8ba4cebd612",
+    "mcp:ipp:mcp_city_analysis_calendar_month": "sha256:d854c393387a5a34bff73eefda7e30eb14664f3832b782ea41b9fca254868d46",
+    "mcp:ipp:mcp_city_analysis_calendar_year": "sha256:ce88d5a7af43a8e00510b4d297a844010075f328171349ba1b9a4fbf9af3f6df",
+    "mcp:ipp:mcp_city_analysis_calculations": "sha256:f9fd35d0b122f929ee8c2130b900868d3a3bce96b18c80e42c644d4260334ace",
+    "mcp:ipp:cityFactorRankings": "sha256:adb254d71d9551a8bb9d5c8ac717694e4fbddaef1fd59536505f90534625a21d",
+    "mcp:ipp:mcp_city_analysis_compliance_prediction": "sha256:cc3b047db2b9380df72d27dbcb4b3135d8b70d3cd0807c0d5fb087f5287c0647",
+    "mcp:ipp:compositeIndexSixFactorRatio": "sha256:9f8a419565b6cc4122bbe42479e938c0982c8005d2aaebd14e5cdfe638a29a36",
+    "mcp:ipp:mcp_city_analysis_concentrationContrastBar": "sha256:646396e42c6df2dc58c2d0bb2984991a20101f652ddf7aa91da9c22510013a6a",
+    "mcp:ipp:concentration_ranking": "sha256:8d3a79ba612134cf291f454445dfa9fd439af5152a148d7e64a29aeb7e3f0556",
+    "mcp:ipp:mcp_city_analysis_concentrationRation": "sha256:ef9f1cfa76cfdc837983cf9526804875cc42a1ba823e5f59218a048e1553844c",
+    "mcp:ipp:mcp_city_analysis_correlation": "sha256:97d08e1a86110c863e485c9356e245e80347005a0dfb211447884a15b469c371",
+    "mcp:ipp:integratedIndexRatio": "sha256:1baf95d88a9c108e352554a632d3e3a4048a075d7ef6949861726a94eba8217f",
+    "mcp:ipp:primaryPollutantProportionAnaly": "sha256:4a9752753e642054fef0b8ff9cad3fd648ecb9ec10d20eb08ca5ab6d474de8b9",
+    "mcp:ipp:mcp_city_analysis_monitor": "sha256:24b3e8764f20a35657c7f0322e0f9c4e15f0edc8656f339aa232fd425bb9c154",
+    "mcp:ipp:mcp_city_analysis_nationalOrder": "sha256:e52dcddc289dc0ff71a1b29c11eeab759bb12a6be5369ac61adcf914660ef210",
+    "mcp:ipp:mcp_city_analysis_nationalOrderCompareBar": "sha256:c73cfe21ea7fb80e6ef59f932426c66dc0b217d77ffb7fac8e73fdcf4c99b2ca",
+    "mcp:ipp:mcp_city_analysis_nationalOrderContrastBar": "sha256:5bd3d35002fc3d96eb18daf0e8e4f5de35209c53364f7155fea13811b2b3c731",
+    "mcp:ipp:mcp_city_analysis_nationalOrderPercentage": "sha256:df26ea3cd2915f4200f909d3ff928b2d072e19d320f1f07644aa3adccae195f1",
+    "mcp:ipp:mcp_city_analysis_oneIndexManyCity24HourMean": "sha256:bb7f057e24e8dcecda03cb2865c02182086e75c156125d96c5e16da7b42b9717",
+    "mcp:ipp:oneIndexManyCityLine": "sha256:16f5959e1b3fb4706a25ace7f719a3ef9655071faa29998bd8140b6f0bd30691",
+    "mcp:ipp:mcp_city_analysis_regionCviRadar": "sha256:38aec59855679cdcc141c7e441396791c77d1d3c3e1cea5569ec6663e00599e6",
+    "mcp:ipp:mcp_city_analysis_timeCviRadarPie": "sha256:3cf2a705d68dd9fad3b1aca9bf365665dc393548f943a0f9e9360a9774fc2053",
+    "mcp:ipp:mcp_station_analysis_anomaly_map": "sha256:3e80820ad895db24efeef7cb1fbf5af652aa12971daf1a13ab14608c3b8a87fe",
+    "mcp:ipp:mcp_station_analysis_box_plot": "sha256:0d02c6c3e7267b678cb2d451a298598d572409c4648a761defd7ee1b24b655f1",
+    "mcp:ipp:mcp_station_analysis_broadcast_hour": "sha256:3822a74044d18178abb87a98df649c3fe03156fefbeb642bb2c85e3d178456d1",
+    "mcp:ipp:mcp_station_analysis_calendar_day": "sha256:a13e4951fe1ba0c6cae61800784fb2f0aafc6ad90bb938b1e07856e099213c8c",
+    "mcp:ipp:mcp_station_analysis_calendar_month": "sha256:f1971be0badf137cca40d443ab7f31c31ba86b21cd2de06663822bedb2830902",
+    "mcp:ipp:mcp_station_analysis_calendar_year": "sha256:db8dc0fed4a63ef98b98820fc9f480240838c5f55daa25bfeae88b6b7e657151",
+    "mcp:ipp:mcp_station_analysis_concentration_ranking": "sha256:d693df41858dbca21490751c88b0e23e7f1dc083cd50e4735bec0903e3d5dbcf",
+    "mcp:ipp:mcp_station_analysis_concentration_ratio": "sha256:c6306a00bcf534e778af785ab36220416eb300b4e4dc7b08dd53b0a3be973139",
+    "mcp:ipp:mcp_station_analysis_concentration_table": "sha256:20ed1917436c4cb583663c10ca5591d00f486a945c5314fc88c59d7edecf2743",
+    "mcp:ipp:mcp_station_analysis_correlation": "sha256:b924dd61e03ab420ded4442308462d12f5bf026a9b5b1779479cd5a0e7cd1750",
+    "mcp:ipp:mcp_station_analysis_cvi_radar_pie": "sha256:d63217e8fe9c72c9e1c4d7fe56cc5012212f2bd59d33eb9e8d75db1c7775add8",
+    "mcp:ipp:mcp_station_analysis_cvi_radar_time": "sha256:6bb7685a269f5392256bab0c9ac3d676b3f3450724ade2c93c0cc81c08312a3c",
+    "mcp:ipp:mcp_station_analysis_evaluation_month": "sha256:2d1b4f7972c52c9e518a4d3be2be6c687708a446a1f6f234f4c4633ad4eb086d",
+    "mcp:ipp:mcp_station_analysis_history_pscf": "sha256:f69f3f12756a66a6abb3ea10ffcb49127117c5b935f9576fc1e88703eddb0dad",
+    "mcp:ipp:mcp_station_analysis_index_ranking": "sha256:6c85ff927bf43abb6e209e37d34d23fd359899d392e0159b5672646f7b8d8d30",
+    "mcp:ipp:mcp_station_analysis_index_stations_24h_avg": "sha256:cb8d48346c0c5a1f132e425e6949ccaf4a3f759ba0fab43c330a00e805a18cd8",
+    "mcp:ipp:mcp_station_analysis_integrated_index_bar": "sha256:3191abdd11e2ecbf6af5e85e74f4c059400d580a70194510a7379bce8aed204f",
+    "mcp:ipp:mcp_station_analysis_integrated_index_pie": "sha256:cca0f31d01cbe7e745eea227914e723b5b84706b04e235772af8c72ba0b8114d",
+    "mcp:ipp:mcp_station_analysis_integrated_index_table": "sha256:0ffde2e92f20ec73c6154008ea62b348125fb1c3cb47f1871aa378aeaf83bfd2",
+    "mcp:ipp:mcp_station_analysis_one_index_multi_station_line": "sha256:3290981b63083a935176198eafc7e060e89904613d69c640e231e8e0e86edcb1",
+    "mcp:ipp:mcp_station_analysis_one_station_multi_index_line": "sha256:085344b228db72c8ac0c0fe6d1c374254b6dc82d95b793197391d210e713bb74",
+    "mcp:ipp:mcp_station_analysis_single_pscf": "sha256:829b84d883a99d15497559057119142b0e23044d066a9ec3b83190404bf26dcb",
+    "mcp:ipp:mcp_station_analysis_trajectory": "sha256:e0bc0198626d2c6ef4a44fb63ea5a97e3623ab13a56f77cf2a32ad90828bc501",
+    "mcp:ipp:mcp_grid_common_abnormal_grid_statistics": "sha256:6cabcfcf62df9a186328caf9fe66e079a4d03e20440bcba238023d5e4bb3b2cb",
+    "mcp:ipp:mcp_grid_common_air_data": "sha256:1ce28c25320abbde551cf9660832072876686803a9e4d8fd6eb9e18408df34ef",
+    "mcp:ipp:mcp_grid_common_alarm_area_count": "sha256:bde2595a9ca04ef23a1b115f1594102374c60e69df1bdd447dfea8c2a230f06a",
+    "mcp:ipp:mcp_grid_common_alarm_data": "sha256:f10befc74d29ce0425e697ebc85925b900bdeff7b82f064fab39a7c5d7739acd",
+    "mcp:ipp:mcp_grid_common_alarm_grid_count": "sha256:ed953fd52f74f7c0490594638d24c235466fe339f2c5c10a74ddc8eb35c60472",
+    "mcp:ipp:mcp_grid_common_area_mma_data": "sha256:8dfce0d5f8e2a4faea617970a0bec8d08fac875479eb573366ca66fa1d3a224d",
+    "mcp:ipp:mcp_grid_common_area_monitor_data_page": "sha256:951018e7b9fd506b0d2cea9387965b3237cb39f757f18d1aa6e582d4e41b3ef6",
+    "mcp:ipp:mcp_grid_base_around_grids": "sha256:29efe101330e8033aa813f18af556ee21d33d9e2e0f178717dab46e04d840641",
+    "mcp:ipp:mcp_grid_common_grid_base_data": "sha256:e9c25bff4879555468948007e7fbc0718e6958020461caf9bb48c753c908936d",
+    "mcp:ipp:mcp_grid_base_grid_by_station_proximity": "sha256:bcc3aaf4fbb7277d5e685bf851aa6242557f84256cff710bd52a7e2760c96e54",
+    "mcp:ipp:mcp_grid_base_grid_info_by_code": "sha256:bc207c57537f24a6dbb3dd65ca56d9ec7f7101621bbd828e96a7cda76b8f18e8",
+    "mcp:ipp:mcp_grid_base_grid_info_by_codes": "sha256:d92f5eafdba2cea9d0042ee7e8728872cd4bfefa3661316e02e7c9ccadefc9c6",
+    "mcp:ipp:mcp_grid_base_grid_info_by_hash": "sha256:ac6d828308cebdba0ef32c4802b9a1b8c6a755c4df06eb9eae64355f893be064",
+    "mcp:ipp:mcp_grid_base_grid_list_by_region": "sha256:0d48afef8d15585512a6622e501c5e8f0027ac26cf7299becd34b2619be01fdc",
+    "mcp:ipp:mcp_grid_common_grid_statistics": "sha256:83c29d1b70575154d2eeff65ee7e54be268440590d1057df6c1d7c5bbab692d5",
+    "mcp:ipp:mcp_grid_common_grid_type_status": "sha256:bafebcd7d693db907194265cbadd791d489a2910b639ad70e50f800e0135b311",
+    "mcp:ipp:mcp_grid_common_hot_grid_list": "sha256:60753fa00cb92b4ed2712ce7a643e970f9341b0864014d99851239d876cf92e2",
+    "mcp:ipp:mcp_grid_common_hot_grid_ranking_panel": "sha256:78b23282d685cefd63c1da92b89692b6f99b50b5e8ec5a26fbaa7349f6dd7bf4",
+    "mcp:ipp:mcp_grid_common_hourly_alarm": "sha256:6a7a423fd463cec5f6c9859c4405fe5c707a919bb8eec02fc4cc39379c1b0fda",
+    "mcp:ipp:mcp_grid_base_latest_time": "sha256:0ce637a14e25a829a50a70045b4338de4ff0a924842630859728c869852c6f87",
+    "mcp:ipp:mcp_grid_common_left_panel": "sha256:9b4b53821987dad68170a714b72ad79f561388e9aa62d3c23543815abce5729c",
+    "mcp:ipp:mcp_grid_common_low_improve_alarm": "sha256:8f1f5217e650a88041c83c2d68489b898f81fdbadd1f929245f8160bf2f3c1b7",
+    "mcp:ipp:mcp_grid_common_monitor_data_page": "sha256:85e922474386d060fd13700d217d8c51f0564cc722fe1181ebc3b87985b6c573",
+    "mcp:ipp:mcp_grid_common_push_grid": "sha256:6bd05c3d1f0977cd948296e413a98cbd0791fd48ae11aae093d2991cfd5d2676",
+    "mcp:ipp:mcp_grid_base_region_tree": "sha256:5f0ce696dadfd8ad6c79ef86fe4d5b7a074564b2ecc146dda2bad16dd3feb45d",
+    "mcp:ipp:mcp_grid_common_regularity_alarm": "sha256:1ae971306687d86545a46a4723d910a2f0d97b9a8a05e9ea73e5a9158ce1aae8",
+    "mcp:ipp:mcp_grid_common_repeatability_alarm": "sha256:0567070c06be26efb28522aa41128f723c63025512a00b3016ab8f57717f4a1f",
+    "mcp:ipp:text2sql_yesterday_single_index_aqi_route": "sha256:7aee2d5a67f8d46b9b29459df2be689aae819ba47715ccc4d4af30adfa1fbbc3",
+    "mcp:ipp:text2sql_today_single_city_aqi_route": "sha256:dbdc684bcf960b6d4dea08ca148771da9abc4122ca500fa555734f48ce7c221a",
+    "mcp:ipp:text2sql_city_indexes_month_and_year": "sha256:21ba8758798493aeb4cc9edf6904742427a28682e4b6341f66a2659dab495fcd",
+    "mcp:ipp:text2sql_monthly_and_yearly_city_comparison": "sha256:ae48b9c21ea4c5154d7acfef91ad41f86e2200dfd9691090ccb92b0e0bf9e2ef"
+  },
+  "recovery_note": "Earlier live discovery timeout cleared the diagnostic freeze; restored exactly from retained live-tool-documents.json, keeping original gold and schema versions."
+}

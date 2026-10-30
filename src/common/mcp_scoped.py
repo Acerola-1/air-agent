@@ -18,6 +18,7 @@ import asyncio
 import threading
 import time
 from collections.abc import Awaitable, Callable
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -28,7 +29,11 @@ from loguru import logger
 
 from common.config import config
 from common.config.logging_config import LoggingConfigurator
-from common.identity.mcp_outbound import MCPOutboundAuth, mcp_identity_scope
+from common.identity.mcp_outbound import (
+    MCPOutboundAuth,
+    mcp_dispatch_scope,
+    mcp_identity_scope,
+)
 from common.identity.runtime import RuntimeIdentity, identity_from_config
 from common.mcp_authorization import (
     DEFAULT_PROVIDER,
@@ -236,6 +241,12 @@ class ScopedMCPToolFactory:
         run_config: Any = None,
     ) -> Any:
         """执行一次业务连接调用：每次重新解析连接（轮换/撤权即时生效）."""
+        from common.tool_execution.policy import (
+            authorize_selection,
+            require_execution_policy,
+        )
+
+        require_execution_policy(identity)
         resolved_server = server_key
         target_name = tool_name
         with self._lock:
@@ -249,33 +260,9 @@ class ScopedMCPToolFactory:
                     resolved_server = resolved_server or parts[1]
                     target_name = parts[2]
         server_key = resolved_server
-
-        # 任务 4.3 执行侧调度约束：按已受理 MCP 白名单进行实时硬拦截（网络零调用）
         cfg = run_config if isinstance(run_config, dict) else {}
-        configurable = cfg.get("configurable") or {}
-        metadata = cfg.get("metadata") or {}
-        mcp_mode = (
-            configurable.get("capability_mcp_mode")
-            or metadata.get("capability_mcp_mode")
-            or "auto"
-        )
-        if mcp_mode == "allowlist":
-            allowed_ids = configurable.get("capability_tool_ids")
-            if allowed_ids is None:
-                allowed_ids = metadata.get("capability_tool_ids") or []
-            allowed_set = set(allowed_ids)
-            clean_key = server_clean_key(server_key)
-            stable_id = f"mcp:{server_key}:{target_name}"
-            alias = f"mcp_{clean_key}__{target_name}"
-            if (
-                stable_id not in allowed_set
-                and alias not in allowed_set
-                and target_name not in allowed_set
-                and tool_name not in allowed_set
-            ):
-                raise McpAuthorizationError(
-                    f"未获准调用 MCP 工具 {stable_id}（不在本次已受理工具集合中）"
-                )
+        actual_args = deepcopy(args)
+        await authorize_selection(identity, cfg, server_key, target_name)
 
         try:
             resolved = self._resolve(identity, server_key)
@@ -304,6 +291,17 @@ class ScopedMCPToolFactory:
             )
             if tool is None:
                 raise McpAuthorizationError("工具不在当前业务连接已发现清单内")
+            disclosed = ((run_config or {}).get("metadata") or {}).get(
+                "mcp_disclosed_schema"
+            )
+            if disclosed is not None:
+                from common.tool_execution.schema import schema_version_for
+
+                if disclosed != {
+                    "tool_id": f"mcp:{server_key}:{tool.name}",
+                    "schema_version": schema_version_for(server_key, tool),
+                }:
+                    raise McpAuthorizationError("工具定义已变化，拒绝发送旧schema调用")
         except McpAuthorizationError:
             from common.observability.context import observation_context_from_config
             from common.observability.tool_adapter import record_tool_result
@@ -333,14 +331,35 @@ class ScopedMCPToolFactory:
 
         from common.observability.tool_adapter import observed_tool_call
 
+        async def checked_invoke():
+            from common.tool_execution.policy import authorize_send
+
+            await authorize_selection(identity, cfg, server_key, target_name)
+            validator = await authorize_send(
+                identity, server_key, target_name, tool, dict(cfg), actual_args
+            )
+
+            async def dispatch_guard():
+                await authorize_selection(identity, cfg, server_key, target_name)
+                if validator is not None:
+                    validator()
+
+            with mcp_dispatch_scope(dispatch_guard):
+                return await tool.ainvoke(actual_args)
+
         try:
             with mcp_identity_scope(identity):
                 result = await observed_tool_call(
                     run_config,
                     tool_name=tool_name,
                     service_key=server_key,
-                    invoke=lambda: tool.ainvoke(args),
+                    invoke=checked_invoke,
                 )
+        except BaseExceptionGroup as exc:
+            denied, other = exc.split(McpAuthorizationError)
+            if denied is not None and other is None:
+                raise McpAuthorizationError("最终发送授权已拒绝") from exc
+            raise
         except ToolException as exc:
             content = getattr(exc, "tool_content", None)
             if content is None:

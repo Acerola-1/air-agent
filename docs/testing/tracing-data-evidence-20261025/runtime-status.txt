@@ -1,0 +1,8 @@
+未监听 iam-java：19100。
+未监听 iam-web：19101。
+未监听 agent-admin-api：8100。
+未监听 agent-chat-web：3000。
+未监听 agent-admin-web：3100。
+未监听 rag-api：8099。
+未监听 langgraph：2024。
+未监听 local-host-bridge：19110。

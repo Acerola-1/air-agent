@@ -23,6 +23,10 @@ from common.middleware import TenantRuntimeGuardMiddleware, TimeContextMiddlewar
 from common.model_capacity import ModelCapacity, capacity_for_model, main_capacity
 from common.models import ModelRegistry
 from common.observability.middleware import ObservabilityModelMiddleware
+from common.tool_execution.policy import (
+    admitted_business_policy,
+    register_execution_policy,
+)
 from intelligent_tracing.conversation import ANALYSIS_TOOLS
 from intelligent_tracing.data_access import (
     BusinessMCPDataSource,
@@ -58,6 +62,10 @@ from intelligent_tracing.tools import (
     build_report_tools,
 )
 from intelligent_tracing.turn_routing import TracingTurnMiddleware, build_turn_tool
+
+register_execution_policy(
+    "intelligent-tracing", admitted_business_policy, requires_request=False
+)
 
 SYSTEM_PROMPT = """
 ## 角色

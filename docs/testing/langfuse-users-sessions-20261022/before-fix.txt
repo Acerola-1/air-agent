@@ -1,0 +1,201 @@
+FFFFF.F                                                                  [100%]
+=================================== FAILURES ===================================
+_________ test_missing_trusted_account_drops_client_account[metadata] __________
+
+metadata_location = 'metadata'
+
+    @pytest.mark.parametrize("metadata_location", ["metadata", "config", "kwargs"])
+    def test_missing_trusted_account_drops_client_account(metadata_location):
+        config = run_config()
+        config["metadata"] = {"user_account": "forged-account"}
+        value = {
+            "metadata": {"user_account": "forged-account"},
+            "config": {"metadata": {"user_account": "forged-account"}},
+            "kwargs": {"config": config},
+        }
+        _pin_langfuse_metadata(
+            value, graph_id="basic-qa", user_id="trusted-user", thread_id="thread", account=""
+        )
+        metadata = (
+            value["metadata"]
+            if metadata_location == "metadata"
+            else value["config"]["metadata"]
+            if metadata_location == "config"
+            else config["metadata"]
+        )
+>       assert "user_account" not in metadata
+E       AssertionError: assert 'user_account' not in {'user_account': 'forged-account', 'langfuse_trace_name': 'basic-qa', 'langfuse_user_id': 'trusted-user', 'langfuse_session_id': 'thread'}
+
+tests/unit_tests/tracing/test_langfuse_context_lifecycle.py:36: AssertionError
+__________ test_missing_trusted_account_drops_client_account[config] ___________
+
+metadata_location = 'config'
+
+    @pytest.mark.parametrize("metadata_location", ["metadata", "config", "kwargs"])
+    def test_missing_trusted_account_drops_client_account(metadata_location):
+        config = run_config()
+        config["metadata"] = {"user_account": "forged-account"}
+        value = {
+            "metadata": {"user_account": "forged-account"},
+            "config": {"metadata": {"user_account": "forged-account"}},
+            "kwargs": {"config": config},
+        }
+        _pin_langfuse_metadata(
+            value, graph_id="basic-qa", user_id="trusted-user", thread_id="thread", account=""
+        )
+        metadata = (
+            value["metadata"]
+            if metadata_location == "metadata"
+            else value["config"]["metadata"]
+            if metadata_location == "config"
+            else config["metadata"]
+        )
+>       assert "user_account" not in metadata
+E       AssertionError: assert 'user_account' not in {'user_account': 'forged-account', 'langfuse_trace_name': 'basic-qa', 'langfuse_user_id': 'trusted-user', 'langfuse_session_id': 'thread'}
+
+tests/unit_tests/tracing/test_langfuse_context_lifecycle.py:36: AssertionError
+__________ test_missing_trusted_account_drops_client_account[kwargs] ___________
+
+metadata_location = 'kwargs'
+
+    @pytest.mark.parametrize("metadata_location", ["metadata", "config", "kwargs"])
+    def test_missing_trusted_account_drops_client_account(metadata_location):
+        config = run_config()
+        config["metadata"] = {"user_account": "forged-account"}
+        value = {
+            "metadata": {"user_account": "forged-account"},
+            "config": {"metadata": {"user_account": "forged-account"}},
+            "kwargs": {"config": config},
+        }
+        _pin_langfuse_metadata(
+            value, graph_id="basic-qa", user_id="trusted-user", thread_id="thread", account=""
+        )
+        metadata = (
+            value["metadata"]
+            if metadata_location == "metadata"
+            else value["config"]["metadata"]
+            if metadata_location == "config"
+            else config["metadata"]
+        )
+>       assert "user_account" not in metadata
+E       AssertionError: assert 'user_account' not in {'user_account': 'forged-account', 'langfuse_trace_name': 'basic-qa', 'langfuse_user_id': 'trusted-user', 'langfuse_session_id': 'thread'}
+
+tests/unit_tests/tracing/test_langfuse_context_lifecycle.py:36: AssertionError
+______ test_stream_close_from_another_task_restores_caller[asyncio-False] ______
+
+sdk = (<langfuse._client.client.Langfuse object at 0x11067af90>, <opentelemetry.sdk.trace.export.in_memory_span_exporter.InMemorySpanExporter object at 0x11067a270>)
+events = False
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize("events", [False, True])
+    async def test_stream_close_from_another_task_restores_caller(sdk, events):
+        client, exporter = sdk
+        token = context.attach(context.Context())
+        try:
+            async def produce(value):
+                for _ in range(2):
+                    with client.start_as_current_observation(name="inside-stream"):
+                        pass
+                    yield value
+    
+            wrapped = _AttributePropagatingRunnable(
+                RunnableLambda(produce), {"user_id": "user-a", "session_id": "thread-a"}
+            )
+            source = (
+                wrapped.astream_events("value", version="v2")
+                if events
+                else wrapped.astream("value")
+            )
+            await anext(source)
+            await asyncio.create_task(source.aclose())
+            with client.start_as_current_observation(name="unrelated-after-close"):
+                pass
+            client.flush()
+            unrelated = next(
+                s for s in exporter.get_finished_spans() if s.name == "unrelated-after-close"
+            )
+>           assert unrelated.attributes.get("user.id") is None
+E           AssertionError: assert 'user-a' is None
+E            +  where 'user-a' = <built-in method get of mappingproxy object at 0x110574d60>('user.id')
+E            +    where <built-in method get of mappingproxy object at 0x110574d60> = mappingproxy({'user.id': 'user-a', 'session.id': 'thread-a', 'langfuse.internal.is_app_root': True, 'langfuse.observation.type': 'span'}).get
+E            +      where mappingproxy({'user.id': 'user-a', 'session.id': 'thread-a', 'langfuse.internal.is_app_root': True, 'langfuse.observation.type': 'span'}) = <opentelemetry.sdk.trace.ReadableSpan object at 0x1106ce9e0>.attributes
+
+tests/unit_tests/tracing/test_langfuse_context_lifecycle.py:72: AssertionError
+______ test_stream_close_from_another_task_restores_caller[asyncio-True] _______
+
+sdk = (<langfuse._client.client.Langfuse object at 0x110905e50>, <opentelemetry.sdk.trace.export.in_memory_span_exporter.InMemorySpanExporter object at 0x10fd63610>)
+events = True
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize("events", [False, True])
+    async def test_stream_close_from_another_task_restores_caller(sdk, events):
+        client, exporter = sdk
+        token = context.attach(context.Context())
+        try:
+            async def produce(value):
+                for _ in range(2):
+                    with client.start_as_current_observation(name="inside-stream"):
+                        pass
+                    yield value
+    
+            wrapped = _AttributePropagatingRunnable(
+                RunnableLambda(produce), {"user_id": "user-a", "session_id": "thread-a"}
+            )
+            source = (
+                wrapped.astream_events("value", version="v2")
+                if events
+                else wrapped.astream("value")
+            )
+            await anext(source)
+            await asyncio.create_task(source.aclose())
+            with client.start_as_current_observation(name="unrelated-after-close"):
+                pass
+            client.flush()
+            unrelated = next(
+                s for s in exporter.get_finished_spans() if s.name == "unrelated-after-close"
+            )
+>           assert unrelated.attributes.get("user.id") is None
+E           AssertionError: assert 'user-a' is None
+E            +  where 'user-a' = <built-in method get of mappingproxy object at 0x1108efe80>('user.id')
+E            +    where <built-in method get of mappingproxy object at 0x1108efe80> = mappingproxy({'user.id': 'user-a', 'session.id': 'thread-a', 'langfuse.internal.is_app_root': True, 'langfuse.observation.type': 'span'}).get
+E            +      where mappingproxy({'user.id': 'user-a', 'session.id': 'thread-a', 'langfuse.internal.is_app_root': True, 'langfuse.observation.type': 'span'}) = <opentelemetry.sdk.trace.ReadableSpan object at 0x110733020>.attributes
+
+tests/unit_tests/tracing/test_langfuse_context_lifecycle.py:72: AssertionError
+__________ test_sync_stream_closed_on_another_thread_restores_caller ___________
+
+sdk = (<langfuse._client.client.Langfuse object at 0x110911e00>, <opentelemetry.sdk.trace.export.in_memory_span_exporter.InMemorySpanExporter object at 0x110911810>)
+
+    def test_sync_stream_closed_on_another_thread_restores_caller(sdk):
+        client, exporter = sdk
+        token = context.attach(context.Context())
+        try:
+            def produce(value):
+                yield value
+                yield value
+    
+            wrapped = _AttributePropagatingRunnable(
+                RunnableLambda(produce), {"user_id": "user-a", "session_id": "thread-a"}
+            )
+            source = wrapped.stream("value")
+            next(source)
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                executor.submit(source.close).result()
+            with client.start_as_current_observation(name="unrelated-after-sync-close"):
+                pass
+            client.flush()
+            span = next(s for s in exporter.get_finished_spans() if s.name == "unrelated-after-sync-close")
+>           assert span.attributes.get("user.id") is None
+E           AssertionError: assert 'user-a' is None
+E            +  where 'user-a' = <built-in method get of mappingproxy object at 0x1108eda20>('user.id')
+E            +    where <built-in method get of mappingproxy object at 0x1108eda20> = mappingproxy({'user.id': 'user-a', 'session.id': 'thread-a', 'langfuse.internal.is_app_root': True, 'langfuse.observation.type': 'span'}).get
+E            +      where mappingproxy({'user.id': 'user-a', 'session.id': 'thread-a', 'langfuse.internal.is_app_root': True, 'langfuse.observation.type': 'span'}) = <opentelemetry.sdk.trace.ReadableSpan object at 0x1108baa50>.attributes
+
+tests/unit_tests/tracing/test_langfuse_context_lifecycle.py:127: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit_tests/tracing/test_langfuse_context_lifecycle.py::test_missing_trusted_account_drops_client_account[metadata]
+FAILED tests/unit_tests/tracing/test_langfuse_context_lifecycle.py::test_missing_trusted_account_drops_client_account[config]
+FAILED tests/unit_tests/tracing/test_langfuse_context_lifecycle.py::test_missing_trusted_account_drops_client_account[kwargs]
+FAILED tests/unit_tests/tracing/test_langfuse_context_lifecycle.py::test_stream_close_from_another_task_restores_caller[asyncio-False]
+FAILED tests/unit_tests/tracing/test_langfuse_context_lifecycle.py::test_stream_close_from_another_task_restores_caller[asyncio-True]
+FAILED tests/unit_tests/tracing/test_langfuse_context_lifecycle.py::test_sync_stream_closed_on_another_thread_restores_caller
+6 failed, 1 passed in 1.78s

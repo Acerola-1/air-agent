@@ -1,4 +1,4 @@
-"""离线试检固定题库：真实意图规则、Skill 加载与独立答案算术。
+"""离线试检固定题库：当前输入边界、Skill 加载与独立答案算术。
 
 不发送模型/MCP 请求，不连接数据库；不能代替实际问答或性能测试。
 每次必须提供新的输出目录，失败同样保存报告并返回非零退出码。
@@ -63,9 +63,9 @@ def main() -> int:
         patch.object(socket.socket, "connect", _deny_network),
         patch.object(socket, "create_connection", _deny_network),
     ):
-        from common.business_graph.intent import classify_intent_rule
-        from common.business_graph.skill_content import load_skill_rules
+        from basic_qa.input_policy import validate_input
         from common.skill_router import SkillSemanticRouter, load_skill_metadata
+        from common.skills.materials import load_skill_rules
 
         skills_dir = ROOT / "src/basic_qa/skills"
         metadata = load_skill_metadata(skills_dir)
@@ -96,9 +96,17 @@ def main() -> int:
 
         for case in cases:
             cid = case["case_id"]
-            actual, reason = classify_intent_rule(case["question"])
-            check("intent", case["expected_intent"], actual, case_id=cid)
-            records[-1]["reason"] = reason
+            # v1 expected_intent remains historical fixture metadata. Current BQA
+            # accepts messages and resolves abilities from the session, not regex.
+            check(
+                "current-message-input",
+                None,
+                validate_input(
+                    {"messages": [{"role": "user", "content": case["question"]}]}
+                ),
+                case_id=cid,
+            )
+            records[-1]["historical_expected_intent"] = case["expected_intent"]
             check(
                 "history-pairs",
                 10 if case["category"] == "Q4" else 0,
@@ -239,14 +247,14 @@ def main() -> int:
         cases_path,
         fixtures_path,
         *sorted((ROOT / "src/basic_qa/skills").rglob("*.md")),
-        ROOT / "src/common/business_graph/intent.py",
+        ROOT / "src/basic_qa/input_policy.py",
         ROOT / "src/common/permission/rules.py",
         Path(__file__).resolve(),
     ]
     summary = {
-        "schema_version": "basic-qa-reference-check.v1",
+        "schema_version": "basic-qa-reference-check.v2",
         "recorded_at": datetime.now(UTC).isoformat(),
-        "scope": "offline-intent-skill-loading-and-gold-arithmetic",
+        "scope": "offline-message-input-skill-loading-and-gold-arithmetic",
         "network": "denied",
         "duration_seconds": round(time.monotonic() - started, 3),
         "dataset_version": dataset["dataset_version"],

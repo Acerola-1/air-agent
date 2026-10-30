@@ -1,14 +1,13 @@
 """数据分析输出护栏测试."""
 
+from basic_qa.prompts import with_main_agent_tool_use_output_guard
+from data_analysis.prompts import DATA_ANALYSIS_OUTPUT_GUARD, with_data_analysis_output_guard
 from common.prompts import (
     ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE,
     AIR_QUALITY_UNIT_NORMALIZATION_GUIDE,
-    DATA_ANALYSIS_OUTPUT_GUARD,
     EXPERT_MODE_SYSTEM_PROMPT,
     MAIN_AGENT_TOOL_USE_OUTPUT_GUARD,
     TIME_PARAMETER_NORMALIZATION_GUIDE,
-    with_data_analysis_output_guard,
-    with_main_agent_tool_use_output_guard,
 )
 
 

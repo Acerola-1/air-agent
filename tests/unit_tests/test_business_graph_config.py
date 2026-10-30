@@ -11,11 +11,11 @@ STATE_GRAPHS = {
     "basic-qa": Path("src/basic_qa/graph.py"),
 }
 
-# 业务图节点流共享模块
-BUSINESS_GRAPH_BUILDER = Path("src/common/business_graph/builder.py")
-BUSINESS_GRAPH_NODES = Path("src/common/business_graph/nodes.py")
-BUSINESS_GRAPH_PROMPTING = Path("src/common/business_graph/prompting.py")
-BUSINESS_GRAPH_TOOL_WRAPPERS = Path("src/common/business_graph/tool_wrappers.py")
+# Basic QA 自有实现
+BUSINESS_GRAPH_BUILDER = Path("src/basic_qa/builder.py")
+BUSINESS_GRAPH_NODES = Path("src/basic_qa/nodes.py")
+BUSINESS_GRAPH_PROMPTING = Path("src/basic_qa/prompts.py")
+BUSINESS_GRAPH_TOOL_WRAPPERS = Path("src/basic_qa/tool_runtime.py")
 
 BUSINESS_GRAPH_FILES = {**DEEP_AGENT_GRAPHS, **STATE_GRAPHS}
 
@@ -60,19 +60,25 @@ def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
     bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
     bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
     bg_prompting = BUSINESS_GRAPH_PROMPTING.read_text(encoding="utf-8")
-    assert "check_permission" in bg_builder
-    assert "resolve_skill" in bg_builder
+    assert "validate_input" in Path("src/basic_qa/input_policy.py").read_text()
+    from basic_qa.graph import graph
+
+    topology = graph({}).get_graph()
+    assert "resolve_skill" not in topology.nodes
+    assert {
+        (edge.target, edge.conditional)
+        for edge in topology.edges
+        if edge.source == "prepare_model"
+    } == {("call_model", False)}
     assert "_route_after_tools" in bg_builder
-    assert "amatch" in bg_nodes
+    assert "prepare_projection" in bg_nodes
     assert "with_main_agent_tool_use_output_guard" in bg_prompting
-    assert "你是中科宇图的空气质量数据查询助手" in bg_prompting
+    assert "air-agent/basic-qa/conversation-system-v2" in bg_prompting
 
     # data-analysis 使用 StateGraph 节点流
     da_graph = STATE_GRAPHS["data-analysis"].read_text(encoding="utf-8")
     da_nodes = Path("src/data_analysis/nodes.py").read_text(encoding="utf-8")
-    da_prompt_builder = Path("src/data_analysis/prompt_builder.py").read_text(
-        encoding="utf-8"
-    )
+    da_prompt_builder = Path("src/data_analysis/prompts.py").read_text(encoding="utf-8")
     assert 'SKILLS_DIR = Path(__file__).parent / "skills"' in da_graph
     # skill 发现逻辑在 nodes.py 中
     assert "resolve_skill" in da_graph
@@ -105,7 +111,7 @@ def test_basic_qa_uses_rich_output_pipeline() -> None:
     assert "composed_tool_wrapper" in wrappers
     assert "_handle_artifact" not in wrappers
     bg_builder = BUSINESS_GRAPH_BUILDER.read_text(encoding="utf-8")
-    assert "composed_tool_wrapper" in bg_builder
+    assert "basic_qa_tool_wrapper" in bg_builder
 
 
 def test_business_graphs_node_flow_finalize_output() -> None:
@@ -126,18 +132,30 @@ def test_business_graphs_node_flow_finalize_output() -> None:
 
 
 def test_mcp_backed_graphs_do_not_initialize_mcp_at_import() -> None:
-    for graph_name in ("basic-qa",):
-        source = STATE_GRAPHS[graph_name].read_text(encoding="utf-8")
+    """在全新进程编译公开工厂，捕获实际连接尝试。"""
+    import os
+    import subprocess
+    import sys
 
-        assert "_business_tools = _resolve_tools()" not in source
-        assert "ensure_mcp_tools_sync()" not in source
-
-    # 业务图节点流的 MCP 刷新在 prepare_model 节点中
-    bg_nodes = BUSINESS_GRAPH_NODES.read_text(encoding="utf-8")
-    assert "refresh_authorized_mcp_tools" in bg_nodes
-    assert "get_business_tools" in bg_nodes
-
-    # data-analysis 使用 StateGraph 节点流，MCP 刷新在 prepare_model 节点中
-    da_nodes = Path("src/data_analysis/nodes.py").read_text(encoding="utf-8")
-    assert "refresh_authorized_mcp_tools" in da_nodes
-    assert "get_business_tools" in da_nodes
+    script = """
+import socket
+attempts = []
+def blocked(self, address):
+    attempts.append(address)
+    raise AssertionError('graph import must not connect')
+socket.socket.connect = blocked
+from basic_qa.graph import graph as qa
+from data_analysis.graph import graph as data
+for factory in (qa, data):
+    compiled = factory({})
+    assert compiled.checkpointer is None
+    assert compiled.get_graph().nodes
+assert not attempts, attempts
+"""
+    env = dict(
+        os.environ, PYTHONPATH=str(Path("src").resolve()), MAIN_LLM_API_KEY="synthetic"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", script], env=env, capture_output=True, text=True
+    )
+    assert result.returncode == 0, result.stderr

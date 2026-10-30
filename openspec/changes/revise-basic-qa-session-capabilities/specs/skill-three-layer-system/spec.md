@@ -1,0 +1,46 @@
+## MODIFIED Requirements
+
+### Requirement: SKILL.md 总纲自动注入
+每个Skill SHALL 包含SKILL.md总纲。Basic QA SHALL 从本图登记目录向模型提供稳定ID、名称、受限简介和材料版本，按需加载正文并在会话中复用；不自动注入全部正文，不要求使用SkillsMiddleware。使用该中间件的其他代理保留按配置目录扫描frontmatter并注入简介的机制。
+
+#### Scenario: SkillsMiddleware 加载 Skill 元数据
+- **WHEN** 使用SkillsMiddleware的代理指定技能来源目录
+- **THEN** 提取各SKILL.md的name和description形成目录；该机制不作为Basic QA必须迁移框架的要求
+
+#### Scenario: Skill 元数据列表注入格式
+- **WHEN** 某代理发现两个可用Skill
+- **THEN** 提供两个能力简介；Basic QA以稳定ID和版本引用材料，不向模型开放任意文件路径
+
+#### Scenario: 任意轮次按需加载
+- **WHEN** Basic QA在第十轮才首次需要某项预设能力
+- **THEN** 可发现并加载该Skill；此前轮次无需为将来准备而强制加载，之后有效引用可跨轮复用
+
+### Requirement: SKILL_FAST.md 和 SKILL_EXPERT.md 运行时读取
+SKILL.md总纲 SHALL 包含模式指引。Basic QA由受控加载器读取总纲与服务端有效模式的`references/fast.md`或`references/expert.md`，模式是会话材料引用的一部分，模型不能自报覆盖；其他代理继续读取各自声明的变体。模式文件 MUST NOT 作为独立Skill扫描，缺失不得静默回退另一模式。
+
+#### Scenario: 快速模式读取 SKILL_FAST.md
+- **WHEN** 服务端有效模式为fast并加载Skill
+- **THEN** Basic QA加载总纲和references/fast.md；其他代理读取其已声明快速模式材料
+
+#### Scenario: 专家模式读取 SKILL_EXPERT.md
+- **WHEN** 服务端有效模式为expert并加载Skill
+- **THEN** Basic QA加载总纲和references/expert.md；其他代理读取其已声明专家模式材料
+
+#### Scenario: SkillsMiddleware 不扫描模式变体文件
+- **WHEN** 扫描Skill目录
+- **THEN** 仅将总纲登记为Skill，模式变体不重复进入能力目录
+
+#### Scenario: 跨轮模式改变
+- **WHEN** 新轮由fast改为expert
+- **THEN** 已加载fast引用不被当成expert规则，按有效模式明确重载；没有材料时说明不可用，不拼接另一模式
+
+### Requirement: Skill 三层文件目录结构
+Skill目录 SHALL 以实际注册图及配置组织。Basic QA采用`src/basic_qa/skills/<slug>/SKILL.md`及references/fast.md、references/expert.md，材料存在且可读才计为可用。其他图不因本变更移动、清空或恢复目录，data-analysis继续封存；空预留目录不代表已实现能力。
+
+#### Scenario: 预留模块 Skill 目录留白
+- **WHEN** 有空的预留目录或尚未实现的图
+- **THEN** 不列为可用Skill，不以此要求清空已有业务目录
+
+#### Scenario: skills_fast 和 skills_expert 目录不再使用
+- **WHEN** Basic QA解析模式材料
+- **THEN** 使用所属Skill的references目录，不从旧分散目录拼接规则，本变更不删除历史文件

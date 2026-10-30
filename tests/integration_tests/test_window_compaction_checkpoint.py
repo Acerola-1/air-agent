@@ -43,8 +43,8 @@ async def test_compaction_and_recovery_survive_postgres_reopen(monkeypatch):
     from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
     from langgraph.graph import END, START, StateGraph
 
-    import common.context_preparation as preparation
-    from common.business_graph.state import BusinessGraphState
+    import basic_qa.context.preparation as preparation
+    from basic_qa.state import BasicQAState
     from common.config import config
     from common.model_capacity import capacity_from_window
 
@@ -92,7 +92,7 @@ async def test_compaction_and_recovery_survive_postgres_reopen(monkeypatch):
         return {**prepared.updates, "context_metrics": prepared.metrics}
 
     def compile_graph(saver):
-        graph = StateGraph(BusinessGraphState)
+        graph = StateGraph(BasicQAState)
         graph.add_node("prepare", prepare)
         graph.add_edge(START, "prepare")
         graph.add_edge("prepare", END)

@@ -1,0 +1,17 @@
+跳过 iam-java：端口已监听。
+就绪 iam-java：HTTP 200。
+已请求启动 LangGraph。
+已将私有桥来源限制更新为当前 LangGraph 容器 IP。
+已启动 local-host-bridge，等待 TCP 监听。
+就绪 local-host-bridge：19110 TCP 已监听。
+就绪 LangGraph：HTTP 200。
+跳过 agent-admin-api：端口已监听。
+就绪 agent-admin-api：HTTP 200。
+跳过 rag-api：端口已监听。
+就绪 rag-api：HTTP 200。
+跳过 iam-web：端口已监听。
+就绪 iam-web：HTTP 200。
+跳过 agent-chat-web：端口已监听。
+就绪 agent-chat-web：HTTP 200。
+跳过 agent-admin-web：端口已监听。
+就绪 agent-admin-web：HTTP 200。

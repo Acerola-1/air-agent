@@ -187,7 +187,7 @@ async def test_explicit_tool_wrapper_rejects_revoked(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """显式图机制（composed_tool_wrapper）：守卫在 handler 之前拒绝."""
-    from common.business_graph.tool_wrappers import composed_tool_wrapper
+    from basic_qa.tool_runtime import composed_tool_wrapper
 
     monkeypatch.setenv("TENANT_ENFORCE_RUNTIME_IDENTITY", "true")
     monkeypatch.setattr(

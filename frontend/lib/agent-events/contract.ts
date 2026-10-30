@@ -38,6 +38,14 @@ export type EventRegistry = {
       summary: string;
     }
   >;
+  capability_fact: {
+    kinds: string[];
+    actions: string[];
+    statuses: string[];
+    id_pattern: string;
+    version_pattern: string;
+    counts: string[];
+  };
 };
 
 export type StatesContract = {
@@ -68,6 +76,30 @@ const UUID_RE =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const TS_Z_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
 const ENUM_FIELDS = ['state', 'origin', 'phase', 'evidence_source', 'operation_kind'] as const;
+
+function capabilityPayloadValid(p: Record<string, unknown>, rules: EventRegistry['capability_fact']): boolean {
+  if (!rules.kinds.includes(p.capability_kind as string) ||
+      !rules.actions.includes(p.action as string) || !rules.statuses.includes(p.status as string)) return false;
+  const id = new RegExp(rules.id_pattern);
+  const version = new RegExp(rules.version_pattern);
+  if ('capability_id' in p && (typeof p.capability_id !== 'string' || !id.test(p.capability_id))) return false;
+  for (const key of ['capability_version', 'catalog_version']) {
+    if (key in p && (typeof p[key] !== 'string' || !version.test(p[key] as string))) return false;
+  }
+  for (const key of ['candidate_ids', 'source_ids']) {
+    if (!(key in p)) continue;
+    const values = p[key];
+    if (!Array.isArray(values) || values.length > 128 || values.some(v =>
+      typeof v !== 'string' || !(key === 'source_ids' && v === 'independent' || id.test(v)))) return false;
+  }
+  for (const key of rules.counts) {
+    if (key in p && (typeof p[key] !== 'number' || !Number.isInteger(p[key]) || (p[key] as number) < 0)) return false;
+  }
+  if ('candidate_count' in p && p.candidate_count !== ((p.candidate_ids as unknown[]) || []).length) return false;
+  if (['selected', 'loaded', 'activated', 'reused', 'executed'].includes(p.action as string) &&
+      (!p.capability_id || !p.capability_version)) return false;
+  return true;
+}
 
 function* iterKeys(node: unknown): Generator<string> {
   if (Array.isArray(node)) {
@@ -174,6 +206,9 @@ export function validateEvent(
     }
   }
   const enums = enumValues(states);
+  if (eventType === 'runtime.capability' && !capabilityPayloadValid(p, registry.capability_fact)) {
+    return { valid: false, reason: 'invalid_enum_value', detail: 'runtime.capability metadata' };
+  }
   for (const field of ENUM_FIELDS) {
     if (field in p) {
       const value = String(p[field]);

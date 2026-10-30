@@ -165,12 +165,14 @@ class SiliconFlowEmbeddingEncoder(DenseEncoder):
 
     def model_post_init(self, __context: Any) -> None:
         """初始化兼容 OpenAI 协议的 embedding 客户端."""
+        from common.identity.outbound import TenantOutboundAuth
+
         self._client = openai.Client(
             base_url=self.openai_base_url,
             api_key=self.openai_api_key,
             max_retries=0,
+            http_client=httpx.Client(auth=TenantOutboundAuth()),
         )
-        from common.identity.outbound import TenantOutboundAuth
 
         self._aclient = openai.AsyncClient(
             base_url=self.openai_base_url,
@@ -188,6 +190,23 @@ class SiliconFlowEmbeddingEncoder(DenseEncoder):
         """为 semantic-router 生成 embedding（异步，用于运行时查询，不阻塞事件循环）."""
         resp = await self._aclient.embeddings.create(model=self.name, input=docs)
         return [item.embedding for item in resp.data]
+
+
+def _propagate_identity_failure(error: BaseException) -> None:
+    """OpenAI SDK 可能包装传输守卫错误；身份拒绝始终原样上抛."""
+    from common.identity.runtime import RuntimeIdentityError
+
+    seen: set[int] = set()
+    current: BaseException | None = error
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, RuntimeIdentityError):
+            raise current
+        current = current.__cause__ or current.__context__
+
+
+class SkillSearchUnavailable(RuntimeError):
+    """语义检索基础设施不可用，区别于正常无命中."""
 
 
 class SkillSemanticRouter:
@@ -211,7 +230,6 @@ class SkillSemanticRouter:
         self._lock = Lock()
         self._router: Any | None = None
         self._skills_by_name: dict[str, SkillMetadata] = {}
-        self._match_cache: dict[str, tuple[SkillRouteCandidate, ...]] = {}
         self._build_failed = False
 
     def _build_router(self) -> Any | None:
@@ -282,7 +300,10 @@ class SkillSemanticRouter:
                 )
                 router.add(routes)
             except Exception as exc:
-                logger.warning("技能语义路由已禁用：构建失败，错误={}", exc)
+                _propagate_identity_failure(exc)
+                logger.warning(
+                    "技能语义路由已禁用：构建失败，错误类型={}", type(exc).__name__
+                )
                 self._build_failed = True
                 return None
 
@@ -306,17 +327,9 @@ class SkillSemanticRouter:
         except Exception as exc:
             logger.warning("技能语义路由预热失败: {}", exc)
 
-    def _cache_match(
-        self,
-        normalized_question: str,
-        candidates: tuple[SkillRouteCandidate, ...],
-    ) -> None:
-        """写入匹配缓存，超出上限时按插入顺序淘汰最老条目."""
-        if len(self._match_cache) >= self._MATCH_CACHE_MAX_ENTRIES:
-            self._match_cache.pop(next(iter(self._match_cache)), None)
-        self._match_cache[normalized_question] = candidates
-
-    async def amatch(self, question: str) -> list[SkillRouteCandidate]:
+    async def amatch(
+        self, question: str, *, strict: bool = False
+    ) -> list[SkillRouteCandidate]:
         """返回用户问题匹配到的 Skill 候选（异步，不阻塞事件循环）."""
         normalized_question = normalize_routing_text(question)
         if not normalized_question:
@@ -325,18 +338,10 @@ class SkillSemanticRouter:
                 self.skills_dir,
             )
             return []
-        if normalized_question in self._match_cache:
-            cached = self._match_cache[normalized_question]
-            logger.info(
-                "技能语义匹配命中缓存：skills_dir={}，归一化问题={}，候选数量={}",
-                self.skills_dir,
-                normalized_question[:120],
-                len(cached),
-            )
-            return list(self._match_cache[normalized_question])
-
         router = self._build_router()
         if router is None:
+            if strict:
+                raise SkillSearchUnavailable("skill search unavailable")
             logger.info(
                 "技能语义匹配跳过：skills_dir={}，原因=路由器不可用",
                 self.skills_dir,
@@ -344,14 +349,16 @@ class SkillSemanticRouter:
             return []
 
         logger.info(
-            "技能语义匹配开始：skills_dir={}，归一化问题={}",
+            "技能语义匹配开始：skills_dir={}",
             self.skills_dir,
-            normalized_question[:120],
         )
         try:
             matches = await router.acall(normalized_question, limit=self.max_candidates)
         except Exception as exc:
-            logger.warning("技能语义匹配失败：错误={}", exc)
+            _propagate_identity_failure(exc)
+            logger.warning("技能语义匹配失败：错误类型={}", type(exc).__name__)
+            if strict:
+                raise SkillSearchUnavailable("skill search failed") from None
             return []
 
         # semantic-router 的 limit>1 返回类型是联合类型：
@@ -364,11 +371,9 @@ class SkillSemanticRouter:
 
         if not raw_matches:
             logger.info(
-                "技能语义匹配无原始命中：skills_dir={}，归一化问题={}",
+                "技能语义匹配无原始命中：skills_dir={}",
                 self.skills_dir,
-                normalized_question[:120],
             )
-            self._cache_match(normalized_question, ())
             return []
         logger.info(
             "技能语义匹配原始结果：skills_dir={}，结果={}",
@@ -415,7 +420,6 @@ class SkillSemanticRouter:
             if len(candidates) >= self.max_candidates:
                 break
 
-        self._cache_match(normalized_question, tuple(candidates))
         logger.info(
             "技能语义匹配完成：skills_dir={}，候选数量={}，候选={}",
             self.skills_dir,

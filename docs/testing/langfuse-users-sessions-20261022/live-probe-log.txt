@@ -1,0 +1,18 @@
+2026-10-22 22:09:07 +0800 | INFO     | common.models:<module>:15 - 模型注册表初始化开始
+Traceback (most recent call last):
+  File "/tmp/verify_users_sessions_live.py", line 120, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "/Users/acerola/Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/acerola/Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/acerola/Library/Application Support/uv/python/cpython-3.13-macos-aarch64-none/lib/python3.13/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/tmp/verify_users_sessions_live.py", line 97, in main
+    assert len(unrelated) == 1 and unrelated[0].user_id is None and unrelated[0].session_id is None
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

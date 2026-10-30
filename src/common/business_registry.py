@@ -18,7 +18,7 @@ import re
 from dataclasses import dataclass
 from typing import Iterable
 
-BUSINESS_POLICY_VERSION = "2026-10-19.1"
+BUSINESS_POLICY_VERSION = "2026-10-28.1"
 
 _SERVER_KEY_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 
@@ -202,31 +202,7 @@ BUSINESSES: dict[str, BusinessDefinition] = {
         name_zh="基础问答",
         permission="agent:business:basic-qa:use",
         graph="basic-qa",
-        connections=_ipp(
-            (
-                "broadcastHour",
-                "cityFactorRankings",
-                "helper_get_latest_time",
-                "integratedIndexRatio",
-                "mcp_city_analysis_calculations",
-                "mcp_city_analysis_compliance_prediction",
-                "mcp_city_common_get_air_quality_forecast",
-                "mcp_city_common_get_air_quality_realtime_stat",
-                "mcp_station_base_air_station_list",
-                "mcp_station_base_get_info_by_code_name",
-                "mcp_station_base_lng_lat_near_national_province_station",
-                "mcp_station_base_range_site_list",
-                "mcp_station_common_air_data",
-                "mcp_station_common_air_quality_forecast",
-                "mcp_weather_forecast_daily",
-                "mcp_weather_forecast_daily_history",
-                "mcp_weather_forecast_hourly",
-                "mcp_weather_forecast_hourly_history",
-                "oneIndexManyCityLine",
-                "text2sql_city_indexes_month_and_year",
-                "text2sql_monthly_and_yearly_city_comparison",
-            )
-        ),
+        connections=_ipp(IPP_APPROVED_QUERY_TOOLS),
     ),
     "data-analysis": BusinessDefinition(
         code="data-analysis",

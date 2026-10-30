@@ -29,7 +29,9 @@ description: |
     - 本月某省PM10达标城市占比是多少？
     - 今日某省哪些城市AQI没有达标？
 
-allowed-tools: helper_get_latest_time mcp_city_analysis_calculations text2sql_monthly_and_yearly_city_comparison
+allowed-tools: helper_get_latest_time mcp_city_analysis_calculations text2sql_monthly_and_yearly_city_comparison chart_city_calendar_day_calculations chart_city_monthly_yearly_comparison
+required-tools: helper_get_latest_time mcp_city_analysis_calculations text2sql_monthly_and_yearly_city_comparison
+optional-tools: chart_city_calendar_day_calculations chart_city_monthly_yearly_comparison
 ---
 
 # 区域对标与达标统计

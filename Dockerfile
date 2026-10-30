@@ -45,12 +45,12 @@ RUN PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -
 
 ENV LANGSERVE_GRAPHS='{"basic-qa": "/deps/air_agent/src/basic_qa/graph.py:graph", "data-analysis": "/deps/air_agent/src/data_analysis/graph.py:graph", "intelligent-tracing": "/deps/air_agent/src/intelligent_tracing/graph.py:graph"}'
 
-ENV LANGGRAPH_HTTP='{"app": "/deps/air_agent/src/common/artifact_http.py:app"}'
+ENV LANGGRAPH_HTTP='{"app": "/deps/air_agent/src/application/http.py:app"}'
 
 # -- 企业模式原生认证（add-tenant-identity-access；noop 已退出）--
 # RUNTIME_TICKET_KEYS / RUNTIME_DATABASE_URI / RUNTIME_TICKET_AUDIENCE 由
 # env_file .env 与 compose 注入；密钥不进镜像。
 ENV LANGGRAPH_AUTH_TYPE='custom'
-ENV LANGGRAPH_AUTH='{"path": "/deps/air_agent/src/common/identity/langgraph_auth.py:auth", "disable_studio_auth": true}'
+ENV LANGGRAPH_AUTH='{"path": "/deps/air_agent/src/application/langgraph_auth.py:auth", "disable_studio_auth": true}'
 
 WORKDIR /deps/air_agent

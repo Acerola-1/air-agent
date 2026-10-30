@@ -1,0 +1,7 @@
+{
+  "source": "https://raw.githubusercontent.com/Acerola-1/air-agent/main/src/common/business_registry.py",
+  "access": "unauthenticated public HTTPS GET; no GitHub token or cookie",
+  "count": 109,
+  "catalog_sha256": "41c411b97375e4318c477ca37ca82b1b0fe4d4ee31fbd4e874091b8b34cc6c42",
+  "matches_frozen_scope": true
+}

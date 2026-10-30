@@ -1,0 +1,108 @@
+{
+  "evidence_kind": "controlled_model_compiled_native_graph_inmemory_checkpoint",
+  "real_model": "NOT_RUN",
+  "browser": "NOT_RUN",
+  "clock": "synthetic fixture; no system clock changed",
+  "turns": [
+    {
+      "input": "湖州市今天的空气质量如何？",
+      "active": {
+        "skill_id": "skill:basic-qa:test",
+        "material_version": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "mode": "fast",
+        "turn_key": "attempt-0",
+        "selection_digest": "digest",
+        "load_call_id": "load"
+      },
+      "load_skill": 1,
+      "search_skills": 0,
+      "model_requests": 3,
+      "domain_requests": 1,
+      "errors": [],
+      "elapsed_ms": 332.9288329987321
+    },
+    {
+      "input": "那杭州呢？",
+      "active": null,
+      "load_skill": 0,
+      "search_skills": 0,
+      "model_requests": 2,
+      "domain_requests": 0,
+      "errors": [
+        {
+          "name": "demo",
+          "content": "{\"code\": 409, \"success\": false, \"error_code\": \"skill_not_loaded\", \"message\": \"本轮尚未加载 Skill，请先单独调用 load_skill，成功后再重试此工具。\"}"
+        }
+      ],
+      "elapsed_ms": 125.25837500288617
+    },
+    {
+      "input": "那金华呢？",
+      "active": null,
+      "load_skill": 0,
+      "search_skills": 0,
+      "model_requests": 2,
+      "domain_requests": 0,
+      "errors": [
+        {
+          "name": "demo",
+          "content": "{\"code\": 409, \"success\": false, \"error_code\": \"skill_not_loaded\", \"message\": \"本轮尚未加载 Skill，请先单独调用 load_skill，成功后再重试此工具。\"}"
+        }
+      ],
+      "elapsed_ms": 6.556041000294499
+    },
+    {
+      "input": "缩成两句",
+      "active": null,
+      "load_skill": 0,
+      "search_skills": 0,
+      "model_requests": 1,
+      "domain_requests": 0,
+      "errors": [],
+      "elapsed_ms": 4.159874995821156
+    },
+    {
+      "input": "谢谢",
+      "active": null,
+      "load_skill": 0,
+      "search_skills": 0,
+      "model_requests": 1,
+      "domain_requests": 0,
+      "errors": [],
+      "elapsed_ms": 4.227083001751453
+    },
+    {
+      "input": "再查湖州",
+      "active": null,
+      "load_skill": 0,
+      "search_skills": 0,
+      "model_requests": 2,
+      "domain_requests": 0,
+      "errors": [
+        {
+          "name": "demo",
+          "content": "{\"code\": 409, \"success\": false, \"error_code\": \"skill_not_loaded\", \"message\": \"本轮尚未加载 Skill，请先单独调用 load_skill，成功后再重试此工具。\"}"
+        }
+      ],
+      "elapsed_ms": 6.691875008982606
+    }
+  ],
+  "B03": {
+    "domain_requests": 0,
+    "errors": [
+      {
+        "name": "search_mcp",
+        "content": "{\"code\": 409, \"success\": false, \"error_code\": \"skill_not_loaded\", \"message\": \"本轮尚未加载 Skill，请先单独调用 load_skill，成功后再重试此工具。\"}"
+      },
+      {
+        "name": "load_mcp_tool",
+        "content": "{\"code\": 409, \"success\": false, \"error_code\": \"skill_not_loaded\", \"message\": \"本轮尚未加载 Skill，请先单独调用 load_skill，成功后再重试此工具。\"}"
+      }
+    ]
+  },
+  "domain_parameters": [
+    {
+      "city": "湖州"
+    }
+  ]
+}

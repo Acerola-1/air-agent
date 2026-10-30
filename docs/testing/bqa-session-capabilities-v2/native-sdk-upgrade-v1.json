@@ -1,0 +1,203 @@
+{
+  "started_at": "2026-10-28T14:06:25.652427+00:00",
+  "checks": [
+    {
+      "question": "湖州市今天空气质量如何？",
+      "run_status": "success",
+      "next": [],
+      "checkpoint": {
+        "checkpoint_id": "1f1d2d8d-3ffa-6aae-8009-2b59521f9535",
+        "thread_id": "deec7ddf-8aa1-450c-820b-65e0d7275569",
+        "checkpoint_ns": ""
+      },
+      "executions": [
+        {
+          "name": "mcp_city_common_get_air_quality_realtime_stat",
+          "params": {
+            "region": "湖州市",
+            "type": "daily_count",
+            "sTime": "2026-10-28 15:00",
+            "eTime": null
+          }
+        }
+      ],
+      "capabilities": null,
+      "legacy": {
+        "skill_id": "skill:basic-qa:air-quality-basic-query",
+        "material_version": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+        "mode": "fast",
+        "turn_key": "0b214c73-b501-40a2-9ba6-9c283ce1fdbb",
+        "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+        "load_call_id": "call_156ac68f6bee4367a09a11e6b545022d"
+      }
+    },
+    {
+      "question": "那杭州呢？",
+      "run_status": "success",
+      "next": [],
+      "checkpoint": {
+        "checkpoint_id": "1f1d2d8e-1e9c-62cf-8012-0f2b05d6461d",
+        "thread_id": "deec7ddf-8aa1-450c-820b-65e0d7275569",
+        "checkpoint_ns": ""
+      },
+      "executions": [
+        {
+          "name": "mcp_city_common_get_air_quality_realtime_stat",
+          "params": {
+            "region": "杭州市",
+            "type": "daily_count",
+            "sTime": "2026-10-28 15:00",
+            "eTime": null
+          }
+        }
+      ],
+      "capabilities": {
+        "version": 2,
+        "owner_scope": {
+          "tenant_id": "8809d436-fc0d-4ee0-bc85-81fd2b26b425",
+          "user_id": "28a3801b-4dae-4275-b84c-c160163b7820",
+          "thread_id": "deec7ddf-8aa1-450c-820b-65e0d7275569",
+          "graph_id": "basic-qa"
+        },
+        "loaded_skills": {
+          "skill:basic-qa:air-quality-basic-query": {
+            "material_version": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+            "mode": "fast",
+            "load_ref": "call_156ac68f6bee4367a09a11e6b545022d",
+            "last_used": 9,
+            "schema_versions": {
+              "mcp:ipp:helper_get_latest_time": "sha256:f6a7431780d3b6ab2559a1a39bf54be663eaadcb16b487072b7c1a81a574748f",
+              "mcp:ipp:mcp_city_common_get_air_quality_forecast": "sha256:9fac800bd1d41a67eb5c15d08e931160ffdf42267c127b81482be15a665310aa",
+              "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat": "sha256:0b3b3968ece53668e20b0c082e8b2a4dc60d34c9317be2a1b03d1a0eb8075c77",
+              "mcp:ipp:mcp_weather_forecast_daily": "sha256:97f040205a929a6a3f3df22569560fc94d0390616088921bc660435a6f5a34ad",
+              "mcp:ipp:mcp_weather_forecast_daily_history": "sha256:764390c81b4845fb007aa1e9736b6560b70ed6359b710e11f1d5ff3c78a45111",
+              "mcp:ipp:mcp_weather_forecast_hourly": "sha256:7b8a0b93b3e1e670c2882a1d01820ceff731bae988e6bfd23f6466adf78a1907",
+              "mcp:ipp:mcp_weather_forecast_hourly_history": "sha256:6f7023fad8142c3fdc63802f2c58dce2408b643a59beb5209f525c26f13cd299"
+            },
+            "catalog_scope": "sha256:b81fc99033d6a255dc2d5250be38ed534c636f579355f3501a0797a5e741ddcf",
+            "protected_attempt": "694cf8c9-ad03-479a-bd8f-2d8cc2ac72ad"
+          }
+        },
+        "active_skill_ids": [
+          "skill:basic-qa:air-quality-basic-query"
+        ],
+        "loaded_tools": {},
+        "independent_active_tool_ids": []
+      },
+      "legacy": null
+    },
+    {
+      "name": "native_persisted_v1_to_v2_without_reload",
+      "passed": true
+    },
+    {
+      "question": "那金华呢？",
+      "run_status": "success",
+      "next": [
+        "call_model"
+      ],
+      "checkpoint": {
+        "checkpoint_id": "1f1d2d8e-2d29-6eda-8016-437515442dbc",
+        "thread_id": "deec7ddf-8aa1-450c-820b-65e0d7275569",
+        "checkpoint_ns": ""
+      },
+      "executions": [],
+      "capabilities": {
+        "version": 2,
+        "owner_scope": {
+          "tenant_id": "8809d436-fc0d-4ee0-bc85-81fd2b26b425",
+          "user_id": "28a3801b-4dae-4275-b84c-c160163b7820",
+          "thread_id": "deec7ddf-8aa1-450c-820b-65e0d7275569",
+          "graph_id": "basic-qa"
+        },
+        "loaded_skills": {
+          "skill:basic-qa:air-quality-basic-query": {
+            "material_version": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+            "mode": "fast",
+            "load_ref": "call_156ac68f6bee4367a09a11e6b545022d",
+            "last_used": 9,
+            "schema_versions": {
+              "mcp:ipp:helper_get_latest_time": "sha256:f6a7431780d3b6ab2559a1a39bf54be663eaadcb16b487072b7c1a81a574748f",
+              "mcp:ipp:mcp_city_common_get_air_quality_forecast": "sha256:9fac800bd1d41a67eb5c15d08e931160ffdf42267c127b81482be15a665310aa",
+              "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat": "sha256:0b3b3968ece53668e20b0c082e8b2a4dc60d34c9317be2a1b03d1a0eb8075c77",
+              "mcp:ipp:mcp_weather_forecast_daily": "sha256:97f040205a929a6a3f3df22569560fc94d0390616088921bc660435a6f5a34ad",
+              "mcp:ipp:mcp_weather_forecast_daily_history": "sha256:764390c81b4845fb007aa1e9736b6560b70ed6359b710e11f1d5ff3c78a45111",
+              "mcp:ipp:mcp_weather_forecast_hourly": "sha256:7b8a0b93b3e1e670c2882a1d01820ceff731bae988e6bfd23f6466adf78a1907",
+              "mcp:ipp:mcp_weather_forecast_hourly_history": "sha256:6f7023fad8142c3fdc63802f2c58dce2408b643a59beb5209f525c26f13cd299"
+            },
+            "catalog_scope": "sha256:b81fc99033d6a255dc2d5250be38ed534c636f579355f3501a0797a5e741ddcf",
+            "protected_attempt": "694cf8c9-ad03-479a-bd8f-2d8cc2ac72ad"
+          }
+        },
+        "active_skill_ids": [
+          "skill:basic-qa:air-quality-basic-query"
+        ],
+        "loaded_tools": {},
+        "independent_active_tool_ids": []
+      },
+      "legacy": null
+    },
+    {
+      "name": "SDK_resume_after_process_restart",
+      "passed": true
+    },
+    {
+      "question": "再查湖州市今天空气质量",
+      "run_status": "success",
+      "next": [],
+      "checkpoint": {
+        "checkpoint_id": "1f1d2d8f-b105-6b86-8026-e558e6d26432",
+        "thread_id": "deec7ddf-8aa1-450c-820b-65e0d7275569",
+        "checkpoint_ns": ""
+      },
+      "executions": [
+        {
+          "name": "mcp_city_common_get_air_quality_realtime_stat",
+          "params": {
+            "region": "湖州市",
+            "type": "daily_count",
+            "sTime": "2026-10-28 15:00",
+            "eTime": null
+          }
+        }
+      ],
+      "capabilities": null,
+      "legacy": {
+        "skill_id": "skill:basic-qa:air-quality-basic-query",
+        "material_version": "sha256:dbe6b949480bf3d4afab41e4f1c763ab03ba7eda355d6c46f869180879dd0037",
+        "mode": "fast",
+        "turn_key": "80e0c4a1-d15c-40f1-97f1-92dec3cc87fa",
+        "selection_digest": "82c6f9aa1d7ef047740a372b1763c81d052956ab8233e8212f64d31dba4e42fd",
+        "load_call_id": "call_f8f5c37aa52a4a04980ced9528157304"
+      }
+    },
+    {
+      "name": "owned_lifecycle_rollback_preserves_history_and_requires_legacy_load",
+      "passed": true
+    }
+  ],
+  "controlled_iam_llm": true,
+  "runtime_role": [
+    "air_agent_runtime",
+    false,
+    false
+  ],
+  "sdk": "langgraph_sdk.get_sync_client: threads.create/get_state, runs.wait/list",
+  "limitations": [
+    "controlled model and remote IAM; not real-model/browser acceptance",
+    "schema/connection change and summary restart remain separate pending checks",
+    "lifecycle-only upgrade/rollback keeps current shared business policy; not a full deployment drill"
+  ],
+  "passed": true,
+  "resources_created": [
+    "bqa-cap-v2-native-20261028-pg",
+    "bqa-cap-v2-native-20261028-redis",
+    "bqa-cap-v2-native-20261028-api"
+  ],
+  "cleanup": {
+    "bqa-cap-v2-native-20261028-api": true,
+    "bqa-cap-v2-native-20261028-redis": true,
+    "bqa-cap-v2-native-20261028-pg": true
+  },
+  "ended_at": "2026-10-28T14:07:59.817901+00:00"
+}

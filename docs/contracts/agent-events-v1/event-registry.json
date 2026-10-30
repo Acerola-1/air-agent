@@ -489,7 +489,64 @@
         "selection_source"
       ],
       "summary": "用户或默认能力选择已可信受理"
+    },
+    "runtime.capability": {
+      "enabled": true,
+      "sources": [
+        "runtime"
+      ],
+      "family": "observability",
+      "payload_fields": [
+        "attempt_id",
+        "observation_id",
+        "capability_kind",
+        "action",
+        "status",
+        "capability_id",
+        "capability_version",
+        "source_ids",
+        "candidate_ids",
+        "catalog_version",
+        "candidate_count",
+        "embedding_document_count",
+        "embedding_query_count",
+        "call_ref"
+      ],
+      "required_payload_fields": [
+        "attempt_id",
+        "observation_id",
+        "capability_kind",
+        "action",
+        "status"
+      ],
+      "summary": "Basic QA会话能力检索、加载、激活、复用与实际执行事实，不保存原文"
     }
   },
-  "contract": "agent-events"
+  "contract": "agent-events",
+  "capability_fact": {
+    "kinds": [
+      "skill",
+      "mcp_tool"
+    ],
+    "actions": [
+      "searched",
+      "selected",
+      "loaded",
+      "activated",
+      "reused",
+      "executed",
+      "load_failed"
+    ],
+    "statuses": [
+      "succeeded",
+      "failed"
+    ],
+    "id_pattern": "^(?:skill:basic-qa:[a-z0-9][a-z0-9_-]{0,63}|mcp:[a-z0-9][a-z0-9_-]{0,63}:[A-Za-z0-9_-]{1,200})$",
+    "version_pattern": "^sha256:[0-9a-f]{64}$",
+    "counts": [
+      "candidate_count",
+      "embedding_document_count",
+      "embedding_query_count"
+    ]
+  }
 }

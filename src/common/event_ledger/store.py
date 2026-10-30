@@ -1498,29 +1498,29 @@ async def fetch_capability_selection_snapshot(
     scope: LedgerScope, *, attempt_id: str, submission_id: str | None = None
 ) -> dict[str, Any] | None:
     """从业务数据库读取已受理的不可变能力选择快照（任务 4.1）."""
+    sql = (
+        "SELECT s.id::text AS id, s.request_id::text AS request_id,"
+        " s.membership_id::text AS membership_id, r.thread_id::text AS thread_id,"
+        " s.attempt_id::text AS attempt_id, s.submission_id::text AS submission_id,"
+        " s.graph_id, s.skill_mode, s.skill_id, s.mcp_mode, s.tool_ids, s.catalog_version,"
+        " s.material_version, s.selection_digest, s.digest_version, s.selection_source,"
+        " s.validation_time, s.created_at"
+        " FROM agent_capability_selections s JOIN agent_requests r"
+        " ON r.id = s.request_id AND r.tenant_id = s.tenant_id"
+        " WHERE s.attempt_id = %(aid)s AND s.tenant_id = %(t)s AND s.user_id = %(u)s"
+        " AND s.membership_id = %(m)s"
+    )
+    params = {
+        "aid": attempt_id,
+        "t": scope.tenant_id,
+        "u": scope.user_id,
+        "m": scope.membership_id,
+    }
     if submission_id:
-        sql = (
-            "SELECT id::text AS id, request_id::text AS request_id,"
-            " attempt_id::text AS attempt_id, submission_id::text AS submission_id,"
-            " graph_id, skill_mode, skill_id, mcp_mode, tool_ids, catalog_version,"
-            " material_version, selection_digest, digest_version, selection_source,"
-            " validation_time, created_at"
-            " FROM agent_capability_selections"
-            " WHERE submission_id = %(sid)s AND tenant_id = %(t)s AND user_id = %(u)s"
-        )
-        params = {"sid": submission_id, "t": scope.tenant_id, "u": scope.user_id}
+        sql += " AND s.submission_id = %(sid)s"
+        params["sid"] = submission_id
     else:
-        sql = (
-            "SELECT id::text AS id, request_id::text AS request_id,"
-            " attempt_id::text AS attempt_id, submission_id::text AS submission_id,"
-            " graph_id, skill_mode, skill_id, mcp_mode, tool_ids, catalog_version,"
-            " material_version, selection_digest, digest_version, selection_source,"
-            " validation_time, created_at"
-            " FROM agent_capability_selections"
-            " WHERE attempt_id = %(aid)s AND tenant_id = %(t)s AND user_id = %(u)s"
-            " ORDER BY created_at DESC LIMIT 1"
-        )
-        params = {"aid": attempt_id, "t": scope.tenant_id, "u": scope.user_id}
+        sql += " ORDER BY s.created_at DESC LIMIT 1"
     row = await _run(
         sql,
         params,

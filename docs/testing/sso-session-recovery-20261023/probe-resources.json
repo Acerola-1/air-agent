@@ -1,0 +1,15 @@
+{
+  "ports": [
+    13126,
+    18126
+  ],
+  "pids": [
+    10216,
+    10217
+  ],
+  "temp": "/var/folders/sl/97x01_kj0xvcq_k7zhb7w4dm0000gn/T/aa-sso-recovery-7f1etia_",
+  "central_identity": "controlled",
+  "callback": "actual Python router",
+  "formal_resources_used": false,
+  "reloaded_api_pid": 12295
+}

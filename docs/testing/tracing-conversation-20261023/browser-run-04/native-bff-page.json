@@ -1,0 +1,57 @@
+{
+  "native_public": [
+    {
+      "id": "msg_28f811fed57951ac94ed9b1a4e1841e9",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "msg_fca837e1d55450888a4b9e9ed5e3abe4",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "msg_ade97c2bee115bc2bc16d1b0c06b8bc3",
+      "sha256": "937c02364d975215714b85adaf5a376a665b51a6771c3e2a64db908eb2801054"
+    },
+    {
+      "id": "rep_9966df2b98fb4724a35d2800e6e9cbb0",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    },
+    {
+      "id": "msg_216493c5c8a2576b8a84ec08402bbd45",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "rep_00ce6755a4234f8ba0ac055d2a1ebe0f",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    }
+  ],
+  "bff_public": [
+    {
+      "id": "msg_28f811fed57951ac94ed9b1a4e1841e9",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "msg_fca837e1d55450888a4b9e9ed5e3abe4",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "msg_ade97c2bee115bc2bc16d1b0c06b8bc3",
+      "sha256": "937c02364d975215714b85adaf5a376a665b51a6771c3e2a64db908eb2801054"
+    },
+    {
+      "id": "rep_9966df2b98fb4724a35d2800e6e9cbb0",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    },
+    {
+      "id": "msg_216493c5c8a2576b8a84ec08402bbd45",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "rep_00ce6755a4234f8ba0ac055d2a1ebe0f",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    }
+  ],
+  "all_public_equal": true,
+  "page_dom_ids_equal": true,
+  "copy_equal": true
+}

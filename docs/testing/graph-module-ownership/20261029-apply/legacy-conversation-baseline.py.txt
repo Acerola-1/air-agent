@@ -1,0 +1,73 @@
+"""旧路由节点的隔离基线；历史为合成文本，不代表完整模型会话。"""
+
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
+
+import pytest
+from langchain_core.messages import AIMessage, HumanMessage
+
+from common.business_graph.builder import _route_after_intent
+from common.business_graph.nodes import BusinessGraphNodes
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("history", "question", "expected_intent", "expected_query"),
+    [
+        ([], "湖州市今天的空气质量如何？", "data_query", "湖州市今天的空气质量如何？"),
+        (["湖州市今天的空气质量如何？"], "那杭州呢？", "data_query", "那杭州呢？"),
+        (
+            ["湖州市今天的空气质量如何？", "那杭州呢？"],
+            "可能原因是什么？",
+            "knowledge",
+            None,
+        ),
+        (
+            ["湖州市今天的空气质量如何？", "那杭州呢？", "可能原因是什么？"],
+            "缩成两句。",
+            "data_query",
+            "缩成两句。",
+        ),
+        (
+            [
+                "湖州市今天的空气质量如何？",
+                "那杭州呢？",
+                "可能原因是什么？",
+                "缩成两句。",
+            ],
+            "谢谢。",
+            "chitchat",
+            None,
+        ),
+    ],
+)
+async def test_old_route_uses_latest_sentence_only(
+    monkeypatch, history, question, expected_intent, expected_query
+):
+    router = SimpleNamespace(amatch=AsyncMock(return_value=[]))
+    monkeypatch.setattr("common.identity.runtime.guard_runtime_call", AsyncMock())
+    service = BusinessGraphNodes(
+        router=router,
+        base_system_prompt="",
+        load_skill_tool=None,
+        graph_name="basic-qa-baseline",
+    )
+    messages = []
+    for previous in history:
+        messages.extend(
+            [HumanMessage(content=previous), AIMessage(content="合成的上一轮回复")]
+        )
+    messages.append(HumanMessage(content=question))
+    state = {"messages": messages}
+    classification = await service.classify_intent(state, {})
+    assert classification["intent"] == expected_intent
+    branch = _route_after_intent(classification)
+    if branch == "resolve_skill":
+        await service.resolve_skill(state, {})
+        router.amatch.assert_awaited_once_with(expected_query)
+    else:
+        assert branch == "prepare_model"
+        router.amatch.assert_not_awaited()
+    print(  # noqa: T201 - 留存受控节点实际路由证据
+        f"question={question!r} intent={classification['intent']} branch={branch} query={expected_query!r}"
+    )

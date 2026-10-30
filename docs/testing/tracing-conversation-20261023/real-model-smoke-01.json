@@ -1,0 +1,40 @@
+{
+  "version": "tracing-conversation-v1",
+  "model": "hy3",
+  "identity": "controlled",
+  "data": "frozen fixture",
+  "checkpoint": "owned temporary SQLite (removed after run)",
+  "rows": [
+    {
+      "case": "greeting",
+      "repeat": 1,
+      "expected": "conversation",
+      "route": "conversation",
+      "reason": "",
+      "passed": true,
+      "error": null,
+      "seconds": 4.048,
+      "model_calls": 1,
+      "tools": [],
+      "source_fetches": 0,
+      "usage": [
+        {
+          "input_tokens": 1790,
+          "output_tokens": 67,
+          "total_tokens": 1857,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 0
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "你好！我可以帮助你了解和使用污染过程分析。\n\n我可以辅助复盘站点污染过程，结合周边站点、空间分布和气象条件寻找关联线索，并说明证据与限制。实际结果取决于数据是否可用。\n\n可以分析站点浓度变化、异常时段与数据覆盖，并对比周边站点。\n\n可以结合网格数据观察热点与区域连片现象；空间同步本身不证明来源。\n\n可以分析风场、滞后及静稳条件等关联；相关线索不等于因果或来源确认。\n\n当前支持的污染物包括：CO、NO2、O3、PM10、PM2.5、SO2。\n\n当前不提供轨迹或PSCF分析，也不能确认具体企业、排口、源贡献率或来源概率。\n\n你可以提供站点、所在城市、污染物、起止时间和调查半径。我会先确认条件，再根据可用证据分析。\n\n你可以先问我能分析哪些内容，或告诉我想分析的站点与时段。",
+      "sha256": "eb3d170a2f19108a2c78dfef8edb0d8a1df729cb5465f17f37a139c9a2996a8c"
+    }
+  ]
+}

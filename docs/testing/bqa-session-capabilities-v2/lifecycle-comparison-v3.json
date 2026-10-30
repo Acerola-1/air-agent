@@ -1,0 +1,1785 @@
+{
+  "evidence_kind": "configured_real_model_paired_lifecycle_comparison",
+  "clock": "2026-10-28T16:00:00+08:00",
+  "model_config_fingerprint": "40f81ad9354149e419c09b68e9646f8ff0a5710b3f9ccc7d3dc91d37997face9",
+  "interface_sha256": "3c43beedb5db8a607f1ea3661c9ec8b4fffa124e3a10d61c4ad86daa12a23425",
+  "sources": {
+    "legacy": "82bd13b81c1717b0f7e35bc8cb778c1b2ebf836a97d2ad82cd8aa5125766200f",
+    "current": "93800ebd99904352dcd8aeed0f172b48e087ff6f12d22a9383fb990446a7a827"
+  },
+  "cases": [
+    {
+      "case_id": "A02",
+      "turns": [
+        {
+          "turn": 1,
+          "input": "湖州市今天的空气质量如何？",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 6,
+            "controlled_business_calls": 4,
+            "first_answer_ms": 15167.08304900385,
+            "total_ms": 16611.534258001484,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 7180,
+                    "output_tokens": 129,
+                    "total_tokens": 7309,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7040
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 24
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 9813,
+                    "output_tokens": 33,
+                    "total_tokens": 9846,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8576
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 8
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 9934,
+                    "output_tokens": 280,
+                    "total_tokens": 10214,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9728
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 107
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 11296,
+                    "output_tokens": 281,
+                    "total_tokens": 11577,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9856
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 161
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 11549,
+                    "output_tokens": 167,
+                    "total_tokens": 11716,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 11264
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 142
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 10448,
+                    "output_tokens": 426,
+                    "total_tokens": 10874,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8704
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 137
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 7,
+            "controlled_business_calls": 5,
+            "first_answer_ms": 17010.39079900511,
+            "total_ms": 18626.13704999967,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 7599,
+                    "output_tokens": 133,
+                    "total_tokens": 7732,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7424
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 28
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 10305,
+                    "output_tokens": 38,
+                    "total_tokens": 10343,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 3968
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 13
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 10426,
+                    "output_tokens": 238,
+                    "total_tokens": 10664,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 10240
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 65
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 11788,
+                    "output_tokens": 284,
+                    "total_tokens": 12072,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 10368
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 164
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 12041,
+                    "output_tokens": 170,
+                    "total_tokens": 12211,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 11776
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 59
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 12281,
+                    "output_tokens": 29,
+                    "total_tokens": 12310,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12032
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 4
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 11026,
+                    "output_tokens": 348,
+                    "total_tokens": 11374,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8576
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 67
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        },
+        {
+          "turn": 2,
+          "input": "那杭州呢？",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 2,
+            "model_requests": 5,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 12925.012131003314,
+            "total_ms": 13960.445256001549,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 9434,
+                    "output_tokens": 216,
+                    "total_tokens": 9650,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7168
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 45
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 9716,
+                    "output_tokens": 110,
+                    "total_tokens": 9826,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9344
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 5
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 12349,
+                    "output_tokens": 171,
+                    "total_tokens": 12520,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9472
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 13708,
+                    "output_tokens": 304,
+                    "total_tokens": 14012,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12288
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 279
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 12599,
+                    "output_tokens": 432,
+                    "total_tokens": 13031,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8448
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 171
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": false,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 3,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 10415.91321300075,
+            "total_ms": 11954.023506004887,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 12572,
+                    "output_tokens": 250,
+                    "total_tokens": 12822,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12160
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 79
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 13931,
+                    "output_tokens": 548,
+                    "total_tokens": 14479,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12544
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 216
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 13030,
+                    "output_tokens": 496,
+                    "total_tokens": 13526,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8576
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 87
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        },
+        {
+          "turn": 3,
+          "input": "那金华呢？",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 4,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 13177.765464999538,
+            "total_ms": 14507.825339998817,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 11565,
+                    "output_tokens": 128,
+                    "total_tokens": 11693,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9600
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 23
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 14198,
+                    "output_tokens": 171,
+                    "total_tokens": 14369,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12032
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 15557,
+                    "output_tokens": 748,
+                    "total_tokens": 16305,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 14080
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 377
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 14838,
+                    "output_tokens": 464,
+                    "total_tokens": 15302,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8320
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 89
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 3,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 9690.811669999675,
+            "total_ms": 11257.042420998914,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 14350,
+                    "output_tokens": 186,
+                    "total_tokens": 14536,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 13824
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 15
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 15709,
+                    "output_tokens": 531,
+                    "total_tokens": 16240,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 14336
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 106
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 14896,
+                    "output_tokens": 574,
+                    "total_tokens": 15470,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8704
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 124
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "A03",
+      "turns": [
+        {
+          "turn": 1,
+          "input": "湖州市今天空气质量如何？",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 5,
+            "controlled_business_calls": 4,
+            "first_answer_ms": 13739.350173003913,
+            "total_ms": 15240.026882005623,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 7180,
+                    "output_tokens": 135,
+                    "total_tokens": 7315,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7040
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 30
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 9813,
+                    "output_tokens": 25,
+                    "total_tokens": 9838,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8576
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 9934,
+                    "output_tokens": 358,
+                    "total_tokens": 10292,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9728
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 101
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 11508,
+                    "output_tokens": 476,
+                    "total_tokens": 11984,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9856
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 161
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 10750,
+                    "output_tokens": 413,
+                    "total_tokens": 11163,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8320
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 47
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 6,
+            "controlled_business_calls": 4,
+            "first_answer_ms": 15280.148965997796,
+            "total_ms": 16821.459341001173,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 7599,
+                    "output_tokens": 138,
+                    "total_tokens": 7737,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7424
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 33
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 10305,
+                    "output_tokens": 41,
+                    "total_tokens": 10346,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 10112
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 16
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 10426,
+                    "output_tokens": 258,
+                    "total_tokens": 10684,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 10240
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 85
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 11788,
+                    "output_tokens": 290,
+                    "total_tokens": 12078,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 10368
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 170
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 12041,
+                    "output_tokens": 141,
+                    "total_tokens": 12182,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 11776
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 116
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 10788,
+                    "output_tokens": 414,
+                    "total_tokens": 11202,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9088
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 117
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        },
+        {
+          "turn": 2,
+          "input": "那杭州呢？",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 1,
+            "model_requests": 5,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 13098.795171994425,
+            "total_ms": 14543.78450600052,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 9470,
+                    "output_tokens": 135,
+                    "total_tokens": 9605,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7168
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 42
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 9621,
+                    "output_tokens": 124,
+                    "total_tokens": 9745,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9344
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 19
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 12254,
+                    "output_tokens": 145,
+                    "total_tokens": 12399,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9472
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 13587,
+                    "output_tokens": 570,
+                    "total_tokens": 14157,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12160
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 138
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 12938,
+                    "output_tokens": 626,
+                    "total_tokens": 13564,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8320
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 191
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": false,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 3,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 10553.939422003168,
+            "total_ms": 12220.523714000592,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 12348,
+                    "output_tokens": 219,
+                    "total_tokens": 12567,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12032
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 48
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 13707,
+                    "output_tokens": 697,
+                    "total_tokens": 14404,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12288
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 272
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 12901,
+                    "output_tokens": 577,
+                    "total_tokens": 13478,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8704
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 147
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        },
+        {
+          "turn": 3,
+          "input": "那金华呢？",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 4,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 11963.960089000466,
+            "total_ms": 13581.188297997869,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 11618,
+                    "output_tokens": 140,
+                    "total_tokens": 11758,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 9600
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 35
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 14251,
+                    "output_tokens": 147,
+                    "total_tokens": 14398,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 12160
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 15587,
+                    "output_tokens": 504,
+                    "total_tokens": 16091,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 14208
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 15004,
+                    "output_tokens": 696,
+                    "total_tokens": 15700,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8320
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 201
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 3,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 9195.082920996356,
+            "total_ms": 11014.643964001152,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 14147,
+                    "output_tokens": 216,
+                    "total_tokens": 14363,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 13696
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 45
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 15506,
+                    "output_tokens": 670,
+                    "total_tokens": 16176,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 14080
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 196
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 14745,
+                    "output_tokens": 485,
+                    "total_tokens": 15230,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8704
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        },
+        {
+          "turn": 4,
+          "input": "缩成两句",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 2,
+            "controlled_business_calls": 0,
+            "first_answer_ms": 4738.436209998326,
+            "total_ms": 5147.231210001337,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 13677,
+                    "output_tokens": 154,
+                    "total_tokens": 13831,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 11520
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 16
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 13345,
+                    "output_tokens": 191,
+                    "total_tokens": 13536,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 6528
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 81
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 2,
+            "controlled_business_calls": 0,
+            "first_answer_ms": 5149.685252996278,
+            "total_ms": 5680.278460997215,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 16000,
+                    "output_tokens": 94,
+                    "total_tokens": 16094,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 15488
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 13
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 14844,
+                    "output_tokens": 155,
+                    "total_tokens": 14999,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8704
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 22
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        },
+        {
+          "turn": 5,
+          "input": "谢谢",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 2,
+            "controlled_business_calls": 0,
+            "first_answer_ms": 3702.6999600057025,
+            "total_ms": 3890.61195999966,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 13794,
+                    "output_tokens": 26,
+                    "total_tokens": 13820,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 13568
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 13348,
+                    "output_tokens": 27,
+                    "total_tokens": 13375,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 6528
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 2,
+            "controlled_business_calls": 0,
+            "first_answer_ms": 4103.148960995895,
+            "total_ms": 4238.835169002414,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 16140,
+                    "output_tokens": 26,
+                    "total_tokens": 16166,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 15872
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 14927,
+                    "output_tokens": 23,
+                    "total_tokens": 14950,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8704
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        },
+        {
+          "turn": 6,
+          "input": "再查湖州",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 1,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 4,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 10411.166379999486,
+            "total_ms": 11213.641839000047,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 13831,
+                    "output_tokens": 142,
+                    "total_tokens": 13973,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 13696
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 37
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 16464,
+                    "output_tokens": 197,
+                    "total_tokens": 16661,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 13952
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 50
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 17800,
+                    "output_tokens": 316,
+                    "total_tokens": 18116,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 16384
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 79
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 16940,
+                    "output_tokens": 225,
+                    "total_tokens": 17165,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8320
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 8
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 3,
+            "controlled_business_calls": 2,
+            "first_answer_ms": 8586.844962002942,
+            "total_ms": 9535.366087999137,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 16173,
+                    "output_tokens": 243,
+                    "total_tokens": 16416,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 16000
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 70
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 17535,
+                    "output_tokens": 291,
+                    "total_tokens": 17826,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 16128
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 16583,
+                    "output_tokens": 358,
+                    "total_tokens": 16941,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8704
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 66
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B03",
+      "turns": [
+        {
+          "turn": 1,
+          "input": "核对监测点坐标（120.15,30.27）所属行政区",
+          "legacy": {
+            "search_skills": 0,
+            "search_mcp": 0,
+            "load_skill": 0,
+            "load_mcp_tool": 0,
+            "tool_errors": 0,
+            "model_requests": 2,
+            "controlled_business_calls": 0,
+            "first_answer_ms": 8266.863378994458,
+            "total_ms": 9439.913253998384,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 7189,
+                    "output_tokens": 633,
+                    "total_tokens": 7822,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7040
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 608
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 6715,
+                    "output_tokens": 373,
+                    "total_tokens": 7088,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 6528
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 232
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          },
+          "current": {
+            "search_skills": 0,
+            "search_mcp": 1,
+            "load_skill": 0,
+            "load_mcp_tool": 1,
+            "tool_errors": 0,
+            "model_requests": 6,
+            "controlled_business_calls": 4,
+            "first_answer_ms": 14312.49117400148,
+            "total_ms": 15184.954966003716,
+            "usage": [
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 7608,
+                    "output_tokens": 85,
+                    "total_tokens": 7693,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7424
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 36
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 8088,
+                    "output_tokens": 115,
+                    "total_tokens": 8203,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7552
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 8427,
+                    "output_tokens": 283,
+                    "total_tokens": 8710,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 7552
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 48
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 8799,
+                    "output_tokens": 176,
+                    "total_tokens": 8975,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8320
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 91
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "call_model",
+                "usage": [
+                  {
+                    "input_tokens": 8933,
+                    "output_tokens": 208,
+                    "total_tokens": 9141,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 8704
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 37
+                    }
+                  }
+                ]
+              },
+              {
+                "node": "answer_model",
+                "usage": [
+                  {
+                    "input_tokens": 8399,
+                    "output_tokens": 176,
+                    "total_tokens": 8575,
+                    "input_token_details": {
+                      "audio": 0,
+                      "cache_read": 6784
+                    },
+                    "output_token_details": {
+                      "audio": 0,
+                      "reasoning": 0
+                    }
+                  }
+                ]
+              }
+            ],
+            "raw_transport_completed": true,
+            "cost": null
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "one repetition per lifecycle, provider nondeterminism remains",
+    "old lifecycle uses retained preimplementation files with the same current shared business policy and fixture catalog; not an old full deployment",
+    "controlled IAM, search and tools, InMemorySaver; not browser or live MCP/embedding latency",
+    "earlier legacy v1 had wrong source import; legacy v2 omitted program-side domain tools; both invalid comparisons retained",
+    "cold/warm real embedding measurements remain separate, not added to these model durations",
+    "unknown usage or cost remains null; no capacity or universal performance claim"
+  ],
+  "summary": {
+    "legacy": {
+      "search_skills": 0,
+      "search_mcp": 0,
+      "load_skill": 7,
+      "load_mcp_tool": 0,
+      "tool_errors": 3,
+      "model_requests": 39,
+      "controlled_business_calls": 18,
+      "total_ms": 118136.20280300529,
+      "median_first_answer_ms": 12444.48611000189
+    },
+    "current": {
+      "search_skills": 0,
+      "search_mcp": 1,
+      "load_skill": 2,
+      "load_mcp_tool": 1,
+      "tool_errors": 0,
+      "model_requests": 38,
+      "controlled_business_calls": 23,
+      "total_ms": 116533.26468000887,
+      "median_first_answer_ms": 10053.362441500212
+    }
+  }
+}

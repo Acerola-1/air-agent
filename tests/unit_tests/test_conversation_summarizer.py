@@ -8,8 +8,8 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
 from common.config import config
-from common.context_preparation import prepare_model_request
-from common.conversation_summarizer import (
+from basic_qa.context.preparation import prepare_model_request
+from basic_qa.context.summarization import (
     pending_history,
     split_messages_by_turns,
     summarize_conversation_history,
@@ -76,7 +76,7 @@ async def test_summary_covers_only_new_history(monkeypatch):
 async def test_below_watermark_does_not_summarize(monkeypatch):
     summarize = AsyncMock(return_value="不应调用")
     monkeypatch.setattr(
-        "common.context_preparation.summarize_conversation_history", summarize
+        "basic_qa.context.preparation.summarize_conversation_history", summarize
     )
     prepared = await prepare_model_request(
         {"messages": history(20, size=50)},
@@ -92,7 +92,7 @@ async def test_below_watermark_does_not_summarize(monkeypatch):
 async def test_reaching_watermark_compacts_all_pending(monkeypatch):
     summarize = AsyncMock(return_value="新摘要")
     monkeypatch.setattr(
-        "common.context_preparation.summarize_conversation_history", summarize
+        "basic_qa.context.preparation.summarize_conversation_history", summarize
     )
     prepared = await prepare_model_request(
         {"messages": history(20)},
@@ -112,7 +112,7 @@ async def test_reaching_watermark_compacts_all_pending(monkeypatch):
 async def test_existing_summary_does_not_retrigger_per_turn(monkeypatch):
     summarize = AsyncMock(return_value="不应调用")
     monkeypatch.setattr(
-        "common.context_preparation.summarize_conversation_history", summarize
+        "basic_qa.context.preparation.summarize_conversation_history", summarize
     )
     prepared = await prepare_model_request(
         {
@@ -131,7 +131,7 @@ async def test_existing_summary_does_not_retrigger_per_turn(monkeypatch):
 async def test_accumulated_turns_merge_into_existing_summary(monkeypatch):
     summarize = AsyncMock(return_value="合并摘要")
     monkeypatch.setattr(
-        "common.context_preparation.summarize_conversation_history", summarize
+        "basic_qa.context.preparation.summarize_conversation_history", summarize
     )
     prepared = await prepare_model_request(
         {
@@ -152,7 +152,7 @@ async def test_accumulated_turns_merge_into_existing_summary(monkeypatch):
 async def test_summary_failure_does_not_advance_watermark(monkeypatch):
     summarize = AsyncMock(side_effect=TimeoutError())
     monkeypatch.setattr(
-        "common.context_preparation.summarize_conversation_history", summarize
+        "basic_qa.context.preparation.summarize_conversation_history", summarize
     )
     prepared = await prepare_model_request(
         {
@@ -174,7 +174,7 @@ async def test_summary_failure_does_not_advance_watermark(monkeypatch):
 async def test_keep_turns_shrink_to_one_under_capacity_pressure(monkeypatch):
     summarize = AsyncMock(return_value="摘要")
     monkeypatch.setattr(
-        "common.context_preparation.summarize_conversation_history", summarize
+        "basic_qa.context.preparation.summarize_conversation_history", summarize
     )
     prepared = await prepare_model_request(
         {"messages": history(20, size=3000)},
@@ -197,7 +197,7 @@ async def test_keep_turns_shrink_to_one_under_capacity_pressure(monkeypatch):
 async def test_old_thread_without_watermark_compacts(monkeypatch):
     summarize = AsyncMock(return_value="首次摘要")
     monkeypatch.setattr(
-        "common.context_preparation.summarize_conversation_history", summarize
+        "basic_qa.context.preparation.summarize_conversation_history", summarize
     )
     prepared = await prepare_model_request(
         {"messages": history(20)},

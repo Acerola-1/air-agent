@@ -26,6 +26,7 @@ from deepagents.backends import FilesystemBackend
 from fastapi import HTTPException
 from loguru import logger
 
+from common.capability_policy import policy_for
 from common.identity.runtime import RuntimeIdentity
 from common.identity.ticket import parse_keys
 
@@ -166,18 +167,12 @@ def list_graph_skills(
     if not skills_dir or not skills_dir.exists():
         return []
 
-    # 如果是 data-analysis 且提供了 menu_name，只返回匹配的 Skill
-    allowed_menu_skill: str | None = None
-    if graph_id == "data-analysis" and menu_name:
-        try:
-            from data_analysis.menu_skill_mapping import DATA_ANALYSIS_SKILL_MAPPINGS
-
-            for mapping in DATA_ANALYSIS_SKILL_MAPPINGS:
-                if menu_name in mapping.menu_names:
-                    allowed_menu_skill = mapping.skill_name
-                    break
-        except ImportError:
-            pass
+    policy = policy_for(graph_id)
+    try:
+        allowed_menu_skill = policy.menu_skill(menu_name) if menu_name else None
+        titles = policy.titles()
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail="业务目录策略不可用") from exc
 
     items: list[SkillCatalogItem] = []
     subdirs = sorted(
@@ -206,30 +201,18 @@ def list_graph_skills(
         desc = (meta.get("description") or name).strip()
         # 清理多行描述中的换行和标记，最多 500 字符
         clean_desc = " ".join(desc.split())[:500]
-        titles = {
-            "air-quality-basic-query": "基础空气质量查询",
-            "comparison-composition": "同比与污染物构成",
-            "compliance-feasibility": "达标可行性研判",
-            "ranking-assessment": "空气质量排名考核",
-            "regional-benchmark": "区域空气质量对标",
-            "station-extreme": "站点数据与极值",
-            "trend-analysis": "空气质量趋势分析",
-        }
         title = (
             meta.get("title")
             or titles.get(slug)
             or clean_desc.split("。")[0][:24]
             or name
         )
-        if graph_id == "data-analysis":
-            from data_analysis.menu_skill_mapping import DATA_ANALYSIS_SKILL_MAPPINGS
-
-            title = next(
-                (m.title for m in DATA_ANALYSIS_SKILL_MAPPINGS if m.skill_name == slug),
-                title,
-            )
         mat_version = calculate_skill_material_version(subdir)
         req_tools = meta.get("required-tools", [])
+        try:
+            req_tools = policy.required_tool_ids(req_tools)
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail="技能工具依赖不可用") from exc
 
         items.append(
             SkillCatalogItem(
@@ -267,7 +250,7 @@ def validate_skill_selection(
     matched = next((s for s in skills if s.id == skill_id), None)
     if matched is None:
         # 如果是 data-analysis 且因为菜单不匹配，返回 422
-        if graph_id == "data-analysis" and menu_name:
+        if menu_name:
             all_skills = list_graph_skills(graph_id)
             if any(s.id == skill_id for s in all_skills):
                 raise HTTPException(
@@ -298,6 +281,8 @@ async def discover_authorized_mcp_catalog(
     无权业务零发现请求且不泄露服务存在性。
     """
     from common.business_registry import business_for_code
+    from common.identity.business_access import grant_for_business
+    from common.identity.runtime import RuntimeIdentityRevoked, revalidate
     from common.mcp_authorization import DEFAULT_PROVIDER
     from common.mcp_connections import load_connections
     from common.mcp_scoped import get_factory
@@ -308,7 +293,32 @@ async def discover_authorized_mcp_catalog(
         return [], []
     from dataclasses import replace
 
-    scoped_identity = replace(identity, business_code=code)
+    # 目录请求没有运行受理快照；只从当前可信身份重新裁决业务许可，
+    # 并为逐发送守卫补齐完整快照。已有运行快照不得借目录刷新被覆盖。
+    grant = grant_for_business(business_code=code, identity=identity)
+    snapshot = (
+        identity.business_code,
+        identity.business_policy_version,
+        identity.business_permission,
+        identity.business_graph,
+    )
+    granted_snapshot = (
+        grant.business_code,
+        grant.policy_version,
+        grant.permission,
+        grant.graph_id,
+    )
+    if any(value is not None for value in snapshot) and snapshot != granted_snapshot:
+        raise RuntimeIdentityRevoked("运行业务许可快照不匹配，拒绝刷新目录")
+    scoped_identity = replace(
+        identity,
+        business_code=grant.business_code,
+        business_policy_version=grant.policy_version,
+        business_permission=grant.permission,
+        business_graph=grant.graph_id,
+    )
+    # 即使工具 schema 命中缓存，也要复查会话、修订及业务资格。
+    await revalidate(scoped_identity)
 
     factory = get_factory()
     connections = load_connections().available_for_tenant(identity.tenant_id)

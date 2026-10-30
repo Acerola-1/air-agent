@@ -1,0 +1,49 @@
+{
+  "joined_visible": [
+    {
+      "id": "msg_a952c789aa5551a6b624f18b0aa4d928",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "msg_841da7d0b64155bba3771fdd0212261a",
+      "sha256": "937c02364d975215714b85adaf5a376a665b51a6771c3e2a64db908eb2801054"
+    },
+    {
+      "id": "rep_8d7d64ea2daf4694870398138cf94ebb",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    },
+    {
+      "id": "msg_cfa75575507e5db48baee6273c2d005a",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "rep_b399c9e1f2ee4c64a667094c177e6ecf",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    }
+  ],
+  "checkpoint_visible": [
+    {
+      "id": "msg_a952c789aa5551a6b624f18b0aa4d928",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "msg_841da7d0b64155bba3771fdd0212261a",
+      "sha256": "937c02364d975215714b85adaf5a376a665b51a6771c3e2a64db908eb2801054"
+    },
+    {
+      "id": "rep_8d7d64ea2daf4694870398138cf94ebb",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    },
+    {
+      "id": "msg_cfa75575507e5db48baee6273c2d005a",
+      "sha256": "03dd29f8f8a46f1e4212244062f6b48a64c337ec48c68908931263d9c08d86b5"
+    },
+    {
+      "id": "rep_b399c9e1f2ee4c64a667094c177e6ecf",
+      "sha256": "3fb8df00152b7842ccaeb881ae19973c03f26b277d68054ec6bed99d373690fa"
+    }
+  ],
+  "public_identity_and_body_equal": true,
+  "raw_messages_equal": false,
+  "note": "Compare final public messages; native join/checkpoint may serialize internal tool metadata differently."
+}

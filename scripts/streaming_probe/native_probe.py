@@ -32,7 +32,7 @@ if str(ROOT / "tests/unit_tests/tracing") not in sys.path:
 
 from fake_model import ScriptedChatModel  # noqa: E402
 
-from common.business_graph.builder import build_business_graph  # noqa: E402
+from basic_qa.builder import build_basic_qa_graph  # noqa: E402
 from common.models import ModelRegistry  # noqa: E402
 from common.output_streaming.contract import OutputStreamValidator  # noqa: E402
 from data_analysis.graph import build_graph as build_data_graph  # noqa: E402
@@ -89,7 +89,7 @@ async def probe_basic_qa(out: Path) -> dict[str, Any]:
     old = ModelRegistry.main_llm
     ModelRegistry.main_llm = model
     try:
-        graph = build_business_graph(
+        graph = build_basic_qa_graph(
             skills_dir=str(ROOT / "src/basic_qa/skills"), name="basic-qa"
         )
         events: list[dict[str, Any]] = []

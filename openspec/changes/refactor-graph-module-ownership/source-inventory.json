@@ -1,0 +1,3430 @@
+{
+  "schema": "graph-module-ownership-planning.v1",
+  "captured_at": "2026-10-29T17:14:53.419126+08:00",
+  "git_branch": "dev",
+  "git_head": "98ce4ff33aecdcdcec6ef87a9c190ee1e14eefe1",
+  "stage": "planning-only",
+  "method": "覆盖rg列出的src Python模块及JSON/JS支撑资产；AST导入只作线索，重点混合模块已按设计逐项核实；不是运行通过证据。",
+  "limitations": [
+    "包含当前未提交和未跟踪源码；apply前必须重新核对漂移。",
+    "静态消费者仅统计src内绝对导入，不能证明局部动态注册/反射不存在；架构验收另覆盖相对和动态引用。",
+    "保留项是职责归属决定，不代表逐函数功能正确性或无历史问题。",
+    "不读取或保存私有配置/正文；不复制旧授权数据。"
+  ],
+  "python_module_count": 160,
+  "source_entry_count": 165,
+  "planned_action_counts": {
+    "retain": 133,
+    "retain-with-composition": 1,
+    "remove-entry": 1,
+    "move": 13,
+    "split": 10,
+    "split-retire-legacy": 2,
+    "rename": 3,
+    "adapt-interface": 1,
+    "adapt-imports": 1
+  },
+  "entries": [
+    {
+      "source": "src/basic_qa/__init__.py",
+      "sha256": "4cfb21cacbd3fdefb9960077e3205df55ac23521cab221349bb6a640e545a7f7",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/basic_qa/__init__.py"
+      ],
+      "reason": "保留本图入口或包，实施时接入本图完整实现。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/basic_qa/graph.py",
+      "sha256": "f2ba1d5bc49fd3048c6beb422ab49469fea33222abf7831c62dcd7d22fb48106",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/basic_qa/graph.py"
+      ],
+      "reason": "保留本图入口或包，实施时接入本图完整实现。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.business_graph",
+        "common.langfuse_tracing"
+      ]
+    },
+    {
+      "source": "src/common/__init__.py",
+      "sha256": "a96a85f4c6bfcb7fe4757e8a04eea0c72d67d73704fcfcbc992d515b9497ade0",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/__init__.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/mcp_tools.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/artifact_http.py",
+      "sha256": "31e0cfb2b7182bf8cc97481ef5e4884b9e6debe971ff8353e5684fda59767417",
+      "kind": "python-module",
+      "planned_action": "retain-with-composition",
+      "targets": [
+        "src/common/artifact_http.py",
+        "src/application/http.py"
+      ],
+      "reason": "公共HTTP服务保留，图策略接入在应用装配根，不反向导入图实现。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.artifact_scope",
+        "common.capabilities",
+        "common.event_ledger.service_read",
+        "common.identity.business_access",
+        "common.identity.db",
+        "common.identity.langgraph_auth",
+        "common.identity.runtime",
+        "common.identity.ticket",
+        "common.input_limits",
+        "common.knowledge.proxy",
+        "common.knowledge.store",
+        "common.knowledge.validation",
+        "common.observability.collector",
+        "common.storage.artifact_db"
+      ]
+    },
+    {
+      "source": "src/common/artifact_scope.py",
+      "sha256": "1a5e125a5b3a1d98ebc1091d54c35c6e3d3b5c1fd2dba963e3f9da45e544b5b3",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/artifact_scope.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/computation/tool.py",
+        "src/common/data_governance.py",
+        "src/common/turn_tool_governance.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/artifacts/__init__.py",
+      "sha256": "b4f572940867a8557e4afc094b5a5800ddf255151baef770088cb19c7a25a5d0",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/artifacts/__init__.py"
+      ],
+      "reason": "跨图工件工具及协议。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/artifacts/create_artifact_tool.py",
+      "sha256": "250205731a66e87f9eacb6cd629b28a3cef09e7703e4f11b5b19f85f5b7f9dca",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/artifacts/create_artifact_tool.py"
+      ],
+      "reason": "跨图工件工具及协议。",
+      "direct_static_consumers_within_src": [
+        "src/common/runtime_tools.py"
+      ],
+      "project_imports": [
+        "common.knowledge.policy"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/__init__.py",
+      "sha256": "ccc56f12bfd45df01292a007d84ee783ceac98161e0794d876e4e276e4f14b3b",
+      "kind": "python-module",
+      "planned_action": "remove-entry",
+      "targets": [],
+      "reason": "移除通用业务图入口，不留转发壳；由各图自己的入口导出。",
+      "direct_static_consumers_within_src": [
+        "src/basic_qa/graph.py"
+      ],
+      "project_imports": [
+        "common.business_graph.builder",
+        "common.business_graph.prompting",
+        "common.business_graph.state"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/basic_qa_integration.py",
+      "sha256": "e74038a6cac26b8a05327fda8b8e4c9fb5a8e440f23d179ce69fd5caf2f3c402",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/capabilities/projection.py"
+      ],
+      "reason": "BQA规则/schema投影与休眠控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/capability_observation.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/tool_wrappers.py"
+      ],
+      "project_imports": [
+        "common.business_graph.basic_qa_runtime",
+        "common.business_graph.session_capabilities",
+        "common.business_graph.skill_search",
+        "common.business_graph.tool_recovery",
+        "common.business_graph.tool_wrappers",
+        "common.capabilities",
+        "common.mcp_scoped",
+        "common.runtime_tools"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/basic_qa_runtime.py",
+      "sha256": "5d7d177d12595a3e79dd7b43ac845637258a85b4ca22ebd4d08a26b74f939a5a",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/capabilities/runtime.py"
+      ],
+      "reason": "BQA会话能力恢复与加载。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_integration.py",
+        "src/common/business_graph/builder.py",
+        "src/common/business_graph/capability_observation.py",
+        "src/common/business_graph/mcp_tool_catalog.py",
+        "src/common/business_graph/mcp_tool_search.py",
+        "src/common/business_graph/tool_wrappers.py"
+      ],
+      "project_imports": [
+        "common.business_graph.mcp_tool_catalog",
+        "common.business_graph.session_capabilities",
+        "common.business_graph.skill_materials",
+        "common.business_graph.skill_search",
+        "common.business_registry",
+        "common.capabilities",
+        "common.context",
+        "common.identity.business_access",
+        "common.identity.runtime",
+        "common.skill_tool_scope"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/builder.py",
+      "sha256": "9459c09ed72369668837dc225cb48e45cc0dd38ad367cb2ee1c3fe3a1c7677f1",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/builder.py"
+      ],
+      "reason": "BQA实际构图；退休无生产消费者的旧通用分支并保留有效断言。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/__init__.py"
+      ],
+      "project_imports": [
+        "common.business_graph.basic_qa_runtime",
+        "common.business_graph.intent",
+        "common.business_graph.nodes",
+        "common.business_graph.prompting",
+        "common.business_graph.session_capabilities",
+        "common.business_graph.skill_content",
+        "common.business_graph.state",
+        "common.business_graph.tool_recovery",
+        "common.business_graph.tool_wrappers",
+        "common.event_ledger.lifecycle",
+        "common.runtime_tools",
+        "common.skill_router"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/capability_observation.py",
+      "sha256": "f881ae73ec7c37580407220805e47e876c71b6e1c3bba757146235d8d7b37776",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/capabilities/observation.py"
+      ],
+      "reason": "BQA能力加载/复用/执行语义。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/tool_wrappers.py"
+      ],
+      "project_imports": [
+        "common.business_graph.basic_qa_integration",
+        "common.business_graph.basic_qa_runtime",
+        "common.observability.collector",
+        "common.observability.context",
+        "common.observability.skill_adapter",
+        "common.observability.store",
+        "common.observability.tool_adapter"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/intent.py",
+      "sha256": "f6382391716686f10673afe5cc64ca5bd95271625ec1ba9bf1fcdfd2ddd79ff6",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/intent.py"
+      ],
+      "reason": "本图入口判定；不得恢复旧v1路由。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/builder.py",
+        "src/common/business_graph/nodes.py"
+      ],
+      "project_imports": [
+        "common.permission.rules"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/mcp_tool_catalog.py",
+      "sha256": "ab02be042452120dab42cb737fe9f6e6a899092a8bce732fe8654f3a4dfd60f6",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/basic_qa/capabilities/mcp_catalog.py",
+        "src/common/tool_execution/mcp.py"
+      ],
+      "reason": "BQA受控目录归BQA；通用schema标准化摘要计算抽离以消除反向依赖。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/mcp_tool_index.py",
+        "src/common/business_graph/mcp_tool_search.py",
+        "src/common/mcp_scoped.py"
+      ],
+      "project_imports": [
+        "common.business_graph.basic_qa_runtime",
+        "common.business_graph.skill_search",
+        "common.business_registry",
+        "common.capabilities",
+        "common.identity.runtime",
+        "common.mcp_connections",
+        "common.mcp_scoped"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/mcp_tool_index.py",
+      "sha256": "6e4a774b9bd1cbde28a2d7281cf293df84da2d1326b144d2ac7a3a3b11346f05",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/capabilities/mcp_index.py"
+      ],
+      "reason": "BQA目录索引与查询；表名/内容摘要/缓存身份不变。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/mcp_tool_search.py"
+      ],
+      "project_imports": [
+        "common.business_graph.mcp_tool_catalog",
+        "common.config",
+        "common.event_ledger.store",
+        "common.identity.runtime",
+        "common.skill_router"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/mcp_tool_search.py",
+      "sha256": "bda369e99daa95c831c787a4624fa7edbfb5d0e3a772e2ae59d2a94b5088d3f7",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/capabilities/mcp_search.py"
+      ],
+      "reason": "BQA搜索/独立加载工具。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py"
+      ],
+      "project_imports": [
+        "common.business_graph.basic_qa_runtime",
+        "common.business_graph.mcp_tool_catalog",
+        "common.business_graph.mcp_tool_index",
+        "common.identity.business_access",
+        "common.identity.runtime",
+        "common.skill_router"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/nodes.py",
+      "sha256": "330bdf8365fb8e3e4aa4f897018bcab7fbf83b6a8d333c23ee60767bf68f0b06",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/nodes.py"
+      ],
+      "reason": "BQA实际节点；不与数据分析共用节点类。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/builder.py"
+      ],
+      "project_imports": [
+        "common.business_graph.basic_qa_integration",
+        "common.business_graph.intent",
+        "common.business_graph.mcp_tool_search",
+        "common.business_graph.prompting",
+        "common.business_graph.skill_content",
+        "common.business_graph.skill_search",
+        "common.business_graph.state",
+        "common.business_graph.tool_recovery",
+        "common.capabilities",
+        "common.context",
+        "common.context_preparation",
+        "common.data_governance",
+        "common.identity.runtime",
+        "common.input_limits",
+        "common.knowledge.policy",
+        "common.model_budget",
+        "common.model_errors",
+        "common.models",
+        "common.observability.model_adapter",
+        "common.observability.skill_adapter",
+        "common.observability.store",
+        "common.output_streaming.answer",
+        "common.output_streaming.controls",
+        "common.output_streaming.publisher",
+        "common.permission.rules",
+        "common.runtime_events",
+        "common.runtime_tools",
+        "common.skill_router",
+        "common.turn_tool_governance"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/prompting.py",
+      "sha256": "f5af92acba592d9f178743e8fa85a5e8450608a81e7fabf5474f3228cd1e26ac",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/prompts.py"
+      ],
+      "reason": "BQA提示组装和角色策略；通用原子规则仍可引用common。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/__init__.py",
+        "src/common/business_graph/builder.py",
+        "src/common/business_graph/nodes.py"
+      ],
+      "project_imports": [
+        "common.computation",
+        "common.context",
+        "common.langfuse_prompts",
+        "common.prompts"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/session_capabilities.py",
+      "sha256": "ee3048d9b6d2fa43620e68304e64aaf68f8054007c4116f8c294a43018c1e51a",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/capabilities/state.py"
+      ],
+      "reason": "BQA能力引用及激活状态。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_integration.py",
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/builder.py"
+      ],
+      "project_imports": [
+        "common.skill_tool_scope"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/skill_content.py",
+      "sha256": "d6852ca8609b1d1dd33d8f71a115ee143c581107694839cecf61cc029d106a4a",
+      "kind": "python-module",
+      "planned_action": "split-retire-legacy",
+      "targets": [
+        "src/common/skills/materials.py"
+      ],
+      "reason": "提取仍有效的纯材料读取；旧非BQA构图加载流程核实无生产消费者后退休。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/builder.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py"
+      ],
+      "project_imports": [
+        "common.context",
+        "common.observability.skill_adapter",
+        "common.skill_discovery",
+        "common.skill_router"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/skill_materials.py",
+      "sha256": "a32b9e193cf943d21bad3a9b7e6d48846582ae9411181a7d0745676a3f27e977",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/capabilities/skill_materials.py"
+      ],
+      "reason": "BQA模式材料版本与装载策略；纯读取可下沉公共叶子。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_runtime.py"
+      ],
+      "project_imports": [
+        "common.skill_tool_scope"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/skill_search.py",
+      "sha256": "df84a76bf732e523b7ccd6647b5d91b9ddaed810bb82b28b6938255161d0ae0d",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/capabilities/skill_search.py"
+      ],
+      "reason": "BQA搜索工具与受理范围。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_integration.py",
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/mcp_tool_catalog.py",
+        "src/common/business_graph/nodes.py"
+      ],
+      "project_imports": [
+        "common.capabilities",
+        "common.identity.business_access",
+        "common.identity.runtime",
+        "common.skill_router"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/state.py",
+      "sha256": "cbb178597fa3059e9256b3594d410b46eb4a2ae37dc45359397526a2f5056863",
+      "kind": "python-module",
+      "planned_action": "move",
+      "targets": [
+        "src/basic_qa/state.py"
+      ],
+      "reason": "BQA输入和节点状态；保持checkpoint字段及通道兼容。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/__init__.py",
+        "src/common/business_graph/builder.py",
+        "src/common/business_graph/nodes.py"
+      ],
+      "project_imports": [
+        "common.runtime_events"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/subagent_summarizer.py",
+      "sha256": "1d6fda465eecdfcf4ef89cd5a17f57f4d87b66fdd8fe3a69253339038ca8f5e0",
+      "kind": "python-module",
+      "planned_action": "rename",
+      "targets": [
+        "src/common/tool_output_summary.py"
+      ],
+      "reason": "通用完整工具文本归纳，不是子代理图；仍用于两图独立控制器。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/turn_tool_governance.py"
+      ],
+      "project_imports": [
+        "common.text_reduction"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/tool_recovery.py",
+      "sha256": "54dd92f5f445aff1422db724bf305a96c45e57d30744768950e266f9a4152580",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/basic_qa/tool_policy.py",
+        "src/data_analysis/tool_policy.py",
+        "src/common/tool_execution/protocol.py"
+      ],
+      "reason": "重试止损策略各归其图；公共仅保留无图策略的协议辅助。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_integration.py",
+        "src/common/business_graph/builder.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.observability.tool_adapter",
+        "common.runtime_tools"
+      ]
+    },
+    {
+      "source": "src/common/business_graph/tool_wrappers.py",
+      "sha256": "57ec0833ce7eb1c4aaf93c59432381137194a93bdb27321ded2299aa428fe36d",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/basic_qa/tool_policy.py",
+        "src/data_analysis/tool_policy.py",
+        "src/common/tool_execution/mcp.py",
+        "src/common/tool_execution/results.py"
+      ],
+      "reason": "分离各图编排与通用受保护发送/结果处理；BQA入口和实际发送两层校验保留，公共工厂在每次invoke前调用可信强制执行策略，不可缺省放行。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_integration.py",
+        "src/common/business_graph/builder.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/data_analysis/graph.py"
+      ],
+      "project_imports": [
+        "common.artifact_scope",
+        "common.business_graph.basic_qa_integration",
+        "common.business_graph.basic_qa_runtime",
+        "common.business_graph.capability_observation",
+        "common.business_graph.subagent_summarizer",
+        "common.business_graph.tool_recovery",
+        "common.config",
+        "common.context",
+        "common.data_manifest",
+        "common.identity.business_access",
+        "common.identity.runtime",
+        "common.mcp_authorization",
+        "common.mcp_scoped",
+        "common.observability.context",
+        "common.observability.model_adapter",
+        "common.observability.tool_adapter",
+        "common.runtime_events",
+        "common.runtime_tools",
+        "common.storage.artifact_db"
+      ]
+    },
+    {
+      "source": "src/common/business_registry.py",
+      "sha256": "0333a67591dc3cf1d325743f686795c406d55969f2371067c676ddc3322423d8",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/business_registry.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/mcp_tool_catalog.py",
+        "src/common/capabilities.py",
+        "src/common/identity/business_access.py",
+        "src/common/identity/runtime.py",
+        "src/common/mcp_authorization.py",
+        "src/common/skill_tool_scope.py",
+        "src/intelligent_tracing/runtime.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/capabilities.py",
+      "sha256": "de0cbd4e73863887f3f0ed9c77881d97e3a5b0fc98ac5525ed7054f3dfa47e88",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/common/capabilities.py",
+        "src/basic_qa/capability_policy.py",
+        "src/data_analysis/capability_policy.py",
+        "src/application/business_policies.py"
+      ],
+      "reason": "保留通用目录/授权机制；菜单、标题、依赖等图策略经可信装配接入。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/business_graph/basic_qa_integration.py",
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/mcp_tool_catalog.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/skill_search.py",
+        "src/common/identity/langgraph_auth.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.business_registry",
+        "common.identity.business_access",
+        "common.identity.runtime",
+        "common.identity.ticket",
+        "common.mcp_authorization",
+        "common.mcp_connections",
+        "common.mcp_scoped",
+        "common.runtime_tools",
+        "common.skill_tool_scope",
+        "data_analysis.menu_skill_mapping"
+      ]
+    },
+    {
+      "source": "src/common/computation/__init__.py",
+      "sha256": "b228803438f32177a75851cf86650145fbedd9237af5cbdadbdfa76cdd865cb8",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/computation/__init__.py"
+      ],
+      "reason": "通用受控计算工具和结果处理。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/prompting.py",
+        "src/data_analysis/prompt_builder.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/computation/helpers.js",
+      "sha256": "cd7f4c9ad040292941f1841c176688bab8f9cd8dbb40a497259e099d6b7b263b",
+      "kind": "supporting-asset",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/computation/helpers.js"
+      ],
+      "reason": "通用受控计算工具和结果处理。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/computation/runner.py",
+      "sha256": "b9114cc0617e161fb55d5b463d8cf2039bbbdfa48449df402923a149637fa9a2",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/computation/runner.py"
+      ],
+      "reason": "通用受控计算工具和结果处理。",
+      "direct_static_consumers_within_src": [
+        "src/common/computation/tool.py"
+      ],
+      "project_imports": [
+        "common.config"
+      ]
+    },
+    {
+      "source": "src/common/computation/tool.py",
+      "sha256": "b9d064af260d1d1ef0c3d15cde920c8ee91c5d4624908ac85a545bc592062798",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/computation/tool.py"
+      ],
+      "reason": "通用受控计算工具和结果处理。",
+      "direct_static_consumers_within_src": [
+        "src/common/runtime_tools.py"
+      ],
+      "project_imports": [
+        "common.artifact_scope",
+        "common.computation.runner",
+        "common.config",
+        "common.data_manifest",
+        "common.runtime_events",
+        "common.storage.artifact_db"
+      ]
+    },
+    {
+      "source": "src/common/config/__init__.py",
+      "sha256": "3c0d94d148b43376adfede5b9e358a68791fce2daef1059641e24d832fca169e",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/config/__init__.py"
+      ],
+      "reason": "共享受保护部署配置和基础设置；不更改默认行为。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/mcp_tool_index.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/computation/runner.py",
+        "src/common/computation/tool.py",
+        "src/common/config/checkpointing.py",
+        "src/common/context_preparation.py",
+        "src/common/conversation_summarizer.py",
+        "src/common/data_governance.py",
+        "src/common/input_limits.py",
+        "src/common/knowledge/store.py",
+        "src/common/mcp_scoped.py",
+        "src/common/model_budget.py",
+        "src/common/model_capacity.py",
+        "src/common/models.py",
+        "src/common/permission/mcp_tools.py",
+        "src/common/skill_router.py",
+        "src/common/storage/artifact_db.py",
+        "src/common/text_reduction.py",
+        "src/common/tools.py",
+        "src/common/turn_tool_governance.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "configuration",
+        "logging_config",
+        "settings"
+      ]
+    },
+    {
+      "source": "src/common/config/checkpointing.py",
+      "sha256": "2e1177a9cf902bc2e109c3525264cac8fd5def66e0964daf357a638d1afa8da2",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/config/checkpointing.py"
+      ],
+      "reason": "共享受保护部署配置和基础设置；不更改默认行为。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.config"
+      ]
+    },
+    {
+      "source": "src/common/config/configuration.py",
+      "sha256": "0f71481b5422ec5b008a8dc4765f09961083d2e71e55ce22ca5031c77e490193",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/config/configuration.py"
+      ],
+      "reason": "共享受保护部署配置和基础设置；不更改默认行为。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/config/logging_config.py",
+      "sha256": "25e116626e14b8060038dcbc2c6bfd2e7aa1273e048bc79cf92a9e9afd6ea60e",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/config/logging_config.py"
+      ],
+      "reason": "共享受保护部署配置和基础设置；不更改默认行为。",
+      "direct_static_consumers_within_src": [
+        "src/common/mcp_client.py",
+        "src/common/mcp_scoped.py",
+        "src/common/models.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/config/settings.py",
+      "sha256": "2b91ef0f7d370915b001e90a450087bf631905115472c75fc99ce0f37c592ebc",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/config/settings.py"
+      ],
+      "reason": "共享受保护部署配置和基础设置；不更改默认行为。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/context.py",
+      "sha256": "c4502a813aac414646afc1ab7a899b17947a264fe0e45a2c2632259fc64d1433",
+      "kind": "python-module",
+      "planned_action": "rename",
+      "targets": [
+        "src/common/runtime_context.py"
+      ],
+      "reason": "模式解析/消息读取等运行时辅助，与会话控制区分。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/prompting.py",
+        "src/common/business_graph/skill_content.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/common/skill_discovery.py",
+        "src/common/turn_tool_governance.py",
+        "src/data_analysis/nodes.py",
+        "src/data_analysis/prompt_builder.py",
+        "src/intelligent_tracing/guards.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/context_guard.py",
+      "sha256": "2053583cc52e73a21ab7fbe4aed6877a1b9a58a1791e1f5f94497513fbe02591",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/basic_qa/context/projection.py",
+        "src/data_analysis/context/projection.py",
+        "src/common/tool_execution/protocol.py"
+      ],
+      "reason": "图内拥有水位/历史投影；纯工具协议辅助可共享。",
+      "direct_static_consumers_within_src": [
+        "src/common/context_preparation.py",
+        "src/common/conversation_summarizer.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/context_preparation.py",
+      "sha256": "1ac1542799601f8210b92b196231939b910948825e532e6b842691f257ca2336",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/basic_qa/context/preparation.py",
+        "src/basic_qa/context/recovery.py",
+        "src/data_analysis/context/preparation.py",
+        "src/data_analysis/context/recovery.py"
+      ],
+      "reason": "两图分别拥有完整发送前和恢复流程，无公共控制器或转发。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.config",
+        "common.context_guard",
+        "common.conversation_summarizer",
+        "common.identity.runtime",
+        "common.model_budget",
+        "common.model_capacity",
+        "common.model_errors",
+        "common.runtime_events",
+        "common.turn_tool_governance"
+      ]
+    },
+    {
+      "source": "src/common/conversation_summarizer.py",
+      "sha256": "1672ca9ed0085bef35600263bf621ad3d4382ef17fba4a261a374fce46e1909a",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/basic_qa/context/summarization.py",
+        "src/data_analysis/context/summarization.py"
+      ],
+      "reason": "摘要轮次/水位/内容组装分别归各图，底层文本归纳保持common。",
+      "direct_static_consumers_within_src": [
+        "src/common/context_preparation.py"
+      ],
+      "project_imports": [
+        "common.config",
+        "common.context_guard",
+        "common.text_reduction"
+      ]
+    },
+    {
+      "source": "src/common/data_governance.py",
+      "sha256": "3253f860a277935a97dc22cfc1fbf415222f4ae39c4c84179de3f54b394c62cf",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/data_governance.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.artifact_scope",
+        "common.config",
+        "common.identity.runtime",
+        "common.observability.model_adapter",
+        "common.storage.artifact_db"
+      ]
+    },
+    {
+      "source": "src/common/data_manifest.py",
+      "sha256": "4cc7461bc4358d7448d6cc487225272d75e9cd2614a2c37666719b81126bc841",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/data_manifest.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/computation/tool.py",
+        "src/common/turn_tool_governance.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/event_ledger/__init__.py",
+      "sha256": "2c1f909338b0e79a268de322300d786143284ad1bb08a28877652f2d6dfe12fd",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/__init__.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.event_ledger.contract"
+      ]
+    },
+    {
+      "source": "src/common/event_ledger/__main__.py",
+      "sha256": "7cbef2debdfd70c5d072042c715cb3591e4704dce6849dc0abbdf6f48cabe667",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/__main__.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.event_ledger.reconcile",
+        "common.event_ledger.store",
+        "common.event_ledger.worker"
+      ]
+    },
+    {
+      "source": "src/common/event_ledger/answer_content.py",
+      "sha256": "7db90f5871d3ba27b954e0a607a6d938531277e5cc00eccd9f943c4f4477b471",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/answer_content.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [
+        "src/common/event_ledger/lifecycle.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.store"
+      ]
+    },
+    {
+      "source": "src/common/event_ledger/contract.py",
+      "sha256": "134e023a24ef2724384bfd046947ef6c632e536ede5192bba1b28e6a19a94445",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/contract.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [
+        "src/common/event_ledger/__init__.py",
+        "src/common/event_ledger/store.py",
+        "src/common/observability/store.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/event_ledger/contract_data/event-registry.json",
+      "sha256": "083b0ccf95fd7e34e017e97a4617fa4baf9419f74ebda98c631127ae28eaa9ed",
+      "kind": "supporting-asset",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/contract_data/event-registry.json"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/event_ledger/contract_data/metrics.json",
+      "sha256": "c959c851c21385a5a33f8e9f6478dca06b0b5205193818d8411d8674fc45bf58",
+      "kind": "supporting-asset",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/contract_data/metrics.json"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/event_ledger/contract_data/samples.json",
+      "sha256": "d6edbcc432d8abc7deef679effe8bab306be48866a0861861d266cb952e70b25",
+      "kind": "supporting-asset",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/contract_data/samples.json"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/event_ledger/contract_data/states.json",
+      "sha256": "459c63790380559901f7ade64271cb2d51c2d2d2e8f3ed007cb5cd17c9c2e847",
+      "kind": "supporting-asset",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/contract_data/states.json"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/event_ledger/lifecycle.py",
+      "sha256": "1600fb9aa01dd1cfbf8f47089975f42a395fb658b4f274077e7a5fac64a16e1a",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/lifecycle.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/builder.py",
+        "src/common/event_ledger/reconcile.py",
+        "src/common/knowledge/tool.py",
+        "src/common/output_streaming/publisher.py",
+        "src/data_analysis/graph.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.answer_content",
+        "common.event_ledger.store",
+        "common.identity.runtime"
+      ]
+    },
+    {
+      "source": "src/common/event_ledger/reconcile.py",
+      "sha256": "2387c871dbdc6806dacefcd8d13d602f47538296427d2e91beb4de039a96b33d",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/reconcile.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [
+        "src/common/event_ledger/__main__.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.lifecycle",
+        "common.event_ledger.store"
+      ]
+    },
+    {
+      "source": "src/common/event_ledger/service_read.py",
+      "sha256": "d84b005f29f57f0b676e91d012eb27853acf9be04e494229fceabef14df6cf4b",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/service_read.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/identity/langgraph_auth.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.store",
+        "common.identity.db",
+        "common.identity.ticket"
+      ]
+    },
+    {
+      "source": "src/common/event_ledger/store.py",
+      "sha256": "5bb365367b10aacdc1ba4d63102081ee35562db7445f112a74133c6716387b49",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/store.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/mcp_tool_index.py",
+        "src/common/event_ledger/__main__.py",
+        "src/common/event_ledger/answer_content.py",
+        "src/common/event_ledger/lifecycle.py",
+        "src/common/event_ledger/reconcile.py",
+        "src/common/event_ledger/service_read.py",
+        "src/common/identity/langgraph_auth.py",
+        "src/common/output_streaming/publisher.py",
+        "src/intelligent_tracing/publishing.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.contract"
+      ]
+    },
+    {
+      "source": "src/common/event_ledger/worker.py",
+      "sha256": "1712c3dcd242b2467ac5772b6e9ea7bd14203aa806ea3201a1195ceca5a4d4cd",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/event_ledger/worker.py"
+      ],
+      "reason": "跨图事实台账、生命周期、协议登记和持久读取。",
+      "direct_static_consumers_within_src": [
+        "src/common/event_ledger/__main__.py"
+      ],
+      "project_imports": [
+        "common.observability.external_cleanup"
+      ]
+    },
+    {
+      "source": "src/common/identity/__init__.py",
+      "sha256": "521845dce1cd0db779c7e82f3da4dbe6c93ffce67351515d351671be3d6e03e5",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/__init__.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/identity/business_access.py",
+      "sha256": "a569778cbb99bc9f246c10a930e6abe490296e4241909b801bfd370e213569fb",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/business_access.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/mcp_tool_search.py",
+        "src/common/business_graph/skill_search.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/capabilities.py",
+        "src/common/identity/langgraph_auth.py"
+      ],
+      "project_imports": [
+        "common.business_registry"
+      ]
+    },
+    {
+      "source": "src/common/identity/db.py",
+      "sha256": "800eecc7b816bf15629d91c872fbf9b5e62950a1bc20c3d84ec0cb3643af9e18",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/db.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/event_ledger/service_read.py",
+        "src/common/identity/langgraph_auth.py",
+        "src/common/identity/remote.py",
+        "src/common/identity/runtime.py",
+        "src/common/identity/ticket_binding.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/identity/langgraph_auth.py",
+      "sha256": "99104bbe8c50eed70a34e508e80c64b4d16c786c0f3d50ecdd2d2fe1f0c2e3ba",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/common/identity/langgraph_auth.py",
+        "src/basic_qa/input_policy.py",
+        "src/application/langgraph_auth.py"
+      ],
+      "reason": "通用可信认证留公共；BQA输入策略归本图且由受理前装配执行。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py"
+      ],
+      "project_imports": [
+        "common.capabilities",
+        "common.event_ledger.service_read",
+        "common.event_ledger.store",
+        "common.identity.business_access",
+        "common.identity.db",
+        "common.identity.remote",
+        "common.identity.runtime",
+        "common.identity.ticket",
+        "common.identity.ticket_binding",
+        "common.knowledge.validation",
+        "common.mcp_authorization"
+      ]
+    },
+    {
+      "source": "src/common/identity/mcp_outbound.py",
+      "sha256": "f6939067bb27d3e86c0bce46ebf7885f1bf598841f0385c107064068ec11a7ed",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/mcp_outbound.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [
+        "src/common/mcp_scoped.py"
+      ],
+      "project_imports": [
+        "common.identity.remote",
+        "common.identity.runtime",
+        "common.mcp_authorization"
+      ]
+    },
+    {
+      "source": "src/common/identity/outbound.py",
+      "sha256": "9a4a4273561b1fefd102f0ead07058e4c49e7fd11d7881002c5d5651436df70a",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/outbound.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [
+        "src/common/models.py",
+        "src/common/skill_router.py"
+      ],
+      "project_imports": [
+        "common.identity.runtime"
+      ]
+    },
+    {
+      "source": "src/common/identity/remote.py",
+      "sha256": "bde9e6119991d92db36bfcaaae8398937d6a822c1bb6e0a517d4895cf44f3131",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/remote.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [
+        "src/common/identity/langgraph_auth.py",
+        "src/common/identity/mcp_outbound.py",
+        "src/common/identity/runtime.py",
+        "src/common/identity/ticket_binding.py",
+        "src/common/knowledge/delegation.py"
+      ],
+      "project_imports": [
+        "common.identity.db",
+        "common.identity.runtime"
+      ]
+    },
+    {
+      "source": "src/common/identity/runtime.py",
+      "sha256": "8e17279c781faf58ce6ae42556d36b42e0da0c79b4e7087263ea3c5dac7d14e2",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/runtime.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/mcp_tool_catalog.py",
+        "src/common/business_graph/mcp_tool_index.py",
+        "src/common/business_graph/mcp_tool_search.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/skill_search.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/capabilities.py",
+        "src/common/context_preparation.py",
+        "src/common/data_governance.py",
+        "src/common/event_ledger/lifecycle.py",
+        "src/common/identity/langgraph_auth.py",
+        "src/common/identity/mcp_outbound.py",
+        "src/common/identity/outbound.py",
+        "src/common/identity/remote.py",
+        "src/common/knowledge/client.py",
+        "src/common/knowledge/delegation.py",
+        "src/common/knowledge/proxy.py",
+        "src/common/knowledge/store.py",
+        "src/common/knowledge/tool.py",
+        "src/common/knowledge/validation.py",
+        "src/common/mcp_scoped.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/common/observability/context.py",
+        "src/common/output_streaming/publisher.py",
+        "src/common/skill_router.py",
+        "src/common/text_reduction.py",
+        "src/intelligent_tracing/data_access.py",
+        "src/intelligent_tracing/guards.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/runtime.py",
+        "src/intelligent_tracing/sources.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.business_registry",
+        "common.identity.db",
+        "common.identity.remote",
+        "common.identity.ticket",
+        "common.knowledge.validation"
+      ]
+    },
+    {
+      "source": "src/common/identity/ticket.py",
+      "sha256": "4a344bbf2aade5f2a459865712fb534d95497ea5a8a53ace71843efa17c9b225",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/ticket.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/capabilities.py",
+        "src/common/event_ledger/service_read.py",
+        "src/common/identity/langgraph_auth.py",
+        "src/common/identity/runtime.py",
+        "src/common/identity/ticket_binding.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/identity/ticket_binding.py",
+      "sha256": "5c023b3d59067273eef27584dedd993ae89ce749f5a97dcda77f01c97b3f8cd8",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/identity/ticket_binding.py"
+      ],
+      "reason": "跨图可信身份、连接外呼与租户保护机制。",
+      "direct_static_consumers_within_src": [
+        "src/common/identity/langgraph_auth.py"
+      ],
+      "project_imports": [
+        "common.identity.db",
+        "common.identity.remote",
+        "common.identity.ticket"
+      ]
+    },
+    {
+      "source": "src/common/input_limits.py",
+      "sha256": "8fc7ceef424b1db2f10e27d43a87f4fbaf417674600266f7047427bdc4beb536",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/input_limits.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/business_graph/nodes.py",
+        "src/data_analysis/nodes.py",
+        "src/intelligent_tracing/guards.py"
+      ],
+      "project_imports": [
+        "common.config"
+      ]
+    },
+    {
+      "source": "src/common/knowledge/__init__.py",
+      "sha256": "48cfbcb8165d3cdc26e7f0db97fa524255813469eefb9c93f9aa8b89757a5d8e",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/__init__.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.knowledge.client",
+        "common.knowledge.contracts",
+        "common.knowledge.tool"
+      ]
+    },
+    {
+      "source": "src/common/knowledge/client.py",
+      "sha256": "2e2074d2cbfc8f83823ea43e004a23f2de2c174fac5bce11717e2db902449cbb",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/client.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [
+        "src/common/knowledge/__init__.py",
+        "src/common/knowledge/proxy.py",
+        "src/common/knowledge/tool.py",
+        "src/common/knowledge/validation.py"
+      ],
+      "project_imports": [
+        "common.identity.runtime",
+        "common.knowledge.contracts",
+        "common.knowledge.delegation",
+        "common.knowledge.store"
+      ]
+    },
+    {
+      "source": "src/common/knowledge/contracts.py",
+      "sha256": "57652e78401ce404d0b7d196ffd84282ae1ba17673266451f89083f6a0c2e2fa",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/contracts.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [
+        "src/common/knowledge/__init__.py",
+        "src/common/knowledge/client.py",
+        "src/common/knowledge/delegation.py",
+        "src/common/knowledge/tool.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/knowledge/delegation.py",
+      "sha256": "e9323198d2374203a05353a2d347fd5f52c4784cac2cc11753b8572620a0ff46",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/delegation.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [
+        "src/common/knowledge/client.py",
+        "src/common/knowledge/proxy.py",
+        "src/common/knowledge/validation.py"
+      ],
+      "project_imports": [
+        "common.identity.remote",
+        "common.identity.runtime",
+        "common.knowledge.contracts"
+      ]
+    },
+    {
+      "source": "src/common/knowledge/policy.py",
+      "sha256": "f3c0d3c86249407e25fcdfb713af83d3bbeb39c49caee81a5e2b7df67f9055e7",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/policy.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifacts/create_artifact_tool.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/output_streaming/answer.py",
+        "src/data_analysis/nodes.py",
+        "src/intelligent_tracing/publishing.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/knowledge/proxy.py",
+      "sha256": "6cee36bb9f044c16eb7fe941a791e4f6feba9ed383c09da56ef97c709ceea1c9",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/proxy.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py"
+      ],
+      "project_imports": [
+        "common.identity.runtime",
+        "common.knowledge.client",
+        "common.knowledge.delegation",
+        "common.knowledge.validation"
+      ]
+    },
+    {
+      "source": "src/common/knowledge/store.py",
+      "sha256": "dd11c0860b4695376427ccf861b4c99554ae6cd42eeb4a23fd2683364793fc5a",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/store.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/knowledge/client.py",
+        "src/common/knowledge/validation.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.config",
+        "common.identity.runtime"
+      ]
+    },
+    {
+      "source": "src/common/knowledge/tool.py",
+      "sha256": "9493771c8c6d0b365096f0ce3a5eb89d94e25a57cd8ca6a18d87a5193e2ed90e",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/tool.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [
+        "src/common/knowledge/__init__.py",
+        "src/common/runtime_tools.py",
+        "src/intelligent_tracing/graph.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.lifecycle",
+        "common.identity.runtime",
+        "common.knowledge.client",
+        "common.knowledge.contracts"
+      ]
+    },
+    {
+      "source": "src/common/knowledge/validation.py",
+      "sha256": "e19b6b998539b6a19218c62aa3ecd512f7164f338daeb99e4c715b361e3cb472",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/knowledge/validation.py"
+      ],
+      "reason": "通用法规知识工具、检索权限、引用与知识代理。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/identity/langgraph_auth.py",
+        "src/common/identity/runtime.py",
+        "src/common/knowledge/proxy.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.identity.runtime",
+        "common.knowledge.client",
+        "common.knowledge.delegation",
+        "common.knowledge.store"
+      ]
+    },
+    {
+      "source": "src/common/langfuse_prompts.py",
+      "sha256": "98eacf376c00d6d00bcb215cd9eab54eb2dd833d891421da058343141492282c",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/langfuse_prompts.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/prompting.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/langfuse_tracing.py",
+      "sha256": "65a3f978e17fa39f8e82af1333775aa0a44f0844ecb08a8697beca4efca38622",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/langfuse_tracing.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/basic_qa/graph.py",
+        "src/data_analysis/graph.py",
+        "src/intelligent_tracing/graph.py"
+      ],
+      "project_imports": [
+        "common.observability.context",
+        "common.observability.model_adapter"
+      ]
+    },
+    {
+      "source": "src/common/mcp_authorization.py",
+      "sha256": "736412af65ad9c07966891988fee4398fb7dcb59dc5a388c4ceb2fa041efd9fd",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/mcp_authorization.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/capabilities.py",
+        "src/common/identity/langgraph_auth.py",
+        "src/common/identity/mcp_outbound.py",
+        "src/common/mcp_scoped.py",
+        "src/intelligent_tracing/data_access.py"
+      ],
+      "project_imports": [
+        "common.business_registry",
+        "common.mcp_connections"
+      ]
+    },
+    {
+      "source": "src/common/mcp_client.py",
+      "sha256": "882dc276af54e2da0586260513cbaefd600c0fdd6e0d008990f20075e976ec87",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/mcp_client.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/mcp_tools.py",
+        "src/common/runtime_tools.py"
+      ],
+      "project_imports": [
+        "common.config.logging_config",
+        "common.mcp_scoped"
+      ]
+    },
+    {
+      "source": "src/common/mcp_connections.py",
+      "sha256": "bec22fe36b6cb305e9c3bb62832dd1e2d0ca88327551049872215779cda76774",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/mcp_connections.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/mcp_tool_catalog.py",
+        "src/common/capabilities.py",
+        "src/common/mcp_authorization.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/mcp_scoped.py",
+      "sha256": "7d6a571a8c1774fdd7fd35cfdafec0aa1f12a4f19df99ec05b586ed530d032d7",
+      "kind": "python-module",
+      "planned_action": "adapt-interface",
+      "targets": [
+        "src/common/mcp_scoped.py",
+        "src/common/tool_execution/mcp.py"
+      ],
+      "reason": "使用通用schema摘要；工厂实际invoke前执行可信策略，直接execute/工厂入口不能绕过BQA作用域检查，缺策略/证明拒绝。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_integration.py",
+        "src/common/business_graph/mcp_tool_catalog.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/capabilities.py",
+        "src/common/mcp_client.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/intelligent_tracing/data_access.py"
+      ],
+      "project_imports": [
+        "common.business_graph.mcp_tool_catalog",
+        "common.config",
+        "common.config.logging_config",
+        "common.identity.mcp_outbound",
+        "common.identity.runtime",
+        "common.mcp_authorization",
+        "common.observability.context",
+        "common.observability.tool_adapter"
+      ]
+    },
+    {
+      "source": "src/common/mcp_utils.py",
+      "sha256": "2c59c02a5bf5ce43ada23d89b02f641a01378f7e6aef977d601fd9f2f1052952",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/mcp_utils.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/mcp_tools.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/middleware/__init__.py",
+      "sha256": "902337444491da510408c7a4f77f8076f24de70ff6ca497853c4580cd1adf242",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/middleware/__init__.py"
+      ],
+      "reason": "无图业务编排的公共运行时中间件。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/graph.py"
+      ],
+      "project_imports": [
+        "common.middleware.tenant_runtime_guard_middleware",
+        "common.middleware.time_context_middleware"
+      ]
+    },
+    {
+      "source": "src/common/middleware/tenant_runtime_guard_middleware.py",
+      "sha256": "d6e03e370b150324631925f8fbf881a96bd717cac439da256afa6a8c278ee828",
+      "kind": "python-module",
+      "planned_action": "adapt-imports",
+      "targets": [
+        "src/common/middleware/tenant_runtime_guard_middleware.py"
+      ],
+      "reason": "继续公共模型/工具实时守卫，改用公共叶子执行/读取接口。",
+      "direct_static_consumers_within_src": [
+        "src/common/middleware/__init__.py",
+        "src/common/observability/deepagents_adapter.py",
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/subagents.py"
+      ],
+      "project_imports": [
+        "common.business_graph.skill_content",
+        "common.business_graph.tool_wrappers",
+        "common.capabilities",
+        "common.context",
+        "common.identity.runtime",
+        "common.mcp_scoped",
+        "common.model_budget",
+        "common.observability.context",
+        "common.observability.skill_adapter",
+        "common.observability.tool_adapter",
+        "common.skill_router"
+      ]
+    },
+    {
+      "source": "src/common/middleware/time_context_middleware.py",
+      "sha256": "785cb7ac1e6b27c57bbfb72e8361ff344199f73146bbb1c53d0a99bcd797ef95",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/middleware/time_context_middleware.py"
+      ],
+      "reason": "无图业务编排的公共运行时中间件。",
+      "direct_static_consumers_within_src": [
+        "src/common/middleware/__init__.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/model_budget.py",
+      "sha256": "d8d7df866d233f75d8b6673c50438d877d9da9064a5a06faeed6990cde99c234",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/model_budget.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/context_preparation.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/common/text_reduction.py",
+        "src/data_analysis/nodes.py",
+        "src/intelligent_tracing/guards.py"
+      ],
+      "project_imports": [
+        "common.config",
+        "common.model_capacity"
+      ]
+    },
+    {
+      "source": "src/common/model_capacity.py",
+      "sha256": "c9ba228ff881167be4a6f31bca1e015131511b10c983b0622fe6cbf687af92ce",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/model_capacity.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/context_preparation.py",
+        "src/common/model_budget.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/guards.py",
+        "src/intelligent_tracing/subagents.py"
+      ],
+      "project_imports": [
+        "common.config"
+      ]
+    },
+    {
+      "source": "src/common/model_errors.py",
+      "sha256": "8952046c9b47be995365d83edf4b48d86c79128fd5b50a4f5a9b8c23fe95ccdb",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/model_errors.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/context_preparation.py",
+        "src/common/output_streaming/answer.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/models.py",
+      "sha256": "1f0f572a83517b4cf5e228c7634ddafd4ffd011a0dfc1908c67d496da877165b",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/models.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/text_reduction.py",
+        "src/common/tools.py",
+        "src/data_analysis/nodes.py",
+        "src/intelligent_tracing/graph.py"
+      ],
+      "project_imports": [
+        "common.config",
+        "common.config.logging_config",
+        "common.identity.outbound"
+      ]
+    },
+    {
+      "source": "src/common/observability/__init__.py",
+      "sha256": "1d73ff3bc7aecf9b354701176fa7c532158c50355efd5a3b9640bb070898391d",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/__init__.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/observability/collector.py",
+      "sha256": "a618697a8ce1d3494b06baec64fb4890dd991f289212101d3a86d482bb2def0e",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/collector.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/business_graph/capability_observation.py",
+        "src/common/observability/model_adapter.py",
+        "src/common/observability/skill_adapter.py",
+        "src/common/observability/tool_adapter.py"
+      ],
+      "project_imports": [
+        "common.observability.context",
+        "common.observability.store"
+      ]
+    },
+    {
+      "source": "src/common/observability/context.py",
+      "sha256": "a348b7fba1333f881263b6cdaa7d146ffe5ec5fc89f8b730e8b021706ac15a6b",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/context.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/capability_observation.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/langfuse_tracing.py",
+        "src/common/mcp_scoped.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/common/observability/collector.py",
+        "src/common/observability/deepagents_adapter.py",
+        "src/common/observability/middleware.py",
+        "src/common/observability/model_adapter.py",
+        "src/common/observability/skill_adapter.py",
+        "src/common/observability/store.py",
+        "src/common/observability/tool_adapter.py",
+        "src/intelligent_tracing/turn_routing.py"
+      ],
+      "project_imports": [
+        "common.identity.runtime"
+      ]
+    },
+    {
+      "source": "src/common/observability/deepagents_adapter.py",
+      "sha256": "748ecde9f162894205498bf477fbfe05eaa1ce0de77df4b53ff909e2942bac88",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/deepagents_adapter.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/guards.py"
+      ],
+      "project_imports": [
+        "common.middleware.tenant_runtime_guard_middleware",
+        "common.observability.context",
+        "common.observability.middleware",
+        "common.observability.model_adapter"
+      ]
+    },
+    {
+      "source": "src/common/observability/external_cleanup.py",
+      "sha256": "6ee26081da2aa7b543122dceb2ea472df62bd5b4db7a273193e7c306fc8235a9",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/external_cleanup.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/event_ledger/worker.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/observability/middleware.py",
+      "sha256": "26c100c1a506ecec40a23b224d5028b02236b2879b5d5b1707c94f03287a9f0c",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/middleware.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/observability/deepagents_adapter.py",
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/subagents.py"
+      ],
+      "project_imports": [
+        "common.observability.context",
+        "common.observability.model_adapter",
+        "common.observability.skill_adapter"
+      ]
+    },
+    {
+      "source": "src/common/observability/model_adapter.py",
+      "sha256": "3a9883a78bc3b9b7e1527f315e805ad68012be0d78e83acdafd101ceb2b1a8c6",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/model_adapter.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/data_governance.py",
+        "src/common/langfuse_tracing.py",
+        "src/common/observability/deepagents_adapter.py",
+        "src/common/observability/middleware.py",
+        "src/common/text_reduction.py",
+        "src/common/tools.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.observability.collector",
+        "common.observability.context",
+        "common.observability.store"
+      ]
+    },
+    {
+      "source": "src/common/observability/pricing.py",
+      "sha256": "9feb5ea66187524f289239b188ca01729b7c676c26dafa60d236a4f9e526cb35",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/pricing.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/observability/store.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/observability/skill_adapter.py",
+      "sha256": "a7b18c210f0760717d671c4290cd0b6a6b911515bed89122f11e2d2da4895f22",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/skill_adapter.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/capability_observation.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/skill_content.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/common/observability/middleware.py",
+        "src/common/skill_discovery.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.observability.collector",
+        "common.observability.context",
+        "common.observability.store"
+      ]
+    },
+    {
+      "source": "src/common/observability/store.py",
+      "sha256": "a2380674ed1f4a9f4e656f3783aa802b042587fd0d9f241a2eb053459fe74ed8",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/store.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/capability_observation.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/observability/collector.py",
+        "src/common/observability/model_adapter.py",
+        "src/common/observability/skill_adapter.py",
+        "src/common/observability/tool_adapter.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.contract",
+        "common.observability.context",
+        "common.observability.pricing"
+      ]
+    },
+    {
+      "source": "src/common/observability/tool_adapter.py",
+      "sha256": "37e24bc1b5b461e086546e560af72ec759521308f27313bce9d0f42ae66b3210",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/observability/tool_adapter.py"
+      ],
+      "reason": "跨图模型/工具/Skill观测、费用与上下文传播。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/capability_observation.py",
+        "src/common/business_graph/tool_recovery.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/mcp_scoped.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py"
+      ],
+      "project_imports": [
+        "common.observability.collector",
+        "common.observability.context",
+        "common.observability.store"
+      ]
+    },
+    {
+      "source": "src/common/output_contract.py",
+      "sha256": "f4a43a12a769ef16a1e4433a59c44e03f032fbf00cea9874a8ca64e02bc691f5",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/output_contract.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.runtime_events"
+      ]
+    },
+    {
+      "source": "src/common/output_streaming/__init__.py",
+      "sha256": "079adb6007866e0bdc6aa448cd29c61cc61b21fa2833cdcd64058fe3eb2c17c0",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/output_streaming/__init__.py"
+      ],
+      "reason": "共享最终正文发布、协议、取消控制和输出安全。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.output_streaming.answer",
+        "common.output_streaming.contract",
+        "common.output_streaming.controls",
+        "common.output_streaming.publisher",
+        "common.output_streaming.safety"
+      ]
+    },
+    {
+      "source": "src/common/output_streaming/answer.py",
+      "sha256": "eda21a3d69c3507e8850b3adf6e13685c9ed1a2c26fa8473a906b68f99882bcf",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/output_streaming/answer.py"
+      ],
+      "reason": "共享最终正文发布、协议、取消控制和输出安全。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/output_streaming/__init__.py",
+        "src/common/output_streaming/controls.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.knowledge.policy",
+        "common.model_errors",
+        "common.output_streaming.contract",
+        "common.output_streaming.publisher",
+        "common.output_streaming.safety"
+      ]
+    },
+    {
+      "source": "src/common/output_streaming/contract.py",
+      "sha256": "ba15419d7af20d4ca797bb30d3360058daad64d8860f729b5373e8af109453c0",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/output_streaming/contract.py"
+      ],
+      "reason": "共享最终正文发布、协议、取消控制和输出安全。",
+      "direct_static_consumers_within_src": [
+        "src/common/output_streaming/__init__.py",
+        "src/common/output_streaming/answer.py",
+        "src/common/output_streaming/controls.py",
+        "src/common/output_streaming/publisher.py",
+        "src/intelligent_tracing/section_publishing.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/output_streaming/controls.py",
+      "sha256": "e837f3b2db2bcb7f04d3039d13c1576d5c587212c646d877a1284ff9e532472c",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/output_streaming/controls.py"
+      ],
+      "reason": "共享最终正文发布、协议、取消控制和输出安全。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/output_streaming/__init__.py",
+        "src/data_analysis/nodes.py",
+        "src/intelligent_tracing/publishing.py"
+      ],
+      "project_imports": [
+        "common.output_streaming.answer",
+        "common.output_streaming.contract",
+        "common.output_streaming.publisher"
+      ]
+    },
+    {
+      "source": "src/common/output_streaming/publisher.py",
+      "sha256": "388be72f894097b9b80fc0ec6386e432128802b59e1725fdb65ea68dc722d087",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/output_streaming/publisher.py"
+      ],
+      "reason": "共享最终正文发布、协议、取消控制和输出安全。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/output_streaming/__init__.py",
+        "src/common/output_streaming/answer.py",
+        "src/common/output_streaming/controls.py",
+        "src/data_analysis/nodes.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/section_publishing.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.lifecycle",
+        "common.event_ledger.store",
+        "common.identity.runtime",
+        "common.output_streaming.contract",
+        "common.runtime_events"
+      ]
+    },
+    {
+      "source": "src/common/output_streaming/safety.py",
+      "sha256": "b48643e297603c30ea1b128bc580b17d3e9784a132d888caf753b054315e9529",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/output_streaming/safety.py"
+      ],
+      "reason": "共享最终正文发布、协议、取消控制和输出安全。",
+      "direct_static_consumers_within_src": [
+        "src/common/output_streaming/__init__.py",
+        "src/common/output_streaming/answer.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/permission/__init__.py",
+      "sha256": "3bd35b7b79f50036bf53fea9b3e628998303aa3f5a0514517ec1eb03eced4649",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/__init__.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.permission.engine",
+        "common.permission.facts",
+        "common.permission.result",
+        "common.permission.rules",
+        "common.permission.slots"
+      ]
+    },
+    {
+      "source": "src/common/permission/correction_templates.py",
+      "sha256": "ff011adac4b7394aa7bb7c67a9580ac2b391ac3941c005484d9f0106eaad97af",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/correction_templates.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/engine.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/permission/engine.py",
+      "sha256": "b025d336f7ba45e31e021c20cc695e885040d09cdee5789219df33a50b396604",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/engine.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/__init__.py"
+      ],
+      "project_imports": [
+        "common.permission.correction_templates",
+        "common.permission.facts",
+        "common.permission.region",
+        "common.permission.result"
+      ]
+    },
+    {
+      "source": "src/common/permission/facts.py",
+      "sha256": "2ec982985d7e5c2d79d9dca92dd016d7acd317072aac2cc77806f86dda2d18cb",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/facts.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/__init__.py",
+        "src/common/permission/engine.py"
+      ],
+      "project_imports": [
+        "common.permission.slots"
+      ]
+    },
+    {
+      "source": "src/common/permission/mcp_tools.py",
+      "sha256": "06682133ed1c1a36de376331cba6d121917845eb79ef780849f821b976bc1f69",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/mcp_tools.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common",
+        "common.config",
+        "common.mcp_utils"
+      ]
+    },
+    {
+      "source": "src/common/permission/region.py",
+      "sha256": "cd5eaa2dcc65e34160f8f40ccc5f37c579e0b22b9f29f45aa60e7896b1c6737d",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/region.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/engine.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/permission/result.py",
+      "sha256": "bfdf05d409f3dcd582b245d6f22d36fbebd671caacaee71341daae9f9a929d8e",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/result.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/__init__.py",
+        "src/common/permission/engine.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/permission/rules.py",
+      "sha256": "462916150c28656d3f0b7913161994813606d7cc4308303962036a641792e770",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/rules.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/intent.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/permission/__init__.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/permission/slots.py",
+      "sha256": "e4fcd8dc640203ae9d0d8ae275f43847397f3fc6b6b8284480d3030f7cf645c6",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/permission/slots.py"
+      ],
+      "reason": "保留现有确定性领域规则/纯辅助；本次不新增地区门禁或恢复旧鉴权。",
+      "direct_static_consumers_within_src": [
+        "src/common/permission/__init__.py",
+        "src/common/permission/facts.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/prompts.py",
+      "sha256": "20285743dea6c8c83ab24f0a12b9527e730bfbf4309adc375a1ef5598aad82ed",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/common/prompts.py",
+        "src/basic_qa/prompts.py",
+        "src/data_analysis/prompts.py"
+      ],
+      "reason": "保留通用提示片段/领域规则；专属组装归各图，未使用常量不得顺手启用。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/prompting.py",
+        "src/common/tools.py",
+        "src/data_analysis/prompt_builder.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/question_normalizer.py",
+      "sha256": "e730f17eb2dba3d6092d20a63d6eec6e5e233b737cee9188e3f3cccebce477d7",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/question_normalizer.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/skill_router.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/runtime_events.py",
+      "sha256": "f06fd852c0b0731f71894ce40fc246ce16753897ad3982ea9cafa7c10de6acc9",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/runtime_events.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/state.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/computation/tool.py",
+        "src/common/context_preparation.py",
+        "src/common/output_contract.py",
+        "src/common/output_streaming/publisher.py",
+        "src/data_analysis/nodes.py",
+        "src/data_analysis/state.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/common/runtime_tools.py",
+      "sha256": "718bf540f415a548435412946add37751d29fadad53a2b5e9bea3f1484cb4d7a",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/runtime_tools.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_integration.py",
+        "src/common/business_graph/builder.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/tool_recovery.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/capabilities.py",
+        "src/data_analysis/graph.py",
+        "src/data_analysis/nodes.py",
+        "src/data_analysis/prompt_builder.py"
+      ],
+      "project_imports": [
+        "common.artifacts.create_artifact_tool",
+        "common.computation.tool",
+        "common.knowledge.tool",
+        "common.mcp_client",
+        "common.tools"
+      ]
+    },
+    {
+      "source": "src/common/skill_discovery.py",
+      "sha256": "39566a099bebe7a5948553210de1c9017d853c7aef694e6b23bd8da26f050960",
+      "kind": "python-module",
+      "planned_action": "split-retire-legacy",
+      "targets": [
+        "src/common/skills/materials.py"
+      ],
+      "reason": "拆纯读取；旧find_skill单选状态流程核实无生产消费者后退休。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/skill_content.py"
+      ],
+      "project_imports": [
+        "common.context",
+        "common.observability.skill_adapter",
+        "common.skill_router"
+      ]
+    },
+    {
+      "source": "src/common/skill_router.py",
+      "sha256": "c567cdaf6e9aaefd927d4d875c6795718bc2b519a1dd8891a46b2a290253b7ca",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/skill_router.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/builder.py",
+        "src/common/business_graph/mcp_tool_index.py",
+        "src/common/business_graph/mcp_tool_search.py",
+        "src/common/business_graph/nodes.py",
+        "src/common/business_graph/skill_content.py",
+        "src/common/business_graph/skill_search.py",
+        "src/common/middleware/tenant_runtime_guard_middleware.py",
+        "src/common/skill_discovery.py"
+      ],
+      "project_imports": [
+        "common.config",
+        "common.identity.outbound",
+        "common.identity.runtime",
+        "common.question_normalizer"
+      ]
+    },
+    {
+      "source": "src/common/skill_tool_scope.py",
+      "sha256": "0e891d8858deb1f6ad806a3a48a33fdd19f6cb2e46244e18503251283fb7f99a",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/skill_tool_scope.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/basic_qa_runtime.py",
+        "src/common/business_graph/session_capabilities.py",
+        "src/common/business_graph/skill_materials.py",
+        "src/common/capabilities.py"
+      ],
+      "project_imports": [
+        "common.business_registry"
+      ]
+    },
+    {
+      "source": "src/common/storage/__init__.py",
+      "sha256": "81330a7fadd0de3d1533e1b15a3b816396c0d7df4e7e667c37d5e0cecdb3847f",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/storage/__init__.py"
+      ],
+      "reason": "跨图作用域化工件存储。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.storage.artifact_db"
+      ]
+    },
+    {
+      "source": "src/common/storage/artifact_db.py",
+      "sha256": "8f9759fdcb55ec7ead3db66a0c4c91a70bb804efbe7af18aad9b836309ea2e7b",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/storage/artifact_db.py"
+      ],
+      "reason": "跨图作用域化工件存储。",
+      "direct_static_consumers_within_src": [
+        "src/common/artifact_http.py",
+        "src/common/business_graph/tool_wrappers.py",
+        "src/common/computation/tool.py",
+        "src/common/data_governance.py",
+        "src/common/storage/__init__.py",
+        "src/common/turn_tool_governance.py",
+        "src/intelligent_tracing/report_store.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.config"
+      ]
+    },
+    {
+      "source": "src/common/text_reduction.py",
+      "sha256": "5f9686ef6933d1b26df535b896ad5b7e0c7bf84cb7e5dc59fab2bd820bf5b51d",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/text_reduction.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/subagent_summarizer.py",
+        "src/common/conversation_summarizer.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.config",
+        "common.identity.runtime",
+        "common.model_budget",
+        "common.models",
+        "common.observability.model_adapter"
+      ]
+    },
+    {
+      "source": "src/common/tools.py",
+      "sha256": "d378e34f54b4c889c6ece733c211834faf95851a7de859155ff82d7fc1ade5a0",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/common/tools.py"
+      ],
+      "reason": "通用机制或领域叶子辅助保留现有归属；不得新增图专属状态控制。",
+      "direct_static_consumers_within_src": [
+        "src/common/runtime_tools.py"
+      ],
+      "project_imports": [
+        "common.config",
+        "common.models",
+        "common.observability.model_adapter",
+        "common.prompts"
+      ]
+    },
+    {
+      "source": "src/common/turn_tool_governance.py",
+      "sha256": "6b8baf700fc97a5ee68313c220fdbfc572de664b25f73467262e17e7989930e7",
+      "kind": "python-module",
+      "planned_action": "split",
+      "targets": [
+        "src/basic_qa/context/tool_results.py",
+        "src/data_analysis/context/tool_results.py",
+        "src/common/tool_execution/results.py"
+      ],
+      "reason": "资料治理编排/写回归各图，通用归档留公共。",
+      "direct_static_consumers_within_src": [
+        "src/common/business_graph/nodes.py",
+        "src/common/context_preparation.py"
+      ],
+      "project_imports": [
+        "common.artifact_scope",
+        "common.business_graph.subagent_summarizer",
+        "common.config",
+        "common.context",
+        "common.data_manifest",
+        "common.storage.artifact_db"
+      ]
+    },
+    {
+      "source": "src/data_analysis/__init__.py",
+      "sha256": "6ed69bfb566c6bbaf9f9a68178fd9f32332fbdfa7a392aae4da000a0d8fdc5a3",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/data_analysis/__init__.py"
+      ],
+      "reason": "保留封存图业务实现、入口及菜单；实施时只做归属和引用兼容。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/data_analysis/graph.py",
+      "sha256": "8157f2646173a3371d9a5a8fb1a6e9722f72830280a0d2bb8f54565601a64371",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/data_analysis/graph.py"
+      ],
+      "reason": "保留封存图业务实现、入口及菜单；实施时只做归属和引用兼容。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.business_graph.tool_wrappers",
+        "common.event_ledger.lifecycle",
+        "common.langfuse_tracing",
+        "common.runtime_tools",
+        "data_analysis.nodes",
+        "data_analysis.state"
+      ]
+    },
+    {
+      "source": "src/data_analysis/menu_skill_mapping.py",
+      "sha256": "34359bd53241deb03049049aab1d9cec33d8d00a5159a65d52a3648baeaf3583",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/data_analysis/menu_skill_mapping.py"
+      ],
+      "reason": "保留封存图业务实现、入口及菜单；实施时只做归属和引用兼容。",
+      "direct_static_consumers_within_src": [
+        "src/common/capabilities.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/data_analysis/nodes.py",
+      "sha256": "63ca3f0ed311a2c25ae2c98198aec8e5f0bf65edd0d0d79ff5e478f8db1c9b3f",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/data_analysis/nodes.py"
+      ],
+      "reason": "保留封存图业务实现、入口及菜单；实施时只做归属和引用兼容。",
+      "direct_static_consumers_within_src": [
+        "src/data_analysis/graph.py"
+      ],
+      "project_imports": [
+        "common.business_graph.tool_recovery",
+        "common.capabilities",
+        "common.config",
+        "common.context",
+        "common.context_preparation",
+        "common.data_governance",
+        "common.input_limits",
+        "common.knowledge.policy",
+        "common.model_budget",
+        "common.model_errors",
+        "common.models",
+        "common.observability.model_adapter",
+        "common.observability.skill_adapter",
+        "common.output_contract",
+        "common.output_streaming.answer",
+        "common.output_streaming.controls",
+        "common.output_streaming.publisher",
+        "common.runtime_events",
+        "common.runtime_tools",
+        "common.text_reduction",
+        "data_analysis.menu_skill_mapping",
+        "data_analysis.prompt_builder",
+        "data_analysis.state"
+      ]
+    },
+    {
+      "source": "src/data_analysis/prompt_builder.py",
+      "sha256": "1247c591af16dcba490c8861c1d3014ba3d85f945a74755c1930f96a779d2b44",
+      "kind": "python-module",
+      "planned_action": "rename",
+      "targets": [
+        "src/data_analysis/prompts.py"
+      ],
+      "reason": "统一图内提示组装命名并吸收专属公共提示；正文行为不变。",
+      "direct_static_consumers_within_src": [
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.computation",
+        "common.context",
+        "common.prompts",
+        "common.runtime_tools"
+      ]
+    },
+    {
+      "source": "src/data_analysis/state.py",
+      "sha256": "853e60af494490e68c39351882bb06df1f606f7e5ee56a03827d72ffbd21747a",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/data_analysis/state.py"
+      ],
+      "reason": "保留封存图业务实现、入口及菜单；实施时只做归属和引用兼容。",
+      "direct_static_consumers_within_src": [
+        "src/data_analysis/graph.py",
+        "src/data_analysis/nodes.py"
+      ],
+      "project_imports": [
+        "common.runtime_events"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/__init__.py",
+      "sha256": "9f880f9c113a050f4c5abbbcd1cee2c049c47c9c517c7e79a2d2026c87eeb016",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/__init__.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/intelligent_tracing/claims.py",
+      "sha256": "e45897ef248fb0faa5bcf417bc742279bba22e322ebd904596d989886aa44844",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/claims.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/gate.py",
+        "src/intelligent_tracing/orchestrator.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.policy",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/conversation.py",
+      "sha256": "43fe2f9a59f7689b0dce87db74b8b2c235926b1855e4a8888ab1f2795b86b348",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/conversation.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/turn_routing.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.policy",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/data_access.py",
+      "sha256": "fe780d0665a6ec27386c2a8af5eea82646e0d9dbe26999d18003b21772810b6c",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/data_access.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.identity.runtime",
+        "common.mcp_authorization",
+        "common.mcp_scoped",
+        "intelligent_tracing.data_windows",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.runtime",
+        "intelligent_tracing.schemas",
+        "intelligent_tracing.sources"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/data_windows.py",
+      "sha256": "0a01625e849b4a65874e85eb9196e395941520ea2aa68323f10e0c43ad24db65",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/data_windows.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/data_access.py",
+        "src/intelligent_tracing/station_analysis.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.policy",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/evaluation.py",
+      "sha256": "dead521591a8e16d5c311279c060924f091b8f13f706c776dcffe6bcf39aa8c4",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/evaluation.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/station_analysis.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/evidence.py",
+      "sha256": "d0a535297b56c03583118856fa48ae3774c617f788c349f40a4f0f032acb3ca6",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/evidence.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/evaluation.py",
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/gate.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/meteo_analysis.py",
+        "src/intelligent_tracing/orchestrator.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/section_publishing.py",
+        "src/intelligent_tracing/spatial_analysis.py",
+        "src/intelligent_tracing/station_analysis.py",
+        "src/intelligent_tracing/subagents.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/experiments.py",
+      "sha256": "c4c8f3988ec916f53b95eaf2afa44769f3808f67bbead58606dd78954b28137d",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/experiments.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.middleware.tenant_runtime_guard_middleware",
+        "common.observability.middleware",
+        "intelligent_tracing.claims",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.gate",
+        "intelligent_tracing.guards",
+        "intelligent_tracing.orchestrator",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.report_store",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/gate.py",
+      "sha256": "54814cd846a8bb16852d96d9cf1ca8cfa4022ff23e42692257d20f31e3cac55a",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/gate.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/section_publishing.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.claims",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/graph.py",
+      "sha256": "ebe57a0d47709cd8b827156443b4bfb257c5c306b5cd9ad0c9694ad8cf51c727",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/graph.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": [
+        "common.event_ledger.lifecycle",
+        "common.knowledge.tool",
+        "common.langfuse_tracing",
+        "common.middleware",
+        "common.model_capacity",
+        "common.models",
+        "common.observability.middleware",
+        "intelligent_tracing.conversation",
+        "intelligent_tracing.data_access",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.gate",
+        "intelligent_tracing.guards",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.publishing",
+        "intelligent_tracing.report_store",
+        "intelligent_tracing.schemas",
+        "intelligent_tracing.sources",
+        "intelligent_tracing.state",
+        "intelligent_tracing.subagents",
+        "intelligent_tracing.tools",
+        "intelligent_tracing.turn_routing"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/guards.py",
+      "sha256": "f5d2ec83524c1489dadd3d0ba66500034178d78d432ed83fab4b376f15677166",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/guards.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/subagents.py"
+      ],
+      "project_imports": [
+        "common.context",
+        "common.identity.runtime",
+        "common.input_limits",
+        "common.model_budget",
+        "common.model_capacity",
+        "common.observability.deepagents_adapter",
+        "intelligent_tracing.policy"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/meteo_analysis.py",
+      "sha256": "3f9ac089324a6b187fda44a8945f1161df256c41b3050a9e4bea599772ddf44c",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/meteo_analysis.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/orchestrator.py",
+        "src/intelligent_tracing/subagents.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.quality",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/multi_pollutant.py",
+      "sha256": "9ec070b4d8fa1d5b828076370b03c41bf4efeb1834b7df310fd964244e9a2a85",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/multi_pollutant.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [],
+      "project_imports": []
+    },
+    {
+      "source": "src/intelligent_tracing/orchestrator.py",
+      "sha256": "1a7a6c4d082e17a64464594234a76d5b4bc1155ac56d7e06e79a3965c69d2af4",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/orchestrator.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/experiments.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.claims",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.meteo_analysis",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.process_assessment",
+        "intelligent_tracing.schemas",
+        "intelligent_tracing.spatial_analysis",
+        "intelligent_tracing.station_analysis"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/policy.py",
+      "sha256": "591ee0da11a56a37fda4126734cc8a6b72309ceea5db317ef9949c05b980baf9",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/policy.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/claims.py",
+        "src/intelligent_tracing/conversation.py",
+        "src/intelligent_tracing/data_access.py",
+        "src/intelligent_tracing/data_windows.py",
+        "src/intelligent_tracing/evaluation.py",
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/gate.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/guards.py",
+        "src/intelligent_tracing/meteo_analysis.py",
+        "src/intelligent_tracing/orchestrator.py",
+        "src/intelligent_tracing/process_assessment.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/quality.py",
+        "src/intelligent_tracing/request.py",
+        "src/intelligent_tracing/sources.py",
+        "src/intelligent_tracing/spatial_analysis.py",
+        "src/intelligent_tracing/station_analysis.py",
+        "src/intelligent_tracing/subagents.py",
+        "src/intelligent_tracing/tools.py",
+        "src/intelligent_tracing/turn_routing.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/intelligent_tracing/process_assessment.py",
+      "sha256": "045114c15e4a0bd624449ef0e0edd3a833d1afece3adc4f7eeffbaf3c015f773",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/process_assessment.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/orchestrator.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.policy",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/publishing.py",
+      "sha256": "acbfc4fd12a965cec577c3387a78bda9991952dff290a52998ae2be7d6ec201f",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/publishing.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/graph.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.lifecycle",
+        "common.event_ledger.store",
+        "common.identity.runtime",
+        "common.knowledge.policy",
+        "common.output_streaming.controls",
+        "common.output_streaming.publisher",
+        "intelligent_tracing.claims",
+        "intelligent_tracing.conversation",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.gate",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.process_assessment",
+        "intelligent_tracing.report_store",
+        "intelligent_tracing.runtime",
+        "intelligent_tracing.schemas",
+        "intelligent_tracing.section_publishing",
+        "intelligent_tracing.subagents",
+        "intelligent_tracing.tools",
+        "intelligent_tracing.turn_routing"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/quality.py",
+      "sha256": "30437d59b74010dcaec135f61b7ae3bb0934e53fbd6cbd55bff0122c591b031f",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/quality.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/meteo_analysis.py",
+        "src/intelligent_tracing/spatial_analysis.py",
+        "src/intelligent_tracing/station_analysis.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.policy",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/report_store.py",
+      "sha256": "3f67db850a633e3ca73b699805110cddd815930169112f217a02805c2e43aed6",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/report_store.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/section_publishing.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.storage.artifact_db",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/request.py",
+      "sha256": "aa89f34f643397f40ce2135fe7e9202ba93a5f5eea74ba1a3d3fd20c3214a633",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/request.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.policy",
+        "intelligent_tracing.runtime",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/runtime.py",
+      "sha256": "f820d69966633cc486d1c4a8acc1d6dc9ecc41ea3d2d079666d78b7671fef17d",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/runtime.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/data_access.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/request.py",
+        "src/intelligent_tracing/sources.py",
+        "src/intelligent_tracing/tools.py",
+        "src/intelligent_tracing/turn_routing.py"
+      ],
+      "project_imports": [
+        "common.business_registry",
+        "common.identity.runtime",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/schemas.py",
+      "sha256": "b85bbd118190986bfc1ce33bb2362dc9eaa5a17ba5d3e5428ddf9b824b54a572",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/schemas.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/claims.py",
+        "src/intelligent_tracing/conversation.py",
+        "src/intelligent_tracing/data_access.py",
+        "src/intelligent_tracing/data_windows.py",
+        "src/intelligent_tracing/evaluation.py",
+        "src/intelligent_tracing/evidence.py",
+        "src/intelligent_tracing/experiments.py",
+        "src/intelligent_tracing/gate.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/meteo_analysis.py",
+        "src/intelligent_tracing/orchestrator.py",
+        "src/intelligent_tracing/process_assessment.py",
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/quality.py",
+        "src/intelligent_tracing/report_store.py",
+        "src/intelligent_tracing/request.py",
+        "src/intelligent_tracing/runtime.py",
+        "src/intelligent_tracing/section_publishing.py",
+        "src/intelligent_tracing/sources.py",
+        "src/intelligent_tracing/spatial_analysis.py",
+        "src/intelligent_tracing/state.py",
+        "src/intelligent_tracing/station_analysis.py",
+        "src/intelligent_tracing/subagents.py",
+        "src/intelligent_tracing/tools.py",
+        "src/intelligent_tracing/turn_routing.py"
+      ],
+      "project_imports": []
+    },
+    {
+      "source": "src/intelligent_tracing/section_publishing.py",
+      "sha256": "f7253fa679c967633744b12206d7f2658caa569aa8f848ac90fafd9d00f4b7b4",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/section_publishing.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/publishing.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.output_streaming.contract",
+        "common.output_streaming.publisher",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.gate",
+        "intelligent_tracing.report_store",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/sources.py",
+      "sha256": "fd00345353b4f589cf8f763b7cdc829a926e9ab05ca0c28b5ee2f81df31f8935",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/sources.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/data_access.py",
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/subagents.py",
+        "src/intelligent_tracing/tools.py"
+      ],
+      "project_imports": [
+        "common.identity.runtime",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.runtime",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/spatial_analysis.py",
+      "sha256": "aa54923db4a62d10008c76c9cb357e4982d1152d92726e5500169a0a0c51a21a",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/spatial_analysis.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/orchestrator.py",
+        "src/intelligent_tracing/subagents.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.quality",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/state.py",
+      "sha256": "e8df4039b6a6cb2b35a95144d8ad0787b69aa4f69b1c338b9ea7ba4f7ccfd1bd",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/state.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/graph.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/station_analysis.py",
+      "sha256": "c79afc0aeac14a94cd841633831c60914051b75f729eb96541aedb6c3f7ed60e",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/station_analysis.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/orchestrator.py",
+        "src/intelligent_tracing/subagents.py"
+      ],
+      "project_imports": [
+        "intelligent_tracing.data_windows",
+        "intelligent_tracing.evaluation",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.quality",
+        "intelligent_tracing.schemas"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/subagents.py",
+      "sha256": "817c60e07785d4029df91e04f1708930bf1ec53f5879a861dbc03956cb449161",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/subagents.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/publishing.py"
+      ],
+      "project_imports": [
+        "common.middleware.tenant_runtime_guard_middleware",
+        "common.model_capacity",
+        "common.observability.middleware",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.guards",
+        "intelligent_tracing.meteo_analysis",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.schemas",
+        "intelligent_tracing.sources",
+        "intelligent_tracing.spatial_analysis",
+        "intelligent_tracing.station_analysis"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/tools.py",
+      "sha256": "9de8e2231f677709316b31eba6884ab55a0b8e96b449447164e54c1db14a66d9",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/tools.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/publishing.py"
+      ],
+      "project_imports": [
+        "common.event_ledger.lifecycle",
+        "common.identity.runtime",
+        "common.knowledge.store",
+        "common.knowledge.validation",
+        "common.storage.artifact_db",
+        "intelligent_tracing.claims",
+        "intelligent_tracing.data_access",
+        "intelligent_tracing.evidence",
+        "intelligent_tracing.gate",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.process_assessment",
+        "intelligent_tracing.report_store",
+        "intelligent_tracing.request",
+        "intelligent_tracing.runtime",
+        "intelligent_tracing.schemas",
+        "intelligent_tracing.section_publishing",
+        "intelligent_tracing.sources"
+      ]
+    },
+    {
+      "source": "src/intelligent_tracing/turn_routing.py",
+      "sha256": "d1b3a79ad6c070a8eac2122c5f10cd1817abfbf376db33a35fa0ab6385008e40",
+      "kind": "python-module",
+      "planned_action": "retain",
+      "targets": [
+        "src/intelligent_tracing/turn_routing.py"
+      ],
+      "reason": "保持Deep Agents本图职责和上下文结构，仅允许受影响公共引用更新。",
+      "direct_static_consumers_within_src": [
+        "src/intelligent_tracing/graph.py",
+        "src/intelligent_tracing/publishing.py"
+      ],
+      "project_imports": [
+        "common.observability.context",
+        "intelligent_tracing.conversation",
+        "intelligent_tracing.policy",
+        "intelligent_tracing.runtime",
+        "intelligent_tracing.schemas"
+      ]
+    }
+  ],
+  "boundary_consumers": [
+    {
+      "source": "admin/api/app/services/ledger.py",
+      "sha256": "a8e12eff5edba3953b02e10886c3bf0dfe04867d897372bf364c48734ae96536",
+      "planned_action": "adapt-composition-or-contract-consumer",
+      "reason": "受理接同一图策略/材料源；菜单加载/匹配/类型异常必须失败关闭，移除except Exception: pass旁路，记录既有安全缺陷修复差异。"
+    },
+    {
+      "source": "admin/api/app/main.py",
+      "sha256": "d89e78d513ba12d3b5453036dc7f7b42d6423efcfb492c8d9fa3e589b5624dbc",
+      "planned_action": "adapt-composition-or-contract-consumer",
+      "reason": "受理／装配／入口声明必须与各图策略及公共接口同步；不重构管理UI、不改外部仓库。"
+    },
+    {
+      "source": "admin/api/app/routers/ledger.py",
+      "sha256": "3cbda11c5af8d02901417ee378d51a5f64da7c2cd4f812f4a617386f36f8ea70",
+      "planned_action": "adapt-composition-or-contract-consumer",
+      "reason": "受理／装配／入口声明必须与各图策略及公共接口同步；不重构管理UI、不改外部仓库。"
+    },
+    {
+      "source": "langgraph.json",
+      "sha256": "2d129b102b18fd0f738cbdd8178acf272fdee31f7978b8c3a88f3492231206f4",
+      "planned_action": "adapt-composition-or-contract-consumer",
+      "reason": "受理／装配／入口声明必须与各图策略及公共接口同步；不重构管理UI、不改外部仓库。"
+    },
+    {
+      "source": "Dockerfile",
+      "sha256": "875dacc5814e5e78e10c06e1c4d1a314a9e3111cf44f459a1d9ad38a8bde3108",
+      "planned_action": "adapt-composition-or-contract-consumer",
+      "reason": "受理／装配／入口声明必须与各图策略及公共接口同步；不重构管理UI、不改外部仓库。"
+    },
+    {
+      "source": "docker-compose.yaml",
+      "sha256": "6291b216c2fe59cd4307d4520e289795f3d3eddce90da2ec99e5c7000b973bba",
+      "planned_action": "adapt-composition-or-contract-consumer",
+      "reason": "受理／装配／入口声明必须与各图策略及公共接口同步；不重构管理UI、不改外部仓库。"
+    }
+  ]
+}

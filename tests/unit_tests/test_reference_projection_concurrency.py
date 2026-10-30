@@ -104,9 +104,8 @@ async def test_projection_failure_still_fails_closed(api):
 async def test_every_resolution_rechecks_iam_and_commits_before_new_scope(
     api, monkeypatch
 ):
-    from test_remote_identity_client import _identity_payload
-
     from common.identity import remote
+    from tests.unit_tests.test_remote_identity_client import _identity_payload
 
     module, db = api
     payload = _identity_payload()

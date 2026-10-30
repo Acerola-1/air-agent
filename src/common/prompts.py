@@ -102,18 +102,6 @@ DATA_AUTHENTICITY_GUARD = """
 """.strip()
 
 
-DATA_ANALYSIS_OUTPUT_GUARD = """
-## 输出格式要求
-- 使用 Markdown 输出，结论先行，层级清晰，内容简洁专业。
-- 当前回答服务于用户已打开的可视化页面，只做页面数据的伴随分析，不复刻页面已有图表、表格、排名或明细。
-- 默认使用短段落和要点总结，优先提炼趋势、异常、差距、风险、原因线索和必要建议。
-- 表格仅用于小规模关键对比：最多 4 列、6 行数据；不得输出长表格、大明细表或完整原始数据表。页面已有明细较多时，改用要点摘要、Top/Bottom 项、异常项或区间概括。
-
-## 用户可见输出约束
-- 只允许输出结论、依据、关键数据、风险提示和必要建议。
-- 如果上下文中不存在有效数据，简短回复"没有获取到必要数据，请稍后重试。"
-- 不得输出工具调用过程、执行进度、失败重试、错误状态码(如502、500)、超时提示、内部实现名词(如skill、工具名、JSON、SQL、路径、MCP等)。工具返回错误时，仅用业务语言说明"暂未获取到相关数据"并基于已有数据继续分析。
-""".strip()
 
 
 ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE = """
@@ -235,33 +223,8 @@ PM2.5 旧边界(日均/小时)：
 """.strip()
 
 
-def with_main_agent_tool_use_output_guard(system_prompt: str) -> str:
-    """将主 Agent 共享输出约束追加到业务图系统提示词."""
-    return (
-        f"{system_prompt.strip()}\n\n"
-        f"{DATA_AUTHENTICITY_GUARD}\n\n"
-        f"{ANTI_PROCESS_RESIDUE_GUARD}\n\n"
-        f"{MAIN_AGENT_TOOL_USE_OUTPUT_GUARD}\n\n"
-        f"{ARTIFACT_GENERATION_GUIDE}\n\n"
-        f"{ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE}\n\n"
-        f"{TIME_PARAMETER_NORMALIZATION_GUIDE}\n\n"
-        f"{DATA_DELAY_RETRY_GUIDE}\n\n"
-        f"{AIR_QUALITY_UNIT_NORMALIZATION_GUIDE}\n\n"
-        f"{POLLUTANT_LEVEL_BOUNDARY_GUIDE}"
-    )
 
 
-def with_data_analysis_output_guard(system_prompt: str) -> str:
-    """将数据分析页面伴随输出约束追加到业务图系统提示词."""
-    return (
-        f"{system_prompt.strip()}\n\n"
-        f"{DATA_AUTHENTICITY_GUARD}\n\n"
-        f"{ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE}\n\n"
-        f"{TIME_PARAMETER_NORMALIZATION_GUIDE}\n\n"
-        f"{DATA_DELAY_RETRY_GUIDE}\n\n"
-        f"{AIR_QUALITY_UNIT_NORMALIZATION_GUIDE}\n\n"
-        f"{POLLUTANT_LEVEL_BOUNDARY_GUIDE}"
-    )
 
 
 FAST_MODE_SYSTEM_PROMPT = """
@@ -596,7 +559,6 @@ __all__ = [
     # 主 Agent 约束
     "MAIN_AGENT_TOOL_USE_OUTPUT_GUARD",
     "DATA_AUTHENTICITY_GUARD",
-    "DATA_ANALYSIS_OUTPUT_GUARD",
     "ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE",
     "TIME_PARAMETER_NORMALIZATION_GUIDE",
     "TIME_PARAMETER_NORMALIZATION_GUIDE",
@@ -605,7 +567,6 @@ __all__ = [
     "POLLUTANT_LEVEL_BOUNDARY_GUIDE",
     "FAST_MODE_SYSTEM_PROMPT",
     "EXPERT_MODE_SYSTEM_PROMPT",
-    "with_main_agent_tool_use_output_guard",
     "ARTIFACT_GENERATION_GUIDE",
     # 行政区划
     "region_extraction_prompt",

@@ -1,0 +1,151 @@
+# 工具范围与检索评审清单
+
+日期：2026-10-28；源码基线：`business_registry.py`当前登记。此文仅记录计划范围，不表示服务在线或接口执行已验证。
+
+## 范围定义
+
+原Basic QA登记21项；拟检索目录采用公共已审核查询清单109项，新增88项，运行时继续与有效部署连接、实际发现和受理范围取交集。不是向模型一次暴露109项，也不是自动接受服务后来新增的工具。
+
+完整清单排序后以换行连接的SHA-256：`41c411b97375e4318c477ca37ca82b1b0fe4d4ee31fbd4e874091b8b34cc6c42`。稳定ID统一为`mcp:ipp:<原工具名>`；此处只记录名称，不含服务地址或秘密。
+
+## 当前Basic QA的21项
+
+```text
+broadcastHour
+cityFactorRankings
+helper_get_latest_time
+integratedIndexRatio
+mcp_city_analysis_calculations
+mcp_city_analysis_compliance_prediction
+mcp_city_common_get_air_quality_forecast
+mcp_city_common_get_air_quality_realtime_stat
+mcp_station_base_air_station_list
+mcp_station_base_get_info_by_code_name
+mcp_station_base_lng_lat_near_national_province_station
+mcp_station_base_range_site_list
+mcp_station_common_air_data
+mcp_station_common_air_quality_forecast
+mcp_weather_forecast_daily
+mcp_weather_forecast_daily_history
+mcp_weather_forecast_hourly
+mcp_weather_forecast_hourly_history
+oneIndexManyCityLine
+text2sql_city_indexes_month_and_year
+text2sql_monthly_and_yearly_city_comparison
+```
+
+## 拟新增的88项
+
+```text
+compositeIndexSixFactorRatio
+concentration_ranking
+helper_getLatestTime2
+mcp_city_analysis_border
+mcp_city_analysis_boxPlot
+mcp_city_analysis_calendar_day
+mcp_city_analysis_calendar_month
+mcp_city_analysis_calendar_year
+mcp_city_analysis_concentrationContrastBar
+mcp_city_analysis_concentrationRation
+mcp_city_analysis_correlation
+mcp_city_analysis_monitor
+mcp_city_analysis_nationalOrder
+mcp_city_analysis_nationalOrderCompareBar
+mcp_city_analysis_nationalOrderContrastBar
+mcp_city_analysis_nationalOrderPercentage
+mcp_city_analysis_oneIndexManyCity24HourMean
+mcp_city_analysis_regionCviRadar
+mcp_city_analysis_timeCviRadarPie
+mcp_city_base_get_child_district_by_parent
+mcp_city_base_get_district_by_lnglat
+mcp_city_base_get_parent_district_by_child
+mcp_city_common_area_city_ranking
+mcp_city_common_area_multi_ranking
+mcp_city_common_area_province_ranking
+mcp_city_common_city_area_ranking
+mcp_city_common_factor_area_ranking
+mcp_city_common_factor_province_ranking
+mcp_grid_base_around_grids
+mcp_grid_base_grid_by_station_proximity
+mcp_grid_base_grid_info_by_code
+mcp_grid_base_grid_info_by_codes
+mcp_grid_base_grid_info_by_hash
+mcp_grid_base_grid_list_by_region
+mcp_grid_base_latest_time
+mcp_grid_base_region_tree
+mcp_grid_common_abnormal_grid_statistics
+mcp_grid_common_air_data
+mcp_grid_common_alarm_area_count
+mcp_grid_common_alarm_data
+mcp_grid_common_alarm_grid_count
+mcp_grid_common_area_mma_data
+mcp_grid_common_area_monitor_data_page
+mcp_grid_common_grid_base_data
+mcp_grid_common_grid_statistics
+mcp_grid_common_grid_type_status
+mcp_grid_common_hot_grid_list
+mcp_grid_common_hot_grid_ranking_panel
+mcp_grid_common_hourly_alarm
+mcp_grid_common_left_panel
+mcp_grid_common_low_improve_alarm
+mcp_grid_common_monitor_data_page
+mcp_grid_common_push_grid
+mcp_grid_common_regularity_alarm
+mcp_grid_common_repeatability_alarm
+mcp_station_analysis_anomaly_map
+mcp_station_analysis_box_plot
+mcp_station_analysis_broadcast_hour
+mcp_station_analysis_calendar_day
+mcp_station_analysis_calendar_month
+mcp_station_analysis_calendar_year
+mcp_station_analysis_concentration_ranking
+mcp_station_analysis_concentration_ratio
+mcp_station_analysis_concentration_table
+mcp_station_analysis_correlation
+mcp_station_analysis_cvi_radar_pie
+mcp_station_analysis_cvi_radar_time
+mcp_station_analysis_evaluation_month
+mcp_station_analysis_history_pscf
+mcp_station_analysis_index_ranking
+mcp_station_analysis_index_stations_24h_avg
+mcp_station_analysis_integrated_index_bar
+mcp_station_analysis_integrated_index_pie
+mcp_station_analysis_integrated_index_table
+mcp_station_analysis_one_index_multi_station_line
+mcp_station_analysis_one_station_multi_index_line
+mcp_station_analysis_single_pscf
+mcp_station_analysis_trajectory
+mcp_station_common_air_real_data
+mcp_station_common_good_days_query
+mcp_station_common_lng_lat_scope_air_data
+mcp_weather_numeric_forecast
+mcp_weather_numeric_forecast_history
+mcp_weather_nwp_city_forecas
+mcp_weather_nwp_city_history
+primaryPollutantProportionAnaly
+text2sql_today_single_city_aqi_route
+text2sql_yesterday_single_index_aqi_route
+```
+
+## 固定检索种子与独立工具验收目标
+
+B03固定使用坐标反查行政区工具；当前九Skill材料未引用它，且它不在原21项中。B02固定为“查询湖州今天空气质量，并核对坐标（120.15,30.27）所属行政区”，基础查询Skill处理主任务，独立工具仅补行政区核对。坐标用于测试输入，不是用户私有位置或真实监测结果。
+
+以下为按登记用途确定的检索种子和预期候选ID，不是接口返回字段合同；实施时读取真实工具说明／schema，冻结参数及人工可接受工具集合，再运行Recall@3。若实际工具不支持题目或服务不可用，保留差异并报告，不能用偷偷更换目标工具或gold来制造通过。B06是检索评测，包含已有Skill覆盖题用于测召回，不代表运行时绕开Skill。
+
+- **B03/B06-01**：按坐标反查行政区，用于核对监测点位置。预期候选：`mcp:ipp:mcp_city_base_get_district_by_lnglat`。
+- **B06-02**：查询某城市下辖区县列表。预期候选：`mcp:ipp:mcp_city_base_get_child_district_by_parent`。
+- **B06-03**：查询某行政区的上级行政区。预期候选：`mcp:ipp:mcp_city_base_get_parent_district_by_child`。
+- **B06-04**：查询站点一个月内的优良天数。预期候选：`mcp:ipp:mcp_station_common_good_days_query`。
+- **B06-05**：给定网格编码查询网格资料。预期候选：`mcp:ipp:mcp_grid_base_grid_info_by_code`。
+- **B06-06**：查询指定行政区的网格列表。预期候选：`mcp:ipp:mcp_grid_base_grid_list_by_region`。
+- **B06-07**：查询网格空气质量数据。预期候选：`mcp:ipp:mcp_grid_common_air_data`。
+- **B06-08**：查找某站点附近网格。预期候选：`mcp:ipp:mcp_grid_base_grid_by_station_proximity`。
+- **B06-09**：查询某区域告警网格数量。预期候选：`mcp:ipp:mcp_grid_common_alarm_grid_count`。
+- **B06-10**：查询某城市空气质量预报。预期候选：`mcp:ipp:mcp_city_common_get_air_quality_forecast`。
+- **B06-11**：查询城市历史逐小时气象数据。预期候选：`mcp:ipp:mcp_weather_forecast_hourly_history`。
+- **B06-12**：查询站点实时空气质量。预期候选：`mcp:ipp:mcp_station_common_air_real_data`。
+
+## 不随目录扩展发生的事情
+
+不新增MCP连接、人员工具授权或地区权限；不恢复data-analysis开发；不自动启动intelligent-tracing报告；不新增供应商响应时间／城市／指标字段门禁。缺少某Skill不阻止独立工具加载，缺少当前业务或连接许可仍按现有规则处理。

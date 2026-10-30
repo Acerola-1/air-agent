@@ -1,0 +1,16 @@
+{
+  "dataset_version": "bqa-session-capabilities-v2",
+  "head": null,
+  "source_diff_sha256": null,
+  "clock": null,
+  "model_config_fingerprint": null,
+  "evidence_kind": null,
+  "case_id": null,
+  "status": "NOT_RUN",
+  "commands": [],
+  "evidence_paths": [],
+  "turns": [],
+  "turn_fields": ["input_id", "first_pass_completed", "recovered_completed", "incomplete", "user_visible_error", "search_skills", "search_mcp", "embedding_documents", "embedding_queries", "load_skill", "load_mcp_tool", "activated", "reused", "model_requests", "logical_tool_calls", "network_attempts", "parameter_assertions", "material_versions", "schema_versions", "first_answer_ms", "total_ms", "usage"],
+  "unknown_value_policy": "未采集填null，不记零；保留所有失败与原始证据。",
+  "limitations": []
+}

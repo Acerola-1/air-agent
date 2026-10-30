@@ -29,7 +29,9 @@ description: |
     - 去年全年某县在某市县域考核中的位次及PM2.5同比？
     - 本季度某县空气质量考核排名和综合得分？
 
-allowed-tools: helper_get_latest_time cityFactorRankings mcp_city_common_get_air_quality_realtime_stat
+allowed-tools: helper_get_latest_time cityFactorRankings mcp_city_common_get_air_quality_realtime_stat chart_city_factor_rankings
+required-tools: helper_get_latest_time cityFactorRankings mcp_city_common_get_air_quality_realtime_stat
+optional-tools: chart_city_factor_rankings
 ---
 
 # 排名评估查询

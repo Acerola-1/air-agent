@@ -127,6 +127,7 @@ async def stream_final_answer(
     question: str = "",
     force_policy_bound: bool = False,
     invocation_metadata: dict[str, Any] | None = None,
+    disable_tool_calls: bool = False,
 ) -> StreamAnswerResult:
     """Generate the final answer once and publish verified increments.
 
@@ -141,10 +142,20 @@ async def stream_final_answer(
     }
     if invocation_metadata:
         extra_config["metadata"] = dict(invocation_metadata)
+    # Omission of schemas alone does not tell every OpenAI-compatible provider
+    # to stop generating tool calls from history. Final-only callers can state
+    # that contract in the API request as well as in their system instruction.
+    model_kwargs = {"tool_choice": "none"} if disable_tool_calls else {}
 
     if policy_bound:
         result = await _stream_policy_bound(
-            model, messages, config, publisher, policy_context, extra_config
+            model,
+            messages,
+            config,
+            publisher,
+            policy_context,
+            extra_config,
+            model_kwargs,
         )
         return result
 
@@ -156,7 +167,9 @@ async def stream_final_answer(
 
     source = None
     try:
-        source = model.astream(messages, config={**config, **extra_config})
+        source = model.astream(
+            messages, config={**config, **extra_config}, **model_kwargs
+        )
         async for chunk in source:
             if isinstance(chunk, AIMessageChunk):
                 usage = _usage_from_chunk(chunk, usage)
@@ -360,11 +373,14 @@ async def _stream_policy_bound(
     publisher: OutputPublisher,
     policy_context: list[AnyMessage],
     extra_config: dict[str, Any],
+    model_kwargs: dict[str, Any],
 ) -> StreamAnswerResult:
     """Buffered single unit for questions that require exact source wording."""
     publisher.start()
     try:
-        response = await model.ainvoke(messages, config={**config, **extra_config})
+        response = await model.ainvoke(
+            messages, config={**config, **extra_config}, **model_kwargs
+        )
     except Exception as exc:  # noqa: BLE001
         if is_context_overflow(exc):
             # 尚未发布正文：交给调用方整理并只重发这一次模型调用。

@@ -84,6 +84,7 @@ test('enabled types equal core plus browser and runtime', () => {
     'run.cancel_requested',
     'run.resumed',
     'run.state_observed',
+    'runtime.capability',
     'runtime.cost',
     'runtime.model_usage',
     'runtime.span',

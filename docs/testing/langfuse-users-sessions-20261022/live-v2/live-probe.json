@@ -1,0 +1,144 @@
+{
+  "environment": "users-sessions-validation-v2-20261022",
+  "langfuse": "actual local server",
+  "langsmith": "disabled; client construction and writes forbidden",
+  "business_database": "connections forbidden",
+  "model": "ScriptedChatModel",
+  "data": "FixtureDataSource",
+  "langsmith_client_calls": 0,
+  "runs": [
+    {
+      "mode": "native-ainvoke",
+      "trace_id": "2d2671d95a2ca4fbf48bed9894ad3d03",
+      "user_id": "dc6185ca-4d28-4964-abb4-62b02ced50e9",
+      "session_id": "60c7637d-9538-45dc-aa55-48a55d971de8",
+      "tenant_id": "ad81e043-15bf-4d50-a5af-4815adacb731",
+      "account": "alice-fixture",
+      "unrelated_trace_id": "3c3f5970aeeb918a29edcbebc4c3fd6d",
+      "attempt_id": "ade4cdd3-a212-4ea2-a714-06ad21008f2b",
+      "duration_seconds": 1.224,
+      "spans": 65,
+      "roots": [
+        "intelligent-tracing"
+      ],
+      "missing_child_parents": [],
+      "incorrect_critical_parents": [],
+      "models": 8,
+      "tasks": 4,
+      "critical_io_present": true,
+      "root_input_present": true,
+      "root_output_present": true,
+      "all_user_attributes_match": true,
+      "all_session_attributes_match": true,
+      "all_account_attributes_match": true,
+      "unrelated_after_run_has_no_identity": true
+    },
+    {
+      "mode": "native-stream",
+      "trace_id": "050d7fecd3513ef21f30d74ae5fad27b",
+      "user_id": "dc6185ca-4d28-4964-abb4-62b02ced50e9",
+      "session_id": "60c7637d-9538-45dc-aa55-48a55d971de8",
+      "tenant_id": "ad81e043-15bf-4d50-a5af-4815adacb731",
+      "account": "alice-fixture",
+      "unrelated_trace_id": "900e074045b666bb739f9f5765bc45b5",
+      "attempt_id": "596bfd1b-f133-4725-a727-9d04a3842a19",
+      "duration_seconds": 0.134,
+      "spans": 65,
+      "roots": [
+        "intelligent-tracing"
+      ],
+      "missing_child_parents": [],
+      "incorrect_critical_parents": [],
+      "models": 8,
+      "tasks": 4,
+      "critical_io_present": true,
+      "root_input_present": true,
+      "root_output_present": true,
+      "all_user_attributes_match": true,
+      "all_session_attributes_match": true,
+      "all_account_attributes_match": true,
+      "unrelated_after_run_has_no_identity": true
+    },
+    {
+      "mode": "direct-stream-new-thread",
+      "trace_id": "b5c3ac0aeb35c14281a3b092241bb341",
+      "user_id": "dc6185ca-4d28-4964-abb4-62b02ced50e9",
+      "session_id": "06eda5b9-40ff-406e-8b59-282678490411",
+      "tenant_id": "ad81e043-15bf-4d50-a5af-4815adacb731",
+      "account": "alice-fixture",
+      "unrelated_trace_id": "1476d8caecee859127d770ea28160941",
+      "attempt_id": "13afeb38-fab6-4aa6-9003-91fcaef0e63f",
+      "duration_seconds": 0.133,
+      "spans": 65,
+      "roots": [
+        "intelligent-tracing"
+      ],
+      "missing_child_parents": [],
+      "incorrect_critical_parents": [],
+      "models": 8,
+      "tasks": 4,
+      "critical_io_present": true,
+      "root_input_present": true,
+      "root_output_present": true,
+      "all_user_attributes_match": true,
+      "all_session_attributes_match": true,
+      "all_account_attributes_match": true,
+      "unrelated_after_run_has_no_identity": true
+    },
+    {
+      "mode": "other-user-and-tenant",
+      "trace_id": "e089e1af0252f03a1214e162665f0b3b",
+      "user_id": "26a52362-ea3f-469e-9577-0f4955a5d04f",
+      "session_id": "2c2da067-09be-4d83-ae8b-4062284a5bfe",
+      "tenant_id": "c6c3acaa-df40-450c-9ebb-07f3169912b3",
+      "account": "bob-fixture",
+      "unrelated_trace_id": "4cbcd10d611e75d724f7a4b640d9b0b3",
+      "attempt_id": "eb98cb0f-f2f9-45ca-b0f1-3071c023d563",
+      "duration_seconds": 0.135,
+      "spans": 65,
+      "roots": [
+        "intelligent-tracing"
+      ],
+      "missing_child_parents": [],
+      "incorrect_critical_parents": [],
+      "models": 8,
+      "tasks": 4,
+      "critical_io_present": true,
+      "root_input_present": true,
+      "root_output_present": true,
+      "all_user_attributes_match": true,
+      "all_session_attributes_match": true,
+      "all_account_attributes_match": true,
+      "unrelated_after_run_has_no_identity": true
+    }
+  ],
+  "user_groups": [
+    {
+      "user_id": "dc6185ca-4d28-4964-abb4-62b02ced50e9",
+      "observations": 195,
+      "traces": 3
+    },
+    {
+      "user_id": "26a52362-ea3f-469e-9577-0f4955a5d04f",
+      "observations": 65,
+      "traces": 1
+    }
+  ],
+  "session_groups": [
+    {
+      "session_id": "60c7637d-9538-45dc-aa55-48a55d971de8",
+      "observations": 130,
+      "traces": 2
+    },
+    {
+      "session_id": "06eda5b9-40ff-406e-8b59-282678490411",
+      "observations": 65,
+      "traces": 1
+    },
+    {
+      "session_id": "2c2da067-09be-4d83-ae8b-4062284a5bfe",
+      "observations": 65,
+      "traces": 1
+    }
+  ]
+}

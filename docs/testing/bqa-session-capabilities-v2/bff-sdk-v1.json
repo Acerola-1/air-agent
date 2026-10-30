@@ -1,0 +1,80 @@
+{
+  "evidence_kind": "actual_python_sdk_via_owned_frontend_bff",
+  "browser": "NOT_RUN",
+  "controlled_identity_model_mcp": true,
+  "checks": [
+    {
+      "question": "湖州市今天空气质量如何？",
+      "mode": "fast",
+      "load_skill": 1,
+      "tool_calls": [
+        "load_skill",
+        "mcp_city_common_get_air_quality_realtime_stat"
+      ],
+      "paired_errors": 0,
+      "checkpoint": {
+        "checkpoint_id": "1f1d3304-e54a-66f1-8009-5a21d4adf070",
+        "thread_id": "6d86be1b-9d54-47c5-bc93-ac1fe1bf6362",
+        "checkpoint_ns": ""
+      },
+      "reference_mode": "fast"
+    },
+    {
+      "question": "那杭州呢？",
+      "mode": "fast",
+      "load_skill": 0,
+      "tool_calls": [
+        "mcp_city_common_get_air_quality_realtime_stat"
+      ],
+      "paired_errors": 0,
+      "checkpoint": {
+        "checkpoint_id": "1f1d3304-fe3b-6b88-8012-c8edefae5e5a",
+        "thread_id": "6d86be1b-9d54-47c5-bc93-ac1fe1bf6362",
+        "checkpoint_ns": ""
+      },
+      "reference_mode": "fast"
+    },
+    {
+      "question": "那金华呢？",
+      "mode": "expert",
+      "load_skill": 1,
+      "tool_calls": [
+        "load_skill",
+        "mcp_city_common_get_air_quality_realtime_stat"
+      ],
+      "paired_errors": 0,
+      "checkpoint": {
+        "checkpoint_id": "1f1d3305-1e4c-6a21-801d-39e9feefadf4",
+        "thread_id": "6d86be1b-9d54-47c5-bc93-ac1fe1bf6362",
+        "checkpoint_ns": ""
+      },
+      "reference_mode": "expert"
+    },
+    {
+      "question": "再查湖州",
+      "mode": "expert",
+      "load_skill": 0,
+      "tool_calls": [
+        "mcp_city_common_get_air_quality_realtime_stat"
+      ],
+      "paired_errors": 0,
+      "checkpoint": {
+        "checkpoint_id": "1f1d3305-3bdc-6155-8026-729cca328e23",
+        "thread_id": "6d86be1b-9d54-47c5-bc93-ac1fe1bf6362",
+        "checkpoint_ns": ""
+      },
+      "reference_mode": "expert"
+    },
+    {
+      "name": "SDK_stream_disconnect_then_reconnect_same_run",
+      "run_status": "success",
+      "load_skill": 0,
+      "business_calls": 1
+    },
+    {
+      "name": "stale_frontend_context",
+      "status": 409
+    }
+  ],
+  "passed": true
+}

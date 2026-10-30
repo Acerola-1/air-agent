@@ -1,0 +1,11 @@
+{
+  "raw_private_archive": "/private/tmp/aa-sso-private-logs-60aw_4w7",
+  "files": [
+    {
+      "file": "probe-frontend.log",
+      "parameters_redacted": 6,
+      "original_sha256": "6c52db7a433944f268cc35273b20572cdc03769befc3e92c15d24c9b12663460",
+      "redacted_sha256": "118914104d4b330fa371ed3c17794e3ae91734e933caae04af3624095c3a5b81"
+    }
+  ]
+}

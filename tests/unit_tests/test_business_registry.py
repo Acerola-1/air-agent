@@ -64,10 +64,9 @@ def test_tool_scope_is_business_specific() -> None:
     assert business_allows_tool(
         "basic-qa", "ipp", "mcp_city_common_get_air_quality_realtime_stat"
     )
-    # 未在 basic-qa Skill 声明中登记的工具不能借共享服务自动开放。
-    assert not business_allows_tool(
-        "basic-qa", "ipp", "mcp_station_analysis_trajectory"
-    )
+    # Basic QA可按需独立加载完整已审核查询目录；仍非全量披露。
+    assert business_allows_tool("basic-qa", "ipp", "mcp_station_analysis_trajectory")
+    assert not business_allows_tool("basic-qa", "ipp", "unregistered_new_operation")
     # 溯源使用更窄的子集：轨迹/PSCF 在业务注册表就被排除。
     for tool in TRACING_EXCLUDED_TOOLS:
         assert not business_allows_tool("intelligent-tracing", "ipp", tool)
@@ -92,6 +91,20 @@ def test_registry_summary_has_no_secrets() -> None:
     assert "env:" not in text
     assert "credential" not in text
     assert BUSINESS_POLICY_VERSION in text
+
+
+def test_basic_qa_full_reviewed_catalog_matches_frozen_v2_scope():
+    import hashlib
+
+    from common.business_registry import IPP_APPROVED_QUERY_TOOLS
+
+    tools = business_for_graph("basic-qa").connection("ipp").allowed_tools
+    assert tools == frozenset(IPP_APPROVED_QUERY_TOOLS)
+    assert len(tools) == 109
+    assert (
+        hashlib.sha256("\n".join(sorted(tools)).encode()).hexdigest()
+        == "41c411b97375e4318c477ca37ca82b1b0fe4d4ee31fbd4e874091b8b34cc6c42"
+    )
 
 
 def test_duplicate_graph_mapping_rejected(monkeypatch: pytest.MonkeyPatch) -> None:

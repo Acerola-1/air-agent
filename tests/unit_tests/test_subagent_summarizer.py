@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock
 import pytest
 from langchain_core.messages import AIMessage
 
-from common.business_graph.subagent_summarizer import summarize_large_tool_output
+from common.tool_output_summary import summarize_large_tool_output
 from common.models import ModelRegistry
 from common.text_reduction import summarize_complete_text
 

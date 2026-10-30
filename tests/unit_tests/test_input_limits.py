@@ -43,18 +43,17 @@ def test_overflow_message_keeps_draft_semantics():
 
 @pytest.mark.anyio
 async def test_business_entry_rejects_without_model(monkeypatch):
-    from common.business_graph import nodes as module
+    from basic_qa import nodes as module
     from common.models import ModelRegistry
 
     monkeypatch.setattr(config, "MAX_INPUT_CHARS", 10)
     model = object()
     monkeypatch.setattr(ModelRegistry, "main_llm", model)
-    result = await module.BusinessGraphNodes(
+    result = await module.BasicQANodes(
         router=None,
-        base_system_prompt="",
         load_skill_tool=None,
         graph_name="basic-qa",
-    ).classify_intent({"messages": [HumanMessage(content="x" * 11)]}, {})
+    ).prepare_session({"messages": [HumanMessage(content="x" * 11)]}, {})
     assert result["intent"] == "input_overflow"
 
 

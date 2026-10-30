@@ -1,0 +1,216 @@
+{
+  "evidence_kind": "real_configured_embedding+live_protected_catalog+owned_postgres",
+  "business_model": "NOT_RUN",
+  "browser": "NOT_RUN",
+  "seeds": [
+    {
+      "query": "按坐标反查行政区，用于核对监测点位置",
+      "gold": [
+        "mcp:ipp:mcp_city_base_get_district_by_lnglat"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_city_base_get_district_by_lnglat",
+        "mcp:ipp:mcp_station_base_lng_lat_near_national_province_station",
+        "mcp:ipp:mcp_station_base_get_info_by_code_name"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 109,
+        "queries": 1
+      },
+      "elapsed_ms": 5199.560332999681
+    },
+    {
+      "query": "查询某城市下辖区县列表",
+      "gold": [
+        "mcp:ipp:mcp_city_base_get_child_district_by_parent"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_city_base_get_child_district_by_parent",
+        "mcp:ipp:mcp_grid_base_region_tree",
+        "mcp:ipp:mcp_city_base_get_parent_district_by_child"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 3295.6056669936515
+    },
+    {
+      "query": "查询某行政区的上级行政区",
+      "gold": [
+        "mcp:ipp:mcp_city_base_get_parent_district_by_child"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_city_base_get_parent_district_by_child",
+        "mcp:ipp:mcp_grid_base_region_tree",
+        "mcp:ipp:mcp_city_base_get_district_by_lnglat"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 1349.7971249889815
+    },
+    {
+      "query": "查询站点一个月内的优良天数",
+      "gold": [
+        "mcp:ipp:mcp_station_common_good_days_query"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_station_common_good_days_query",
+        "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat",
+        "mcp:ipp:mcp_city_analysis_calendar_month"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 1369.5327909954358
+    },
+    {
+      "query": "给定网格编码查询网格资料",
+      "gold": [
+        "mcp:ipp:mcp_grid_base_grid_info_by_code"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_grid_base_grid_info_by_code",
+        "mcp:ipp:mcp_grid_base_grid_info_by_hash",
+        "mcp:ipp:mcp_grid_base_grid_info_by_codes"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 1348.1777499982854
+    },
+    {
+      "query": "查询指定行政区的网格列表",
+      "gold": [
+        "mcp:ipp:mcp_grid_base_grid_list_by_region"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_grid_base_grid_list_by_region",
+        "mcp:ipp:mcp_grid_base_grid_info_by_codes",
+        "mcp:ipp:mcp_grid_base_around_grids"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 2964.0271660027793
+    },
+    {
+      "query": "查询网格空气质量数据",
+      "gold": [
+        "mcp:ipp:mcp_grid_common_air_data"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat",
+        "mcp:ipp:text2sql_today_single_city_aqi_route",
+        "mcp:ipp:mcp_grid_common_monitor_data_page"
+      ],
+      "hit": false,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 1366.3248750090133
+    },
+    {
+      "query": "查找某站点附近网格",
+      "gold": [
+        "mcp:ipp:mcp_grid_base_grid_by_station_proximity"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_grid_base_around_grids",
+        "mcp:ipp:mcp_grid_base_grid_by_station_proximity",
+        "mcp:ipp:mcp_grid_base_grid_list_by_region"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 2555.5631250026636
+    },
+    {
+      "query": "查询某区域告警网格数量",
+      "gold": [
+        "mcp:ipp:mcp_grid_common_alarm_grid_count"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_grid_common_alarm_grid_count",
+        "mcp:ipp:mcp_grid_common_alarm_area_count",
+        "mcp:ipp:mcp_grid_common_grid_statistics"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 1364.022040987038
+    },
+    {
+      "query": "查询某城市空气质量预报",
+      "gold": [
+        "mcp:ipp:mcp_city_common_get_air_quality_forecast"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_city_common_get_air_quality_forecast",
+        "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat",
+        "mcp:ipp:mcp_station_common_air_quality_forecast"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 1380.150583005161
+    },
+    {
+      "query": "查询城市历史逐小时气象数据",
+      "gold": [
+        "mcp:ipp:mcp_weather_forecast_hourly_history"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_weather_forecast_hourly_history",
+        "mcp:ipp:broadcastHour",
+        "mcp:ipp:mcp_weather_nwp_city_history"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 3986.07808300585
+    },
+    {
+      "query": "查询站点实时空气质量",
+      "gold": [
+        "mcp:ipp:mcp_station_common_air_real_data"
+      ],
+      "candidates": [
+        "mcp:ipp:mcp_city_common_get_air_quality_realtime_stat",
+        "mcp:ipp:text2sql_today_single_city_aqi_route",
+        "mcp:ipp:mcp_station_common_air_real_data"
+      ],
+      "hit": true,
+      "embedding_counts": {
+        "documents": 0,
+        "queries": 1
+      },
+      "elapsed_ms": 4243.803042001673
+    }
+  ],
+  "mcp_samples": [],
+  "catalog_count": 109,
+  "catalog_version": "sha256:d2ce14fc42070341fbaa810337c8544d2b18988e11fd6c885c0b8f35c7bb27bc",
+  "recall_at_3": 0.9166666666666666,
+  "status": "COMPLETED_WITH_RECORDED_RESULTS"
+}

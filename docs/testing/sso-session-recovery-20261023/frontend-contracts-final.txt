@@ -1,0 +1,108 @@
+npm notice run frontend@0.0.0 test:contracts
+npm notice run node --test tests/agent-output-stream-contract.test.cjs tests/chat-contract.test.cjs tests/agent-events-contract.test.cjs tests/feedback-client.test.cjs tests/capability-store-contract.test.cjs tests/capability-final-regressions.test.cjs tests/session-client.test.cjs tests/sso-recovery.test.cjs tests/full-system-bugfixes.test.cjs
+✔ embedded frontend copy matches canonical contract files (1.836917ms)
+✔ every sample case matches the expected verdict (same set as Python) (3.641292ms)
+✔ browser cannot claim server terminal facts (0.126917ms)
+✔ reserved types are registered but rejected as not enabled (1.129708ms)
+✔ enabled types equal core plus browser and runtime (0.111542ms)
+✔ batch validation returns per-item results and enforces browser limits (5.363208ms)
+✔ forbidden payload key wins over whitelist (0.225958ms)
+ok - lifecycle appends contiguous deltas and merges done into one message
+ok - duplicate frame is ignored, conflicting replay and gaps require resync
+ok - other thread/run/graph frames never pollute the active answer
+ok - A to B to A does not revive the old output
+ok - section replay is deduped but a conflicting section is a resync
+ok - aborted keeps partial text and never becomes done
+ok - legacy done-only events remain readable and are labelled legacy
+ok - event type guard rejects unrelated custom events
+ok - empty aborted output may become a fixed failure but partial output cannot
+9 agent-output-stream contract tests passed
+✔ tests/agent-output-stream-contract.test.cjs (186.460125ms)
+✔ 真实 Composer 的中文组合输入与 Safari 229 不触发发送 (65.867125ms)
+✔ 真实 Composer 的换行与运行锁定不提交 (15.4485ms)
+✔ 默认草稿为自动模式，toPayload 输出规范标准 agent.capability-selection.v1 (13.183958ms)
+✔ 用户显式选择 Skill 与 MCP 工具列表，toPayload 标注 user_explicit 并按字母序去重 (4.143584ms)
+✔ 选择 MCP allowlist 空集代表禁用 MCP，toggleTool 可添加与移除工具 (2.2915ms)
+✔ 切换图或租户时，旧草稿被清空重置为默认，且目录异步加载有 loading/error 状态 (3.094791ms)
+✔ Epoch 隔离：迟到的旧请求（如 A→B→A 切换时旧请求晚到）被丢弃，不覆盖当前目录 (1.413167ms)
+✔ 目录错误正文迟到时也不能覆盖换范围后的新状态 (7.170083ms)
+✔ 目录分页完整合并，版本变化时拒绝拼接 (3.527542ms)
+✔ context meter uses provider input after completion and labels preparation estimates (69.046917ms)
+✔ 分析菜单进入正常运行配置且运行中不能变更 (11.287542ms)
+✔ every intermediate frame excludes tool JSON and internal summaries from body (5.645792ms)
+✔ old run callbacks and completion cannot clear a newer run (4.901583ms)
+✔ stop sends server cancellation and ignores late metadata safely (5.091042ms)
+✔ legacy double answer merges, marked draft hidden, archives require actual stored status (3.817375ms)
+✔ SDK error event becomes failed completion, metadata and custom consumed (2.101458ms)
+✔ proxy: unified identity gates, ticket upstream, v2 scope, tenant checks (1825.574375ms)
+✔ archive scope v2 signing requires configured keys (4.408083ms)
+✔ stopStreaming only confirms after server reaches terminal run status (612.017917ms)
+✔ stopStreaming reports unconfirmed when cancellation and status both fail (10.061667ms)
+✔ stop cancel 409 is context_changed, never a false confirmation (7.796333ms)
+✔ stop after 404 cancel confirms only on observed terminal status (4.678333ms)
+✔ stop treats missing/unknown run status as unconfirmed (7.513542ms)
+✔ stop with empty run list within grace window is unconfirmed unknown (3211.93175ms)
+✔ stop recovers late run id from recent runs and waits terminal (10.807208ms)
+✔ stop before run id arrives recovers the active run from the run list (6.872541ms)
+✔ proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surfaces 409 (3.573583ms)
+✔ stop cannot confirm the previous answer while current run metadata is delayed (3215.576625ms)
+✔ stop after a safe delta keeps partial text as an incomplete answer (9.034958ms)
+✔ unconfirmed stop keeps the run for late metadata and blocks new submissions (3216.307416ms)
+✔ 页面导航离开记录 origin=navigation 的独立停止意图 (7.658709ms)
+✔ 无活动运行时的导航不产生停止事实 (6.955209ms)
+✔ 重新生成声明 regenerate 并复用上一条用户问题（不新增提问） (6.542292ms)
+✔ 重新发送声明 retry (4.859625ms)
+✔ R01 代理：原生入口单点裁决——首笔成功、重放复用/待确认、绝不重复创建平台运行 (8.719125ms)
+✔ 官方 interrupt 的权威状态确认本次已停止执行，不冒充业务已取消 (4.290041ms)
+✔ 基础问答提交不携带技能/MCP选择，统一由服务端自动路由 (4.320417ms)
+✔ 确认回读不再向前端暴露能力选择，自动路由状态由服务端保存 (4.048208ms)
+✔ 停止首条 metadata 丢失后按本次提交键找回已 interrupted 的运行 (3.597ms)
+✔ 停止不得把其他提交的终态或活动运行当成本次运行 (3211.446333ms)
+✔ 台账写操作透传真实来源，不伪造 localhost:3000 (2.25275ms)
+✔ 空线程创建未返回时停止，迟到创建不能继续发起模型运行 (7.732875ms)
+✔ wait确认也必须匹配本次submission，不能接受同attempt另一恢复提交 (3.558ms)
+✔ tracing done and history share identity even if final reread fails (6.926208ms)
+✔ proxy pins readable account in both run metadata locations (2.011084ms)
+✔ tracing turn control stays internal in live values and history while data tools remain visible (4.070166ms)
+✔ 采集开关默认关闭，服务端拒绝启用时不产生计时或事件 (40.4745ms)
+✔ 未确认映射不永久负缓存，确认后可再次回读 (2.309ms)
+✔ A到B到A后旧代次回读不能覆盖当前映射 (2.510541ms)
+✔ 旧企业保存响应不会作为新企业的成功结果 (2.327541ms)
+✔ 旧批次完成不删除新企业队列且新请求绑定新企业 (8.509333ms)
+✔ 队列100条、批次50条和256KiB均有界 (14.781125ms)
+✔ 进度不充当首正文；不完整、完成和离开分别计时 (6.02125ms)
+✔ 旧企业迟到的启用策略不能开启当前企业采集 (3.3485ms)
+✔ DOM完成早于可信attempt确认时仍保留计时，不误用平台run UUID (3.3125ms)
+✔ 运营外壳允许单独 metrics 或 operations；用户用量仍需双权限 (38.7005ms)
+✔ 无标题、空白标题的可见回退参与搜索；实际标题保持原样 (2.638625ms)
+✔ 数据分析选择器仅在该图展示，运行和停止待确认期间锁定 (7.5585ms)
+✔ expired session clears scope and navigates to reauthentication (28.403125ms)
+✔ IAM outage is recoverable and is not presented as successful logout (1.568084ms)
+✔ failed identity refresh fails closed with retry, without a false login redirect (2.000667ms)
+✔ late refresh cannot resurrect identity after confirmed logout (0.865167ms)
+✔ A to B to A responses cannot overwrite the newest context version (0.709667ms)
+✔ BFF admin logout client rejects upstream 503 instead of resolving success (3.221291ms)
+✔ chat: expired SSO returns to password form with state bound upstream and cookies cleared (22.42125ms)
+✔ chat: callback 400 has a clean recoverable login destination (4.265458ms)
+✔ chat: callback 401 has a clean recoverable login destination (1.344375ms)
+✔ chat: callback 403 has a clean recoverable login destination (1.323542ms)
+✔ chat: callback 503 has a clean recoverable login destination (0.949125ms)
+✔ chat: IAM outage and external redirect cannot escape login recovery (1.285791ms)
+✔ chat: authenticated positive control still preserves application session cookie (0.523125ms)
+✔ admin: expired SSO returns to password form with state bound upstream and cookies cleared (0.829292ms)
+✔ admin: callback 400 has a clean recoverable login destination (0.883458ms)
+✔ admin: callback 401 has a clean recoverable login destination (1.027042ms)
+✔ admin: callback 403 has a clean recoverable login destination (1.143083ms)
+✔ admin: callback 503 has a clean recoverable login destination (1.15ms)
+✔ admin: IAM outage and external redirect cannot escape login recovery (1.502041ms)
+✔ admin: authenticated positive control still preserves application session cookie (0.476791ms)
+✔ chat: internal Next URL normalization cannot move host-only cookies to another host (0.915542ms)
+✔ admin: internal Next URL normalization cannot move host-only cookies to another host (0.391708ms)
+ℹ tests 88
+ℹ suites 0
+ℹ pass 88
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15771.789709

@@ -201,15 +201,12 @@ async def test_subagent_and_sdk_summary_have_distinct_observations(ledger_env, m
 
 
 @pytest.mark.parametrize("has_rules", [True, False])
-async def test_actual_find_skill_load_success_and_failure_stages(
+async def test_actual_sdk_skill_read_success_and_failure_stages(
     ledger_env, monkeypatch, tmp_path, has_rules
 ):
-    """候选由受控router提供；真实读文件/工具/Agent调用与PG，不评价Embedding质量。"""
-    from types import SimpleNamespace
-
+    """真实 SDK 文件工具记录加载／执行；检索匹配由 BQA v2 独立测试覆盖。"""
     from common.identity.db import fetch_identity_state
-    from common.skill_discovery import create_find_skill_tool
-    from common.skill_router import SkillRouteCandidate
+    from deepagents.backends.utils import create_file_data
     from sqlalchemy import text
 
     from app.db import OwnerSessionLocal
@@ -241,25 +238,17 @@ async def test_actual_find_skill_load_success_and_failure_stages(
             "ledger_graph_id": "basic-qa",
         }
     }
-    path = tmp_path / "SKILL.md"
     marker = "controlled-skill-body-must-not-enter-events"
-    path.write_text(marker if has_rules else "")
-
-    async def match(_):
-        return [
-            SkillRouteCandidate(
-                "controlled-skill", "受控候选", "/skills/controlled-skill/SKILL.md", (), 1.0
-            )
-        ]
-
-    router = SimpleNamespace(amatch=match, resolve_skill_file=lambda _: path)
-    tool = create_find_skill_tool(router)
+    skill_path = "/skills/controlled-skill/SKILL.md"
+    # Retired find_skill no longer produces matched/selected stages. Exercise the
+    # current DeepAgents read_file adapter, including its genuine missing-file path.
+    files = {skill_path: create_file_data(marker)} if has_rules else {}
     model = ControlledToolsModel(
         responses=[
             AIMessage(
                 content="",
                 tool_calls=[
-                    {"name": "find_skill", "args": {"question": "受控问题"}, "id": "skill-call"}
+                    {"name": "read_file", "args": {"file_path": skill_path}, "id": "skill-call"}
                 ],
             ),
             AIMessage(content="受控执行完成"),
@@ -267,12 +256,12 @@ async def test_actual_find_skill_load_success_and_failure_stages(
     )
     agent = create_deep_agent(
         model=model,
-        tools=[tool],
+        backend=StateBackend(),
         middleware=[TenantRuntimeGuardMiddleware(), ObservabilityModelMiddleware()],
     )
     try:
         result = await agent.ainvoke(
-            {"messages": [HumanMessage(content="受控问题")]}, config=config
+            {"messages": [HumanMessage(content="受控问题")], "files": files}, config=config
         )
         assert result["messages"][-1].content == "受控执行完成"
         stats = await asyncio.to_thread(get_collector().flush, 5)
@@ -297,9 +286,7 @@ async def test_actual_find_skill_load_success_and_failure_stages(
                 {"a": ctx.attempt_id, "marker": "%" + marker + "%"},
             )
         assert {r["stage"] for r in spans} == (
-            {"matched", "selected", "loaded", "executed"}
-            if has_rules
-            else {"matched", "selected", "loaded"}
+            {"selected", "loaded", "executed"} if has_rules else {"selected", "loaded"}
         ), spans
         loaded = next(r for r in spans if r["stage"] == "loaded")
         assert loaded["status"] == ("succeeded" if has_rules else "failed"), spans
@@ -314,7 +301,9 @@ async def test_actual_find_skill_load_success_and_failure_stages(
         (root / f"docs/reviews/evidence/takeover-03-05/skill-stages-{has_rules}.json").write_text(
             json.dumps(
                 {
-                    "boundary": "受控候选和模型；真实文件、DeepAgents工具执行器、身份核验和PG",
+                    "boundary": (
+                        "受控模型；真实 StateBackend 文件、DeepAgents 工具执行器、身份核验和 PG"
+                    ),
                     "spans": [dict(r) for r in spans],
                     "body_in_events": bool(leaked),
                     "collector": stats,

@@ -14,6 +14,7 @@ from dataclasses import dataclass
 
 _THINK_OPEN = "<think>"
 _THINK_CLOSE = "</think>"
+_TOOL_PROTOCOL_OPEN = "<｜｜DSML｜｜"
 _CITE_OPEN = "[[cite:"
 _CITE_CLOSE = "]]"
 
@@ -106,17 +107,22 @@ class SafeTextStream:
                 self._buf = self._buf[open_at + len(_THINK_OPEN) :]
                 self._in_think = True
                 if prefix:
+                    self._assert_no_tool_protocol(prefix)
                     self._at_start = False
                     units.append(prefix)
                 continue
 
+            self._assert_no_tool_protocol(self._buf)
             if final:
                 self._assert_no_open_marker(self._buf)
                 units.append(self._buf)
                 self._buf = ""
                 break
 
-            hold = self._partial_suffix(self._buf, _THINK_OPEN)
+            hold = max(
+                self._partial_suffix(self._buf, marker)
+                for marker in (_THINK_OPEN, _TOOL_PROTOCOL_OPEN)
+            )
             work = self._buf[: len(self._buf) - hold] if hold else self._buf
 
             if self._at_start:
@@ -184,6 +190,7 @@ class SafeTextStream:
         return close_at < 0 or position <= close_at + len(_CITE_CLOSE)
 
     def _assert_no_open_marker(self, text: str) -> None:
+        self._assert_no_tool_protocol(text)
         if _THINK_OPEN in text or _THINK_CLOSE in text:
             raise StreamSafetyError("unterminated_reasoning")
         open_at = text.rfind(_CITE_OPEN)
@@ -191,6 +198,14 @@ class SafeTextStream:
             raise StreamSafetyError("unterminated_citation")
         if text.count("[[") != text.count("]]"):
             raise StreamSafetyError("unterminated_citation")
+        if self._partial_suffix(text, _TOOL_PROTOCOL_OPEN) >= 2:
+            raise StreamSafetyError("tool_calls_in_answer_role")
+
+    @staticmethod
+    def _assert_no_tool_protocol(text: str) -> None:
+        """Treat raw provider tool framing like a structured call in answer role."""
+        if _TOOL_PROTOCOL_OPEN in text:
+            raise StreamSafetyError("tool_calls_in_answer_role")
 
     def _guard_size(self, *, internal: bool) -> None:
         if len(self._buf) > self._limits.max_buffer:

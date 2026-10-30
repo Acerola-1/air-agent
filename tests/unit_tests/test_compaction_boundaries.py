@@ -10,9 +10,12 @@ from langchain_core.exceptions import ContextOverflowError
 from langchain_core.language_models.fake_chat_models import FakeMessagesListChatModel
 from langchain_core.messages import AIMessage, HumanMessage
 
-import common.business_graph.nodes as business
-import common.context_preparation as preparation
+import basic_qa.context.preparation as preparation
+import basic_qa.context.recovery as recovery
+import basic_qa.nodes as business
+import data_analysis.context.preparation as data_preparation
 import data_analysis.nodes as analysis
+from basic_qa.capabilities.runtime import create_load_skill_tool
 from common.config import config
 from common.model_capacity import capacity_from_window
 from intelligent_tracing.guards import guarded_summarization
@@ -40,18 +43,27 @@ async def test_node_overflow_recovery_sends_at_most_twice(
             raise ProviderOverflow("maximum context length exceeded")
         return AIMessage(content="正常的规划材料")
 
-    monkeypatch.setattr(preparation, "summarize_conversation_history", summary)
+    # 本例隔离容量恢复；明确提供空能力目录，不让旧的无身份夹具在目录入口先失败。
+    if graph == "basic-qa":
+        from basic_qa.capabilities import projection
+
+        monkeypatch.setattr(
+            projection, "basic_qa_skill_catalog", AsyncMock(return_value=[])
+        )
+        monkeypatch.setattr(
+            projection, "current_material", AsyncMock(return_value=None)
+        )
+    target_preparation = preparation if graph == "basic-qa" else data_preparation
+    monkeypatch.setattr(target_preparation, "summarize_conversation_history", summary)
     monkeypatch.setattr(business, "invoke_with_data_deadline", invoke)
     monkeypatch.setattr(analysis, "invoke_with_data_deadline", invoke)
     monkeypatch.setattr(analysis, "get_business_tools", lambda **kwargs: [])
     monkeypatch.setattr(business.asyncio, "sleep", AsyncMock())
-    service = business.BusinessGraphNodes(
+    service = business.BasicQANodes(
         router=SimpleNamespace(),
-        base_system_prompt="规则",
-        load_skill_tool=SimpleNamespace(name="load_skill"),
+        load_skill_tool=create_load_skill_tool(),
         graph_name="basic-qa",
     )
-    monkeypatch.setattr(service, "_planning_tools", lambda *args: [])
     history = [
         message
         for index in range(4)
@@ -154,7 +166,7 @@ async def test_recovery_advances_prepared_coverage_and_never_resends_same_input(
         raise ProviderOverflow("maximum context length exceeded")
 
     with pytest.raises(preparation.ContextRecoveryFailed) as failed:
-        await preparation.call_with_context_recovery(
+        await recovery.call_with_context_recovery(
             invoke, prepared, state=state, run_config={}, prepare_kwargs=kwargs
         )
     assert len(sent) == 2 and sent[0] != sent[1]
@@ -171,11 +183,11 @@ async def test_no_progress_stops_before_second_send(monkeypatch):
         metrics={"input_tokens": 100, "input_budget_tokens": 500},
     )
     monkeypatch.setattr(
-        preparation, "prepare_model_request", AsyncMock(return_value=prepared)
+        recovery, "prepare_model_request", AsyncMock(return_value=prepared)
     )
     invoke = AsyncMock(side_effect=ProviderOverflow("maximum context length exceeded"))
     with pytest.raises(preparation.ContextRecoveryFailed, match="没有可继续减小"):
-        await preparation.call_with_context_recovery(
+        await recovery.call_with_context_recovery(
             invoke, prepared, state={"messages": []}, run_config={}, prepare_kwargs={}
         )
     assert invoke.await_count == 1

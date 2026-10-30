@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
-from common.business_graph.tool_recovery import (
+from basic_qa.tool_recovery import (
     exhausted_tools,
     planning_exhausted,
     recoverable_tools,
@@ -26,7 +26,11 @@ def test_business_disclosure_without_prepare_node_mutations():
                 "stable_id": f"mcp:ipp:{name}",
             },
         )
-        for name in ["helper_get_latest_time", "mcp_city_analysis_monitor"]
+        for name in [
+            "helper_get_latest_time",
+            "mcp_city_analysis_monitor",
+            "synthetic_unregistered_write",
+        ]
     ]
     local = SimpleNamespace(name="get_beijing_time", metadata={})
     config = {"configurable": {"capability_authorized_servers": ["ipp"]}}
@@ -37,6 +41,7 @@ def test_business_disclosure_without_prepare_node_mutations():
         )
         assert [t.name for t in result] == [
             "helper_get_latest_time",
+            "mcp_city_analysis_monitor",
             "get_beijing_time",
         ]
         allowed = filter_capability_mcp_tools(

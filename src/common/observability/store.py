@@ -103,6 +103,27 @@ def observability_enabled() -> bool:
     return _enabled()
 
 
+async def record_capability_fact(
+    ctx: ObservationContext, payload: dict[str, Any]
+) -> dict[str, Any]:
+    """Persist a capability phase through the existing event/outbox transaction."""
+    pool = await get_pool()
+    async with pool.connection() as conn:
+        async with conn.transaction():
+            for key, value in ctx.as_guc().items():
+                await conn.execute(
+                    "SELECT set_config(%s, %s, true)", (key, value or "")
+                )
+            await _deleted_guard(conn, ctx)
+            return await _write_event_in(
+                conn,
+                ctx,
+                event_type="runtime.capability",
+                payload=payload,
+                occurred_at=dt.datetime.now(dt.UTC),
+            )
+
+
 async def _write_event_in(
     conn: Any,  # noqa: ANN401 - 事务内连接
     ctx: ObservationContext,

@@ -5,7 +5,7 @@ import time
 
 import httpx
 import pytest
-from test_remote_identity_client import _identity_payload
+from tests.unit_tests.test_remote_identity_client import _identity_payload
 
 from common.identity import remote, runtime
 from common.identity.db import IdentityBackendUnavailable

@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from common.business_registry import BUSINESS_POLICY_VERSION
 from intelligent_tracing.schemas import (
     DataBundle,
     GridCell,
@@ -18,7 +19,7 @@ from intelligent_tracing.schemas import (
 )
 
 BUSINESS_CODE = "intelligent-tracing"
-BUSINESS_POLICY_VERSION = "2026-10-19.1"
+
 BUSINESS_PERMISSION = "agent:business:intelligent-tracing:use"
 
 TZ = ZoneInfo("Asia/Shanghai")

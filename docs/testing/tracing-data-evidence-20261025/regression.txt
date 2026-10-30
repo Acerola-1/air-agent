@@ -1,0 +1,214 @@
+........................................................................ [ 35%]
+..............................FF........................................ [ 70%]
+...............................F...........................              [100%]
+=================================== FAILURES ===================================
+___ test_direct_deepagents_entry_attributes_all_observations[asyncio-False] ____
+
+sdk = (<langfuse._client.client.Langfuse object at 0x11884bdf0>, <opentelemetry.sdk.trace.export.in_memory_span_exporter.InMemorySpanExporter object at 0x118848f30>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x117f235b0>
+streaming = False
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize("streaming", [False, True])
+    async def test_direct_deepagents_entry_attributes_all_observations(
+        sdk, monkeypatch, streaming
+    ):
+        from test_langfuse_trace_tree import export_run
+    
+        config = run_config()
+        user = config["configurable"]["langgraph_auth_user"]["identity"]
+        thread = config["configurable"]["thread_id"]
+        config["configurable"]["langgraph_auth_user"]["display_name"] = "trusted-account"
+        trace_id = await export_run(
+            monkeypatch, config, streaming=streaming, native_context=False
+        )
+        client, exporter = sdk
+        with client.start_as_current_observation(name="unrelated-after-direct-run"):
+            pass
+        client.flush()
+        graph_spans = [
+            s
+            for s in exporter.get_finished_spans()
+            if format(s.context.trace_id, "032x") == trace_id
+        ]
+        # Turn routing adds its before-agent/tool/model spans to the same trace.
+>       assert len(graph_spans) == 69
+E       assert 73 == 69
+E        +  where 73 = len([<opentelemetry.sdk.trace.ReadableSpan object at 0x112a359d0>, <opentelemetry.sdk.trace.ReadableSpan object at 0x11889...metry.sdk.trace.ReadableSpan object at 0x11889e390>, <opentelemetry.sdk.trace.ReadableSpan object at 0x11889f350>, ...])
+
+tests/unit_tests/tracing/test_langfuse_context_lifecycle.py:297: AssertionError
+____ test_direct_deepagents_entry_attributes_all_observations[asyncio-True] ____
+
+sdk = (<langfuse._client.client.Langfuse object at 0x1181f8f50>, <opentelemetry.sdk.trace.export.in_memory_span_exporter.InMemorySpanExporter object at 0x1167e3950>)
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11838f460>
+streaming = True
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize("streaming", [False, True])
+    async def test_direct_deepagents_entry_attributes_all_observations(
+        sdk, monkeypatch, streaming
+    ):
+        from test_langfuse_trace_tree import export_run
+    
+        config = run_config()
+        user = config["configurable"]["langgraph_auth_user"]["identity"]
+        thread = config["configurable"]["thread_id"]
+        config["configurable"]["langgraph_auth_user"]["display_name"] = "trusted-account"
+        trace_id = await export_run(
+            monkeypatch, config, streaming=streaming, native_context=False
+        )
+        client, exporter = sdk
+        with client.start_as_current_observation(name="unrelated-after-direct-run"):
+            pass
+        client.flush()
+        graph_spans = [
+            s
+            for s in exporter.get_finished_spans()
+            if format(s.context.trace_id, "032x") == trace_id
+        ]
+        # Turn routing adds its before-agent/tool/model spans to the same trace.
+>       assert len(graph_spans) == 69
+E       assert 73 == 69
+E        +  where 73 = len([<opentelemetry.sdk.trace.ReadableSpan object at 0x1184bd490>, <opentelemetry.sdk.trace.ReadableSpan object at 0x1184b...metry.sdk.trace.ReadableSpan object at 0x1184bd550>, <opentelemetry.sdk.trace.ReadableSpan object at 0x1184bd610>, ...])
+
+tests/unit_tests/tracing/test_langfuse_context_lifecycle.py:297: AssertionError
+_ test_real_checkpoint_pause_rebuild_and_resume_without_repeated_sections[asyncio] _
+
+tmp_path = PosixPath('/private/var/folders/sl/97x01_kj0xvcq_k7zhb7w4dm0000gn/T/pytest-of-acerola/pytest-116/test_real_checkpoint_pause_reb0')
+
+    @pytest.mark.anyio
+    async def test_real_checkpoint_pause_rebuild_and_resume_without_repeated_sections(
+        tmp_path,
+    ):
+        from unittest.mock import patch
+    
+        from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+        from langgraph.types import Command, interrupt
+    
+        request, scope = make_request(), make_scope()
+        bundle = build_bundle(scenario="transport")
+        events = []
+        report_store = InMemoryReportStore()
+        config = {
+            "configurable": {
+                **run_config()["configurable"],
+                "thread_id": "thread-a",
+                "execution_epoch": "epoch-1",
+                "run_id": "run-test",
+            }
+        }
+    
+        async def pause(section_id):
+            if section_id == "claims-2":
+                interrupt(
+                    {
+                        "section": section_id,
+                        "note": "503 connection timeout is control payload",
+                    }
+                )
+    
+        def build(saver, *, resumed=False):
+            return build_tracing_graph(
+                model=ScriptedChatModel(responses=[AIMessage(content="结束")])
+                if resumed
+                else _lead(),
+                meteo_model=_meteo(),
+                reviewer_model=_reviewer(request.analysis_id),
+                data_source=FixtureDataSource(bundle),
+                station_catalog=bundle.stations,
+                report_store=report_store,
+                lifecycle_probe=allow_publication,
+                checkpointer=saver,
+                section_barrier=pause,
+            )
+    
+        async def consume(graph, value):
+            values = None
+            async for mode, chunk in graph.astream(
+                value, config=config, stream_mode=["custom", "values"]
+            ):
+                if mode == "custom" and chunk.get("type", "").startswith("final_output_"):
+                    events.append(chunk)
+                elif mode == "values":
+                    values = chunk
+            return values
+    
+        path = str(tmp_path / "publication.sqlite")
+        async with AsyncSqliteSaver.from_conn_string(path) as saver:
+            graph = build(saver)
+            await consume(
+                graph,
+                {
+                    "messages": [HumanMessage(content=analysis_question())],
+                    "request": request,
+                    "scope": scope,
+                },
+            )
+            assert [
+                e.get("section_id") for e in events if e["type"] == "final_output_delta"
+            ] == ["header", "claims-1"]
+            assert not [
+                e
+                for e in events
+                if e["type"] in {"final_output_done", "final_output_aborted"}
+            ]
+            assert (await graph.aget_state(config)).tasks[0].interrupts
+            checkpoints = [item async for item in saver.alist(None)]
+            progress = [
+                item.checkpoint["channel_values"]["session"]
+                for item in checkpoints
+                if item.checkpoint["channel_values"].get("session")
+            ]
+            assert any(
+                p.published_section_ids == ("header", "claims-1") and not p.completed
+                for p in progress
+            )
+    
+        # Close the database and rebuild every graph, model and evidence registry.
+        # Preflight must not execute again against this empty process-local registry.
+        async with AsyncSqliteSaver.from_conn_string(path) as saver:
+            graph = build(saver, resumed=True)
+            with patch.object(
+                ReportGate,
+                "precheck",
+                side_effect=AssertionError("preflight repeated on resume"),
+            ):
+                values = await consume(graph, Command(resume=True))
+        deltas = [e for e in events if e["type"] == "final_output_delta"]
+>       assert [e["section_id"] for e in deltas] == [
+            "header",
+            "claims-1",
+            "claims-2",
+            "claims-3",
+            "claims-4",
+            "limits",
+        ]
+E       AssertionError: assert ['header', 'c...laims-5', ...] == ['header', 'c...-4', 'limits']
+E         
+E         At index 5 diff: 'claims-5' != 'limits'
+E         Left contains 2 more items, first extra item: 'claims-6'
+E         Use -v to get more diff
+
+tests/unit_tests/tracing/test_section_streaming.py:525: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  langgraph.checkpoint.serde.jsonplus:jsonplus.py:80 Deserializing unregistered type intelligent_tracing.schemas.ReportPlan from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('intelligent_tracing.schemas', 'ReportPlan')]
+WARNING  langgraph.checkpoint.serde.jsonplus:jsonplus.py:80 Deserializing unregistered type intelligent_tracing.claims.ReportSectionPlan from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('intelligent_tracing.claims', 'ReportSectionPlan')]
+WARNING  langgraph.checkpoint.serde.jsonplus:jsonplus.py:80 Deserializing unregistered type intelligent_tracing.schemas.EvidenceRecord from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('intelligent_tracing.schemas', 'EvidenceRecord')]
+WARNING  langgraph.checkpoint.serde.jsonplus:jsonplus.py:80 Deserializing unregistered type intelligent_tracing.gate.FrozenPublicationPlan from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('intelligent_tracing.gate', 'FrozenPublicationPlan')]
+WARNING  langgraph.checkpoint.serde.jsonplus:jsonplus.py:80 Deserializing unregistered type intelligent_tracing.schemas.EvidenceReview from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('intelligent_tracing.schemas', 'EvidenceReview')]
+WARNING  langgraph.checkpoint.serde.jsonplus:jsonplus.py:80 Deserializing unregistered type intelligent_tracing.schemas.MeteoNarrative from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('intelligent_tracing.schemas', 'MeteoNarrative')]
+=============================== warnings summary ===============================
+tests/unit_tests/tracing/test_langfuse_trace_tree.py::test_business_graph_factories_bind_attributes_per_execution[basic_qa.graph-basic-qa]
+  /Users/acerola/Dev/Python/air_agent/src/common/business_graph/builder.py:138: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node(
+
+tests/unit_tests/tracing/test_langfuse_trace_tree.py::test_business_graph_factories_bind_attributes_per_execution[data_analysis.graph-data-analysis]
+  /Users/acerola/Dev/Python/air_agent/src/data_analysis/graph.py:133: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unit_tests/tracing/test_langfuse_context_lifecycle.py::test_direct_deepagents_entry_attributes_all_observations[asyncio-False]
+FAILED tests/unit_tests/tracing/test_langfuse_context_lifecycle.py::test_direct_deepagents_entry_attributes_all_observations[asyncio-True]
+FAILED tests/unit_tests/tracing/test_section_streaming.py::test_real_checkpoint_pause_rebuild_and_resume_without_repeated_sections[asyncio]
+3 failed, 200 passed, 2 warnings in 19.45s

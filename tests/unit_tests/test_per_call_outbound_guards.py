@@ -15,12 +15,14 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 from typing import Any
+from unittest.mock import AsyncMock
 
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 
-from common.business_graph.nodes import BusinessGraphNodes
-from common.context_preparation import PreparedRequest
+from basic_qa.capabilities.runtime import create_load_skill_tool
+from basic_qa.context.preparation import PreparedRequest
+from basic_qa.nodes import BasicQANodes
 from common.identity.db import IdentityState
 from common.identity.runtime import (
     RuntimeIdentityError,
@@ -66,7 +68,7 @@ async def test_sdk_retry_cannot_send_after_revision_revocation(monkeypatch) -> N
     import httpx
     from langchain_openai import ChatOpenAI
 
-    import common.business_graph.nodes as nodes_mod
+    import basic_qa.nodes as nodes_mod
     import common.identity.runtime as rt
     from common.models import ModelRegistry
 
@@ -156,14 +158,12 @@ def _state(**overrides: Any) -> IdentityState:
     return IdentityState(**base)
 
 
-def _nodes() -> BusinessGraphNodes:
-    nodes = BusinessGraphNodes(
+def _nodes() -> BasicQANodes:
+    nodes = BasicQANodes(
         router=None,
-        base_system_prompt="x",
-        load_skill_tool=None,
+        load_skill_tool=create_load_skill_tool(),
         graph_name="basic_qa",
     )
-    nodes._available_tools = lambda state: []  # type: ignore[method-assign]
     return nodes
 
 
@@ -171,7 +171,7 @@ async def test_model_retry_rechecks_identity_before_each_call(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """首次外呼瞬时失败 + 期间撤权 → 第二次不得发送，返回可读拒绝。"""
-    import common.business_graph.nodes as nodes_mod
+    import basic_qa.nodes as nodes_mod
     import common.identity.runtime as rt
 
     state_now = {"revoked": False, "checks": 0, "calls": 0}
@@ -214,7 +214,7 @@ async def test_empty_reply_nudge_rechecks_identity(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """空回复触发引导重试：重试外呼前同样复查，撤权即停不发第三次。"""
-    import common.business_graph.nodes as nodes_mod
+    import basic_qa.nodes as nodes_mod
     import common.identity.runtime as rt
 
     counters = {"calls": 0, "checks": 0}
@@ -291,7 +291,7 @@ async def test_mcp_retry_revalidates_before_each_resend(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """MCP 代码级重试：每次重发前重新核验身份；撤权即终止重试且不再发送。"""
-    import common.business_graph.tool_wrappers as tw
+    import basic_qa.tool_runtime as tw
     import common.identity.runtime as rt
 
     monkeypatch.setenv("TENANT_ENFORCE_RUNTIME_IDENTITY", "true")
@@ -342,3 +342,13 @@ async def test_missing_snapshot_fails_closed_in_enforce_mode(
     }
     with pytest.raises(RuntimeIdentityError):
         await guard_runtime_call(_config(legacy))
+
+
+@pytest.fixture(autouse=True)
+def empty_session_projection(monkeypatch):
+    from basic_qa.capabilities import projection
+
+    monkeypatch.setattr(
+        projection, "basic_qa_skill_catalog", AsyncMock(return_value=[])
+    )
+    monkeypatch.setattr(projection, "current_material", AsyncMock(return_value=None))

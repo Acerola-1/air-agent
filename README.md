@@ -37,6 +37,8 @@
 
 **数据分析 `data-analysis` 暂时封存**：暂停新功能、专项重构、优化与专项验收，已有计划不自动继续推进，待用户明确恢复。保留其代码、Skill、测试、历史证据、菜单约束及现有图注册；本次封存是开发范围调整，未执行运行入口下线或界面隐藏。共享基础设施变更仍需保持兼容与安全，必要修复及回归按 [AGENTS.md](AGENTS.md) 执行。
 
+基础问答的多轮能力正在按新版 [OpenSpec 计划](openspec/changes/revise-basic-qa-session-capabilities/proposal.md) 实施，状态见[实施记录](docs/testing/bqa-session-capabilities-v2/implementation.md)，接线见[流程说明](docs/testing/bqa-session-capabilities-v2/flow.md)。模型结合当前消息、历史、摘要和已激活能力决定动作；适用的能力可跨轮复用，**不要求每轮搜索或重新加载**。需要新能力时优先使用 Skill：`search_skills` 只检索，`load_skill` 加载完整规则和对应工具，允许多个 Skill 同时激活。对 Skill 未覆盖的需求或部分，可用 `search_mcp` 获取最多 Top 3 简介，再自主选择零个或多个，经 `load_mcp_tool` 独立加载后执行。全量工具定义留在程序侧，模型只接收当前激活定义。非绘图依赖仍为必需，绘图工具可选；接口无需回显查询时间或城市。新版覆盖旧计划的逐轮重激活／单 Skill 方案，旧计划与证据保留原状态。当前代码和分层验收不代表已正式发布；升级边界见[部署说明](docs/testing/bqa-session-capabilities-v2/upgrade-and-rollback.md)。
+
 ## 核心能力
 
 - **两条开发主线**：基础问答，以及受控的四专员污染溯源（冻结请求 + 确定性证据/门禁 + 统一发布）；菜单驱动的数据分析图暂时封存，现有实现与注册保留。
@@ -96,7 +98,7 @@ flowchart LR
 
 | 路径 | 职责 |
 |---|---|
-| `src/basic_qa/` | 开发主线：显式业务节点流与语义 Skill 路由 |
+| `src/basic_qa/` | 基础问答完整实现：图、节点、能力管理及独立上下文流程 |
 | `src/data_analysis/` | 暂时封存：保留菜单映射驱动的确定性分析 |
 | `src/intelligent_tracing/` | 开发主线：受控溯源 DeepAgents 调度图，四专员、真实业务 MCP 数据源、证据门禁；Skill 材料仅内部参考，不进入在线可选目录 |
 | `src/common/` | 身份、能力、模型、MCP、台账、观测、中间件与归档 |
@@ -204,3 +206,9 @@ npm --prefix admin/web run lint
 ## License
 
 [MIT](LICENSE)。项目源自 LangChain starter template，原始版权声明保留在 LICENSE 中。
+
+### 图实现与公共层
+
+Basic QA 与封存的数据分析分别拥有本目录下的构图、节点、提示组装、策略及 `context/` 流程，互不导入实现。`src/common/` 保留工具执行、Token／容量计量、材料读取、共享领域规则和身份／台账／观测等机制；`src/application/` 在可信宿主边界按实际图装配策略。原生认证与HTTP注册入口分别为 `application/langgraph_auth.py` 和 `application/http.py`。
+
+此次获准的目录归位不恢复数据分析功能开发；模型与业务行为沿用迁移前基线。公共发送层在每次真实工具发送前调用已装配策略，不能因绕过ToolNode、重试或缺少策略而放行。实现与验收进度见[迁移记录](docs/testing/graph-module-ownership/20261029-apply/implementation.md)。

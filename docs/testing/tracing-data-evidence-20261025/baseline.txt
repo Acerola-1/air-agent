@@ -1,0 +1,14 @@
+........................................................................ [ 38%]
+........................................................................ [ 77%]
+.........................................                                [100%]
+=============================== warnings summary ===============================
+tests/unit_tests/tracing/test_langfuse_trace_tree.py::test_business_graph_factories_bind_attributes_per_execution[basic_qa.graph-basic-qa]
+  /Users/acerola/Dev/Python/air_agent/src/common/business_graph/builder.py:138: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node(
+
+tests/unit_tests/tracing/test_langfuse_trace_tree.py::test_business_graph_factories_bind_attributes_per_execution[data_analysis.graph-data-analysis]
+  /Users/acerola/Dev/Python/air_agent/src/data_analysis/graph.py:133: UserWarning: The 'config' parameter should be typed as 'RunnableConfig' or 'RunnableConfig | None', not 'dict[str, Any] | None'. 
+    builder.add_node("ledger_finalize", make_ledger_finalize_node("data-analysis"))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+185 passed, 2 warnings in 21.25s

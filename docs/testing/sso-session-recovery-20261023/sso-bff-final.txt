@@ -1,0 +1,24 @@
+✔ chat: expired SSO returns to password form with state bound upstream and cookies cleared (17.734959ms)
+✔ chat: callback 400 has a clean recoverable login destination (3.839541ms)
+✔ chat: callback 401 has a clean recoverable login destination (1.076875ms)
+✔ chat: callback 403 has a clean recoverable login destination (0.837208ms)
+✔ chat: callback 503 has a clean recoverable login destination (0.55075ms)
+✔ chat: IAM outage and external redirect cannot escape login recovery (1.140167ms)
+✔ chat: authenticated positive control still preserves application session cookie (1.082875ms)
+✔ admin: expired SSO returns to password form with state bound upstream and cookies cleared (1.884083ms)
+✔ admin: callback 400 has a clean recoverable login destination (1.518292ms)
+✔ admin: callback 401 has a clean recoverable login destination (1.405125ms)
+✔ admin: callback 403 has a clean recoverable login destination (0.627ms)
+✔ admin: callback 503 has a clean recoverable login destination (0.648084ms)
+✔ admin: IAM outage and external redirect cannot escape login recovery (1.834334ms)
+✔ admin: authenticated positive control still preserves application session cookie (1.383458ms)
+✔ chat: internal Next URL normalization cannot move host-only cookies to another host (1.71425ms)
+✔ admin: internal Next URL normalization cannot move host-only cookies to another host (0.758459ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 263.558958

@@ -1,0 +1,245 @@
+{
+  "dataset_version": "bqa-session-capabilities-v2",
+  "clock": "2026-10-28T16:00:00+08:00",
+  "model": "cn:deepseek-v4.1-flash",
+  "source_fingerprint": "93800ebd99904352dcd8aeed0f172b48e087ff6f12d22a9383fb990446a7a827",
+  "model_config_fingerprint": "40f81ad9354149e419c09b68e9646f8ff0a5710b3f9ccc7d3dc91d37997face9",
+  "tools": "controlled frozen sanitized schemas and synthetic data",
+  "auth": "controlled identity, not native acceptance",
+  "skill_search": "controlled catalog scores",
+  "mcp_search": "controlled Top3, not embedding acceptance",
+  "evidence_kind": "configured_real_model_controlled_tools_offline_scenario_review",
+  "raw_evidence": ".local/bqa-session-capabilities-v2/model-import-20261029-clarification-named-v1",
+  "runs": [
+    {
+      "case_id": "A04",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "A04-1-1",
+          "input": "那杭州呢？",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 0,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 2,
+          "logical_tool_calls": 0,
+          "network_attempts": null,
+          "controlled_business_calls": 0,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {},
+          "first_answer_ms": 6871.319377998589,
+          "total_ms": 7522.740419997717,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7597,
+                  "output_tokens": 417,
+                  "total_tokens": 8014,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7424
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 392
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 6971,
+                  "output_tokens": 161,
+                  "total_tokens": 7132,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 6784
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 70
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    },
+    {
+      "case_id": "A08",
+      "repeat": 1,
+      "turns": [
+        {
+          "input_id": "A08-1-1",
+          "input": "请使用站点极值Skill分析湖州站点PM2.5极值",
+          "transport_completed_without_tool_errors": true,
+          "first_pass_completed": true,
+          "recovered_completed": false,
+          "incomplete": false,
+          "user_visible_error": false,
+          "scenario_failures": [],
+          "search_skills": 0,
+          "search_mcp": 0,
+          "load_skill": 1,
+          "load_mcp_tool": 0,
+          "embedding_documents": 0,
+          "embedding_queries": 0,
+          "activated": null,
+          "reused": null,
+          "model_requests": 6,
+          "logical_tool_calls": 6,
+          "network_attempts": null,
+          "controlled_business_calls": 5,
+          "parameter_assertions": "passed_for_asserted_fields",
+          "material_and_schema_versions_loaded_this_turn": {
+            "skill:basic-qa:station-extreme": "sha256:4dc422d7afd94c832809037108b98141f71538e53c07f460ae446771ee8aee0e"
+          },
+          "first_answer_ms": 22377.037093996478,
+          "total_ms": 24144.164719997207,
+          "usage": [
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 7609,
+                  "output_tokens": 150,
+                  "total_tokens": 7759,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 7424
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 49
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 9938,
+                  "output_tokens": 355,
+                  "total_tokens": 10293,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 3968
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 274
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10243,
+                  "output_tokens": 413,
+                  "total_tokens": 10656,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 9856
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 212
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10701,
+                  "output_tokens": 196,
+                  "total_tokens": 10897,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10240
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 130
+                  }
+                }
+              ]
+            },
+            {
+              "node": "call_model",
+              "usage": [
+                {
+                  "input_tokens": 10900,
+                  "output_tokens": 313,
+                  "total_tokens": 11213,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 10624
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 288
+                  }
+                }
+              ]
+            },
+            {
+              "node": "answer_model",
+              "usage": [
+                {
+                  "input_tokens": 9507,
+                  "output_tokens": 449,
+                  "total_tokens": 9956,
+                  "input_token_details": {
+                    "audio": 0,
+                    "cache_read": 8064
+                  },
+                  "output_token_details": {
+                    "audio": 0,
+                    "reasoning": 119
+                  }
+                }
+              ]
+            }
+          ],
+          "activation_observation_note": "activation/reuse facts were not collected by this controlled harness; not recorded as zero"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "not native SDK, live MCP, embedding or browser acceptance",
+    "scenario assertions are offline tests and never block product answers",
+    "answer factual quality is not fully assessed by these structural assertions",
+    "request captures exclude authentication headers; private raw evidence stays ignored"
+  ],
+  "totals": {
+    "first_pass_completed": 2,
+    "recovered_completed": 0,
+    "incomplete": 0,
+    "user_visible_error": 0,
+    "runs": 2,
+    "turns": 2
+  }
+}

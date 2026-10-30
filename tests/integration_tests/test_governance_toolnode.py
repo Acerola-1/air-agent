@@ -16,8 +16,8 @@ from langgraph.errors import GraphBubbleUp
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 
-from common.business_graph import tool_wrappers as wrappers
-from common.business_graph.state import BusinessGraphState
+from common.tool_execution import results as wrappers
+from basic_qa.state import BasicQAState
 from common.computation.tool import compute_artifact
 from common.storage import artifact_db
 
@@ -61,7 +61,7 @@ def isolated(tmp_path, monkeypatch):
 
 
 def graph(tools):
-    builder = StateGraph(BusinessGraphState)
+    builder = StateGraph(BasicQAState)
     builder.add_node(
         "tools",
         ToolNode(

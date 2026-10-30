@@ -1,0 +1,1 @@
+"""Basic QA owned implementation."""

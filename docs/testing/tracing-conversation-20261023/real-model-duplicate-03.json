@@ -1,0 +1,301 @@
+{
+  "version": "tracing-conversation-v1",
+  "model": "hy3",
+  "identity": "controlled",
+  "data": "frozen fixture",
+  "checkpoint": "owned temporary SQLite (removed after run)",
+  "rows": [
+    {
+      "case": "duplicate_station",
+      "repeat": 1,
+      "expected": "clarify",
+      "route": "clarify",
+      "reason": "station_ambiguous",
+      "passed": true,
+      "error": null,
+      "seconds": 25.329,
+      "model_calls": 2,
+      "tools": [
+        "freeze_tracing_request"
+      ],
+      "source_fetches": 0,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "inherit_previous": false,
+            "tone": "friendly",
+            "slots": [
+              {
+                "field": "station_name",
+                "value": "目标站",
+                "source_text": "目标站"
+              },
+              {
+                "field": "region_name",
+                "value": "测试市",
+                "source_text": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "value": "pm2.5",
+                "source_text": "pm2.5"
+              },
+              {
+                "field": "start",
+                "value": "2026-10-01T00:00:00+08:00",
+                "source_text": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "value": "2026-10-02T00:00:00+08:00",
+                "source_text": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "value": "10",
+                "source_text": "10"
+              },
+              {
+                "field": "baseline_start",
+                "value": "2026-09-24T00:00:00+08:00",
+                "source_text": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "value": "2026-10-01T00:00:00+08:00",
+                "source_text": "2026-10-01T00:00:00+08:00"
+              }
+            ]
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1864,
+          "output_tokens": 2512,
+          "total_tokens": 4376,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 2170
+          }
+        },
+        {
+          "input_tokens": 2287,
+          "output_tokens": 179,
+          "total_tokens": 2466,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 0
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "站点名称对应多个候选，请确认站点代码：\n\n- S001\n- S002\n\n尚未开始污染观测或气象取数。",
+      "sha256": "7eaca21d552ae427de38a8fcae6a4234c7aeac97b69b31e9be4a971af249d63e"
+    },
+    {
+      "case": "duplicate_station",
+      "repeat": 2,
+      "expected": "clarify",
+      "route": "clarify",
+      "reason": "station_ambiguous",
+      "passed": true,
+      "error": null,
+      "seconds": 17.996,
+      "model_calls": 2,
+      "tools": [
+        "freeze_tracing_request"
+      ],
+      "source_fetches": 0,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "blocks": [],
+            "slots": [
+              {
+                "field": "station_name",
+                "value": "目标站",
+                "source_text": "目标站"
+              },
+              {
+                "field": "region_name",
+                "value": "测试市",
+                "source_text": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "value": "pm2.5",
+                "source_text": "pm2.5"
+              },
+              {
+                "field": "start",
+                "value": "2026-10-01T00:00:00+08:00",
+                "source_text": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "value": "2026-10-02T00:00:00+08:00",
+                "source_text": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "value": "10",
+                "source_text": "10"
+              },
+              {
+                "field": "baseline_start",
+                "value": "2026-09-24T00:00:00+08:00",
+                "source_text": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "value": "2026-10-01T00:00:00+08:00",
+                "source_text": "2026-10-01T00:00:00+08:00"
+              }
+            ]
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1864,
+          "output_tokens": 1685,
+          "total_tokens": 3549,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1354
+          }
+        },
+        {
+          "input_tokens": 2273,
+          "output_tokens": 229,
+          "total_tokens": 2502,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 53
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "站点名称对应多个候选，请确认站点代码：\n\n- S001\n- S002\n\n尚未开始污染观测或气象取数。",
+      "sha256": "7eaca21d552ae427de38a8fcae6a4234c7aeac97b69b31e9be4a971af249d63e"
+    },
+    {
+      "case": "duplicate_station",
+      "repeat": 3,
+      "expected": "clarify",
+      "route": "clarify",
+      "reason": "station_ambiguous",
+      "passed": true,
+      "error": null,
+      "seconds": 16.895,
+      "model_calls": 2,
+      "tools": [
+        "freeze_tracing_request"
+      ],
+      "source_fetches": 0,
+      "plans": [
+        {
+          "plan": {
+            "intent": "analysis",
+            "inherit_previous": false,
+            "reset_fields": [],
+            "slots": [
+              {
+                "field": "station_name",
+                "source_text": "目标站",
+                "value": "目标站"
+              },
+              {
+                "field": "region_name",
+                "source_text": "测试市",
+                "value": "测试市"
+              },
+              {
+                "field": "pollutant",
+                "source_text": "pm2.5",
+                "value": "pm2.5"
+              },
+              {
+                "field": "start",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              },
+              {
+                "field": "end",
+                "source_text": "2026-10-02T00:00:00+08:00",
+                "value": "2026-10-02T00:00:00+08:00"
+              },
+              {
+                "field": "neighbor_radius_km",
+                "source_text": "10",
+                "value": "10"
+              },
+              {
+                "field": "baseline_start",
+                "source_text": "2026-09-24T00:00:00+08:00",
+                "value": "2026-09-24T00:00:00+08:00"
+              },
+              {
+                "field": "baseline_end",
+                "source_text": "2026-10-01T00:00:00+08:00",
+                "value": "2026-10-01T00:00:00+08:00"
+              }
+            ],
+            "blocks": [],
+            "tone": "friendly"
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1864,
+          "output_tokens": 1615,
+          "total_tokens": 3479,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 512
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 1265
+          }
+        },
+        {
+          "input_tokens": 2292,
+          "output_tokens": 412,
+          "total_tokens": 2704,
+          "input_token_details": {
+            "audio": 0,
+            "cache_read": 576
+          },
+          "output_token_details": {
+            "audio": 0,
+            "reasoning": 242
+          }
+        }
+      ],
+      "done": 1,
+      "answer": "站点名称对应多个候选，请确认站点代码：\n\n- S001\n- S002\n\n尚未开始污染观测或气象取数。",
+      "sha256": "7eaca21d552ae427de38a8fcae6a4234c7aeac97b69b31e9be4a971af249d63e"
+    }
+  ]
+}
