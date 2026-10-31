@@ -940,13 +940,9 @@ def render_report(
         for block in section.blocks
         if block != ""
     )
-    profile = policy.require_supported(request.pollutant)
+    policy.require_supported(request.pollutant)
     claims = _by_id(allowlist)
     selected = [claims[claim_id] for claim_id in plan.claim_ids if claim_id in claims]
-    title = (
-        f"{profile.display_name} 污染过程与来向线索分析"
-        f"（{request.target.station_name or request.target.station_code}）"
-    )
     report = ValidatedReport(
         report_id=report_id,
         analysis_id=request.analysis_id,
@@ -957,12 +953,6 @@ def render_report(
         claim_ids=tuple(claim.claim_id for claim in selected),
         limitations=allowlist.limitations,
         body_markdown=body,
-        canvas={
-            "title": title,
-            "content_type": "markdown",
-            "content": body,
-            "open_in": "canvas_window",
-        },
         evidence_ids=tuple(
             dict.fromkeys(
                 evidence_id

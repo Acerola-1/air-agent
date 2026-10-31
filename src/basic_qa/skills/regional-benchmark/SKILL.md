@@ -29,17 +29,17 @@ description: |
     - 本月某省PM10达标城市占比是多少？
     - 今日某省哪些城市AQI没有达标？
 
-allowed-tools: helper_get_latest_time mcp_city_analysis_calculations text2sql_monthly_and_yearly_city_comparison chart_city_calendar_day_calculations chart_city_monthly_yearly_comparison
+allowed-tools: helper_get_latest_time mcp_city_analysis_calculations text2sql_monthly_and_yearly_city_comparison
 required-tools: helper_get_latest_time mcp_city_analysis_calculations text2sql_monthly_and_yearly_city_comparison
-optional-tools: chart_city_calendar_day_calculations chart_city_monthly_yearly_comparison
+optional-tools:
 ---
 
 # 区域对标与达标统计
 
 ## 详细规则入口
 
-- 本文件只用于技能识别、路由摘要和通用约束；完整执行流程位于 `references/fast.md` 或 `references/expert.md`。
-- 系统已按当前模式把对应详细规则内联在本提示词 `=====` 分隔线之后，直接按该规则执行数据获取、校验、缺失处理和输出组织；不要用本文件摘要替代详细规则。
+- 本文件只用于技能识别、路由摘要和通用约束；完整执行流程位于 `references/rules.md`。
+- 命中本技能后，系统会把 `references/rules.md` 内联在本提示词 `=====` 分隔线之后，直接按该规则执行数据获取、校验、缺失处理和输出组织；不要用本文件摘要替代详细规则。只有一份规则文件，不存在模式选择。
 
 ## 执行边界
 

@@ -12,12 +12,9 @@ from common.prompts import (
     AIR_QUALITY_UNIT_NORMALIZATION_GUIDE,
     DATA_AUTHENTICITY_GUARD,
     DATA_DELAY_RETRY_GUIDE,
-    EXPERT_MODE_SYSTEM_PROMPT,
-    FAST_MODE_SYSTEM_PROMPT,
     POLLUTANT_LEVEL_BOUNDARY_GUIDE,
     TIME_PARAMETER_NORMALIZATION_GUIDE,
 )
-from common.runtime_context import get_routing_context
 from common.runtime_tools import tool_name
 
 
@@ -78,29 +75,13 @@ def build_time_context() -> str:
 """.strip()
 
 
-def build_mode_context(configurable: dict[str, Any] | None) -> str:
-    """构建运行模式上下文（等效于 ModeRoutingMiddleware）."""
-    routing = get_routing_context(configurable)
-    parts = [routing.prompt]
-    if routing.mode == "expert":
-        parts.append(EXPERT_MODE_SYSTEM_PROMPT)
-    else:
-        parts.append(FAST_MODE_SYSTEM_PROMPT)
-    return "\n\n".join(parts)
-
-
-def build_system_prompt(
-    *,
-    skill_rules_content: str = "",
-    configurable: dict[str, Any] | None = None,
-) -> str:
+def build_system_prompt(*, skill_rules_content: str = "") -> str:
     """组装完整的系统提示词.
 
-    组装顺序: SYSTEM_PROMPT + output_guard + 时间上下文 + mode 上下文 + Skill 规则
+    组装顺序: SYSTEM_PROMPT + output_guard + 时间上下文 + Skill 规则
     """
     parts = [with_data_analysis_output_guard(SYSTEM_PROMPT)]
     parts.append(build_time_context())
-    parts.append(build_mode_context(configurable))
 
     if skill_rules_content:
         parts.append(skill_rules_content)
@@ -119,8 +100,8 @@ def filter_business_tools(
     框架工具（不在业务工具列表中的）始终保留。
     allowed_tool_names 为空或 None 时，不暴露任何数据分析业务工具，但保留
     knowledge_search：无菜单时可做知识问答，不能据此启动任意数据分析。
-    create_artifact / get_beijing_time / knowledge_search 作为跨技能通用工具
-    始终保留，保证 Agent 在任何技能命中场景下都能产出画布与可核验知识依据。
+    compute_artifact / get_beijing_time / knowledge_search 作为跨技能通用工具
+    始终保留，保证 Agent 在任何技能命中场景下都能完成确定性计算与可核验知识依据。
     """
     if not allowed_tool_names:
         return [
@@ -129,9 +110,8 @@ def filter_business_tools(
             if tool_name(t) in {"compute_artifact", "knowledge_search"}
         ]
 
-    # 始终可见的通用工具：画布输出 + 时间 + 知识检索，不受技能 allowed-tools 限制
+    # 始终可见的通用工具：确定性计算 + 时间 + 知识检索，不受技能 allowed-tools 限制
     always_visible = {
-        "create_artifact",
         "get_beijing_time",
         "compute_artifact",
         "knowledge_search",

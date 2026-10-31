@@ -29,24 +29,24 @@ description: |
     - 昨天某市和某市各污染物浓度差异？
     - 2026年5月1日某市和某市空气质量等级对比？
 
-allowed-tools: helper_get_latest_time mcp_city_common_get_air_quality_realtime_stat mcp_city_common_get_air_quality_forecast mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history chart_city_concentration_line_chart
+allowed-tools: helper_get_latest_time mcp_city_common_get_air_quality_realtime_stat mcp_city_common_get_air_quality_forecast mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history
 required-tools: helper_get_latest_time mcp_city_common_get_air_quality_realtime_stat mcp_city_common_get_air_quality_forecast mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history
-optional-tools: chart_city_concentration_line_chart
+optional-tools:
 ---
 
 # 基础空气质量数据查询
 
 ## 详细规则入口
 
-- 本文件只用于技能识别、路由摘要和通用约束；完整执行流程位于 `references/fast.md` 或 `references/expert.md`。
-- 系统已按当前模式把对应详细规则内联在本提示词 `=====` 分隔线之后，直接按该规则执行数据获取、校验、缺失处理和输出组织；不要用本文件摘要替代详细规则。
+- 本文件只用于技能识别、路由摘要和通用约束；完整执行流程位于 `references/rules.md`。
+- 命中本技能后，系统会把 `references/rules.md` 内联在本提示词 `=====` 分隔线之后，直接按该规则执行数据获取、校验、缺失处理和输出组织；不要用本文件摘要替代详细规则。只有一份规则文件，不存在模式选择。
 
 ## 执行边界
 
 - 仅负责本技能的数据查询、结果校验和输出组织。
 - 用户询问单城或多城在同一天、当前、实时、截至某小时、昨日或指定日期的 AQI、空气质量等级、首要污染物、综合指数或六因子浓度时，均属于本技能。
 - 多城市问题只要是同日或同小时基础数据对比、AQI 对比、污染物浓度差异对比，也属于本技能；不要求排名、同比、环比、趋势或达标预测时，不要转交其他技能。
-- 回答面向普通业务用户，不暴露内部工具名、模式名、源码文件名、运行时上下文或字段名。
+- 回答面向普通业务用户，不暴露内部工具名、加载机制、源码文件名、运行时上下文或字段名。
 
 ## 通用数据范围
 

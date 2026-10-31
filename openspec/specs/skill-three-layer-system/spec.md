@@ -1,4 +1,4 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: SKILL.md 总纲自动注入
 每个 Skill SHALL 包含 SKILL.md 总纲文件，SkillsMiddleware SHALL 自动扫描 skills 目录下的 SKILL.md，解析 YAML frontmatter（name, description, allowed-tools），将 name + description 注入到 SubAgent 的 system prompt Skills 列表中。

@@ -1,11 +1,11 @@
-"""Lead-facing tracing tools: freeze request, build report, publish canvas."""
+"""Lead-facing tracing tools: freeze request and build validated report."""
 
 from __future__ import annotations
 
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any
 
 from langchain.tools import ToolRuntime
 from langchain_core.messages import ToolMessage
@@ -91,17 +91,6 @@ class BuildReportInput(BaseModel):
     model_config = ConfigDict(extra="ignore", frozen=True)
 
     plan: ReportPlan | None = None
-
-
-class PublishCanvasInput(BaseModel):
-    """Validated-report reference plus display option; no raw content."""
-
-    model_config = ConfigDict(extra="ignore", frozen=True)
-
-    report_id: str
-    open_in: Literal["canvas_window", "inline_below", "modal", "sidebar"] = (
-        "canvas_window"
-    )
 
 
 def _config_from_runtime(runtime: ToolRuntime) -> dict[str, Any]:
@@ -422,8 +411,8 @@ def build_report_tools(
     policy: AnalysisPolicy,
     report_store: ReportStore,
     section_barrier: Any = None,
-) -> tuple[StructuredTool, StructuredTool]:
-    """Build deterministic report construction and canvas publication tools."""
+) -> StructuredTool:
+    """Build the deterministic validated-report tool."""
 
     async def _build(
         runtime: ToolRuntime, plan: ReportPlan | None = None
@@ -590,69 +579,6 @@ def build_report_tools(
             }
         )
 
-    async def _canvas(
-        runtime: ToolRuntime,
-        report_id: str,
-        open_in: Literal["canvas_window", "inline_below", "modal", "sidebar"] = (
-            "canvas_window"
-        ),
-    ) -> dict[str, Any]:
-        state = runtime.state
-        report = state.get("validated_report")
-        scope = state.get("scope")
-        if report is None or scope is None:
-            return {"status": "not_ready", "message": "尚无已验证报告"}
-        if report.report_id != report_id:
-            return {"status": "invalid", "message": "报告引用与当前验证版本不一致"}
-        if report.scope != scope:
-            return {"status": "invalid", "message": "报告作用域不一致"}
-        artifact_id = f"art_{uuid.uuid4().hex[:12]}"
-        canvas = report.canvas.model_copy(update={"open_in": open_in})
-        artifact_ref = {
-            "artifact_id": artifact_id,
-            "content_sha256": report.content_sha256,
-            "title": canvas.title,
-            "content_type": canvas.content_type,
-            "content": canvas.content,
-            "open_in": canvas.open_in,
-            "auto_detected": False,
-            "validated_report_ref": report.report_id,
-        }
-        storage_status = "unavailable"
-        config = _config_from_runtime(runtime)
-        run_id = run_id_from_config(config)
-        import os
-
-        if os.getenv("RUNTIME_DATABASE_URI") and run_id:
-            try:
-                from common.storage.artifact_db import save_tool_artifact
-
-                stored_id = await save_tool_artifact(
-                    tool_call_id=str(getattr(runtime, "tool_call_id", "") or ""),
-                    tool_name="publish_tracing_canvas",
-                    raw_payload=json.dumps(artifact_ref, ensure_ascii=False),
-                    tenant_id=report.scope.tenant_id,
-                    user_id=report.scope.user_id,
-                    thread_id=report.scope.thread_id,
-                    run_id=run_id,
-                    summary=canvas.title,
-                    kind="validated_canvas",
-                    parent_artifact_id=report.report_id,
-                    processing_metadata={
-                        "validated_report_ref": report.report_id,
-                        "content_sha256": report.content_sha256,
-                    },
-                )
-                artifact_ref["artifact_id"] = stored_id
-                storage_status = "stored"
-            except Exception:  # noqa: BLE001 - DB outage must not leak raw errors
-                storage_status = "unavailable"
-        return {
-            "status": "published",
-            "artifact_ref": artifact_ref,
-            "storage_status": storage_status,
-        }
-
     build_tool = StructuredTool.from_function(
         coroutine=_build,
         name="build_validated_report",
@@ -663,14 +589,4 @@ def build_report_tools(
         args_schema=BuildReportInput,
         infer_schema=False,
     )
-    canvas_tool = StructuredTool.from_function(
-        coroutine=_canvas,
-        name="publish_tracing_canvas",
-        description=(
-            "按已验证报告 ID 发布服务端渲染画布。只接受报告 ID 和展示方式，"
-            "不接受任意正文或 HTML。"
-        ),
-        args_schema=PublishCanvasInput,
-        infer_schema=False,
-    )
-    return build_tool, canvas_tool
+    return build_tool

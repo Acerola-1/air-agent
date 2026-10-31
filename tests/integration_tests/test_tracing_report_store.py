@@ -137,13 +137,12 @@ def test_save_requires_run_binding(runtime_env):
 
 
 @pytest.mark.anyio
-async def test_reopened_canvas_matches_stored_report_digest(runtime_env):
+async def test_reopened_report_matches_stored_digest(runtime_env):
     store = PersistentReportStore()
     report = _report(run_id="run-test-3", report_id="rep_store_canvas")
     await store.save(report)
     reopened = await store.get(report.report_id, scope=report.scope)
     assert reopened is not None
-    assert reopened.canvas == report.canvas
     assert reopened.content_sha256 == report.compute_digest()
 
 

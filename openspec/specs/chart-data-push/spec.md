@@ -1,4 +1,4 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: MCP chart_data 格式兼容提取
 系统 SHALL 在 `_extract_rich_outputs_from_message()` 中增加对 MCP 工具返回的 `{data: {llm_data: ..., chart_data: ...}}` 格式的兼容提取逻辑。当 ToolMessage 的 content 包含 `chart_data` 字段时，系统 SHALL 将其作为 rich_output 推送前端渲染。

@@ -1,4 +1,4 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Main Agent 路由调度
 系统 SHALL 提供 Main Agent 作为路由调度器，接收格式为 `[module:XXX][mode:XXX] 实际问题` 的用户消息，解析 module 标记路由到对应 SubAgent，将 mode 标记透传到 task() 的 description 参数。

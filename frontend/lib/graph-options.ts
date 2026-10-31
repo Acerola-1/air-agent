@@ -1,7 +1,8 @@
-/** 当前 air_agent 支持的 3 个业务 — 稳定编码、中文名与唯一 IAM 使用权限.
+/** 前端暴露的 2 个业务 — 稳定编码、中文名与唯一 IAM 使用权限.
  *
  *  graph_id 必须和 langgraph.json graphs 的 key 完全一致:
- *    basic-qa / data-analysis / intelligent-tracing
+ *    basic-qa / intelligent-tracing
+ *  data-analysis 仍注册在后端，但前端不再提供入口。
  *  业务授权以 IAM 实时权限为准；本文件只负责展示与过滤，不构成授权。
  */
 export const GRAPH_OPTIONS = [
@@ -10,12 +11,6 @@ export const GRAPH_OPTIONS = [
     label: "基础问答",
     desc: "标准空气质量问答",
     permission: "agent:business:basic-qa:use",
-  },
-  {
-    id: "data-analysis",
-    label: "数据分析助手",
-    desc: "表格 / SQL / 可视化",
-    permission: "agent:business:data-analysis:use",
   },
   {
     id: "intelligent-tracing",
@@ -38,7 +33,6 @@ export function availableGraphOptions(
 /** 给每个 graph 分配一个稳定的小圆点颜色，方便快速区分 */
 export const GRAPH_COLORS: Record<GraphId, string> = {
   "basic-qa": "#16a34a", // green-600
-  "data-analysis": "#0891b2", // cyan-600
   "intelligent-tracing": "#7c3aed", // violet-600
 };
 

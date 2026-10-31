@@ -1,4 +1,4 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Skill 级空气质量数值预报适用性分类
 系统 SHALL 对所有包含 `mcp_city_common_get_air_quality_forecast` 的 Skill 逐个进行适用性分类，并将分类结果落实到对应 Skill 文件中。分类 MUST 至少包含必需预测类、条件预测类、可选预测类和非预测类。

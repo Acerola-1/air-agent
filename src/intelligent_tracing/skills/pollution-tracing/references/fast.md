@@ -5,4 +5,4 @@
 3. 并行运行 station-data 与 grid-data。
 4. 运行 meteo-analyst；必要时 evidence-reviewer 找反证。
 5. 由执行层生成 claim allowlist 与 ValidatedReport；非法计划回退确定性模板。
-6. 分析结论只发布已验证报告；画布只接受已验证报告引用。普通交流/澄清发布可信条目计划，不回退原始模型消息。
+6. 分析结论只发布已验证报告；不接受任意正文或原始 HTML。普通交流/澄清发布可信条目计划，不回退原始模型消息。

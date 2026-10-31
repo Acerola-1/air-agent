@@ -64,11 +64,10 @@ type ChatState = {
   openThread: (threadId: string) => Promise<void>; newThread: () => void;
   sendMessage: (
     text: string,
-    chatMode: string,
     operationKind?: "initial" | "retry" | "regenerate",
   ) => Promise<void>;
   /** 重新生成：对上一条用户问题发起 regenerate（关联原 request，新增 attempt）。 */
-  regenerateLast: (chatMode: string) => Promise<void>;
+  regenerateLast: () => Promise<void>;
   /** R10：停止并等待后端取消确认；confirmed=false 表示未确认（不得谎称已停止） */
   stopStreaming: () => Promise<StopOutcome>;
   /** 页面卸载（导航离开/刷新）：记录 origin=navigation 的停止意图，尽力送达。 */
@@ -265,7 +264,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     generation++; cancelActive();
     set({ activeThreadId: null, ...emptyView });
   },
-  sendMessage: async (text, chatMode, operationKind = "initial") => {
+  sendMessage: async (text, operationKind = "initial") => {
     const previous = get(); const trimmed = text.trim();
     if (previous.isStreaming || previous.stopPending || !trimmed) return;
     const run: ActiveRun = {
@@ -307,7 +306,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       run.streamStarted = true;
       await streamRun({ threadId, graphId: previous.graphId,
         messages: [{ id: userMsg.id, type: "human", content: trimmed }],
-        config: { configurable: { chat_mode: chatMode,
+        config: { configurable: {
           ...(previous.graphId === "data-analysis" ? { menu_name: previous.analysisMenuName } : {}) } }, signal: run.controller.signal,
         handlers: {
           onRun: (runId) => {
@@ -495,7 +494,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       origin: "navigation",
     });
   },
-  regenerateLast: async (chatMode: string) => {
+  regenerateLast: async () => {
     const state = get();
     if (state.isStreaming || state.stopPending || !state.activeThreadId) return;
     const local = [...state.messages].reverse().find((m) => m.role === "user");
@@ -513,7 +512,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
     }
     if (!content) return;
-    await get().sendMessage(content, chatMode, "regenerate");
+    await get().sendMessage(content, "regenerate");
   },
   stopStreaming: async () => {
     if (stopPromise) return stopPromise;

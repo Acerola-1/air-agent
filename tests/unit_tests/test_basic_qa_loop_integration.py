@@ -157,7 +157,7 @@ _MATERIAL = SimpleNamespace(
     rules="仅使用可信数据。",
     catalog_scope="test-scope",
     tool_scope=SimpleNamespace(
-        allowed_ids=frozenset({"mcp:ipp:demo"}), unavailable_optional=()
+        allowed_ids=frozenset({"mcp:ipp:demo"})
     ),
 )
 

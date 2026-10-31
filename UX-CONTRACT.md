@@ -30,7 +30,7 @@ CSS 变量／Tailwind 运行时为 tokens 所有者，DESIGN.md 记录语义与�
 | 整理反馈 | ProcessingNotice | 开始／完成／失败，共享组件 | 流事件回归／实际运行 |
 | 归档资料 | ArchiveReader | 显式加载、上一段／下一段，8000 字符每页 | API 授权／实际回读 |
 | 会话操作 | chat-store、ThreadList | generation 隔离，删除失败不移除列表 | 回归／实际删除测试线程 |
-| 图／模式选择 | GraphSwitcher、ModeSwitcher | 沿用现有共享控制 | 浏览器 |
+| 图选择 | GraphSwitcher | 沿用现有共享控制 | 浏览器 |
 
 本次没有表格选择、日期输入或新的下拉组件，不能为这些未使用能力虚构 canonical owner。
 
@@ -99,18 +99,14 @@ chat-store 的 stopPending 独立于本地流结束：未知状态保留运行�
 
 小于md时会话列表由首页的共享Dialog承载，含标题/说明、焦点圈定、Escape关闭、触发器焦点恢复；选择会话关闭弹窗。md及以上保留侧栏。窄屏企业选择不隐藏，用户名称可隐藏腾出空间，反馈随正文自然换行。390×844与原视口已实看；原生select保留系统键盘语义。
 
-## 能力与工具选择（Skill/MCP）（2026-10-15）
+## MCP 工具披露（后端协议，无前端入口）（2026-10-31）
 
-业务来源：`openspec/changes/archive/2026-10-15-add-skill-tool-selection/specs/**`。能力选择所有者为 `components/chat/CapabilitySelector.tsx`，状态所有者为 `lib/capability-store.ts`。
+业务来源：`openspec/changes/retire-chat-modes-and-artifact-tools/`。当前前端不存在技能或 MCP 工具选择 UI：旧的选择组件与状态 store 已无生产引用并删除；聊天发送只带图与会话，不带模式参数。
 
-- **输入区顶栏控制**：在 Composer 顶栏常驻胶囊触发器，显示当前技能与 MCP 工具选择摘要（例如：“技能: 自动匹配 · 工具: 自动”或“技能: 基础查询 · 工具: 2项 / 不使用”）。
-- **模态弹窗与切换**：点击打开共享 Dialog，包含“技能选择”与“MCP 工具”双 Tab。
-  - **技能选择**：单选（Radio），首项为“自动匹配（默认推荐）”，其余为当前图可用的本地技能，按名称排序，附带材料版本及依赖工具指示。
-  - **MCP 工具选择**：支持“自动（全部可用工具）”和“白名单模式”；白名单模式下勾选具体已授权工具，若勾选集合为空则明确表示“显式禁用 MCP 工具（零网络调用）”。针对当前不可用/故障服务提供告警徽标与禁用保护。
-- **重置与草稿生命周期**：提供“恢复默认”操作。切换图（`switchGraph`）或租户时，自动清空草稿并递增 epoch，迟到的旧目录响应静默丢弃（防 A→B→A 时序竞争）。
-- **运行锁定与不可变**：流式生成或等待停止期间禁用触发按钮，悬停提示锁定状态，保证已受理的选择在执行期间不可变。
-- **重试与恢复**：`retry` 继承当前尝试的选择计划；`regenerate` 默认继承或使用显式新草稿；`resume` 严禁更改选择。
-- **响应式与无障碍**：弹窗限高 `85vh` 并自带滚动；390×844 窄屏与桌面自适应；完整键盘焦点导航（Tab/Shift+Tab）、Escape 关闭、明确的 aria-label 以及中文输入法组合键保护。
+- **后端受理协议保留**：BFF 仍接受 `capability_selection` 并注入 `capability_mcp_mode`，服务端按 `agent_capability_selections` 冻结受理快照；该协议不是聊天模式，也不提供用户可见入口。
+- **auto 语义**：没有用户名单，模型在企业已授权目录内自行搜索工具，可以零调用；`auto` 不表示每轮必须调用某个 MCP 工具。
+- **allowlist 语义**：仅按用户名单收窄；空 allowlist 表示显式禁用 MCP（零网络调用），不得与 `auto` 混用。显式选择受 `AGENT_CAPABILITY_SELECTION_ENABLED` 控制，默认关闭。
+- **未声明即保护**：不隐藏 schema 或提示模型拒绝来冒充保护；工具披露与执行仍由服务端策略逐次校验。
 
 ## 业务入口与授权（2026-10-19）
 

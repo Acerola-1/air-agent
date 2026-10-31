@@ -28,17 +28,17 @@ description: |
     - 去年全年某市各污染物占综指比例？
     - 2026年4月某市PM2.5、PM10、臭氧对综合指数贡献占比？
 
-allowed-tools: helper_get_latest_time integratedIndexRatio mcp_city_common_get_air_quality_realtime_stat text2sql_city_indexes_month_and_year mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history chart_city_composite_index_six_factor_ratio chart_city_indexes_month_year_line_chart
+allowed-tools: helper_get_latest_time integratedIndexRatio mcp_city_common_get_air_quality_realtime_stat text2sql_city_indexes_month_and_year mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history
 required-tools: helper_get_latest_time integratedIndexRatio mcp_city_common_get_air_quality_realtime_stat text2sql_city_indexes_month_and_year mcp_weather_forecast_daily mcp_weather_forecast_hourly mcp_weather_forecast_daily_history mcp_weather_forecast_hourly_history
-optional-tools: chart_city_composite_index_six_factor_ratio chart_city_indexes_month_year_line_chart
+optional-tools:
 ---
 
 # 同比对比与六因子占比分析
 
 ## 详细规则入口
 
-- 本文件只用于技能识别、路由摘要和通用约束；完整执行流程位于 `references/fast.md` 或 `references/expert.md`。
-- 系统已按当前模式把对应详细规则内联在本提示词 `=====` 分隔线之后，直接按该规则执行数据获取、校验、缺失处理和输出组织；不要用本文件摘要替代详细规则。
+- 本文件只用于技能识别、路由摘要和通用约束；完整执行流程位于 `references/rules.md`。
+- 命中本技能后，系统会把 `references/rules.md` 内联在本提示词 `=====` 分隔线之后，直接按该规则执行数据获取、校验、缺失处理和输出组织；不要用本文件摘要替代详细规则。只有一份规则文件，不存在模式选择。
 
 ## 执行边界
 

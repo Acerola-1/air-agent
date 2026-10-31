@@ -1,13 +1,15 @@
 """数据分析输出护栏测试."""
 
 from basic_qa.prompts import with_main_agent_tool_use_output_guard
-from data_analysis.prompts import DATA_ANALYSIS_OUTPUT_GUARD, with_data_analysis_output_guard
 from common.prompts import (
     ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE,
     AIR_QUALITY_UNIT_NORMALIZATION_GUIDE,
-    EXPERT_MODE_SYSTEM_PROMPT,
     MAIN_AGENT_TOOL_USE_OUTPUT_GUARD,
     TIME_PARAMETER_NORMALIZATION_GUIDE,
+)
+from data_analysis.prompts import (
+    DATA_ANALYSIS_OUTPUT_GUARD,
+    with_data_analysis_output_guard,
 )
 
 
@@ -60,10 +62,9 @@ def test_output_guards_preserve_business_rules() -> None:
     assert "通用规范要求" in MAIN_AGENT_TOOL_USE_OUTPUT_GUARD
 
 
-def test_expert_mode_prompt_limits_tables_to_small_tables() -> None:
-    assert "支持国标表格" not in EXPERT_MODE_SYSTEM_PROMPT
-    assert "表格最多 4 列、6 行数据" in EXPERT_MODE_SYSTEM_PROMPT
-    assert "不得输出长表格、大明细表或完整原始数据表" in EXPERT_MODE_SYSTEM_PROMPT
+def test_data_analysis_guard_limits_tables_to_small_tables() -> None:
+    assert "最多 4 列、6 行数据" in DATA_ANALYSIS_OUTPUT_GUARD
+    assert "不得输出长表格、大明细表或完整原始数据表" in DATA_ANALYSIS_OUTPUT_GUARD
 
 
 def test_with_data_analysis_output_guard_keeps_pollutant_boundaries() -> None:

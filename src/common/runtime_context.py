@@ -2,40 +2,9 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
 from langchain_core.runnables import RunnableConfig
-
-
-@dataclass(frozen=True)
-class RoutingContext:
-    """运行模式上下文，来自 runnable configurable 参数."""
-
-    mode: str = "fast"
-
-    @property
-    def prompt(self) -> str:
-        """返回注入到 system prompt 的运行时上下文."""
-        return f"""<runtime_context>
-mode: {self.mode}
-</runtime_context>"""
-
-
-def get_routing_context(
-    configurable: dict[str, Any] | None,
-    *,
-    default_mode: str = "fast",
-) -> RoutingContext:
-    """从 configurable 中提取当前业务图的运行模式."""
-    values = configurable or {}
-    mode = str(values.get("chat_mode") or values.get("mode") or default_mode)
-
-    normalized_mode = mode.strip().lower()
-    if normalized_mode not in {"fast", "expert"}:
-        normalized_mode = "fast"
-
-    return RoutingContext(mode=normalized_mode)
 
 
 def get_user_info(config: RunnableConfig) -> str:

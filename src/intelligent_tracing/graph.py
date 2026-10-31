@@ -88,9 +88,7 @@ SYSTEM_PROMPT = """
    不是事实源。
 5. 调用 `build_validated_report` 生成服务端验证报告。该工具只接受 claim ID
    计划或不带计划的确定性回退，不接受自由正文。
-6. 如用户需要画布，调用 `publish_tracing_canvas`，只传已验证报告 ID 和展示方式；
-   不得调用任意 content 的原始画布工具。
-7. 具体法规/标准/限值问题使用 `knowledge_search`；只引用返回的 citation_id，
+6. 具体法规/标准/限值问题使用 `knowledge_search`；只引用返回的 citation_id，
    引用格式 [[cite:<citation_id>]]。知识依据只进入报告的独立知识区，不得作为
    本次污染监测证据、claim 或归因等级。
 
@@ -216,7 +214,7 @@ def build_tracing_graph(
     backend = StateBackend()
     station_tool = build_freeze_request_tool(station_catalog=catalog, policy=policy)
     policy_tool = build_policy_summary_tool(policy)
-    report_tool, canvas_tool = build_report_tools(
+    report_tool = build_report_tools(
         registry=registry,
         gate=gate,
         policy=policy,
@@ -296,7 +294,6 @@ def build_tracing_graph(
                 station_tool,
                 policy_tool,
                 report_tool,
-                canvas_tool,
                 knowledge_tool,
             ],
             system_prompt=SYSTEM_PROMPT if enable_reviewer else SYSTEM_PROMPT_NO_REVIEW,

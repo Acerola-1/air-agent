@@ -1,4 +1,4 @@
-"""Synthetic knowledge/canvas services for the owned browser probe only."""
+"""Synthetic knowledge services for the owned browser probe only."""
 
 from __future__ import annotations
 
@@ -99,9 +99,9 @@ def setup(base, native):
         messages = body["messages"]
         last = max(i for i, m in enumerate(messages) if m["role"] == "user")
         question = messages[last]["content"]
-        if "画布" not in question and "知识库" not in question:
+        if "知识库" not in question:
             return original(body)
-        target = "create_artifact" if "画布" in question else "knowledge_search"
+        target = "knowledge_search"
         turn = messages[last + 1 :]
         ids = {
             c["id"]
@@ -113,16 +113,6 @@ def setup(base, native):
             m for m in turn if m["role"] == "tool" and m.get("tool_call_id") in ids
         ]
         if not results and body.get("tools"):
-            args = (
-                {
-                    "title": "空气质量合成结果",
-                    "content_type": "html",
-                    "content": "<html><body><h1>空气质量合成结果</h1><p>空气质量为良，AQI为75。</p></body></html>",
-                    "open_in": "canvas_window",
-                }
-                if target == "create_artifact"
-                else {"query": "臭氧形成机制"}
-            )
             return {
                 "role": "assistant",
                 "content": None,
@@ -132,19 +122,19 @@ def setup(base, native):
                         "type": "function",
                         "function": {
                             "name": target,
-                            "arguments": json.dumps(args, ensure_ascii=False),
+                            "arguments": json.dumps(
+                                {"query": "臭氧形成机制"}, ensure_ascii=False
+                            ),
                         },
                     }
                 ],
             }
-        content = "合成画布已生成，可以在画布中查看。"
-        if target == "knowledge_search":
-            try:
-                payload = json.loads(results[-1]["content"])
-                citation = payload["references"][0]["citation_id"]
-                content = f"臭氧可以由光化学反应形成。[[cite:{citation}]]"
-            except (ValueError, KeyError, IndexError, TypeError):
-                content = "合成知识服务本次没有返回有效引用。"
+        try:
+            payload = json.loads(results[-1]["content"])
+            citation = payload["references"][0]["citation_id"]
+            content = f"臭氧可以由光化学反应形成。[[cite:{citation}]]"
+        except (ValueError, KeyError, IndexError, TypeError):
+            content = "合成知识服务本次没有返回有效引用。"
         return {"role": "assistant", "content": content}
 
     native.model_message = message

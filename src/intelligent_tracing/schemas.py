@@ -633,17 +633,6 @@ class KnowledgeBasisItem(StrictModel):
     source_sha256: str = Field(min_length=64, max_length=64)
 
 
-class CanvasContent(StrictModel):
-    """Server-rendered canvas content bound to a validated report."""
-
-    title: str = Field(min_length=1, max_length=200)
-    content_type: Literal["markdown"] = "markdown"
-    content: str = Field(min_length=1)
-    open_in: Literal["canvas_window", "inline_below", "modal", "sidebar"] = (
-        "canvas_window"
-    )
-
-
 class ValidatedReport(StrictModel):
     """Immutable report produced only by the deterministic publish layer."""
 
@@ -656,7 +645,6 @@ class ValidatedReport(StrictModel):
     claim_ids: tuple[str, ...]
     limitations: tuple[str, ...]
     body_markdown: str
-    canvas: CanvasContent
     evidence_ids: tuple[str, ...]
     scope: RuntimeScope
     content_sha256: str
@@ -677,7 +665,6 @@ class ValidatedReport(StrictModel):
             "claim_ids": self.claim_ids,
             "limitations": self.limitations,
             "body_markdown": self.body_markdown,
-            "canvas": self.canvas.model_dump(mode="json"),
             "evidence_ids": self.evidence_ids,
             "gate_version": self.gate_version,
             # 摘要绑定可信作用域与业务许可，避免跨企业/跨线程复用到同一报告.

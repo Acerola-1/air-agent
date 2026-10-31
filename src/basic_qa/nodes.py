@@ -190,9 +190,7 @@ class BasicQANodes:
         from basic_qa.prompts import build_basic_qa_system_prompt
 
         return {
-            "system_prompt": build_basic_qa_system_prompt(
-                config.get("configurable") or {}
-            ),
+            "system_prompt": build_basic_qa_system_prompt(),
             "planning_draft": "",
         }
 

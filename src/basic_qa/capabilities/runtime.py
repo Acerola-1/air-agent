@@ -21,22 +21,7 @@ from common.business_registry import business_for_code
 from common.capabilities import discover_authorized_mcp_catalog
 from common.identity.business_access import BusinessAccessError
 from common.identity.runtime import RuntimeIdentityError, guard_runtime_call
-from common.runtime_context import get_routing_context
 from common.skill_tool_scope import ScopedTool, resolve_skill_tools
-
-# 仅列出当前材料审计确认、且尚未注册的 chart 名称；它们没有稳定 ID。
-_UNAVAILABLE_CHARTS = frozenset(
-    {
-        "chart_city_broadcastHour",
-        "chart_city_calendar_day_calculations",
-        "chart_city_composite_index_six_factor_ratio",
-        "chart_city_concentration_line_chart",
-        "chart_city_factor_rankings",
-        "chart_city_indexes_month_year_line_chart",
-        "chart_city_integrated_index_percentage",
-        "chart_city_monthly_yearly_comparison",
-    }
-)
 
 
 def trusted_turn_key(config: RunnableConfig) -> str:
@@ -91,20 +76,15 @@ async def resolve_material(skill_id: str, version: str, config: RunnableConfig):
     bindings = {name: f"mcp:ipp:{name}" for name in connection.allowed_tools}
 
     def resolve(allowed, required, optional):
-        charts = set(optional)
-        if not charts <= _UNAVAILABLE_CHARTS:
-            raise BasicQARuntimeError("绘图工具未经审计")
         return resolve_skill_tools(
             allowed=allowed,
             required=required,
             optional=optional,
             catalog=catalog,
             bindings=bindings,
-            unavailable_chart_names=charts,
         )
 
-    mode = get_routing_context(cfg).mode
-    material = load_basic_qa_material(skill_id, version, mode, resolve_scope=resolve)
+    material = load_basic_qa_material(skill_id, version, resolve_scope=resolve)
     identity = await guard_runtime_call(dict(config or {}))
     if identity is None or not any(
         item.id == skill_id and item.material_version == version
@@ -197,15 +177,12 @@ async def session_state(state: dict[str, Any], config: RunnableConfig):
         ):
             return caps
         material = await resolve_material(skill_id, version, config)
-        if material.mode != active.get("mode"):
-            return caps
     except (RuntimeIdentityError, BusinessAccessError):
         raise
     except Exception:  # noqa: BLE001 - unprovable legacy references stay uninitialized
         return caps
     caps["loaded_skills"][skill_id] = {
         "material_version": version,
-        "mode": material.mode,
         "load_ref": call_id,
         "last_used": 0,
         "schema_versions": dict(getattr(material, "schema_versions", ())),
@@ -236,8 +213,6 @@ async def resolve_session(
             if not ref.get("load_ref"):
                 raise BasicQARuntimeError("无效加载引用")
             material = await resolve_material(skill_id, ref["material_version"], config)
-            if material.mode != ref.get("mode"):
-                raise BasicQARuntimeError("技能模式已变化，请重新加载")
             if dict(getattr(material, "schema_versions", ())) != ref.get(
                 "schema_versions", {}
             ):
@@ -314,7 +289,6 @@ def create_load_skill_tool():
             same = (
                 old
                 and old.get("material_version") == expected_version
-                and old.get("mode") == material.mode
                 and old.get("schema_versions", {})
                 == dict(getattr(material, "schema_versions", ()))
                 and old.get("catalog_scope", "")
@@ -329,7 +303,6 @@ def create_load_skill_tool():
             )
             caps["loaded_skills"][skill_id] = {
                 "material_version": material.material_version,
-                "mode": material.mode,
                 "load_ref": old["load_ref"] if same else tool_call_id,
                 "last_used": len(state.get("messages") or []),
                 "protected_attempt": trusted_turn_key(config),
@@ -342,7 +315,6 @@ def create_load_skill_tool():
                 "status": status,
                 "skill_id": skill_id,
                 "material_version": material.material_version,
-                "unavailable_optional": list(material.tool_scope.unavailable_optional),
             }
             return Command(
                 update={
@@ -395,7 +367,6 @@ def reject_conflicting_batch(
     harmless = CONTROL_TOOLS - {"finish_planning"} | {
         "get_beijing_time",
         "knowledge_search",
-        "create_artifact",
     }
     # A tool already present in the exact planning request does not depend on
     # reading the new load result. Execution still checks that disclosure and

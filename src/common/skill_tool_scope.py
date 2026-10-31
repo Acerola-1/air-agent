@@ -29,7 +29,6 @@ _LOCAL_KINDS = {
     "finish_planning": ToolKind.CONTROL,
     "get_beijing_time": ToolKind.GENERAL,
     "knowledge_search": ToolKind.GENERAL,
-    "create_artifact": ToolKind.GENERAL,
     "compute_artifact": ToolKind.EVIDENCE,
 }
 _MCP_ID = re.compile(r"mcp:[a-z0-9][a-z0-9_-]{0,63}:[a-zA-Z0-9_-]+")
@@ -126,10 +125,9 @@ def resolve_tool(
 
 @dataclass(frozen=True)
 class SkillToolScope:
-    """从已收窄目录解析出的工具集合及不可用可选项."""
+    """从已收窄目录解析出的必需工具集合."""
 
     allowed_ids: frozenset[str]
-    unavailable_optional: tuple[str, ...]
 
 
 def resolve_skill_tools(
@@ -139,56 +137,25 @@ def resolve_skill_tools(
     optional: Iterable[str],
     catalog: Iterable[ScopedTool],
     bindings: Mapping[str, str] | None = None,
-    chart_tool_ids: Iterable[str] = (),
-    unavailable_chart_names: Iterable[str] = (),
 ) -> SkillToolScope:
-    """解析必需/可选声明并收窄目录；所有非 chart 工具必须是必需项.
+    """解析必需声明并收窄目录；绘图可选工具已退役.
 
     bindings 是独立于动态可用目录的可信名称到稳定 ID 映射。别名在判定
-    类别和冲突前先归一，缺失绑定失败关闭；缺少可选图表仅记录不可用。
-    chart_tool_ids 必须来自可信登记，完整覆盖本 Skill 声明中的图表工具，
-    不可由模型或动态目录生成，也不代表当前获准执行。
-    未登记图表只可由可信审计列入 unavailable_chart_names；不虚构稳定 ID。
+    类别和冲突前先归一，缺失绑定或目录项失败关闭。
     """
     tools = tuple(catalog)
     trusted_bindings = bindings or {}
     allowed_set, required_set, optional_set = map(set, (allowed, required, optional))
-    if required_set & optional_set:
-        raise ToolScopeError("dependency is both required and optional")
-    if required_set | optional_set != allowed_set:
-        raise ToolScopeError("allowed dependencies must be explicitly classified")
-    missing_charts = set(unavailable_chart_names)
-    if not missing_charts <= optional_set or any(
-        not re.fullmatch(r"chart_[A-Za-z0-9_]+", name) for name in missing_charts
-    ):
-        raise ToolScopeError("unavailable charts must be audited optional chart names")
-    if any(name in trusted_bindings for name in missing_charts):
-        raise ToolScopeError("bound chart must be checked by its stable identity")
-    canonical = {
-        reference: _canonical_id(reference, trusted_bindings)
-        for reference in allowed_set - missing_charts
-    }
-    required_ids = {canonical[reference] for reference in required_set}
-    optional_ids = {canonical[reference] for reference in optional_set - missing_charts}
-    if required_ids & optional_ids:
-        raise ToolScopeError("canonical dependency is both required and optional")
-    chart_ids = set(chart_tool_ids)
-    if any(_canonical_id(item, {}) != item for item in chart_ids):
-        raise ToolScopeError("chart identities must be stable ids")
-    if not optional_ids <= chart_ids:
-        raise ToolScopeError("optional dependency must be a registered chart tool")
-    if required_ids & chart_ids:
-        raise ToolScopeError("chart dependency must be optional")
+    if optional_set:
+        raise ToolScopeError("optional skill tools are retired")
+    if required_set != allowed_set:
+        raise ToolScopeError("allowed dependencies must be required")
     resolved: set[str] = set()
-    unavailable: list[str] = sorted(missing_charts)
-    for reference in sorted(allowed_set - missing_charts):
-        item = resolve_tool(canonical[reference], tools)
+    for reference in sorted(allowed_set):
+        item = resolve_tool(_canonical_id(reference, trusted_bindings), tools)
         if item is None:
-            if reference in required_set:
-                raise ToolScopeError("required dependency unavailable")
-            unavailable.append(reference)
-        else:
-            if item.kind == ToolKind.CONTROL:
-                raise ToolScopeError("control tool cannot be a skill dependency")
-            resolved.add(item.id)
-    return SkillToolScope(frozenset(resolved), tuple(sorted(unavailable)))
+            raise ToolScopeError("required dependency unavailable")
+        if item.kind == ToolKind.CONTROL:
+            raise ToolScopeError("control tool cannot be a skill dependency")
+        resolved.add(item.id)
+    return SkillToolScope(frozenset(resolved))

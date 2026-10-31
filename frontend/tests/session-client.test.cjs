@@ -14,11 +14,9 @@ function loadStore(fetcher) {
   });
   const module = {exports: {}}, location = {href: ''};
   const chat = {getState: () => ({clearForTenant() {}, switchGraph() {}, graphId: 'basic-qa'})};
-  const capability = {getState: () => ({clearForScopeSwitch() {}})};
   function req(name) {
     if (name === 'zustand') return zustand;
     if (name === '@/lib/chat-store') return {useChatStore: chat};
-    if (name === '@/lib/capability-store') return {useCapabilityStore: capability};
     if (name === '@/lib/langgraph-api') return {onTenantContextConflict() {}, setTenantRequestContext() {}};
     if (name === '@/lib/feedback/client') return {setFeedbackScope() {}};
     throw new Error(name);

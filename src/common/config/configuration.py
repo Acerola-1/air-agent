@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, fields
-from typing import Literal
 
 from langchain_core.runnables import RunnableConfig
 
@@ -14,9 +13,6 @@ class Configuration:
 
     # 路由模块。auto 表示由主 Agent 根据问题自动选择。
     module: str = "auto"
-
-    # 聊天模式：fast 为默认快速模式，expert 为专家模式。
-    chat_mode: Literal["fast", "expert"] = "fast"
 
     @classmethod
     def from_runnable_config(

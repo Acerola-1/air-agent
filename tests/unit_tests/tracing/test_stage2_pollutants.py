@@ -48,8 +48,6 @@ def test_stage2_pollutants_use_their_own_profile(pollutant: str):
     assert profile.display_name in result.report.body_markdown
     if pollutant != "pm10":
         assert "PM2.5 污染过程与来向线索分析" not in result.report.body_markdown
-        assert "PM2.5" not in result.report.canvas.title
-    assert profile.display_name in result.report.canvas.title
     if pollutant == "co":
         assert "毫克/立方米" in result.report.body_markdown
         assert "微克/立方米" not in result.report.body_markdown

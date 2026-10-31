@@ -10,7 +10,7 @@ def test_conversation_prompt_uses_new_managed_version(monkeypatch):
 
     managed = Mock(return_value="受管理的会话角色说明")
     monkeypatch.setattr(prompts, "get_managed_prompt", managed)
-    text = build_basic_qa_system_prompt({"mode": "fast"})
+    text = build_basic_qa_system_prompt()
     assert "受管理的会话角色说明" in text
     assert "当前真实时间" in text
     assert managed.call_args.args[0] == "air-agent/basic-qa/conversation-system-v2"

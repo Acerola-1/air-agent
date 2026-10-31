@@ -60,7 +60,6 @@ def allowed_runtime(monkeypatch):
             "capability_selection_id": "selection",
             "capability_selection_digest": "digest",
             "capability_mcp_mode": "auto",
-            "chat_mode": "fast",
         }
     }
     skill = next(
@@ -91,7 +90,6 @@ async def test_atomic_reference_survives_message_projection_and_idempotent_load(
     command = await load(state, cfg, skill)
     payload = json.loads(command.update["messages"][0].content)
     assert payload["status"] == "loaded" and "rules" not in payload
-    assert "chart_city_concentration_line_chart" in payload["unavailable_optional"]
     state.update(command.update)
     state["messages"] = [HumanMessage(content="摘要覆盖了历史加载消息")]
     material = await runtime.current_material(state, cfg)
@@ -195,7 +193,6 @@ async def test_only_proven_v1_record_migrates_even_after_later_human_message(
     legacy = {
         "skill_id": skill.id,
         "material_version": skill.material_version,
-        "mode": "fast",
         "turn_key": "old",
         "load_call_id": "legacy",
         "selection_digest": "old",
@@ -246,9 +243,7 @@ async def test_only_proven_v1_record_migrates_even_after_later_human_message(
 
 
 @pytest.mark.anyio
-async def test_new_turn_reuses_but_mode_change_dormant_and_resume_rejects(
-    allowed_runtime,
-):
+async def test_new_turn_reuses_and_ignores_legacy_chat_mode(allowed_runtime):
     from basic_qa.capabilities.projection import initialize
 
     cfg, skill = allowed_runtime
@@ -258,20 +253,13 @@ async def test_new_turn_reuses_but_mode_change_dormant_and_resume_rejects(
     update = await initialize(state, cfg)
     assert update["bqa_capabilities"]["active_skill_ids"] == [skill.id]
     state.update(update)
-    cfg["configurable"]["chat_mode"] = "expert"
-    with pytest.raises(runtime.BasicQARuntimeError):
-        await initialize(state, cfg)
+    # 旧客户端仍可提交 chat_mode；服务端不得据此改变材料或重载 Skill。
     cfg["configurable"]["ledger_attempt_id"] = "newer"
+    cfg["configurable"]["chat_mode"] = "expert"
     update = await initialize(state, cfg)
-    assert not update["bqa_capabilities"]["active_skill_ids"]
-    assert skill.id in update["bqa_capabilities"]["loaded_skills"]
+    assert update["bqa_capabilities"]["active_skill_ids"] == [skill.id]
+    assert "mode" not in update["bqa_capabilities"]["loaded_skills"][skill.id]
     state.update(update)
-    command = await load(state, cfg, skill)
-    assert (
-        command.update["bqa_capabilities"]["loaded_skills"][skill.id]["mode"]
-        == "expert"
-    )
-    state.update(command.update)
     cfg["configurable"]["capability_selection_digest"] = "changed"
     with pytest.raises(runtime.BasicQARuntimeError, match="受理"):
         await initialize(state, cfg)

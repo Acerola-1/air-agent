@@ -1,4 +1,4 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: CompositeBackend 路由配置
 所有业务 graph（basic-qa、intelligent-analysis、data-analysis、deep-research、intelligent-report、intelligent-tracing）SHALL 使用 `CompositeBackend` 作为 backend，配置为 `default=StateBackend()`，`routes={"/skills/": FilesystemBackend(root_dir=str(Path(__file__).parent), virtual_mode=True)}`。

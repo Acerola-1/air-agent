@@ -63,7 +63,7 @@ class ResolvedCapabilities:
     @property
     def tool_scope(self) -> SkillToolScope:
         """Expose a deduplicated set to the existing disclosure adapter."""
-        return SkillToolScope(frozenset(self.sources), ())
+        return SkillToolScope(frozenset(self.sources))
 
     @property
     def rules(self) -> str:

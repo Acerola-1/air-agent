@@ -6,7 +6,7 @@
 
 - 开发主线为基础问答 `basic-qa` 与溯源分析 `intelligent-tracing`；后续需求拆解、会话能力改进、功能开发与专项验收默认围绕这两张图推进。
 - 数据分析 `data-analysis` 暂时封存：暂停该图的新功能、专项重构、优化与专项验收，不因历史计划或未完成任务自动继续开发；恢复专项开发需用户明确调整范围。
-- 封存保留 `src/data_analysis/`、Skill、测试、历史证据、菜单约束及 `langgraph.json` 注册；这是开发范围调整，不表示已删除、隐藏或停用运行入口，也不表示历史未完成项已验收。
+- 封存保留 `src/data_analysis/`、Skill、测试、历史证据、菜单约束及 `langgraph.json` 注册；前端入口已移除，但持有 `agent:business:data-analysis:use` 的用户仍可通过 BFF/原生 API 指定 `assistant_id=data-analysis` 调用，不表示已删除、隐藏或停用运行入口，也不表示历史未完成项已验收。
 - 共享身份、台账、MCP、上下文、前端等改动仍须保持已保留图的兼容与安全。必要的兼容或安全修复可最小范围涉及封存图，并在交付中说明；相关回归不因封存而删除或跳过。
 - Basic QA 新业务能力优先 `search_skills` 发现候选后 `load_skill`；全量 Skill 目录只留服务端，不进入初始系统提示。已撤回事先指定 Skill 及 Skill `auto/explicit` 协议，不得以兼容为由恢复；有效加载引用仍可跨轮复用。
 - Basic QA 当前实施以 `revise-basic-qa-session-capabilities` 为准；旧 `add-basic-qa-conversational-skill-loop` 保留历史状态，不同时应用冲突要求。新版允许多个 Skill 及独立工具跨轮复用，模型按需搜索／加载，优先 Skill、未覆盖部分补工具；不得恢复逐轮清空、单 Skill 限制或接口回显字段门禁。实施／验收／正式发布须分别报告，参见[生命周期说明](docs/testing/bqa-session-capabilities-v2/runtime-design.md)。
@@ -49,13 +49,13 @@
 | `src/intelligent_tracing/` | 开发主线：受控溯源 DeepAgents 调度图（冻结请求 + 四专员 + 证据门禁）；涉及执行边界需覆盖主任务和真实子任务 |
 | `src/common/identity/`、`capabilities.py`、`mcp_scoped.py` | 可信身份、能力选择及作用域工具发现/执行 |
 | `src/common/event_ledger/`、`observability/` | 运行事实台账和模型/工具/Skill观测 |
-| `frontend/` | Next.js聊天、反馈、能力选择、画布和同源BFF |
+| `frontend/` | Next.js聊天、反馈和同源BFF |
 | `admin/api/` | FastAPI身份/企业/业务API、迁移、种子、恢复与管理测试 |
 | `admin/web/` | 当前Next.js管理页面；独立IAM已为Vue，Agent管理页仍为Next.js |
 | `docs/contracts/agent-events-v1/` | 事件契约源文件与接口快照 |
 | `openspec/specs/` | 主规格；`changes/`存活动计划，`changes/archive/`存已关闭阶段 |
 
-所有公开图的实际路径以 `langgraph.json` 为准。Skill目录采用 `SKILL.md` 及可选 `references/fast.md` / `expert.md`；空目录不能算已有业务技能。空气质量日期与等级的历史约定已移至 [领域参考](docs/domain/air-quality-level-reference.md)，涉及计算/规则时必须核对该文档、具体Skill、实现与测试，不能猜补法规边界。
+所有公开图的实际路径以 `langgraph.json` 为准。Basic QA 的 Skill 目录采用 `SKILL.md` 及单一 `references/rules.md`，不再有快速/专家变体；空目录不能算已有业务技能。空气质量日期与等级的历史约定已移至 [领域参考](docs/domain/air-quality-level-reference.md)，涉及计算/规则时必须核对该文档、具体Skill、实现与测试，不能猜补法规边界。
 
 Basic QA 的当前模块职责、实现名称与检查点标识对照见 [架构说明](docs/architecture/basic-qa-graph.md)。
 

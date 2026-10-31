@@ -20,23 +20,20 @@ def test_current_required_ids_match_admitted_mcp_selection_identity():
         registered_required_tool_ids("basic-qa", ["chart_unregistered"])
 
 
-def test_audited_unregistered_chart_has_no_fabricated_id():
-    scope = resolve_skill_tools(
-        allowed=["chart_absent"],
-        required=[],
-        optional=["chart_absent"],
-        catalog=[],
-        unavailable_chart_names=["chart_absent"],
-    )
-    assert scope.allowed_ids == frozenset()
-    assert scope.unavailable_optional == ("chart_absent",)
-    with pytest.raises(ToolScopeError):
+def test_optional_skill_tools_are_retired():
+    with pytest.raises(ToolScopeError, match="optional skill tools are retired"):
         resolve_skill_tools(
             allowed=["query"],
-            required=[],
+            required=["query"],
             optional=["query"],
+            catalog=[ScopedTool("mcp:ipp:query", "query")],
+        )
+    with pytest.raises(ToolScopeError, match="optional skill tools are retired"):
+        resolve_skill_tools(
+            allowed=["chart_absent"],
+            required=[],
+            optional=["chart_absent"],
             catalog=[],
-            unavailable_chart_names=["query"],
         )
 
 
@@ -83,74 +80,18 @@ def test_service_binding_does_not_guess_from_filtered_catalog():
     ).allowed_ids == {a.id}
 
 
-def test_scope_is_subset_and_missing_registered_chart_is_optional():
+def test_scope_is_subset_of_admitted_catalog():
     query = ScopedTool("mcp:ipp:query", "query", ("legacy_query",))
     other = ScopedTool("mcp:ipp:other", "other")
-    chart_id = "mcp:charts:chart_city"
-    bindings = {"legacy_query": query.id, "chart_city": chart_id}
+    bindings = {"legacy_query": query.id}
     scope = resolve_skill_tools(
-        allowed=["legacy_query", "chart_city"],
+        allowed=["legacy_query"],
         required=["legacy_query"],
-        optional=["chart_city"],
+        optional=[],
         catalog=[query, other],
         bindings=bindings,
-        chart_tool_ids=[chart_id],
     )
     assert scope.allowed_ids == {query.id}
-    assert scope.unavailable_optional == ("chart_city",)
-    chart = ScopedTool(chart_id, "chart_city")
-    scope = resolve_skill_tools(
-        allowed=["legacy_query", "chart_city"],
-        required=["legacy_query"],
-        optional=["chart_city"],
-        catalog=[query, chart, other],
-        bindings=bindings,
-        chart_tool_ids=[chart_id],
-    )
-    assert scope.allowed_ids == {query.id, chart.id}
-    assert not scope.unavailable_optional
-
-
-def test_non_chart_optional_rejected_even_if_alias_looks_like_chart():
-    weather_id = "mcp:weather:forecast"
-    for catalog in ([], [ScopedTool(weather_id, "forecast", ("chart_weather",))]):
-        with pytest.raises(ToolScopeError, match="registered chart"):
-            resolve_skill_tools(
-                allowed=["chart_weather"],
-                required=[],
-                optional=["chart_weather"],
-                catalog=catalog,
-                bindings={"chart_weather": weather_id},
-                chart_tool_ids=["mcp:charts:chart_city"],
-            )
-    with pytest.raises(ToolScopeError, match="registered chart"):
-        resolve_skill_tools(
-            allowed=["mcp:weather:chart_impostor"],
-            required=[],
-            optional=["mcp:weather:chart_impostor"],
-            catalog=[],
-        )
-
-
-def test_same_canonical_tool_cannot_be_required_and_optional_via_aliases():
-    chart_id = "mcp:charts:chart_city"
-    with pytest.raises(ToolScopeError, match="canonical dependency"):
-        resolve_skill_tools(
-            allowed=["chart_legacy", chart_id],
-            required=["chart_legacy"],
-            optional=[chart_id],
-            catalog=[],
-            bindings={"chart_legacy": chart_id},
-            chart_tool_ids=[chart_id],
-        )
-    with pytest.raises(ToolScopeError, match="chart dependency must be optional"):
-        resolve_skill_tools(
-            allowed=[chart_id],
-            required=[chart_id],
-            optional=[],
-            catalog=[],
-            chart_tool_ids=[chart_id],
-        )
 
 
 @pytest.mark.parametrize(
@@ -179,13 +120,6 @@ def test_untrusted_or_invalid_binding_rejected():
         resolve_tool("legacy", [ScopedTool("mcp:a:query", "query", ("legacy",))])
     with pytest.raises(ToolScopeError, match="invalid bound"):
         resolve_tool("legacy", [], bindings={"legacy": "mcp:a:../query"})
-    with pytest.raises(ToolScopeError, match="missing trusted"):
-        resolve_skill_tools(
-            allowed=["chart_mystery"],
-            required=[],
-            optional=["chart_mystery"],
-            catalog=[],
-        )
 
 
 def test_inconsistent_catalog_identity_rejected():

@@ -1,4 +1,4 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: 数值预测数据独立步骤
 涉及当天或未来数据的 Skill（air-quality-basic-query、compliance-feasibility、trend-analysis）SHALL 在 fast.md 和 expert.md 的数据获取流程中，将空气质量数值预报（mcp_city_common_get_air_quality_forecast）作为独立步骤呈现，包含调用条件、用途说明和降级规则。

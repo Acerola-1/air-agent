@@ -51,7 +51,7 @@
 - **能力发现与范围**：新业务能力优先 `search_skills`，选择候选后 `load_skill`；不向模型预置全量 Skill 目录，不再接受事先指定 Skill。MCP 范围仍可限定或禁用，受理快照约束主任务、子任务、重试与恢复。
 - **数据分析菜单（封存保留）**：分析项目使用与后端 `menu_skill_mapping` 同步的原生选择器，菜单值随本轮请求冻结；运行或停止待确认时不可切换，Skill 继续由菜单策略确定，策略异常失败关闭。
 - **运行观测**：模型 usage、延迟、价格版本与成本、Skill 各阶段和工具结果分类，可关联 Langfuse Trace；未知数据保留缺失状态。
-- **资料与画布**：归档大工具结果、按会话回读报告与可视化资料，支持删除与恢复后的墓碑重施。
+- **资料归档**：归档大工具结果、按会话回读原文，支持删除与恢复后的墓碑重施。
 
 能力目录不会授予额外权限。MCP 连接由平台部署配置管理（共享只读或企业连接），不再使用成员绑定；外部服务的数据范围仍需以该服务真实能力为准，受控模拟服务通过不代表生产全数据隔离完成。详见 [业务授权与 MCP 连接](docs/developer/business-authorization.md)。
 
@@ -83,7 +83,7 @@ flowchart LR
 |---|---|---|
 | Agent 运行时 | LangGraph 1.2 · DeepAgents 0.7 · LangChain 1.4 | 基础问答与溯源分析双主线、受控调度与统一流式发布；保留三图注册 |
 | 服务端 | Python 3.13 · FastAPI · PostgreSQL 17 · Redis | 管理 API、运行台账、归档与观测 |
-| 前端 | Next.js 16 · TypeScript · Tailwind CSS | 聊天、能力选择、反馈、画布与运营后台 |
+| 前端 | Next.js 16 · TypeScript · Tailwind CSS | 聊天、反馈与运营后台 |
 | 身份与授权 | 独立 Java IAM · Sa-Token · PostgreSQL RLS | 企业开通 ∩ 角色授权，逐请求实时复查 |
 | 工具与观测 | MCP · Langfuse · 事件台账 v1 | 工具白名单、Trace 关联与用量/价格观测 |
 | 部署 | Apple Container · container-compose | 本地三仓统一启动，无 Docker Desktop 依赖 |
@@ -104,7 +104,7 @@ flowchart LR
 | `src/data_analysis/` | 暂时封存：保留菜单映射驱动的确定性分析 |
 | `src/intelligent_tracing/` | 开发主线：受控溯源 DeepAgents 调度图，四专员、真实业务 MCP 数据源、证据门禁；Skill 材料仅内部参考，不进入在线可选目录 |
 | `src/common/` | 身份、能力、模型、MCP、台账、观测、中间件与归档 |
-| `frontend/` | 聊天、能力选择、反馈、画布及 Agent BFF |
+| `frontend/` | 聊天、反馈及 Agent BFF |
 | `admin/api/` | FastAPI 管理与业务 API、Alembic 迁移、引导和恢复脚本 |
 | `admin/web/` | Next.js 企业/成员/权限等管理页面 |
 | `docs/contracts/agent-events-v1/` | 事件登记、样本与接口契约 |

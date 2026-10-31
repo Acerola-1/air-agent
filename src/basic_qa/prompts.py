@@ -1,6 +1,6 @@
 """业务图系统提示词组装.
 
-替代原 deepagents 中间件链中的 TimeContextMiddleware / ModeRoutingMiddleware，
+替代原 deepagents 中间件链中的 TimeContextMiddleware，
 改为由 prepare_prompt 在提示准备阶段一次性组装
 （图的持久化节点ID仍为 prepare_model）。
 """
@@ -8,7 +8,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
 from zoneinfo import ZoneInfo
 
 from common.computation import COMPUTATION_SYSTEM_RULES
@@ -16,16 +15,12 @@ from common.prompts import (
     ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE,
     AIR_QUALITY_UNIT_NORMALIZATION_GUIDE,
     ANTI_PROCESS_RESIDUE_GUARD,
-    ARTIFACT_GENERATION_GUIDE,
     DATA_AUTHENTICITY_GUARD,
     DATA_DELAY_RETRY_GUIDE,
-    EXPERT_MODE_SYSTEM_PROMPT,
-    FAST_MODE_SYSTEM_PROMPT,
     MAIN_AGENT_TOOL_USE_OUTPUT_GUARD,
     POLLUTANT_LEVEL_BOUNDARY_GUIDE,
     TIME_PARAMETER_NORMALIZATION_GUIDE,
 )
-from common.runtime_context import get_routing_context
 
 
 def with_main_agent_tool_use_output_guard(system_prompt: str) -> str:
@@ -35,7 +30,6 @@ def with_main_agent_tool_use_output_guard(system_prompt: str) -> str:
         f"{DATA_AUTHENTICITY_GUARD}\n\n"
         f"{ANTI_PROCESS_RESIDUE_GUARD}\n\n"
         f"{MAIN_AGENT_TOOL_USE_OUTPUT_GUARD}\n\n"
-        f"{ARTIFACT_GENERATION_GUIDE}\n\n"
         f"{ADMINISTRATIVE_REGION_NORMALIZATION_GUIDE}\n\n"
         f"{TIME_PARAMETER_NORMALIZATION_GUIDE}\n\n"
         f"{DATA_DELAY_RETRY_GUIDE}\n\n"
@@ -60,19 +54,8 @@ def build_time_context() -> str:
 """.strip()
 
 
-def build_mode_context(configurable: dict[str, Any] | None) -> str:
-    """构建运行模式上下文（等效于 ModeRoutingMiddleware）."""
-    routing = get_routing_context(configurable)
-    parts = [routing.prompt]
-    if routing.mode == "expert":
-        parts.append(EXPERT_MODE_SYSTEM_PROMPT)
-    else:
-        parts.append(FAST_MODE_SYSTEM_PROMPT)
-    return "\n\n".join(parts)
-
-
-def build_basic_qa_system_prompt(configurable: dict[str, Any] | None) -> str:
-    """组装会话版系统提示：远程托管模板、时间、模式与计算规则."""
+def build_basic_qa_system_prompt() -> str:
+    """组装会话版系统提示：远程托管模板、时间与计算规则."""
     base = """你是中科宇图的空气质量助手。按会话理解用户需求，不猜测城市、时间或指标。
 普通知识可以解释；具体法规、条款和限值必须先检索并使用返回的 citation_id。
 数据结论必须依据本轮真实查询或明确标识的历史结果；不得把现状推断为已证实污染来源。
@@ -84,7 +67,6 @@ def build_basic_qa_system_prompt(configurable: dict[str, Any] | None) -> str:
         (
             with_main_agent_tool_use_output_guard(resolved),
             build_time_context(),
-            build_mode_context(configurable),
             COMPUTATION_SYSTEM_RULES,
         )
     )

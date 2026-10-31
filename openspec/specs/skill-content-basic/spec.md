@@ -1,4 +1,4 @@
-## ADDED Requirements
+## Requirements
 
 ### Requirement: air-quality-realtime Skill 总纲
 系统 SHALL 在 `skills/air-quality-basic-query/SKILL.md` 维护实时空气质量查询 Skill 的总纲文件，YAML frontmatter 包含 name: air-quality-basic-query，覆盖问题 1、2、4，allowed-tools 为 helper_get_latest_time、mcp_city_common_get_air_quality_realtime_stat、mcp_city_common_get_air_quality_forecast、mcp_weather_forecast_daily、mcp_weather_forecast_hourly、mcp_weather_forecast_daily_history、mcp_weather_forecast_hourly_history，metadata.requires_weather 为 true。快速模式 MUST 尝试获取气象数据，获取失败时 MUST 标注"缺失气象数据，未分析气象对空气质量的影响"。

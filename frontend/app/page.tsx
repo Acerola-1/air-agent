@@ -7,30 +7,27 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ThreadSidebar } from "@/components/chat/ThreadSidebar";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { TenantGate } from "@/components/chat/TenantGate";
-import { ArtifactProvider } from "@/components/artifact/ArtifactProvider";
-import { CanvasWindow } from "@/components/artifact/CanvasWindow";
 import { useChatStore } from "@/lib/chat-store";
 import { availableGraphOptions } from "@/lib/graph-options";
+import { purgeLegacyLocalStorage } from "@/lib/legacy-storage";
 import { useSessionStore } from "@/lib/session-client";
 
-/** 首页：顶栏 + 左侧线程列表 + 右侧对话区 + 画布悬浮窗.
+/** 首页：顶栏 + 左侧线程列表 + 右侧对话区.
  *
  *  原生 LangGraph 实现（无 assistant-ui）：
  *   - 线程列表按 graph_id + user_id 过滤（localStorage 持久用户标识隔离）
  *   - 对话通过 runs.stream（SSE）流式渲染，持久化走后端 Postgres checkpointer
- *   - 画布为 fixed 悬浮抽屉，覆盖在页面右侧，不推挤对话区
  */
 export default function Home() {
   const [threadListOpen, setThreadListOpen] = useState(false);
   const switchGraph = useChatStore((s) => s.switchGraph);
   const refreshSession = useSessionStore((s) => s.refreshSession);
   const sessionCtx = useSessionStore((s) => s.ctx);
-  // 画布按会话隔离：每个活动线程一个 Artifact store（persist key 带 threadId）
-  const activeThreadId = useChatStore((s) => s.activeThreadId);
 
-  // 首次挂载：同步登录会话（账号 id 写入 localStorage，隔离历史）+
-  // 按 IAM 实时业务权限加载第一个可用业务的线程列表。
+  // 首次挂载：清理已撤回功能的本地键；同步登录会话（账号 id 写入 localStorage，
+  // 隔离历史）；按 IAM 实时业务权限加载第一个可用业务的线程列表。
   useEffect(() => {
+    purgeLegacyLocalStorage();
     void refreshSession().then(() => {
       const ctx = useSessionStore.getState().ctx;
       // 未选择企业时不加载线程：BFF 会统一拒绝，界面应先走企业选择门禁。
@@ -41,49 +38,44 @@ export default function Home() {
   }, [refreshSession, switchGraph]);
 
   return (
-    <ArtifactProvider threadId={activeThreadId ?? undefined}>
-      <div className="flex h-dvh flex-col overflow-hidden">
-        {/* 顶栏 */}
-        <header className="z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background/95 px-3 backdrop-blur sm:px-4">
-          <div className="flex min-w-0 items-center gap-2">
-            <Dialog open={threadListOpen} onOpenChange={setThreadListOpen}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="shrink-0 md:hidden" aria-label="打开会话列表">
-                  <MenuIcon className="size-5" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="flex h-[min(80dvh,40rem)] min-h-0 flex-col gap-2 p-3">
-                <DialogHeader className="pr-8 text-left">
-                  <DialogTitle>会话列表</DialogTitle>
-                  <DialogDescription>选择历史会话，或开始新的对话。</DialogDescription>
-                </DialogHeader>
-                <div className="min-h-0 flex-1">
-                  <ThreadSidebar onNavigate={() => setThreadListOpen(false)} />
-                </div>
-              </DialogContent>
-            </Dialog>
-            <div className="h-6 w-6 shrink-0 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500" aria-hidden />
-            <div className="flex min-w-0 flex-col leading-tight">
-              <span className="truncate text-sm font-semibold">Air Agent</span>
-              <span className="text-muted-foreground truncate text-[11px]">
-                空气质量智能助手 · Powered by LangGraph
-              </span>
-            </div>
+    <div className="flex h-dvh flex-col overflow-hidden">
+      {/* 顶栏 */}
+      <header className="z-10 flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background/95 px-3 backdrop-blur sm:px-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <Dialog open={threadListOpen} onOpenChange={setThreadListOpen}>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" className="shrink-0 md:hidden" aria-label="打开会话列表">
+                <MenuIcon className="size-5" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="flex h-[min(80dvh,40rem)] min-h-0 flex-col gap-2 p-3">
+              <DialogHeader className="pr-8 text-left">
+                <DialogTitle>会话列表</DialogTitle>
+                <DialogDescription>选择历史会话，或开始新的对话。</DialogDescription>
+              </DialogHeader>
+              <div className="min-h-0 flex-1">
+                <ThreadSidebar onNavigate={() => setThreadListOpen(false)} />
+              </div>
+            </DialogContent>
+          </Dialog>
+          <div className="h-6 w-6 shrink-0 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500" aria-hidden />
+          <div className="flex min-w-0 flex-col leading-tight">
+            <span className="truncate text-sm font-semibold">Air Agent</span>
+            <span className="text-muted-foreground truncate text-[11px]">
+              空气质量智能助手 · Powered by LangGraph
+            </span>
           </div>
-        </header>
-
-        <div className="flex min-h-0 flex-1">
-          <aside className="hidden w-80 max-w-md min-w-0 min-h-0 shrink-0 flex-col border-r bg-muted/20 md:flex">
-            <ThreadSidebar />
-          </aside>
-          <main className="flex min-w-0 flex-1 flex-col">
-            {sessionCtx && !sessionCtx.current_tenant ? <TenantGate /> : <ChatPanel />}
-          </main>
         </div>
-      </div>
+      </header>
 
-      {/* 画布：fixed 悬浮抽屉，覆盖在右侧（不挤对话文字） */}
-      <CanvasWindow />
-    </ArtifactProvider>
+      <div className="flex min-h-0 flex-1">
+        <aside className="hidden w-80 max-w-md min-w-0 min-h-0 shrink-0 flex-col border-r bg-muted/20 md:flex">
+          <ThreadSidebar />
+        </aside>
+        <main className="flex min-w-0 flex-1 flex-col">
+          {sessionCtx && !sessionCtx.current_tenant ? <TenantGate /> : <ChatPanel />}
+        </main>
+      </div>
+    </div>
   );
 }

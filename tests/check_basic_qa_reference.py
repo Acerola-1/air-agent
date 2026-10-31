@@ -64,8 +64,7 @@ def main() -> int:
         patch.object(socket, "create_connection", _deny_network),
     ):
         from basic_qa.input_policy import validate_input
-        from common.skill_router import SkillSemanticRouter, load_skill_metadata
-        from common.skills.materials import load_skill_rules
+        from common.skill_router import load_skill_metadata
 
         skills_dir = ROOT / "src/basic_qa/skills"
         metadata = load_skill_metadata(skills_dir)
@@ -78,21 +77,16 @@ def main() -> int:
         )
         covered = {skill for case in cases for skill in case["expected_skills"]}
         check("skill-coverage", sorted(s.name for s in metadata), sorted(covered))
-        router = SkillSemanticRouter(skills_dir)
         skill_hashes = {}
         for skill in metadata:
-            skill_hashes[skill.name] = {}
-            for mode in ("fast", "expert"):
-                rules = load_skill_rules(router, skill.name, mode)
-                reference = skill.path.parent / "references" / f"{mode}.md"
-                check(
-                    f"rules-loaded:{skill.name}:{mode}",
-                    True,
-                    bool(rules) and reference.is_file(),
-                )
-                skill_hashes[skill.name][mode] = hashlib.sha256(
-                    rules.encode()
-                ).hexdigest()
+            reference = skill.path.parent / "references" / "rules.md"
+            rules = reference.read_text(encoding="utf-8") if reference.is_file() else ""
+            check(
+                f"rules-loaded:{skill.name}",
+                True,
+                bool(rules.strip()) and reference.is_file(),
+            )
+            skill_hashes[skill.name] = hashlib.sha256(rules.encode()).hexdigest()
 
         for case in cases:
             cid = case["case_id"]
@@ -287,7 +281,7 @@ def main() -> int:
         "",
         f"实际检查 {len(records)} 项：通过 {summary['counts'].get('PASS', 0)}，失败 {len(failed)}；40 题，{len(skill_hashes)} 个 Skill。",
         "",
-        "范围：实际意图规则、fast/expert 规则装载、题库结构及独立数值重算。网络被禁止，未连接业务库。不是模型实际回答/语义路由/并发性能验收。",
+        "范围：实际意图规则、单一 rules.md 规则装载、题库结构及独立数值重算。网络被禁止，未连接业务库。不是模型实际回答/语义路由/并发性能验收。",
         "",
         "## 失败项",
         "",

@@ -21,7 +21,6 @@ import {
   RotateCcwIcon,
 } from "lucide-react";
 import { useChatStore, type ChatMessage } from "@/lib/chat-store";
-import { useChatMode } from "@/lib/chat-mode-store";
 import { useSessionStore } from "@/lib/session-client";
 import {
   countUnicodeCodePoints,
@@ -29,9 +28,7 @@ import {
   type ChatConfig,
 } from "@/lib/chat-config";
 import { Markdown } from "@/components/chat/Markdown";
-import { ModeSwitcher } from "@/components/assistant-ui/mode-switcher";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
-import { AnalysisMenuSelector } from "@/components/chat/AnalysisMenuSelector";
 import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
 import { ContextMeter } from "@/components/chat/ContextMeter";
 import { TenantBadge } from "@/components/chat/TenantBadge";
@@ -48,7 +45,6 @@ import {
   abandonTimingsOnUnload,
   currentFeedbackEpoch,
 } from "@/lib/feedback/client";
-import { useArtifactStore } from "@/components/artifact/ArtifactProvider";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -102,7 +98,6 @@ export function ChatPanel() {
   const activeTimingId = useChatStore((s) => s.activeTimingId);
   const activeTimingOutputComplete = useChatStore((s) => s.activeTimingOutputComplete);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const chatMode = useChatMode();
   const lastAssistantIndex = (() => {
     for (let i = messages.length - 1; i >= 0; i -= 1) {
       if (messages[i].role === "assistant") return i;
@@ -178,28 +173,6 @@ export function ChatPanel() {
     return () => { cancelAnimationFrame(frame1); cancelAnimationFrame(frame2); };
   }, [activeTimingId, activeTimingMessageId, activeTimingOutputComplete, streamingText, messages, isStreaming, error]);
 
-  // 画布扫描：检测工具结果中的 artifact 引用
-  const artifactStore = useArtifactStore();
-  const processedArtifactRef = useRef<Set<string>>(new Set());
-  useEffect(() => {
-    for (const m of messages) {
-      if (m.role !== "assistant" || !m.tools) continue;
-      for (const t of m.tools) {
-        if (!t.result || processedArtifactRef.current.has(t.id)) continue;
-        try {
-          const obj = JSON.parse(t.result) as Record<string, unknown>;
-          const ref = obj.artifact_ref ?? obj.artifact;
-          if (ref && typeof ref === "object" && "title" in (ref as Record<string, unknown>)) {
-            processedArtifactRef.current.add(t.id);
-            artifactStore.getState().add(ref as Parameters<ReturnType<typeof artifactStore.getState>["add"]>[0]);
-          }
-        } catch {
-          // 忽略非 JSON 工具结果
-        }
-      }
-    }
-  }, [messages, artifactStore]);
-
   const isEmpty = messages.length === 0 && !isStreaming && !loadingThread && !error;
 
   return (
@@ -227,7 +200,7 @@ export function ChatPanel() {
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => void sendMessage(item.query, chatMode)}
+                      onClick={() => void sendMessage(item.query)}
                       className="group flex flex-col gap-1 rounded-xl border border-border/60 bg-muted/20 p-3.5 text-left transition-all hover:border-emerald-500/50 hover:bg-muted/40 hover:shadow-xs"
                     >
                       <div className="flex items-center gap-2 font-medium text-xs text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
@@ -272,7 +245,7 @@ export function ChatPanel() {
             <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-xs text-destructive">
               <p className="font-semibold mb-0.5">请求处理遇到问题</p>
               <p className="opacity-90">{error}</p>
-              {failedInput && <Button type="button" variant="outline" size="sm" className="mt-2" disabled={isStreaming} onClick={() => void sendMessage(failedInput, chatMode, "retry")}>重新发送</Button>}
+              {failedInput && <Button type="button" variant="outline" size="sm" className="mt-2" disabled={isStreaming} onClick={() => void sendMessage(failedInput, "retry")}>重新发送</Button>}
               {!failedInput && activeThreadId && <Button type="button" variant="outline" size="sm" className="mt-2" disabled={loadingThread || isStreaming} onClick={() => void openThread(activeThreadId)}>重新读取会话</Button>}
             </div>
           )}
@@ -283,7 +256,7 @@ export function ChatPanel() {
       <div className="bg-background/95 backdrop-blur-md px-4 py-3 border-t border-border/40">
         <Composer
           disabled={isStreaming || stopPending || loadingThread}
-          onSend={(text) => void sendMessage(text, chatMode)}
+          onSend={(text) => void sendMessage(text)}
           onStop={() => stopStreaming()}
         />
       </div>
@@ -307,7 +280,6 @@ function MessageItem({
   // 重新生成需要知道当前是否可发起（流式中/停止未确认时禁用）
   const busy = useChatStore((s) => s.isStreaming || s.stopPending);
   const regenerateLast = useChatStore((s) => s.regenerateLast);
-  const chatMode = useChatMode();
   const mapping = useAnswerMapping(message);
 
   if (message.role === "user") {
@@ -382,7 +354,7 @@ function MessageItem({
               {isLatestAssistant && (
                 <button
                   type="button"
-                  onClick={() => void regenerateLast(chatMode)}
+                  onClick={() => void regenerateLast()}
                   disabled={busy}
                   className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40"
                   aria-label="重新生成"
@@ -608,8 +580,6 @@ function Composer({
         {/* 控制与上下文监控顶栏 */}
         <div className="flex flex-wrap items-center gap-2 px-1 pt-0.5">
           <GraphSwitcher />
-          <AnalysisMenuSelector />
-          <ModeSwitcher />
 
           {/* 上下文容量监控胶囊指示器 */}
           <ContextMeter />

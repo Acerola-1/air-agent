@@ -17,7 +17,7 @@ _BASIC_QA_ROOT = Path(__file__).resolve().parents[1] / "skills"
 _SKILL_ID = re.compile(r"skill:basic-qa:([a-z0-9][a-z0-9_-]{0,63})")
 _VERSION = re.compile(r"sha256:[0-9a-f]{64}")
 _REFERENCE = re.compile(
-    r"`((?:mcp_|chart_|text2sql_)[A-Za-z0-9_]+|helper_get_latest_time|"
+    r"`((?:mcp_|text2sql_)[A-Za-z0-9_]+|helper_get_latest_time|"
     r"broadcastHour|integratedIndexRatio|cityFactorRankings|oneIndexManyCityLine)`"
 )
 _TOOL_NAME = re.compile(r"[A-Za-z][A-Za-z0-9_]*")
@@ -42,7 +42,6 @@ class LoadedSkillMaterial:
 
     skill_id: str
     material_version: str
-    mode: str
     rules: str
     tool_scope: SkillToolScope
     cache_hit: bool
@@ -54,7 +53,7 @@ class LoadedSkillMaterial:
 ScopeResolver = Callable[
     [tuple[str, ...], tuple[str, ...], tuple[str, ...]], SkillToolScope
 ]
-_cache: OrderedDict[tuple[str, str, str], _Material] = OrderedDict()
+_cache: OrderedDict[tuple[str, str], _Material] = OrderedDict()
 _cache_lock = RLock()
 
 
@@ -108,10 +107,10 @@ def _fingerprint(snapshot: dict[str, bytes]) -> str:
     return f"sha256:{hasher.hexdigest()}"
 
 
-def _parse(snapshot: dict[str, bytes], mode: str) -> _Material:
+def _parse(snapshot: dict[str, bytes]) -> _Material:
     try:
         main = snapshot["SKILL.md"].decode("utf-8")
-        references = snapshot[f"references/{mode}.md"].decode("utf-8")
+        references = snapshot["references/rules.md"].decode("utf-8")
     except (KeyError, UnicodeDecodeError) as exc:
         raise SkillMaterialError("required skill material unavailable") from exc
     parts = main.split("---", 2)
@@ -136,11 +135,7 @@ def _parse(snapshot: dict[str, bytes], mode: str) -> _Material:
     allowed = set(fields["allowed-tools"])
     required = set(fields["required-tools"])
     optional = set(fields["optional-tools"])
-    if not allowed or required & optional or required | optional != allowed:
-        raise SkillMaterialError("invalid skill dependency classification")
-    if required != {
-        name for name in allowed if not name.startswith("chart_")
-    } or optional != {name for name in allowed if name.startswith("chart_")}:
+    if not allowed or optional or required != allowed:
         raise SkillMaterialError("invalid skill dependency classification")
     if not set(_REFERENCE.findall(references)) <= allowed:
         raise SkillMaterialError("undeclared referenced skill dependency")
@@ -165,7 +160,6 @@ def verify_basic_qa_material_version(skill_id: str, expected_version: str) -> No
 def load_basic_qa_material(
     skill_id: str,
     expected_version: str,
-    mode: str,
     *,
     resolve_scope: ScopeResolver,
 ) -> LoadedSkillMaterial:
@@ -174,8 +168,6 @@ def load_basic_qa_material(
     调用方必须在调用前验证可信受理、显式选择和业务身份，传入按当前连接、
     授权及已受理范围过滤的 resolver；在提交状态前再次复核版本与身份资格。
     """
-    if mode not in ("fast", "expert"):
-        raise SkillMaterialError("invalid server skill mode")
     if not isinstance(expected_version, str) or not _VERSION.fullmatch(
         expected_version
     ):
@@ -184,14 +176,14 @@ def load_basic_qa_material(
     snapshot = _read_snapshot(directory)
     if _fingerprint(snapshot) != expected_version:
         raise SkillMaterialError("skill material version changed")
-    key = (skill_id, expected_version, mode)
+    key = (skill_id, expected_version)
     with _cache_lock:
         material = _cache.get(key)
         cache_hit = material is not None
         if material is not None:
             _cache.move_to_end(key)
     if material is None:
-        material = _parse(snapshot, mode)
+        material = _parse(snapshot)
     try:
         scope = resolve_scope(material.allowed, material.required, material.optional)
     except ToolScopeError as exc:
@@ -206,5 +198,5 @@ def load_basic_qa_material(
         while len(_cache) > _CACHE_LIMIT:
             _cache.popitem(last=False)
     return LoadedSkillMaterial(
-        skill_id, expected_version, mode, material.rules, scope, cache_hit
+        skill_id, expected_version, material.rules, scope, cache_hit
     )

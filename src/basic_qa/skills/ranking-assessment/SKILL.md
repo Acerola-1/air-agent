@@ -29,17 +29,17 @@ description: |
     - 去年全年某县在某市县域考核中的位次及PM2.5同比？
     - 本季度某县空气质量考核排名和综合得分？
 
-allowed-tools: helper_get_latest_time cityFactorRankings mcp_city_common_get_air_quality_realtime_stat chart_city_factor_rankings
+allowed-tools: helper_get_latest_time cityFactorRankings mcp_city_common_get_air_quality_realtime_stat
 required-tools: helper_get_latest_time cityFactorRankings mcp_city_common_get_air_quality_realtime_stat
-optional-tools: chart_city_factor_rankings
+optional-tools:
 ---
 
 # 排名评估查询
 
 ## 详细规则入口
 
-- 本文件只用于技能识别、路由摘要和通用约束；完整执行流程位于 `references/fast.md` 或 `references/expert.md`。
-- 系统已按当前模式把对应详细规则内联在本提示词 `=====` 分隔线之后，直接按该规则执行数据获取、校验、缺失处理和输出组织；不要用本文件摘要替代详细规则。
+- 本文件只用于技能识别、路由摘要和通用约束；完整执行流程位于 `references/rules.md`。
+- 命中本技能后，系统会把 `references/rules.md` 内联在本提示词 `=====` 分隔线之后，直接按该规则执行数据获取、校验、缺失处理和输出组织；不要用本文件摘要替代详细规则。只有一份规则文件，不存在模式选择。
 
 ## 执行边界
 

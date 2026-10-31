@@ -100,15 +100,14 @@ def test_planning_rounds_have_a_per_turn_limit():
     assert not planning_exhausted([*messages, plan, HumanMessage(content="下一问")])
 
 
-def test_analysis_menu_contract_matches_backend_mapping():
+def test_frontend_no_longer_exposes_data_analysis_entry():
     from data_analysis.menu_skill_mapping import DATA_ANALYSIS_SKILL_MAPPINGS
 
     root = Path(__file__).resolve().parents[2]
-    menus = json.loads((root / "frontend/lib/data-analysis-menus.json").read_text())
-    expected = {
-        (name, f"skill:data-analysis:{m.skill_name}")
-        for m in DATA_ANALYSIS_SKILL_MAPPINGS
-        for name in m.menu_names
-    }
-    assert {(m["value"], m["skillId"]) for m in menus} == expected
-    assert len(menus) == len(expected)
+    options = (root / "frontend/lib/graph-options.ts").read_text()
+    assert '"data-analysis"' not in options
+    assert not (root / "frontend/lib/data-analysis-menus.json").exists()
+    # 后端菜单约束与 Skill 映射保留，供直连 API 或恢复入口时复用。
+    assert DATA_ANALYSIS_SKILL_MAPPINGS
+
+

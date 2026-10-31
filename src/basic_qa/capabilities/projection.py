@@ -29,7 +29,7 @@ class CapabilityProjection(NamedTuple):
     prepare_kwargs: dict[str, Any]
 
 
-_GENERAL = frozenset({"get_beijing_time", "knowledge_search", "create_artifact"})
+_GENERAL = frozenset({"get_beijing_time", "knowledge_search"})
 _EVIDENCE = frozenset({"compute_artifact"})
 _CONTROL = frozenset(
     {"search_skills", "load_skill", "search_mcp", "load_mcp_tool", "finish_planning"}

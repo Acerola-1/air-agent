@@ -16,7 +16,6 @@ ANALYSIS_TOOLS = frozenset(
         "task",
         "get_analysis_policy_summary",
         "build_validated_report",
-        "publish_tracing_canvas",
         "knowledge_search",
     }
 )
@@ -71,8 +70,6 @@ def capability_catalog(
                 "report": "分析结论经证据校验后发布报告；证据不足时会明确说明可判断与不可判断的部分。",
             }
         )
-    if "publish_tracing_canvas" in tools:
-        entries["canvas"] = "已确认的分析报告可以在画布中展示。"
     if "knowledge_search" in tools:
         entries["knowledge"] = (
             "涉及具体法规与限值时，需要检索并引用可核验的知识依据；知识依据与本次监测证据分开使用。"

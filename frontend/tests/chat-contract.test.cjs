@@ -88,7 +88,7 @@ test('分析菜单进入正常运行配置且运行中不能变更', async()=>{
   const f=fixture(), store=f.useChatStore;
   store.setState({graphId:'data-analysis'});
   store.getState().setAnalysisMenu('concentrationranking');
-  const running=store.getState().sendMessage('比较城市浓度','fast');
+  const running=store.getState().sendMessage('比较城市浓度');
   await tick();
   assert.equal(f.streams[0].config.configurable.menu_name,'concentrationranking');
   store.getState().setAnalysisMenu('CityHourBroadcast');
@@ -101,7 +101,7 @@ test('分析菜单进入正常运行配置且运行中不能变更', async()=>{
 test('every intermediate frame excludes tool JSON and internal summaries from body', async()=>{
   const f=fixture(), store=f.useChatStore;
   const snapshots=[]; store.subscribe(s=>snapshots.push(s.messages.map(m=>m.content).join('\n')+s.streamingText));
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const handlers=f.streams[0].handlers;
   handlers.onRun('r1');
   for(const artifact_id of ['a','b']) handlers.onCustom({type:'context_status',stage:'data',status:'started',processing_id:'p',artifact_id});
@@ -127,10 +127,10 @@ test('every intermediate frame excludes tool JSON and internal summaries from bo
 
 test('old run callbacks and completion cannot clear a newer run', async()=>{
   const f=fixture(), store=f.useChatStore;
-  const first=store.getState().sendMessage('旧问题','fast'); await tick();
+  const first=store.getState().sendMessage('旧问题'); await tick();
   const old=f.streams[0]; old.handlers.onRun('old-run');
   store.getState().newThread();
-  const second=store.getState().sendMessage('新问题','fast'); await tick();
+  const second=store.getState().sendMessage('新问题'); await tick();
   const current=f.streams[1]; current.handlers.onRun('new-run');
   old.handlers.onValues({messages:[{type:'ai',content:'旧答案'}]});
   old.handlers.onCustom({type:'final_output_done',message:'旧答案'});
@@ -144,7 +144,7 @@ test('old run callbacks and completion cannot clear a newer run', async()=>{
 
 test('stop sends server cancellation and ignores late metadata safely', async()=>{
   const f=fixture(),store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const stream=f.streams[0];
   store.getState().stopStreaming();
   stream.handlers.onRun('late-run');
@@ -352,7 +352,7 @@ test('proxy accepts MCP-only v2 selections and explicitly rejects withdrawn Skil
       assistant_id: 'basic-qa',
       input: { messages: [{ role: 'user', content: 'MCP 查询' }] },
       capability_selection: selection,
-      config: { configurable: { chat_mode: 'fast', capability_selection: selection } },
+      config: { configurable: { capability_selection: selection } },
     };
     const headers = {
       'x-tenant-id': 'tenant-a',
@@ -462,7 +462,7 @@ test('stopStreaming only confirms after server reaches terminal run status', asy
   const opts = { runStatuses: seq };
   opts._setStatusCursor = (v) => { opts._statusCursor = v; };
   const f=fixture(opts), store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const stream=f.streams[0];
   stream.handlers.onRun('run-1'); await tick();
   const outcome = store.getState().stopStreaming();
@@ -480,7 +480,7 @@ test('stopStreaming reports unconfirmed when cancellation and status both fail',
     cancelThrows: 500,
     getRunStatus: async()=>{ const e=new Error('backend'); e.status=500; throw e; },
   }), store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const stream=f.streams[0];
   stream.handlers.onRun('run-fail'); await tick();
   const result = await store.getState().stopStreaming();
@@ -492,7 +492,7 @@ test('stopStreaming reports unconfirmed when cancellation and status both fail',
 // F05：本栈 409 的现实来源是代理 context_changed——绝不能当作"已终态"确认
 test('stop cancel 409 is context_changed, never a false confirmation', async()=>{
   const f=fixture({ cancelThrows: 409 }), store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const stream=f.streams[0];
   stream.handlers.onRun('run-conflict'); await tick();
   const result = await store.getState().stopStreaming();
@@ -504,7 +504,7 @@ test('stop cancel 409 is context_changed, never a false confirmation', async()=>
 // F05：404 取消（多半已终态）只有在 runs.get 见证终态后才确认
 test('stop after 404 cancel confirms only on observed terminal status', async()=>{
   const f=fixture({ cancelThrows: 404 }), store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const stream=f.streams[0];
   stream.handlers.onRun('run-gone'); await tick();
   const result = await store.getState().stopStreaming();
@@ -515,7 +515,7 @@ test('stop after 404 cancel confirms only on observed terminal status', async()=
 test('stop treats missing/unknown run status as unconfirmed', async()=>{
   for (const obs of [{ found: false, status: null }, { found: true, status: null }]) {
     const f=fixture({ getRunStatus: async()=>obs }), store=f.useChatStore;
-    const running=store.getState().sendMessage('问题','fast'); await tick();
+    const running=store.getState().sendMessage('问题'); await tick();
     const stream=f.streams[0];
     stream.handlers.onRun('run-x'); await tick();
     const result = await store.getState().stopStreaming();
@@ -527,7 +527,7 @@ test('stop treats missing/unknown run status as unconfirmed', async()=>{
 
 test('stop with empty run list within grace window is unconfirmed unknown', async()=>{
   const f=fixture({ listRecentRuns: async()=>[] }), store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const t0=Date.now();
   const result = await store.getState().stopStreaming();
   assert.equal(result.confirmed, false);
@@ -543,7 +543,7 @@ test('stop recovers late run id from recent runs and waits terminal', async()=>{
     getRunStatus: async()=>({ found: true, status: 'cancelled' }),
   };
   const f=fixture(opts), store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const stream=f.streams[0];
   const result = await store.getState().stopStreaming();
   assert.equal(result.confirmed, true);
@@ -553,7 +553,7 @@ test('stop recovers late run id from recent runs and waits terminal', async()=>{
 
 test('stop before run id arrives recovers the active run from the run list', async()=>{
   const f=fixture({ activeRuns: ['late-run-9'] }), store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick();
+  const running=store.getState().sendMessage('问题'); await tick();
   const stream=f.streams[0];
   const result = await store.getState().stopStreaming();
   assert.equal(result.confirmed, true);
@@ -630,7 +630,7 @@ test('proxy: stale-tab claim rejected, missing headers rejected, ticket 409 surf
 
 test('stop cannot confirm the previous answer while current run metadata is delayed', async()=>{
   const f=fixture({ listRecentRuns:async()=>[{run_id:'previous-run',status:'success'}] });
-  const running=f.useChatStore.getState().sendMessage('current','fast'); await tick();
+  const running=f.useChatStore.getState().sendMessage('current'); await tick();
   const stopped=await f.useChatStore.getState().stopStreaming();
   f.streams[0].wait.resolve(); await running;
   assert.equal(stopped.confirmed,false,'上一轮完成不能证明本轮提交已经停止');
@@ -638,7 +638,7 @@ test('stop cannot confirm the previous answer while current run metadata is dela
 
 test('stop after a safe delta keeps partial text as an incomplete answer', async()=>{
   const f=fixture(), store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast'); await tick(); await tick();
+  const running=store.getState().sendMessage('问题'); await tick(); await tick();
   const h=f.streams[0].handlers;
   h.onRun('r1');
   const threadId=store.getState().activeThreadId;
@@ -657,10 +657,10 @@ test('stop after a safe delta keeps partial text as an incomplete answer', async
 test('unconfirmed stop keeps the run for late metadata and blocks new submissions', async()=>{
   const f=fixture({listRecentRuns:async()=>[{run_id:'previous-run',status:'success'}]});
   const store=f.useChatStore;
-  const running=store.getState().sendMessage('current','fast'); await tick();
+  const running=store.getState().sendMessage('current'); await tick();
   assert.equal((await store.getState().stopStreaming()).confirmed,false);
   assert.equal(store.getState().stopPending,true);
-  await store.getState().sendMessage('must not submit','fast');
+  await store.getState().sendMessage('must not submit');
   assert.equal(f.streams.length,1);
   f.streams[0].handlers.onRun('current-late-run');
   assert.equal((await store.getState().stopStreaming()).confirmed,true);
@@ -672,7 +672,7 @@ test('unconfirmed stop keeps the run for late metadata and blocks new submission
 
 test('页面导航离开记录 origin=navigation 的独立停止意图', async()=>{
   const f=fixture(), store=f.useChatStore;
-  const running=store.getState().sendMessage('长任务','expert'); await tick();
+  const running=store.getState().sendMessage('长任务'); await tick();
   const stream=f.streams.at(-1);
   stream.handlers.onRun('run-nav-1');
   // 运行中卸载 → 记录 navigation（不冒充已取消）
@@ -690,7 +690,7 @@ test('无活动运行时的导航不产生停止事实', async()=>{
 
 test('重新生成声明 regenerate 并复用上一条用户问题（不新增提问）', async()=>{
   const f=fixture(), store=f.useChatStore;
-  const first=store.getState().sendMessage('原始问题','fast'); await tick();
+  const first=store.getState().sendMessage('原始问题'); await tick();
   const s1=f.streams.at(-1);
   assert.equal(f.getSubmissionContext().operationKind, 'initial');
   s1.handlers.onValues({messages:[{type:'ai',content:'答案'}]});
@@ -701,7 +701,7 @@ test('重新生成声明 regenerate 并复用上一条用户问题（不新增�
     { type: 'human', content: '原始问题', id: 'u1' },
     { type: 'ai', content: '答案', id: 'a1' },
   ];
-  const regen=store.getState().regenerateLast('fast'); await tick();
+  const regen=store.getState().regenerateLast(); await tick();
   const s2=f.streams.at(-1);
   assert.notEqual(s2, s1, '重新生成必须新建一次运行');
   assert.equal(f.getSubmissionContext().operationKind, 'regenerate');
@@ -711,11 +711,11 @@ test('重新生成声明 regenerate 并复用上一条用户问题（不新增�
 
 test('重新发送声明 retry', async()=>{
   const f=fixture(), store=f.useChatStore;
-  const run=store.getState().sendMessage('失败问题','fast'); await tick();
+  const run=store.getState().sendMessage('失败问题'); await tick();
   const stream=f.streams.at(-1);
   stream.handlers.onDone(new Error('boom')); stream.wait.resolve(); await run;
   assert.equal(store.getState().failedInput, '失败问题');
-  const retry=store.getState().sendMessage(store.getState().failedInput,'fast','retry'); await tick();
+  const retry=store.getState().sendMessage(store.getState().failedInput, 'retry'); await tick();
   assert.equal(f.getSubmissionContext().operationKind, 'retry');
   f.streams.at(-1).wait.resolve(); await retry;
 });
@@ -789,7 +789,7 @@ test('R01 代理：原生入口单点裁决——首笔成功、重放复用/待
 
 test('官方 interrupt 的权威状态确认本次已停止执行，不冒充业务已取消',async()=>{
   const f=fixture({runStatuses:[{found:true,status:'interrupted'}]}),store=f.useChatStore;
-  const running=store.getState().sendMessage('问题','fast');await tick();
+  const running=store.getState().sendMessage('问题');await tick();
   const stream=f.streams[0];stream.handlers.onRun('run-interrupted');await tick();
   const result=await store.getState().stopStreaming();assert.equal(result.confirmed,true);
   assert.equal(store.getState().stopPending,false);
@@ -799,7 +799,7 @@ test('官方 interrupt 的权威状态确认本次已停止执行，不冒充业
 
 test('基础问答聊天不合成旧 Skill 选择协议', async () => {
   const f = fixture();
-  const work = f.useChatStore.getState().sendMessage('问题', 'fast');
+  const work = f.useChatStore.getState().sendMessage('问题');
   await tick();
   const ctx = f.getSubmissionContext();
   assert.ok(ctx && ctx.submissionKey);
@@ -816,7 +816,7 @@ test('停止首条 metadata 丢失后按本次提交键找回已 interrupted 的
     {run_id:'other',status:'success',submission_key:'other-key'},
     {run_id:'this-interrupted',status:'interrupted',submission_key:'sub-key'},
   ],getRunStatus:async()=>({found:true,status:'interrupted'})});
-  const running=f.useChatStore.getState().sendMessage('current','fast'); await tick();
+  const running=f.useChatStore.getState().sendMessage('current'); await tick();
   const result=await f.useChatStore.getState().stopStreaming();
   assert.equal(result.confirmed,true);
   assert.equal(f.useChatStore.getState().stopPending,false);
@@ -829,7 +829,7 @@ test('停止不得把其他提交的终态或活动运行当成本次运行',asy
     {run_id:'other-terminal',status:'interrupted',submission_key:'other-key'},
     {run_id:'other-active',status:'running',submission_key:'other-key'},
   ]});
-  const running=f.useChatStore.getState().sendMessage('current','fast'); await tick();
+  const running=f.useChatStore.getState().sendMessage('current'); await tick();
   assert.equal((await f.useChatStore.getState().stopStreaming()).confirmed,false);
   assert.deepEqual(f.canceled,[]);
   f.streams[0].wait.resolve(); await running;
@@ -848,7 +848,7 @@ test('台账写操作透传真实来源，不伪造 localhost:3000',async()=>{
 
 test('空线程创建未返回时停止，迟到创建不能继续发起模型运行',async()=>{
   const created=deferred(),f=fixture({createThread:()=>created.promise});
-  const running=f.useChatStore.getState().sendMessage('current','fast'); await tick();
+  const running=f.useChatStore.getState().sendMessage('current'); await tick();
   assert.equal((await f.useChatStore.getState().stopStreaming()).confirmed,true);
   created.resolve('late-created-thread');await running;
   assert.equal(f.streams.length,0);
@@ -872,7 +872,7 @@ test('wait确认也必须匹配本次submission，不能接受同attempt另一�
 test('tracing done and history share identity even if final reread fails', async()=>{
   const f=fixture(), store=f.useChatStore;
   await store.getState().switchGraph('intelligent-tracing');
-  const running=store.getState().sendMessage('分析','fast'); await tick();
+  const running=store.getState().sendMessage('分析'); await tick();
   const h=f.streams[0].handlers; h.onRun('r1');
   const base={output_protocol_version:1,thread_id:store.getState().activeThreadId,run_id:'r1',graph_id:'intelligent-tracing',output_id:'out1',message_id:'rep1',delivery_mode:'validated_section'};
   h.onCustom({...base,type:'final_output_start',seq:0});

@@ -5,6 +5,7 @@ F-A/F-W data is synthetic. These are G0 checks, not live-service acceptance.
 
 import json
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -303,48 +304,12 @@ def test_streamed_claim_reassembled_without_sources_is_blocked():
     assert "35测试单位" not in published
 
 
-def test_canvas_cannot_publish_uncited_standard_in_html_or_markdown():
-    from common.artifacts.create_artifact_tool import create_artifact_tool_fn
-
-    for kind, body in [
-        ("markdown", "依据《测试标准》第5条限值为350。"),
-        ("html", "<p>依据《测试标准》第5条限值为350。</p>"),
-    ]:
-        result = create_artifact_tool_fn("测试", kind, body)
-        assert result["success"] is False and "artifact_ref" not in result
-    result = create_artifact_tool_fn(
-        "观测数据", "markdown", "本次观测浓度为35微克/立方米。"
-    )
-    assert result["success"] is True
-
-
-def test_canvas_with_real_source_uses_exact_quotes_and_hides_runtime_schema():
-    from langchain.tools import ToolRuntime
-
-    from common.artifacts.create_artifact_tool import (
-        build_create_artifact_tool,
-        create_artifact_tool_fn,
-    )
-
-    tool = build_create_artifact_tool()
-    assert "runtime" not in tool.args
-    runtime = ToolRuntime(
-        state={"messages": [_tool_message(CITE, "测试指标A的示例限值为35测试单位。")]},
-        context=None,
-        config={},
-        stream_writer=lambda value: None,
-        tool_call_id="call",
-        store=None,
-    )
-    result = create_artifact_tool_fn(
-        "标准规定",
-        "markdown",
-        f"依据《测试标准》全部污染物限值为35测试单位 [[cite:{CITE}]]。",
-        runtime=runtime,
-    )
-    assert result["success"] is True
-    assert "全部污染物" not in result["artifact_ref"]["content"]
-    assert "测试指标A的示例限值为35测试单位" in result["artifact_ref"]["content"]
+def test_create_artifact_canvas_is_retired():
+    root = Path(__file__).resolve().parents[2]
+    assert not (root / "src/common/artifacts").exists()
+    assert "create_artifact" not in (
+        root / "src/common/runtime_tools.py"
+    ).read_text()
 
 
 def test_specific_question_cannot_be_answered_with_bare_uncited_value():

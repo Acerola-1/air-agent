@@ -27,7 +27,7 @@ from common.output_streaming.publisher import (
     OutputPublisher,
     runtime_authorization_probe,
 )
-from common.runtime_context import get_message_content, get_routing_context
+from common.runtime_context import get_message_content
 from common.runtime_events import emit_event
 from common.runtime_tools import get_business_tools
 from data_analysis.context.preparation import (
@@ -187,7 +187,7 @@ async def resolve_skill(
 ) -> dict[str, Any]:
     """确定性 Skill 解析：menu_name -> Skill 路径 + allowed-tools + 规则内容.
 
-    从 config["configurable"] 取 menu_name 和 mode，
+    从 config["configurable"] 取 menu_name，
     用 match_menu_skill() 确定性匹配 Skill，
     读取 SKILL.md frontmatter 和 references 规则文件，
     写入 state 字段。
@@ -204,8 +204,6 @@ async def resolve_skill(
     raw_menu_name = str(
         configurable.get("menu_name") or configurable.get("module") or ""
     ).strip()
-    routing = get_routing_context(configurable)
-    mode = routing.mode  # "fast" 或 "expert"
 
     matched = match_menu_skill(raw_menu_name)
 
@@ -232,12 +230,8 @@ async def resolve_skill(
     # 读取 SKILL.md 正文（frontmatter 之后的内容）
     skill_body = _load_skill_body(skill_file)
 
-    # 确定规则文件路径
-    rules_file = (
-        skill_dir / "references" / ("fast.md" if mode != "expert" else "expert.md")
-    )
-    if not rules_file.exists():
-        rules_file = skill_dir / "references" / "fast.md"
+    # 封存图固定读取单一 fast 规则文件；expert 材料保留但不可达。
+    rules_file = skill_dir / "references" / "fast.md"
 
     references_content = ""
     if rules_file.exists():
@@ -263,10 +257,9 @@ async def resolve_skill(
     skill_path = f"/skills/{matched.skill_name}/SKILL.md"
 
     logger.info(
-        "数据分析 Skill 匹配成功：has_menu={}，skill={}，mode={}，allowed_tools={}",
+        "数据分析 Skill 匹配成功：has_menu={}，skill={}，allowed_tools={}",
         bool(raw_menu_name),
         matched.skill_name,
-        mode,
         allowed_tools,
     )
 
@@ -291,7 +284,7 @@ async def prepare_model(
 
     每次进入 call_model 前执行：
     1. 刷新 MCP 工具列表
-    2. 组装完整 system_prompt（含 Skill 规则、时间、mode 上下文）
+    2. 组装完整 system_prompt（含 Skill 规则、时间）
     3. 写入 system_prompt 到 state
 
     注意：available_tools 不写入 state（不可序列化），
@@ -309,12 +302,8 @@ async def prepare_model(
     await refresh_authorized_mcp_tools(config)
 
     # 2. 组装 system_prompt
-    configurable = config.get("configurable", {})
     skill_rules = state.get("skill_rules_content", "")
-    system_prompt = build_system_prompt(
-        skill_rules_content=skill_rules,
-        configurable=configurable,
-    )
+    system_prompt = build_system_prompt(skill_rules_content=skill_rules)
 
     allowed = state.get("selected_skill_allowed_tools") or []
     logger.info(

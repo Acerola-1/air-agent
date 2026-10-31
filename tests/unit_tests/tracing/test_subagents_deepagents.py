@@ -230,7 +230,6 @@ async def test_lead_and_specialist_tool_boundaries():
         "freeze_tracing_request",
         "get_analysis_policy_summary",
         "build_validated_report",
-        "publish_tracing_canvas",
         "knowledge_search",
         "task",
     }
