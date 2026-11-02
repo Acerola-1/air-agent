@@ -55,3 +55,7 @@
 ## Workflow follow-up
 
 - 归档在 8.x 全部通过后进行；本 change 的 specs 是新增 capability，archive 会写入 `openspec/specs/basic-qa-approval-websearch/spec.md`。
+
+## 归档豁免（2026-11-03）
+
+用户要求强制归档。任务 8.4 不改为通过：弹窗批准、禁止和刷新已实测，停止图标有契约测试；等待中在浏览器里点击停止受自动化稳定性限制，尚未完成。

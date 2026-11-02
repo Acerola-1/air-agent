@@ -83,7 +83,7 @@ gate 回写的 ToolMessage 只包含“部分数据暂时无法获取，无法�
 
 ### 8. DeepSeek 接入
 
-新增 `src/common/websearch/deepseek.py`：`POST https://api.deepseek.com/v1/tools/search`，body `{query, count: 5, need_content: true}`，Bearer `DEEPSEEK_API_KEY`。`query` 为 1–128 个字符，超长在登记审批前拒绝，不占预算。客户端设置 20s 超时、`follow_redirects=False`、`trust_env=False`，不记录 query 全文/密钥/响应原文，只记录条数、耗时与错误类别。解析 `summary`、`snippet`、`content`、`rerank_score`、`authority`，字段分开保存。模型回执保留每条 `summary`；`rerank_score >= 1.5` 的前两条另附最多 8000 字、避开纯链接行的正文摘录。一次搜索的摘要与摘录合计不超过 26000 字。该回执不进入 2 万字符的工具结果压缩。`authority` 只作为来源分量，`-1` 表示未知，不用于丢弃结果。缺少密钥时工具返回不可用且不触发审批。`DEEPSEEK_API_KEY` 放 `.env.langgraph`；删除 `SERPER_API_KEY` 必需配置与 `common/tools.py` 的 Serper 实现。
+新增 `src/common/websearch/deepseek.py`：`POST https://api.deepseek.com/v1/tools/search`，body `{query, count: 5, need_content: true}`，Bearer `DEEPSEEK_API_KEY`。`query` 为 1–128 个字符，超长在登记审批前拒绝，不占预算。客户端设置 20s 超时、`follow_redirects=False`、`trust_env=False`，不记录 query 全文/密钥/响应原文，只记录条数、耗时与错误类别。解析 `summary`、`snippet`、`content`、`rerank_score`、`authority`，字段分开保存。模型回执保留每条 `summary`；`rerank_score >= 1.5` 的前两条另附最多 8000 字、避开纯链接行的正文摘录。一次搜索的摘要与摘录合计不超过 26000 字。回执与其它工具结果一起计入 2 万字符的压缩阈值。`authority` 只作为来源分量，`-1` 表示未知，不用于丢弃结果。缺少密钥时工具返回不可用且不触发审批。`DEEPSEEK_API_KEY` 放 `.env.langgraph`；删除 `SERPER_API_KEY` 必需配置与 `common/tools.py` 的 Serper 实现。
 
 替代方案：走私有桥新增固定路由，密钥更隔离，但要改桥白名单、启动器与部署文档；Serper 已有容器直连先例，v1 选直连。
 

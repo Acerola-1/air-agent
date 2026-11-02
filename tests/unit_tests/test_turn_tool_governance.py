@@ -115,9 +115,7 @@ async def test_failure_returns_none_without_partial_truth(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_web_search_receipt_stays_intact_when_other_tools_are_compressed(
-    monkeypatch,
-):
+async def test_web_search_receipt_is_compressed_with_other_tool_results(monkeypatch):
     monkeypatch.setattr(config, "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000)
     monkeypatch.setattr(
         "basic_qa.context.tool_results.runtime_scope",
@@ -125,32 +123,29 @@ async def test_web_search_receipt_stays_intact_when_other_tools_are_compressed(
     )
 
     async def save(**kwargs):
-        return "art_query"
+        return "art_web"
 
     async def summarize(**kwargs):
-        return ("查询摘要", {"complete": True})
+        return ("网页摘要", {"complete": True})
 
     monkeypatch.setattr("basic_qa.context.tool_results.save_tool_artifact", save)
     monkeypatch.setattr(
         "basic_qa.context.tool_results.summarize_large_tool_output", summarize
     )
-    web_text = "网页正文" * 4000
+    web_text = "网" * 21000
     messages = [
-        HumanMessage(content="政策和监测", id="h"),
+        HumanMessage(content="政策", id="h"),
         AIMessage(
             content="",
-            tool_calls=[
-                {"id": "web", "name": "web_search", "args": {}},
-                {"id": "q", "name": "query", "args": {}},
-            ],
+            tool_calls=[{"id": "web", "name": "web_search", "args": {}}],
             id="a",
         ),
         ToolMessage(content=web_text, tool_call_id="web", name="web_search", id="web"),
-        ToolMessage(content="x" * 21000, tool_call_id="q", name="query", id="q"),
     ]
 
     replacements = await govern_current_turn_tools(messages, {})
 
     assert replacements is not None
-    assert [item.id for item in replacements] == ["q"]
+    assert [item.id for item in replacements] == ["web"]
+    assert len(replacements[0].content) < len(web_text)
     assert messages[2].content == web_text

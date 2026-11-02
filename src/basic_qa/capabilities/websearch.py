@@ -40,7 +40,7 @@ RESULT_COUNT = 5
 CONTENT_EXCERPT_CHARS = 8000
 CONTENT_SCORE_MIN = 1.5
 MAX_CONTENT_EXCERPTS = 2
-# 5 条摘要上限加上 2 段 8000 字摘录。联网回执单独保留，不走 2 万字工具压缩。
+# 5 条摘要上限加上 2 段 8000 字摘录。超出后仍走统一的工具结果压缩。
 MAX_MODEL_TEXT_CHARS = 26000
 
 GENERIC_UNAVAILABLE = "部分数据暂时无法获取，无法进一步分析。"

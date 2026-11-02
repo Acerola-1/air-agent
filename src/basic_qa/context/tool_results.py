@@ -41,17 +41,9 @@ def _tool_args(messages: Sequence[AnyMessage]) -> dict[str, dict[str, Any]]:
     return args
 
 
-# 联网正文已在 gate 内按来源截断。再压成工具摘要会把刚保留的页面丢掉。
-_PRESERVED_TOOL_NAMES = frozenset({"web_search"})
-
-
 def _stored(message: ToolMessage) -> bool:
     artifact = message.artifact if isinstance(message.artifact, dict) else {}
     return artifact.get("storage_status") == "stored"
-
-
-def _compressible(message: ToolMessage) -> bool:
-    return message.name not in _PRESERVED_TOOL_NAMES
 
 
 async def govern_current_turn_tools(
@@ -77,15 +69,12 @@ async def govern_current_turn_tools(
         if isinstance(message, ToolMessage)
         and isinstance(message.content, str)
         and not _stored(message)
-        and _compressible(message)
         and len(message.content) >= min_chars
     ]
     total = sum(
         len(message.content)
         for message in turn
-        if isinstance(message, ToolMessage)
-        and isinstance(message.content, str)
-        and _compressible(message)
+        if isinstance(message, ToolMessage) and isinstance(message.content, str)
     )
     if total <= config.TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS or not tools:
         return None
