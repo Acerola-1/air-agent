@@ -128,6 +128,7 @@ async def stream_final_answer(
     force_policy_bound: bool = False,
     invocation_metadata: dict[str, Any] | None = None,
     disable_tool_calls: bool = False,
+    citation_filter: Any | None = None,
 ) -> StreamAnswerResult:
     """Generate the final answer once and publish verified increments.
 
@@ -156,6 +157,7 @@ async def stream_final_answer(
             policy_context,
             extra_config,
             model_kwargs,
+            citation_filter=citation_filter,
         )
         return result
 
@@ -198,10 +200,19 @@ async def stream_final_answer(
                 )
             text = chunk_text(chunk)
             for unit in safety.feed(text):
+                if citation_filter is not None:
+                    unit = citation_filter.push(unit)
+                    if not unit:
+                        continue
                 reason = _validate_public_unit(unit, policy_context)
                 if reason == "policy_requires_complete_answer":
                     return await _complete_guarded_answer(
-                        publisher, unit, policy_context, usage, units
+                        publisher,
+                        unit,
+                        policy_context,
+                        usage,
+                        units,
+                        citation_filter=citation_filter,
                     )
                 if reason:
                     await publisher.abort(reason, detail="unit_policy")
@@ -218,10 +229,19 @@ async def stream_final_answer(
                 if await publisher.publish(unit):
                     units += 1
         for unit in safety.flush():
+            if citation_filter is not None:
+                unit = citation_filter.push(unit)
+                if not unit:
+                    continue
             reason = _validate_public_unit(unit, policy_context)
             if reason == "policy_requires_complete_answer":
                 return await _complete_guarded_answer(
-                    publisher, unit, policy_context, usage, units
+                    publisher,
+                    unit,
+                    policy_context,
+                    usage,
+                    units,
+                    citation_filter=citation_filter,
                 )
             if reason:
                 await publisher.abort(reason, detail="tail_policy")
@@ -235,8 +255,17 @@ async def stream_final_answer(
                 )
             if await publisher.publish(unit):
                 units += 1
+        if citation_filter is not None:
+            tail = citation_filter.flush()
+            if tail:
+                if await publisher.publish(tail):
+                    units += 1
         published_text = publisher.emitted_text
-        full_text = safety.clean_text
+        # 联网过滤器会在模型自写来源标题处截断；最终正文必须以已发布前缀为准，
+        # 不能再用包含被抑制段落的原始 clean_text。
+        full_text = (
+            published_text if citation_filter is not None else safety.clean_text
+        )
     except StreamSafetyError as exc:
         await publisher.abort(exc.reason_code, detail="safety_buffer")
         return _aborted_result(publisher, "", usage, units, exc.reason_code)
@@ -290,6 +319,17 @@ async def stream_final_answer(
         controlled_text = final_text if blocked else full_text
         return _aborted_result(publisher, controlled_text, usage, units, reason)
 
+    # 来源列表由服务端按正文实际引用生成，不参与模型正文的策略改写；
+    # 只在确认正文可发布后追加，并作为 finish 的尾部增量发布。
+    references = (
+        citation_filter.references_for(final_text)
+        if citation_filter is not None
+        else ""
+    )
+    if references:
+        final_text = final_text + references
+        units += 1
+
     try:
         final_text = await publisher.finish(final_text)
     except OutputAborted as exc:
@@ -326,12 +366,16 @@ async def _complete_guarded_answer(
     policy_context: list[AnyMessage],
     usage: dict[str, int],
     units: int,
+    *,
+    citation_filter: Any | None = None,
 ) -> StreamAnswerResult:
     """对尚未公开的具体条款应用原有策略，并以明确受限答复结束.
 
     不发布模型的具体断言，也不撤回已校验的普通说明。有依据时只给出
     原文引用；无依据时明确拒绝给出确定条款，不能冒充检索成功。
     """
+    if citation_filter is not None:
+        unpublished_unit = citation_filter.render(unpublished_unit)
     controlled = apply_answer_policy(
         AIMessage(content=unpublished_unit), policy_context
     )
@@ -344,7 +388,14 @@ async def _complete_guarded_answer(
         # 受限答复不能掩盖此前公开内容的校验冲突。
         await publisher.abort("policy_blocked", detail="published_prefix_conflict")
         return _aborted_result(publisher, prefix, usage, units, "policy_blocked")
-    final_text = await publisher.finish(prefix + ("\n\n" if prefix else "") + text)
+    references = (
+        citation_filter.references_for(prefix + text)
+        if citation_filter is not None
+        else ""
+    )
+    final_text = await publisher.finish(
+        prefix + ("\n\n" if prefix else "") + text + references
+    )
     message = AIMessage(
         content=final_text,
         id=publisher.message_id,
@@ -374,6 +425,8 @@ async def _stream_policy_bound(
     policy_context: list[AnyMessage],
     extra_config: dict[str, Any],
     model_kwargs: dict[str, Any],
+    *,
+    citation_filter: Any | None = None,
 ) -> StreamAnswerResult:
     """Buffered single unit for questions that require exact source wording."""
     publisher.start()
@@ -393,12 +446,21 @@ async def _stream_policy_bound(
         else response.content
     )
     raw = strip_reasoning_text(raw)
+    if citation_filter is not None:
+        raw = citation_filter.render(raw)
     policy_result = apply_answer_policy(AIMessage(content=raw), policy_context)
     final_text = (
         policy_result.content if isinstance(policy_result.content, str) else raw
     )
     if not final_text.strip():
         final_text = "未生成完整答案，请重试。"
+    references = (
+        citation_filter.references_for(final_text)
+        if citation_filter is not None
+        else ""
+    )
+    if references:
+        final_text = final_text + references
     try:
         complete = await publisher.finish(final_text)
     except OutputAborted as exc:

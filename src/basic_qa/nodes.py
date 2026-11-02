@@ -15,6 +15,7 @@ from langgraph.types import StreamWriter
 from loguru import logger
 from pydantic import BaseModel
 
+from basic_qa.capabilities.websearch import web_search
 from basic_qa.context.preparation import (
     ContextRecoveryFailed,
     PreparedRequest,
@@ -126,6 +127,7 @@ class BasicQANodes:
             self._search_mcp_tool,
             self._load_mcp_tool,
             self._finish_planning_tool,
+            web_search,
         )
 
     @property
@@ -133,6 +135,13 @@ class BasicQANodes:
         """保持已有模型 schema 顺序，同时复用同一组工具实例."""
         load, search, *remaining = self.control_tools
         return (search, load, *remaining)
+
+    @staticmethod
+    def _citations(state: BasicQAState) -> Any:
+        """每次终答尝试使用新的引用过滤器，避免恢复时沿用上一轮已用编号."""
+        from basic_qa.websearch_citations import WebAnswerCitations
+
+        return WebAnswerCitations(state.get("websearch_sources") or ())
 
     # ──── 会话准备 ────
 
@@ -739,6 +748,7 @@ class BasicQANodes:
                 question=_latest_human_content(messages),
                 invocation_metadata=observed.runtime_metadata(),
                 disable_tool_calls=True,
+                citation_filter=self._citations(state),
             )
         except Exception as exc:  # noqa: BLE001 - 仅超窗进入一次恢复
             if not is_context_overflow(exc):
@@ -807,6 +817,7 @@ class BasicQANodes:
                     question=_latest_human_content(messages),
                     invocation_metadata=observed.runtime_metadata(),
                     disable_tool_calls=True,
+                    citation_filter=self._citations(state),
                 )
             except Exception as second:  # noqa: BLE001 - 第二次仍超限则有界停止
                 logger.warning(

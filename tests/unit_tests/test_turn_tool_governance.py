@@ -8,11 +8,11 @@ from unittest.mock import AsyncMock
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
-from common.config import config
 from basic_qa.context.tool_results import (
     apply_replacements,
     govern_current_turn_tools,
 )
+from common.config import config
 
 
 def turn_messages(count: int = 4, size: int = 6000):
@@ -112,3 +112,45 @@ async def test_failure_returns_none_without_partial_truth(monkeypatch):
 
     monkeypatch.setattr("basic_qa.context.tool_results.save_tool_artifact", save)
     assert await govern_current_turn_tools(turn_messages(), {}) is None
+
+
+@pytest.mark.anyio
+async def test_web_search_receipt_stays_intact_when_other_tools_are_compressed(
+    monkeypatch,
+):
+    monkeypatch.setattr(config, "TOOL_OUTPUT_SUMMARY_THRESHOLD_CHARS", 20000)
+    monkeypatch.setattr(
+        "basic_qa.context.tool_results.runtime_scope",
+        lambda config: ("tenant", "user", "thread", "run"),
+    )
+
+    async def save(**kwargs):
+        return "art_query"
+
+    async def summarize(**kwargs):
+        return ("查询摘要", {"complete": True})
+
+    monkeypatch.setattr("basic_qa.context.tool_results.save_tool_artifact", save)
+    monkeypatch.setattr(
+        "basic_qa.context.tool_results.summarize_large_tool_output", summarize
+    )
+    web_text = "网页正文" * 4000
+    messages = [
+        HumanMessage(content="政策和监测", id="h"),
+        AIMessage(
+            content="",
+            tool_calls=[
+                {"id": "web", "name": "web_search", "args": {}},
+                {"id": "q", "name": "query", "args": {}},
+            ],
+            id="a",
+        ),
+        ToolMessage(content=web_text, tool_call_id="web", name="web_search", id="web"),
+        ToolMessage(content="x" * 21000, tool_call_id="q", name="query", id="q"),
+    ]
+
+    replacements = await govern_current_turn_tools(messages, {})
+
+    assert replacements is not None
+    assert [item.id for item in replacements] == ["q"]
+    assert messages[2].content == web_text

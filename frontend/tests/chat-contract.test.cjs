@@ -312,6 +312,54 @@ test('proxy: unified identity gates, ticket upstream, v2 scope, tenant checks', 
   }
 });
 
+test('proxy: resume forwards command, empty content and source attempt', async () => {
+  const previous = global.fetch, oldBase = process.env.LANGGRAPH_API_URL;
+  process.env.LANGGRAPH_API_URL = 'http://test-api';
+  const calls = [], admissions = [];
+  const routes = proxyFixture(makeCtx(), {
+    admit: async (input) => {
+      admissions.push(input);
+      return { request_id: 'req-r', attempt_id: 'att-r', submission_id: 'sub-r',
+        admission_status: 'admitting', operation_kind: input.operationKind, reused: true,
+        thread_id: input.threadId, graph_id: input.graphId, ledger_marker: 'lr:req-r:att-r' };
+    },
+  });
+  global.fetch = async (url, options) => {
+    calls.push({ url, options });
+    return Response.json({ ok: true });
+  };
+  try {
+    const sourceAttempt = '11111111-1111-1111-1111-111111111111';
+    const response = await routes.POST(request(
+      'threads/thread-r/runs/stream',
+      { assistant_id: 'basic-qa', command: { resume: { approved: true } } },
+      'POST',
+      {
+        'x-tenant-id': 'tenant-a',
+        'x-tenant-context-version': '1',
+        'x-submission-key': 'submission-key-12345678',
+        'x-operation-kind': 'resume',
+        'x-source-attempt-id': sourceAttempt,
+      },
+    ));
+    assert.equal(response.status, 200);
+    assert.equal(admissions.length, 1);
+    assert.equal(admissions[0].operationKind, 'resume');
+    assert.equal(admissions[0].sourceAttemptId, sourceAttempt);
+    assert.equal(admissions[0].content, '');
+    assert.equal(admissions[0].storeContent, false);
+    const upstream = calls.find((call) => String(call.url).endsWith('/threads/thread-r/runs/stream'));
+    assert.ok(upstream);
+    const forwarded = JSON.parse(upstream.options.body);
+    assert.deepEqual(forwarded.command, { resume: { approved: true } });
+    assert.equal(forwarded.input, undefined);
+    assert.equal(forwarded.metadata.ledger_operation_kind, 'resume');
+  } finally {
+    global.fetch = previous;
+    if (oldBase === undefined) delete process.env.LANGGRAPH_API_URL; else process.env.LANGGRAPH_API_URL = oldBase;
+  }
+});
+
 test('proxy accepts MCP-only v2 selections and explicitly rejects withdrawn Skill fields', async () => {
   const previous = global.fetch, oldBase = process.env.LANGGRAPH_API_URL;
   process.env.LANGGRAPH_API_URL = 'http://test-api';

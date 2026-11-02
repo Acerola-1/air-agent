@@ -63,7 +63,6 @@ def main() -> None:
             "DEEPSEEK_API_KEY": "x",
             "XFYUN_MAAS_API_KEY": "x",
             "XIAOMI_MIMO_API_KEY": "x",
-            "SERPER_API_KEY": "x",
             "ARK_API_KEY": "x",
             "MAIN_LLM_API_KEY": "x",
             "TENANT_ENFORCE_RUNTIME_IDENTITY": "false",

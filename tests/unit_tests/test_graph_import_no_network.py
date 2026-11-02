@@ -35,7 +35,6 @@ print('IMPORT_PROOF='+json.dumps({'graphs':loaded,'network_attempts':len(attempt
         **os.environ,
         "MCP_SERVER_URL": "http://127.0.0.1:1/controlled-import",
         "SILICONFLOW_API_KEY": "controlled-import-not-a-key",
-        "SERPER_API_KEY": "controlled-import-not-a-key",
         "MAIN_LLM_API_KEY": "controlled-import-not-a-key",
         "LANGFUSE_ENABLED": "true",
         "TENANT_ENFORCE_RUNTIME_IDENTITY": "true",

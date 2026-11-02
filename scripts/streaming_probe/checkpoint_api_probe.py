@@ -208,7 +208,6 @@ def main() -> None:
             "DEEPSEEK_API_KEY",
             "XFYUN_MAAS_API_KEY",
             "XIAOMI_MIMO_API_KEY",
-            "SERPER_API_KEY",
             "ARK_API_KEY",
             "MAIN_LLM_API_KEY",
         ):

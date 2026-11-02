@@ -55,7 +55,7 @@ def main() -> int:
     fixtures = json.loads(fixtures_path.read_text())
     cases = dataset["cases"]
     # 只为加载纯规则模块提供占位配置；不建立身份/服务，不加载私有配置文件。
-    for key in ("SILICONFLOW_API_KEY", "SERPER_API_KEY", "MAIN_LLM_API_KEY"):
+    for key in ("SILICONFLOW_API_KEY", "MAIN_LLM_API_KEY"):
         os.environ.setdefault(key, "offline-reference-check")
     os.environ.setdefault("LITELLM_LOCAL_MODEL_COST_MAP", "true")
     sys.path.insert(0, str(ROOT / "src"))

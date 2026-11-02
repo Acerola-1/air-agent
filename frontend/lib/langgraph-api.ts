@@ -50,6 +50,8 @@ export type SubmissionContext = {
   submissionKey: string;
   userMessageId?: string | null;
   operationKind?: "initial" | "retry" | "regenerate" | "resume";
+  /** resume 的源尝试：服务端按此复用原 request/attempt，不能由浏览器伪造归属。 */
+  sourceAttemptId?: string | null;
 };
 let submissionContext: SubmissionContext | null = null;
 
@@ -72,6 +74,7 @@ function tenantHeaders(): Record<string, string> {
     headers["x-submission-key"] = submissionContext.submissionKey;
     if (submissionContext.userMessageId) headers["x-user-message-id"] = submissionContext.userMessageId;
     if (submissionContext.operationKind) headers["x-operation-kind"] = submissionContext.operationKind;
+    if (submissionContext.sourceAttemptId) headers["x-source-attempt-id"] = submissionContext.sourceAttemptId;
   }
   return headers;
 }
@@ -164,9 +167,33 @@ export class ThreadAccessError extends Error {
   }
 }
 
-export type ThreadValues = { messages: unknown[]; context_metrics?: ContextMetrics; context_status?: ProcessingStatus; data_status?: ProcessingStatus };
+export type WebSearchSource = {
+  n: number;
+  title?: string;
+  url?: string;
+  site?: string;
+  date?: string;
+};
 
-/** 摘要为内部 state，界面仅消费消息和公开统计。 */
+/** 平台中断对象：审批弹窗只读取 value，不把中断 ID 当业务数据。 */
+export type LgInterrupt = { id?: string; value?: unknown };
+export type LgTask = { id?: string; name?: string; interrupts?: LgInterrupt[] };
+
+export type ThreadValues = {
+  messages: unknown[];
+  context_metrics?: ContextMetrics;
+  context_status?: ProcessingStatus;
+  data_status?: ProcessingStatus;
+  /** 本轮服务端分配的联网来源；用于流式角标的已知编号校验。 */
+  websearch_sources?: WebSearchSource[];
+  /** 平台在 values 事件中返回的未完成中断。 */
+  __interrupt__?: LgInterrupt[];
+  /** 线程未完成的节点；审批等待时包含 websearch_gate。 */
+  next?: string[];
+  tasks?: LgTask[];
+};
+
+/** 摘要为内部 state，界面仅消费消息、公开统计与中断状态。 */
 export async function getThreadState(threadId: string): Promise<ThreadValues> {
   let state: Awaited<ReturnType<ReturnType<typeof apiClient>["threads"]["getState"]>>;
   try {
@@ -178,8 +205,24 @@ export async function getThreadState(threadId: string): Promise<ThreadValues> {
     }
     throw err;
   }
-  const values = (state as unknown as { values?: ThreadValues }).values;
-  return { messages: Array.isArray(values?.messages) ? values.messages : [], context_metrics: values?.context_metrics, context_status: values?.context_status, data_status: values?.data_status };
+  const raw = state as unknown as {
+    values?: ThreadValues;
+    next?: string[];
+    tasks?: LgTask[];
+  };
+  const values = raw.values;
+  return {
+    messages: Array.isArray(values?.messages) ? values.messages : [],
+    context_metrics: values?.context_metrics,
+    context_status: values?.context_status,
+    data_status: values?.data_status,
+    websearch_sources: Array.isArray(values?.websearch_sources)
+      ? values.websearch_sources.filter((item) => item && Number.isInteger(item.n))
+      : [],
+    __interrupt__: values?.__interrupt__,
+    next: raw.next,
+    tasks: raw.tasks,
+  };
 }
 
 export async function cancelRun(threadId: string, runId: string): Promise<void> {
@@ -259,13 +302,17 @@ export type StreamHandlers = {
 };
 
 export async function streamRun(opts: {
-  threadId: string; graphId: string; messages: { id?: string; type: string; content: unknown }[];
+  threadId: string; graphId: string;
+  /** 新问题使用 input；审批恢复使用 command，二者互斥。 */
+  messages?: { id?: string; type: string; content: unknown }[];
+  command?: { resume: unknown };
   config?: { configurable?: Record<string, unknown> }; signal?: AbortSignal; handlers: StreamHandlers;
-}): Promise<void> {  const { threadId, graphId, messages, config, signal, handlers } = opts;
+}): Promise<void> {  const { threadId, graphId, messages, command, config, signal, handlers } = opts;
   let upstreamError = false;
   try {
     const stream = await apiClient().runs.stream(threadId, graphId, {
-      input: { messages }, config, streamMode: ["values", "messages-tuple", "custom"], signal,
+      ...(command ? { command } : { input: { messages: messages ?? [] } }),
+      config, streamMode: ["values", "messages-tuple", "custom"], signal,
       onDisconnect: "cancel",
     });
     for await (const chunk of stream) {
@@ -327,9 +374,30 @@ export async function confirmRunAdmission(
   }
 }
 
+/** 审批等待中的运行：由 BFF 核对平台 `interrupted` 后把台账收敛到 `waiting_input`。
+ *
+ * 返回的 attempt_id 是 resume 受理的源尝试；前台不在浏览器推断台账归属。
+ */
+export async function confirmInterruptedRun(
+  threadId: string,
+  runId: string | null,
+): Promise<{ confirmed: boolean; attempt_id?: string; reason?: string }> {
+  try {
+    const res = await fetch("/api/agent-runs/interrupt", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...tenantHeaders() },
+      body: JSON.stringify({ thread_id: threadId, run_id: runId }),
+      cache: "no-store",
+    });
+    if (!res.ok) return { confirmed: false };
+    return (await res.json()) as { confirmed: boolean; attempt_id?: string; reason?: string };
+  } catch {
+    return { confirmed: false };
+  }
+}
+
 /** 记录停止意图（独立于实际终态；不冒充已取消）。 */
-export async function recordStopIntent(input: {
-  threadId?: string | null;
+export async function recordStopIntent(input: {  threadId?: string | null;
   runId?: string | null;
   origin: "user_stop" | "navigation" | "tenant_switch" | "transport_disconnect" | "permission_revocation" | "unknown";
   phase: "queued" | "processing" | "output" | "unknown";

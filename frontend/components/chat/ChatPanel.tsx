@@ -28,6 +28,7 @@ import {
   type ChatConfig,
 } from "@/lib/chat-config";
 import { Markdown } from "@/components/chat/Markdown";
+import { WebSearchApprovalCard } from "@/components/chat/WebSearchApprovalCard";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
 import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
 import { ContextMeter } from "@/components/chat/ContextMeter";
@@ -93,6 +94,12 @@ export function ChatPanel() {
   const stopStreaming = useChatStore((s) => s.stopStreaming);
   const recordNavigationStop = useChatStore((s) => s.recordNavigationStop);
   const regenerateLast = useChatStore((s) => s.regenerateLast);
+  const websearchApproval = useChatStore((s) => s.websearchApproval);
+  const resolveWebSearchApproval = useChatStore((s) => s.resolveWebSearchApproval);
+  const websearchSources = useChatStore((s) => s.websearchSources);
+  const knownWebCitations = websearchSources.length
+    ? new Set(websearchSources.map((item) => item.n))
+    : undefined;
 
   const activeTimingMessageId = useChatStore((s) => s.activeTimingMessageId);
   const activeTimingId = useChatStore((s) => s.activeTimingId);
@@ -224,6 +231,7 @@ export function ChatPanel() {
                 // 不支持对历史轮次回放（第 3 项反馈迭代时再扩展）。
                 isLatestAssistant={index === lastAssistantIndex}
                 feedbackEpoch={sessionCtx?.context_version ?? 0}
+                webCitations={knownWebCitations}
               />
             ))
           )}
@@ -237,6 +245,7 @@ export function ChatPanel() {
               streamingText={streamingText}
               streamingReasoning={streamingReasoning}
               status={streamingOutputStatus}
+              webCitations={knownWebCitations}
             />
           )}
 
@@ -252,10 +261,20 @@ export function ChatPanel() {
         </div>
       </div>
 
-      {/* 底部悬浮输入面板 */}
+      {/* 底部输入区：审批卡片贴在输入框上方，不遮罩、不占满内容区。 */}
       <div className="bg-background/95 backdrop-blur-md px-4 py-3 border-t border-border/40">
+        {websearchApproval && (
+          <div className="mx-auto w-full max-w-3xl pb-2">
+            <WebSearchApprovalCard
+              approval={websearchApproval}
+              busy={isStreaming || stopPending}
+              onResolve={(approved) => void resolveWebSearchApproval(approved)}
+              onStop={() => void stopStreaming()}
+            />
+          </div>
+        )}
         <Composer
-          disabled={isStreaming || stopPending || loadingThread}
+          disabled={isStreaming || stopPending || loadingThread || Boolean(websearchApproval)}
           onSend={(text) => void sendMessage(text)}
           onStop={() => stopStreaming()}
         />
@@ -270,10 +289,12 @@ function MessageItem({
   message,
   isLatestAssistant,
   feedbackEpoch,
+  webCitations,
 }: {
   message: ChatMessage;
   isLatestAssistant?: boolean;
   feedbackEpoch?: number;
+  webCitations?: ReadonlySet<number>;
 }) {
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
@@ -338,7 +359,7 @@ function MessageItem({
         {/* 最终回答正文 */}
         {message.content && (
           <div data-answer-body data-answer-message-id={message.sourceMessageId || message.id} className="text-sm">
-            <Markdown content={message.content} />
+            <Markdown content={message.content} webCitations={webCitations} />
           </div>
         )}
         {message.incomplete && (
@@ -439,10 +460,12 @@ function StreamingAssistantCard({
   streamingText,
   streamingReasoning,
   status,
+  webCitations,
 }: {
   streamingText: string;
   streamingReasoning: string;
   status: "idle" | "streaming" | "partial" | "complete" | "aborted";
+  webCitations?: ReadonlySet<number>;
 }) {
   return (
     <div className="flex gap-3 px-1 animate-in fade-in-50 duration-200">
@@ -462,7 +485,7 @@ function StreamingAssistantCard({
         {/* 流式正文 */}
         {streamingText ? (
           <div data-streaming-answer-body>
-            <Markdown content={streamingText} />
+            <Markdown content={streamingText} webCitations={webCitations} />
             <span className="ml-1 inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-emerald-500 align-middle" />
           </div>
         ) : !streamingReasoning ? (

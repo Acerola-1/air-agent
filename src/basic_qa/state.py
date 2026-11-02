@@ -43,6 +43,15 @@ class BasicQAState(TypedDict):
     data_status: Annotated[dict[str, Any], merge_processing_status]
     data_model_started_at: NotRequired[str]
 
+    # 联网审批与预算：按 bqa_turn_key 归属；新问题重置，resume 不重置。
+    # pending_websearch 由 web_search 工具登记、websearch_gate 消费并清除。
+    pending_websearch: NotRequired[dict[str, Any] | None]
+    websearch_turn_key: NotRequired[str]
+    websearch_granted: NotRequired[bool]
+    websearch_denied: NotRequired[bool]
+    websearch_used: NotRequired[int]
+    websearch_sources: NotRequired[list[dict[str, Any]]]
+
     # v1 迁移输入；session_state 复核历史调用与回执后才转换为 v2 能力。
     bqa_active_skill: NotRequired[dict[str, Any] | None]
     # 检查点兼容通道，当前业务和路由不依赖这些值。

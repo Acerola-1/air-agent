@@ -6,16 +6,13 @@ import { memo, useState } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CitationViewer } from "@/components/chat/CitationViewer";
+import {
+  renderCitationMarkdown,
+  webCitationNumber,
+} from "@/lib/web-citations";
 
-const CITATION_RE = /\[\[cite:([0-9a-fA-F-]{36})\]\]/g;
 const CITATION_HREF = /^https:\/\/citation\.invalid\/([0-9a-fA-F-]{36})$/;
 
-/** 模型只能输出 [[cite:<id>]]；渲染前换成可点击占位链接，来源由服务端解析. */
-function withCitationLinks(content: string): string {
-  return content.replace(CITATION_RE, (_match, id: string) => {
-    return `[📄 查看来源](https://citation.invalid/${id})`;
-  });
-}
 
 /** 带有 Mac 风格顶栏和复制按钮的现代代码块 */
 function CodeBlock({
@@ -98,7 +95,13 @@ function CodeBlock({
 }
 
 /** 现代 Markdown 渲染器（增强表格、引用、链接与代码块样式） */
-export const Markdown = memo(function Markdown({ content }: { content: string }) {
+export const Markdown = memo(function Markdown({
+  content,
+  webCitations,
+}: {
+  content: string;
+  webCitations?: ReadonlySet<number>;
+}) {
   const [citationId, setCitationId] = useState<string | null>(null);
   return (
     <div className="text-foreground leading-relaxed">
@@ -143,6 +146,18 @@ export const Markdown = memo(function Markdown({ content }: { content: string })
           ),
           p: (p) => <p className={cn("my-2.5 leading-7 text-foreground/90 first:mt-0 last:mb-0", p.className)} {...p} />,
           a: (p) => {
+            const web = webCitationNumber(p.href);
+            if (web !== null) {
+              return (
+                <sup
+                  data-web-citation-id={web}
+                  title={`互联网来源 ${web}`}
+                  className="mx-0.5 align-super text-[0.72em] font-semibold text-cyan-700 dark:text-cyan-400"
+                >
+                  [{web}]
+                </sup>
+              );
+            }
             const match = CITATION_HREF.exec(p.href ?? "");
             if (match) {
               return (
@@ -210,7 +225,7 @@ export const Markdown = memo(function Markdown({ content }: { content: string })
           code: CodeBlock,
         }}
       >
-        {withCitationLinks(content)}
+        {renderCitationMarkdown(content, webCitations)}
       </ReactMarkdown>
       {citationId && (
         <CitationViewer

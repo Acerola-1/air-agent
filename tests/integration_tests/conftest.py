@@ -16,7 +16,6 @@ for key in (
     "MCP_SERVER_URL",
     "SILICONFLOW_API_KEY",
     "DEEPSEEK_API_KEY",
-    "SERPER_API_KEY",
     "MAIN_LLM_API_KEY",
 ):
     os.environ.setdefault(key, "test")

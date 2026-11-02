@@ -41,7 +41,7 @@ class ControlledToolsModel(FakeMessagesListChatModel):
 async def test_subagent_and_sdk_summary_have_distinct_observations(ledger_env, monkeypatch):
     monkeypatch.setenv("AGENT_OBSERVABILITY_ENABLED", "true")
     monkeypatch.setenv("MCP_SERVER_URL", "http://127.0.0.1:1/unused")
-    for key in ("SILICONFLOW_API_KEY", "SERPER_API_KEY", "MAIN_LLM_API_KEY"):
+    for key in ("SILICONFLOW_API_KEY", "MAIN_LLM_API_KEY"):
         monkeypatch.setenv(key, "controlled-not-a-provider-key")
     c, data, ctx = await fixture(ledger_env)
     from common.identity.db import fetch_identity_state
@@ -214,7 +214,7 @@ async def test_actual_sdk_skill_read_success_and_failure_stages(
 
     monkeypatch.setenv("AGENT_OBSERVABILITY_ENABLED", "true")
     monkeypatch.setenv("MCP_SERVER_URL", "http://127.0.0.1:1/unused")
-    for key in ["SILICONFLOW_API_KEY", "MAIN_LLM_API_KEY", "SERPER_API_KEY"]:
+    for key in ["SILICONFLOW_API_KEY", "MAIN_LLM_API_KEY"]:
         monkeypatch.setenv(key, "controlled-not-a-provider-key")
     c, data, ctx = await fixture(ledger_env)
     sid, _ = parse_session_cookie(c.cookies.get("air_agent_session"))

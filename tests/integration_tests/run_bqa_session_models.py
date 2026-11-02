@@ -250,7 +250,6 @@ async def evaluate(args):
     # paths. Keep accidental auxiliary requests local and immediately failing.
     os.environ.update(
         SILICONFLOW_API_KEY="controlled-unused",
-        SERPER_API_KEY="controlled-unused",
         SILICONFLOW_BASE_URL="http://127.0.0.1:1/v1",
     )
     import common.capabilities as capabilities

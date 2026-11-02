@@ -37,7 +37,6 @@ os.environ.update(
     LANGFUSE_PROMPTS_ENABLED="false",
     AGENT_OBSERVABILITY_ENABLED="false",
     SILICONFLOW_API_KEY="controlled-unused",
-    SERPER_API_KEY="controlled-unused",
 )
 sys.path.insert(0, str(host / "src"))
 from application.business_policies import configure  # noqa: E402

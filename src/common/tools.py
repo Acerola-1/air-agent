@@ -7,7 +7,8 @@
 - 知识检索 (knowledge_retriever_tool) 与 Text2SQL (text2sql_tool) 依赖 Milvus/Ollama,
   本地环境无这两项服务,已整体删除。相关依赖模块(multi_query_retriever /
   milvus_vector_store / metadata_query_helper / vanna_sql_adapter / pg_store)一并移除。
-- 保留的工具仅依赖:公网 LLM (main_llm) / Serper API / 本地区划树 JSON。
+- 保留的工具仅依赖:公网 LLM (main_llm) / 本地区划树 JSON；联网搜索已移到
+  Basic QA 的受审批 web_search。
 """
 
 from __future__ import annotations
@@ -18,14 +19,12 @@ from pathlib import Path
 from typing import Any, Dict, List
 from zoneinfo import ZoneInfo
 
-import httpx
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from common.config import config
 from common.models import ModelRegistry
 from common.prompts import region_extraction_prompt
 
@@ -82,44 +81,6 @@ class RegionExtraction(BaseModel):
 # =========================================================================
 # @tool 定义
 # =========================================================================
-
-
-@tool
-async def websearch_tool(query: str, top_k: int = 5) -> Dict[str, Any]:
-    """联网搜索工具,用于搜索互联网获取最新信息.
-
-    通过 Serper API 抓取搜索结果,返回包含网页标题、链接、摘要的列表。
-    """
-    api_key = config.SERPER_API_KEY
-    if not api_key:
-        return {"snippets": [], "links": [], "error": "SERPER_API_KEY 未配置"}
-
-    url = "https://google.serper.dev/search"
-    payload = {"q": query, "gl": "cn", "hl": "zh-cn", "num": top_k}
-    headers = {"X-API-KEY": api_key, "Content-Type": "application/json"}
-
-    try:
-        async with httpx.AsyncClient(timeout=config.DDGS_TIMEOUT) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-    except Exception as e:
-        logger.error("websearch_tool 调用失败: category={}", type(e).__name__)
-        return {"snippets": [], "links": [], "error": str(e)}
-
-    organic = data.get("organic", []) or []
-    snippets: list[str] = []
-    links: list[str] = []
-    for item in organic[:top_k]:
-        title = item.get("title", "")
-        snippet = item.get("snippet", "")
-        link = item.get("link", "")
-        if title or snippet:
-            snippets.append(f"{title}\n{snippet}".strip())
-        if link:
-            links.append(link)
-
-    return {"snippets": snippets, "links": links}
 
 
 @tool
@@ -352,7 +313,6 @@ __all__ = [
     "shanghai_now",
     "get_beijing_time",
     "parse_region_tool",
-    "websearch_tool",
     "RegionItem",
     "RegionExtraction",
 ]

@@ -109,11 +109,10 @@ class Config:
         "SILICONFLOW_EMBEDDING_MODEL", "Qwen/Qwen3-Embedding-8B"
     )
 
-    # ==================== Serper API 配置(凭据必需)====================
-    SERPER_API_KEY: str = _get_env_required(
-        "SERPER_API_KEY",
-        "Serper API 密钥,用于网络搜索功能。",
-    )
+    # ==================== DeepSeek 联网搜索（可选）====================
+    # 仅 Basic QA 的受人工审批 web_search 使用。缺省为空时工具失败关闭，
+    # 不触发审批、不发出外呼。
+    DEEPSEEK_API_KEY: str = _get_env_optional("DEEPSEEK_API_KEY", "")
 
     # ==================== 主 LLM 通道配置(凭据必需)====================
     # 默认走本机 workbuddy2api 网关(OpenAI 兼容 /v1/chat/completions)。

@@ -16,7 +16,6 @@ sys.path.insert(0, str(snapshot))
 for key in (
     "MAIN_LLM_API_KEY",
     "SILICONFLOW_API_KEY",
-    "SERPER_API_KEY",
     "POSTGRES_USER",
     "POSTGRES_PASSWORD",
 ):

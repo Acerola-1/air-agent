@@ -15,8 +15,9 @@ import {
   streamRun, cancelRun, deriveTitle, ThreadAccessError,
   getRunStatus, listRecentRuns, notifyIfContextConflict,
   newSubmissionKey, setSubmissionContext, confirmRunAdmission, recordStopIntent,
-  recordNavigationStopBeacon,
+  confirmInterruptedRun, recordNavigationStopBeacon,
   type LgThread, type ContextMetrics, type ProcessingStatus, type ThreadValues,
+  type WebSearchSource,
 } from "@/lib/langgraph-api";
 import {
   AgentOutputStream,
@@ -42,6 +43,18 @@ export type ChatMessage = {
   answerId?: string | null;
 };
 
+/** 待审批的联网范围；只有 query/reason/remaining 来自中断 payload。 */
+export type WebSearchApproval = {
+  provider: string;
+  query: string;
+  reason: string;
+  remaining: number;
+  threadId: string;
+  graphId: string;
+  runId: string | null;
+  attemptId: string | null;
+};
+
 type ChatState = {
   analysisMenuName: string;
   setAnalysisMenu: (menuName: string) => void;
@@ -58,6 +71,11 @@ type ChatState = {
   streamingDeliveryMode: string | null;
   firstDeltaSource: "new_delta" | "legacy_done" | null;
   stopPending: boolean;
+  /** 本轮服务端分配的联网来源；仅用于流式角标校验。 */
+  websearchSources: WebSearchSource[];
+  /** 审批中断：非空时显示弹窗并锁定输入。 */
+  websearchApproval: WebSearchApproval | null;
+  resolveWebSearchApproval: (approved: boolean) => Promise<void>;
   contextMetrics: ContextMetrics | null; contextStatus: ProcessingStatus | null; dataStatus: ProcessingStatus | null;
   error: string | null; failedInput: string | null; loadingThreads: boolean; loadingThread: boolean;
   switchGraph: (graphId: string) => Promise<void>; loadThreads: () => Promise<void>;
@@ -85,6 +103,7 @@ type ActiveRun = {
   streamStarted?: boolean;
   phase?: "queued" | "processing" | "unknown";
   admitted?: boolean;
+  attemptId?: string | null;
   graphId?: string;
 };
 
@@ -180,7 +199,42 @@ let pendingStopRun: ActiveRun | null = null;
 let stopPromise: Promise<StopOutcome> | null = null;
 const emptyView = { activeTimingOutputComplete: false, activeTimingMessageId: null as string | null, activeTimingId: null as string | null, messages: [] as ChatMessage[], isStreaming: false, streamingText: "", streamingReasoning: "",
   streamingOutputStatus: "idle" as const, streamingOutputMessageId: null as string | null, streamingDeliveryMode: null as string | null, firstDeltaSource: null as "new_delta" | "legacy_done" | null,
-  totalContextTokens: 0, contextMetrics: null, contextStatus: null, dataStatus: null, error: null, failedInput: null, loadingThread: false };
+  totalContextTokens: 0, contextMetrics: null, contextStatus: null, dataStatus: null, error: null, failedInput: null, loadingThread: false,
+  websearchSources: [] as WebSearchSource[], websearchApproval: null as WebSearchApproval | null };
+
+/** 中断 payload → 审批展示字段；只接受服务端定义的形状。 */
+function approvalPayload(value: unknown): Pick<WebSearchApproval, "provider" | "query" | "reason" | "remaining"> | null {
+  if (!value || typeof value !== "object") return null;
+  const item = value as Record<string, unknown>;
+  if (item.type !== "websearch_approval") return null;
+  return {
+    provider: typeof item.provider === "string" && item.provider ? item.provider : "DeepSeek",
+    query: typeof item.query === "string" ? item.query : "",
+    reason: typeof item.reason === "string" ? item.reason : "",
+    remaining: typeof item.remaining === "number" && Number.isFinite(item.remaining) ? item.remaining : 0,
+  };
+}
+
+/** 从 values/线程任务中取审批中断；run/attempt 由调用方填充。 */
+function approvalFromValues(
+  values: ThreadValues,
+  base: { threadId: string; graphId: string; runId: string | null; attemptId: string | null },
+): WebSearchApproval | null {
+  const candidates: unknown[] = [];
+  for (const item of values.__interrupt__ ?? []) {
+    candidates.push((item as { value?: unknown })?.value ?? item);
+  }
+  for (const task of values.tasks ?? []) {
+    for (const interrupt of task.interrupts ?? []) {
+      candidates.push((interrupt as { value?: unknown })?.value ?? interrupt);
+    }
+  }
+  for (const candidate of candidates) {
+    const payload = approvalPayload(candidate);
+    if (payload) return { ...payload, ...base };
+  }
+  return null;
+}
 
 function cancelActive() {
   const cancelEpoch = generation;
@@ -198,7 +252,8 @@ function cancelActive() {
 }
 function fromValues(values: ThreadValues) {
   return { messages: parseMessages(values.messages), loadingThread: false, contextMetrics: values.context_metrics ?? null,
-    contextStatus: processingStatus(values.context_status), dataStatus: processingStatus(values.data_status), totalContextTokens: values.context_metrics?.input_tokens ?? 0 };
+    contextStatus: processingStatus(values.context_status), dataStatus: processingStatus(values.data_status), totalContextTokens: values.context_metrics?.input_tokens ?? 0,
+    websearchSources: Array.isArray(values.websearch_sources) ? values.websearch_sources : [] };
 }
 function processingStatus(value: ProcessingStatus | null | undefined): ProcessingStatus | null {
   return value && ['history', 'data'].includes(value.stage) && ['started', 'completed', 'failed'].includes(value.status) ? value : null;
@@ -252,7 +307,30 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set({ activeThreadId: threadId, ...emptyView, loadingThread: true });
     try {
       const values = await getThreadState(threadId);
-      if (generation === epoch && get().activeThreadId === threadId) set(fromValues(values));
+      let approval = approvalFromValues(values, {
+        threadId,
+        graphId: get().graphId,
+        runId: null,
+        attemptId: null,
+      });
+      if (approval) {
+        // 刷新恢复：平台可能把"停在 interrupt"记为 success，runId 只用于定位台账，
+        // 是否可恢复由 BFF 读取线程状态的 pending interrupt 判定。
+        try {
+          const runs = await listRecentRuns(threadId);
+          approval = { ...approval, runId: runs[0]?.run_id ?? null };
+          const calibrated = await confirmInterruptedRun(threadId, approval.runId);
+          approval = {
+            ...approval,
+            attemptId: calibrated.confirmed ? calibrated.attempt_id ?? null : null,
+          };
+        } catch {
+          // 弹窗仍显示；批准时再重试校准，不能假装已就绪。
+        }
+      }
+      if (generation === epoch && get().activeThreadId === threadId) {
+        set({ ...fromValues(values), websearchApproval: approval });
+      }
       await fetch(`/api/agent-runs/confirm?thread_id=${encodeURIComponent(threadId)}`, { cache: "no-store" }).catch(() => {});
     } catch (error) {
       notifyIfContextConflict(error);
@@ -266,7 +344,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
   sendMessage: async (text, operationKind = "initial") => {
     const previous = get(); const trimmed = text.trim();
-    if (previous.isStreaming || previous.stopPending || !trimmed) return;
+    if (previous.isStreaming || previous.stopPending || previous.websearchApproval || !trimmed) return;
     const run: ActiveRun = {
       generation: ++generation,
       controller: new AbortController(),
@@ -319,6 +397,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
             void confirmRunAdmission(threadId, runId, (attemptId) => {
               // 回调在任何状态写入前先核对本次运行，防切图/换企业的迟到响应。
               if (generation !== run.generation || get().activeThreadId !== threadId || get().graphId !== run.graphId) return;
+              run.attemptId = attemptId;
               timingAttachAttempt(measurementId, attemptId);
               run.admitted = true;
             }).catch(() => {});
@@ -327,6 +406,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
             run.phase = "processing";
             if (!sameRun(run) || get().activeThreadId !== threadId) return;
             const view = fromValues(values);
+            const approval = approvalFromValues(values, {
+              threadId,
+              graphId: previous.graphId,
+              runId: run.runId,
+              attemptId: run.attemptId ?? null,
+            });
             const snapshot = output!.snapshot();
             const confirmed = Boolean(
               (streamedMessageId || snapshot.messageId) &&
@@ -338,6 +423,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
             if (confirmed) outputStatus = "complete";
             set({
               ...view,
+              ...(approval ? { websearchApproval: approval } : {}),
               ...(confirmed ? { streamingText: "", streamingOutputStatus: "complete" as const } : {}),
             });
           },
@@ -439,8 +525,22 @@ export const useChatStore = create<ChatState>((set, get) => ({
       try {
         const values = await getThreadState(threadId);
         if (sameRun(run)) {
+          let approval = approvalFromValues(values, {
+            threadId,
+            graphId: previous.graphId,
+            runId: run.runId,
+            attemptId: run.attemptId ?? null,
+          });
+          if (approval && !approval.attemptId) {
+            // 流式首帧可能早于台账确认；中断结束后补一次幂等校准。
+            const calibrated = await confirmInterruptedRun(threadId, approval.runId);
+            if (calibrated.confirmed && calibrated.attempt_id) {
+              approval = { ...approval, attemptId: calibrated.attempt_id };
+            }
+          }
           set({
             ...fromValues(values),
+            websearchApproval: approval,
             streamingText: "",
             streamingOutputStatus: (outputStatus as string) === "complete" ? "complete" : outputStatus,
           });
@@ -494,9 +594,167 @@ export const useChatStore = create<ChatState>((set, get) => ({
       origin: "navigation",
     });
   },
+  /** 批准/禁止联网：以台账源尝试提交 `command.resume`，复用原 request/attempt。 */
+  resolveWebSearchApproval: async (approved) => {
+    const approval = get().websearchApproval;
+    if (!approval || get().isStreaming) return;
+    // 平台可能已把这次运行记为 success，且确认受理只把 attempt 置为 running；
+    // resume 受理要求 waiting_input，因此每次提交前都必须重新做一次幂等校准。
+    const calibrated = await confirmInterruptedRun(approval.threadId, approval.runId);
+    const attemptId = calibrated.confirmed
+      ? calibrated.attempt_id ?? approval.attemptId ?? null
+      : null;
+    if (!attemptId) {
+      set({ error: "审批状态尚未就绪，请刷新会话后重试。" });
+      return;
+    }
+    const run: ActiveRun = {
+      generation: ++generation,
+      controller: new AbortController(),
+      threadId: approval.threadId,
+      runId: null,
+      graphId: approval.graphId,
+      attemptId,
+      phase: "queued",
+    };
+    activeRun = run;
+    const submissionKey = newSubmissionKey();
+    run.submissionKey = submissionKey;
+    setSubmissionContext({
+      submissionKey,
+      operationKind: "resume",
+      sourceAttemptId: attemptId,
+    });
+    const output = new AgentOutputStream({
+      threadId: approval.threadId,
+      graphId: approval.graphId,
+    });
+    let outputStatus: "idle" | "streaming" | "partial" | "complete" | "aborted" = "idle";
+    set({
+      websearchApproval: null,
+      isStreaming: true,
+      streamingText: "",
+      streamingReasoning: "",
+      streamingOutputStatus: "idle",
+      streamingOutputMessageId: null,
+      error: null,
+      failedInput: null,
+    });
+    try {
+      await streamRun({
+        threadId: approval.threadId,
+        graphId: approval.graphId,
+        command: { resume: { approved } },
+        signal: run.controller.signal,
+        handlers: {
+          onRun: (runId) => {
+            run.runId = runId;
+            output.setScope({ runId });
+            if (!sameRun(run)) {
+              void cancelRun(approval.threadId, runId).catch(() => {});
+              return;
+            }
+            void confirmRunAdmission(approval.threadId, runId, (id) => {
+              run.attemptId = id;
+            }).catch(() => {});
+          },
+          onValues: (values) => {
+            if (!sameRun(run) || get().activeThreadId !== approval.threadId) return;
+            const view = fromValues(values);
+            // 恢复流的第一帧仍可能是中断前的 checkpoint；不能据此重新弹窗。
+            // 真正的“仍待审批”由流结束后的线程状态决定。
+            const confirmed = values.messages.some((item) => {
+              const message = item as {
+                id?: string;
+                additional_kwargs?: { ui_visible?: boolean };
+              };
+              return (
+                message?.id === output.snapshot().messageId &&
+                message.additional_kwargs?.ui_visible !== false
+              );
+            });
+            if (confirmed) outputStatus = "complete";
+            set({
+              ...view,
+              ...(confirmed
+                ? { streamingText: "", streamingOutputStatus: "complete" as const }
+                : {}),
+            });
+          },
+          onMessagesDelta: () => {},
+          onCustom: (event) => {
+            if (event.thread_id && event.thread_id !== approval.threadId) return;
+            if (!isFinalOutputEvent(event)) return;
+            const action = output.apply(event as FinalOutputEvent);
+            if (action.action === "start") {
+              outputStatus = "streaming";
+              set({
+                streamingText: "",
+                streamingOutputStatus: "streaming",
+                streamingOutputMessageId: action.messageId,
+                streamingDeliveryMode: action.deliveryMode,
+              });
+            } else if (action.action === "append") {
+              outputStatus = "streaming";
+              set((state) => ({
+                streamingText: state.streamingText + action.text,
+                streamingOutputStatus: "streaming" as const,
+              }));
+            } else if (action.action === "done") {
+              outputStatus = "complete";
+              set({
+                streamingText: action.text,
+                streamingOutputStatus: "complete",
+                streamingOutputMessageId: action.messageId,
+              });
+            } else if (action.action === "abort") {
+              outputStatus = "aborted";
+              set({ streamingText: action.text, streamingOutputStatus: "aborted" });
+            } else if (action.action === "resync") {
+              outputStatus = "partial";
+              set({ streamingOutputStatus: "partial" });
+            } else if (action.action === "legacy") {
+              outputStatus = "complete";
+              set({ streamingText: action.text, streamingOutputStatus: "complete" });
+            }
+          },
+          onDone: (error) => {
+            // 审批提交是受控业务操作；不把上游 HTTP/台账内部错误原样展示。
+            if (sameRun(run) && error) set({ error: "审批提交失败，请重试。" });
+          },
+        },
+      });
+      if (!sameRun(run)) return;
+      const values = await getThreadState(approval.threadId);
+      if (sameRun(run)) {
+        const nextApproval = approvalFromValues(values, {
+          threadId: approval.threadId,
+          graphId: approval.graphId,
+          runId: run.runId,
+          attemptId: run.attemptId ?? attemptId,
+        });
+        set({
+          ...fromValues(values),
+          websearchApproval: nextApproval,
+          streamingText: "",
+          streamingOutputStatus:
+            (outputStatus as string) === "complete" ? "complete" : outputStatus,
+        });
+      }
+    } catch {
+      if (sameRun(run)) set({ error: "联网审批处理失败，请重试。" });
+    } finally {
+      if (sameRun(run)) {
+        activeRun = null;
+        setSubmissionContext(null);
+        set({ isStreaming: false, streamingText: "", streamingReasoning: "" });
+        void get().loadThreads();
+      }
+    }
+  },
   regenerateLast: async () => {
     const state = get();
-    if (state.isStreaming || state.stopPending || !state.activeThreadId) return;
+    if (state.isStreaming || state.stopPending || state.websearchApproval || !state.activeThreadId) return;
     const local = [...state.messages].reverse().find((m) => m.role === "user");
     let content = local?.content ?? "";
     if (!content) {
@@ -516,6 +774,18 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
   stopStreaming: async () => {
     if (stopPromise) return stopPromise;
+    const approval = get().websearchApproval;
+    if (approval) {
+      // 审批等待中停止：按拒绝恢复收尾，不发出搜索请求；
+      // 等待中的审批不显示为已完成，运行仍由恢复后的 gate 结束。
+      set({ stopPending: true });
+      try {
+        await get().resolveWebSearchApproval(false);
+      } finally {
+        set({ stopPending: false });
+      }
+      return { confirmed: true };
+    }
     const run = activeRun ?? pendingStopRun;
     const threadId = run?.threadId ?? get().activeThreadId; const epoch = ++generation;
     pendingStopRun = run;

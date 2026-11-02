@@ -2,8 +2,9 @@
 
 Basic QA: START → classify_intent（校验输入并恢复会话引用）→ prepare_model
 → call_model ⇄ execute_tools → answer_model → ledger_finalize → END。
+联网申请在 execute_tools 之后进入独立的 websearch_gate：审批中断只重跑该节点。
 节点 ID 是持久化契约；实现分别为 prepare_session、prepare_prompt、
-plan_tools、ToolBatchExecutor.run_tools 和 compose_answer。
+plan_tools、ToolBatchExecutor.run_tools、websearch_gate 和 compose_answer。
 模型按需调用搜索／加载工具，身份检查由受理与逐发送守卫执行。
 """
 
@@ -52,8 +53,10 @@ def _route_after_plan(
 
 def _route_after_tool_calls(
     state: BasicQAState,
-) -> Literal["call_model", "__end__"]:
-    """条件边：execute_tools 后路由——最后一条是 ToolMessage -> 回到 call_model；否则 -> END."""
+) -> Literal["websearch_gate", "call_model", "__end__"]:
+    """条件边：有待审批联网请求 -> gate；最后一条是 ToolMessage -> 回到 call_model."""
+    if state.get("pending_websearch"):
+        return "websearch_gate"
     messages = state.get("messages", [])
     if not messages:
         return "__end__"
@@ -121,6 +124,12 @@ def build_basic_qa_graph(
     )
     builder.add_node("execute_tools", tool_executor.run_tools)
 
+    # 联网审批独立成节点：interrupt 前不外呼、不写业务状态；
+    # 恢复时只重跑本节点，已完成的工具批次不会重复执行。
+    from basic_qa.capabilities.websearch import websearch_gate
+
+    builder.add_node("websearch_gate", websearch_gate)
+
     # 台账生命周期落点：终态与可见回答版本在
     # 图内节点落账，保持编译结果是 Graph 类型（with_listeners 会变成
     # RunnableBinding，平台加载器按 "Graph or Graph factory" 校验会拒绝）。
@@ -157,10 +166,13 @@ def build_basic_qa_graph(
         "execute_tools",
         _route_after_tool_calls,
         {
+            "websearch_gate": "websearch_gate",
             "call_model": "call_model",
             "__end__": "ledger_finalize",
         },
     )
+
+    builder.add_edge("websearch_gate", "call_model")
 
     builder.add_edge("answer_model", "ledger_finalize")
     builder.add_edge("ledger_finalize", END)

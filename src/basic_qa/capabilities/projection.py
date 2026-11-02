@@ -29,7 +29,7 @@ class CapabilityProjection(NamedTuple):
     prepare_kwargs: dict[str, Any]
 
 
-_GENERAL = frozenset({"get_beijing_time", "knowledge_search"})
+_GENERAL = frozenset({"get_beijing_time", "knowledge_search", "web_search"})
 _EVIDENCE = frozenset({"compute_artifact"})
 _CONTROL = frozenset(
     {"search_skills", "load_skill", "search_mcp", "load_mcp_tool", "finish_planning"}
@@ -90,6 +90,13 @@ async def initialize(state: dict[str, Any], config: dict[str, Any]) -> dict[str,
         "bqa_active_skill": None,
         "skill_rules_content": "",
         "planning_draft": "",
+        # 新用户问题重置联网审批与额度；resume 命中同一 turn key，不经过这里。
+        "pending_websearch": None,
+        "websearch_turn_key": key,
+        "websearch_granted": False,
+        "websearch_denied": False,
+        "websearch_used": 0,
+        "websearch_sources": [],
     }
 
 

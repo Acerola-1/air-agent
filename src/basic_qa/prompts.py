@@ -20,6 +20,7 @@ from common.prompts import (
     MAIN_AGENT_TOOL_USE_OUTPUT_GUARD,
     POLLUTANT_LEVEL_BOUNDARY_GUIDE,
     TIME_PARAMETER_NORMALIZATION_GUIDE,
+    WEBSEARCH_HUMAN_APPROVAL_GUIDE,
 )
 
 
@@ -34,7 +35,8 @@ def with_main_agent_tool_use_output_guard(system_prompt: str) -> str:
         f"{TIME_PARAMETER_NORMALIZATION_GUIDE}\n\n"
         f"{DATA_DELAY_RETRY_GUIDE}\n\n"
         f"{AIR_QUALITY_UNIT_NORMALIZATION_GUIDE}\n\n"
-        f"{POLLUTANT_LEVEL_BOUNDARY_GUIDE}"
+        f"{POLLUTANT_LEVEL_BOUNDARY_GUIDE}\n\n"
+        f"{WEBSEARCH_HUMAN_APPROVAL_GUIDE}"
     )
 
 

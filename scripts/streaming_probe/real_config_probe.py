@@ -44,7 +44,6 @@ def _load_env() -> None:
             "DEEPSEEK_API_KEY",
             "XFYUN_MAAS_API_KEY",
             "XIAOMI_MIMO_API_KEY",
-            "SERPER_API_KEY",
             "ARK_API_KEY",
         }:
             os.environ.setdefault(key, value)

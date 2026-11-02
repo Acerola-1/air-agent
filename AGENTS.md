@@ -10,6 +10,7 @@
 - 共享身份、台账、MCP、上下文、前端等改动仍须保持已保留图的兼容与安全。必要的兼容或安全修复可最小范围涉及封存图，并在交付中说明；相关回归不因封存而删除或跳过。
 - Basic QA 新业务能力优先 `search_skills` 发现候选后 `load_skill`；全量 Skill 目录只留服务端，不进入初始系统提示。已撤回事先指定 Skill 及 Skill `auto/explicit` 协议，不得以兼容为由恢复；有效加载引用仍可跨轮复用。
 - Basic QA 当前实施以 `revise-basic-qa-session-capabilities` 为准；旧 `add-basic-qa-conversational-skill-loop` 保留历史状态，不同时应用冲突要求。新版允许多个 Skill 及独立工具跨轮复用，模型按需搜索／加载，优先 Skill、未覆盖部分补工具；不得恢复逐轮清空、单 Skill 限制或接口回显字段门禁。实施／验收／正式发布须分别报告，参见[生命周期说明](docs/testing/bqa-session-capabilities-v2/runtime-design.md)。
+- Basic QA 联网搜索只允许 `web_search` 一个入口，且必须经用户逐轮批准：一次批准覆盖本轮 3 次实际外呼（失败也计数），拒绝或额度用尽后本轮不再外呼；回答使用服务端分配的 `[web:n]` 角标与文末“互联网来源”列表，未批准/失败只用“部分数据暂时无法获取”一类通用话术，不得提审批、额度或外部服务。联网仅补充 MCP/知识库未取得的数据，冲突以 MCP/知识库为准。来源：`openspec/changes/add-basic-qa-approval-websearch/`。
 
 ## 正式运行态（始终适用）
 

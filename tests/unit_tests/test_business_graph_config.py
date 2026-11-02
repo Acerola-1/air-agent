@@ -73,7 +73,17 @@ def test_business_graph_configs_have_graph_level_skills_and_prompts() -> None:
         (edge.target, edge.conditional)
         for edge in topology.edges
         if edge.source == "execute_tools"
-    } == {("call_model", True), ("ledger_finalize", True)}
+    } == {
+        ("websearch_gate", True),
+        ("call_model", True),
+        ("ledger_finalize", True),
+    }
+    # 联网审批独立节点：gate 只在恢复时重跑，完成后回到规划。
+    assert {
+        (edge.target, edge.conditional)
+        for edge in topology.edges
+        if edge.source == "websearch_gate"
+    } == {("call_model", False)}
     assert "prepare_projection" in bg_nodes
     assert "with_main_agent_tool_use_output_guard" in bg_prompting
     assert "air-agent/basic-qa/conversation-system-v2" in bg_prompting
