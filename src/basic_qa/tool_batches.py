@@ -48,6 +48,9 @@ class ToolBatchExecutor:
             return {"messages": rejected}
         if any(call.get("name") in LOAD_TOOLS for call in calls):
             return await self._run_load_batch(state, config, calls)
+        web_calls = [call for call in calls if call.get("name") == "web_search"]
+        if len(web_calls) > 1 or (web_calls and len(calls) != len(web_calls)):
+            return await self._run_websearch_batch(state, config, calls, web_calls)
         result = await self._tool_node.ainvoke(state, config)
         return self._record_usage(result, state, config)
 
@@ -74,6 +77,52 @@ class ToolBatchExecutor:
                 for call in calls
             ]
         return rejected
+
+    async def _invoke_calls(
+        self,
+        state: dict[str, Any],
+        config: RunnableConfig,
+        calls: list[Any],
+    ) -> Any:
+        """只执行给出的调用，避免同批联网申请并行覆盖队列."""
+        messages = list(state["messages"])
+        messages[-1] = messages[-1].model_copy(update={"tool_calls": calls})
+        return await self._tool_node.ainvoke({**state, "messages": messages}, config)
+
+    @staticmethod
+    def _merge_updates(
+        working: dict[str, Any], merged: dict[str, Any], result: Any
+    ) -> None:
+        for values in _updates(result):
+            for key, value in values.items():
+                if key == "messages":
+                    merged.setdefault("messages", []).extend(value)
+                else:
+                    merged[key] = value
+                    working[key] = value
+
+    async def _run_websearch_batch(
+        self,
+        state: BasicQAState,
+        config: RunnableConfig,
+        calls: list[Any],
+        web_calls: list[Any],
+    ) -> Any:
+        """其它工具仍并行；联网申请逐条入队，交给 gate 按预算依次执行."""
+        working = dict(state)
+        merged: dict[str, Any] = {"messages": []}
+        others = [call for call in calls if call.get("name") != "web_search"]
+        if others:
+            self._merge_updates(
+                working, merged, await self._invoke_calls(working, config, others)
+            )
+        for call in web_calls:
+            self._merge_updates(
+                working,
+                merged,
+                await self._invoke_calls(working, config, [call]),
+            )
+        return self._record_usage(merged, working, config)
 
     async def _run_load_batch(
         self, state: BasicQAState, config: RunnableConfig, calls: list[Any]

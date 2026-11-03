@@ -51,6 +51,17 @@ def _route_after_plan(
     return "answer_model"
 
 
+def _route_after_websearch(
+    state: BasicQAState,
+) -> Literal["websearch_gate", "call_model"]:
+    """队列里还有联网申请时继续处理下一条，不把占位回执交回模型."""
+    from basic_qa.capabilities.websearch import _pending_items
+
+    if _pending_items(state.get("pending_websearch")):
+        return "websearch_gate"
+    return "call_model"
+
+
 def _route_after_tool_calls(
     state: BasicQAState,
 ) -> Literal["websearch_gate", "call_model", "__end__"]:
@@ -172,7 +183,14 @@ def build_basic_qa_graph(
         },
     )
 
-    builder.add_edge("websearch_gate", "call_model")
+    builder.add_conditional_edges(
+        "websearch_gate",
+        _route_after_websearch,
+        {
+            "websearch_gate": "websearch_gate",
+            "call_model": "call_model",
+        },
+    )
 
     builder.add_edge("answer_model", "ledger_finalize")
     builder.add_edge("ledger_finalize", END)

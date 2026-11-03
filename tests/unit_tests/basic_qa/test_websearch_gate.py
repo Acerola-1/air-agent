@@ -65,7 +65,7 @@ def test_tool_registers_pending_without_outbound(monkeypatch):
     output = _run_tool(_state())
 
     assert called == []
-    assert output.update["pending_websearch"] == _pending()
+    assert output.update["pending_websearch"] == [_pending()]
     message = output.update["messages"][0]
     assert message.tool_call_id == "call-1"
     assert message.id == "websearch_pending_call-1"
@@ -79,7 +79,7 @@ def test_tool_fails_closed_without_key(monkeypatch):
     assert json.loads(output.content)["message"] == websearch.GENERIC_UNAVAILABLE
 
 
-def test_tool_rejects_multiple_requests_in_one_batch(monkeypatch):
+def test_tool_queues_itself_when_the_batch_has_several_requests(monkeypatch):
     monkeypatch.setattr(websearch.app_config, "DEEPSEEK_API_KEY", "sk-test")
     state = _state(
         messages=[
@@ -90,11 +90,36 @@ def test_tool_rejects_multiple_requests_in_one_batch(monkeypatch):
                     {"id": "call-2", "name": "web_search", "args": {}},
                 ],
             )
-        ]
+        ],
+        pending_websearch=[
+            {"tool_call_id": "call-2", "query": "已登记", "reason": "上一条"}
+        ],
     )
     output = _run_tool(state)
-    assert output.status == "error"
-    assert json.loads(output.content)["error_code"] == "websearch_batch_conflict"
+    assert [item["tool_call_id"] for item in output.update["pending_websearch"]] == [
+        "call-2",
+        "call-1",
+    ]
+
+
+def test_gate_consumes_only_the_head_of_the_queue(monkeypatch):
+    async def fake_search(query, *, count):
+        return [_result()]
+
+    monkeypatch.setattr(websearch, "search_web", fake_search)
+    monkeypatch.setattr(
+        websearch,
+        "interrupt",
+        lambda payload: (_ for _ in ()).throw(AssertionError(payload)),
+    )
+    queued = [
+        {"tool_call_id": "call-1", "query": "第一篇", "reason": "政策"},
+        {"tool_call_id": "call-2", "query": "第二篇", "reason": "新闻"},
+    ]
+    output = _run_gate(_state(pending_websearch=queued, websearch_granted=True))
+    assert output["pending_websearch"] == [queued[1]]
+    assert output["messages"][0].tool_call_id == "call-1"
+    assert json.loads(output["messages"][0].content)["status"] == "ok"
 
 
 def test_tool_rejects_invalid_arguments(monkeypatch):

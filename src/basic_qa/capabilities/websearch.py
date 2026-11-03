@@ -44,7 +44,6 @@ MAX_CONTENT_EXCERPTS = 2
 MAX_MODEL_TEXT_CHARS = 26000
 
 GENERIC_UNAVAILABLE = "部分数据暂时无法获取，无法进一步分析。"
-_BATCH_CONFLICT = "同一批中最多只能发起一个联网搜索请求；请分开调用。"
 _INVALID_QUERY = (
     f"联网搜索参数无效；请提供非空且不超过 {MAX_QUERY_CHARS} 字的 query，"
     f"以及非空且不超过 {MAX_REASON_CHARS} 字的 reason。"
@@ -100,19 +99,22 @@ def _unavailable(pending: dict[str, Any], *, attempted: bool = False) -> ToolMes
     )
 
 
-def _batch_has_multiple_requests(state: dict[str, Any]) -> bool:
-    """同一批只允许一个联网申请；其余调用返回可纠正的错误."""
-    messages = state.get("messages") or []
-    last = messages[-1] if messages else None
-    calls = getattr(last, "tool_calls", None) or []
-    return (
-        sum(
-            1
-            for call in calls
-            if isinstance(call, dict) and call.get("name") == WEB_SEARCH_TOOL
-        )
-        > 1
-    )
+def _pending_items(value: Any) -> list[dict[str, Any]]:
+    """兼容单条旧检查点和排队后的列表."""
+    if isinstance(value, dict) and value.get("tool_call_id"):
+        return [value]
+    if isinstance(value, list):
+        return [
+            item
+            for item in value
+            if isinstance(item, dict) and item.get("tool_call_id")
+        ]
+    return []
+
+
+def _queue_pending(state: dict[str, Any], item: dict[str, Any]) -> list[dict[str, Any]]:
+    """把本次申请接在队尾。同一批的多次申请由执行器串行调用本函数."""
+    return [*_pending_items(state.get("pending_websearch")), item]
 
 
 def _websearch_enabled() -> bool:
@@ -139,18 +141,6 @@ async def web_search(
     state = runtime.state or {}
     tool_call_id = runtime.tool_call_id or ""
     pending = {"tool_call_id": tool_call_id, "query": query, "reason": reason}
-
-    if _batch_has_multiple_requests(state):
-        return _paired_message(
-            pending,
-            {
-                "status": "invalid_request",
-                "success": False,
-                "error_code": "websearch_batch_conflict",
-                "message": _BATCH_CONFLICT,
-            },
-            status="error",
-        )
 
     value = (query or "").strip()
     explanation = (reason or "").strip()
@@ -181,11 +171,14 @@ async def web_search(
 
     return Command(
         update={
-            "pending_websearch": {
-                "tool_call_id": tool_call_id,
-                "query": value,
-                "reason": explanation,
-            },
+            "pending_websearch": _queue_pending(
+                state,
+                {
+                    "tool_call_id": tool_call_id,
+                    "query": value,
+                    "reason": explanation,
+                },
+            ),
             "messages": [
                 _paired_message(
                     pending,
@@ -468,10 +461,12 @@ def _number_results(
 async def websearch_gate(
     state: dict[str, Any], config: RunnableConfig
 ) -> dict[str, Any]:
-    """审批并执行一次联网申请；中断前不产生任何外呼或状态写入."""
-    pending = state.get("pending_websearch")
-    if not isinstance(pending, dict) or not pending.get("tool_call_id"):
+    """审批并执行队首的一次联网申请；其余申请留在队列里继续处理."""
+    queue = _pending_items(state.get("pending_websearch"))
+    if not queue:
         return {}
+    pending = queue[0]
+    rest = queue[1:] or None
 
     budget = _normalized_budget_state(state)
     updates = _budget_updates(state, budget)
@@ -479,14 +474,14 @@ async def websearch_gate(
     if budget["denied"]:
         return {
             **updates,
-            "pending_websearch": None,
+            "pending_websearch": rest,
             "messages": [_unavailable(pending)],
         }
 
     if budget["used"] >= WEBSEARCH_BUDGET:
         return {
             **updates,
-            "pending_websearch": None,
+            "pending_websearch": rest,
             "messages": [_unavailable(pending)],
         }
 
@@ -520,7 +515,7 @@ async def websearch_gate(
             return {
                 **updates,
                 "websearch_denied": True,
-                "pending_websearch": None,
+                "pending_websearch": rest,
                 "messages": [_unavailable(pending)],
             }
         budget["granted"] = True
@@ -589,7 +584,7 @@ async def websearch_gate(
         )
         return {
             **final_updates,
-            "pending_websearch": None,
+            "pending_websearch": rest,
             "messages": [_unavailable(pending, attempted=True)],
         }
 
@@ -614,7 +609,7 @@ async def websearch_gate(
     )
     return {
         **final_updates,
-        "pending_websearch": None,
+        "pending_websearch": rest,
         "messages": [
             _paired_message(
                 pending,

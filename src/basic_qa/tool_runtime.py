@@ -440,11 +440,20 @@ async def composed_tool_wrapper(
         code = str(business.get("code", ""))
         if business.get("success") is False or (code.isdigit() and int(code) >= 400):
             is_error = True
-            error_message = (
-                "参数校验失败，请调整查询条件。"
-                if code in {"400", "422"}
-                else "数据服务暂未完成查询，请稍后重试。"
-            )
+            own_message = business.get("message")
+            tool_name = str(request.tool_call.get("name") or result.name or "")
+            if (
+                tool_name == "web_search"
+                and isinstance(own_message, str)
+                and own_message
+            ):
+                error_message = own_message
+            else:
+                error_message = (
+                    "参数校验失败，请调整查询条件。"
+                    if code in {"400", "422"}
+                    else "数据服务暂未完成查询，请稍后重试。"
+                )
     if is_error:
         result = result.model_copy(
             update={

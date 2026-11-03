@@ -8,7 +8,6 @@ import {
   DatabaseIcon,
   Loader2Icon,
   WrenchIcon,
-  XCircleIcon,
 } from "lucide-react";
 import { type ToolExecution } from "@/lib/chat-store";
 import { ArchiveReader } from "@/components/chat/ArchiveReader";
@@ -29,8 +28,6 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
   if (!tools || tools.length === 0) return null;
 
   const runningCount = tools.filter((t) => t.status === "running" || t.status === "pending").length;
-  const errorCount = tools.filter((t) => t.status === "error").length;
-  const isAllCompleted = runningCount === 0 && errorCount === 0;
 
   const toolNames = Array.from(new Set(tools.map((t) => t.name))).join(", ");
 
@@ -74,15 +71,10 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
               <Loader2Icon className="size-3 animate-spin" />
               执行中
             </span>
-          ) : isAllCompleted ? (
+          ) : (
             <span className="flex items-center gap-1 text-muted-foreground font-medium text-[11px]">
               <CheckCircle2Icon className="size-3 text-emerald-500" />
               已完成
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-destructive font-medium text-[11px]">
-              <XCircleIcon className="size-3" />
-              含异常
             </span>
           )}
 
@@ -92,7 +84,6 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
         </div>
       </button>
 
-      {errorCount > 0 && !isMainOpen && <p role="status" className="px-3 pb-2 text-destructive">{tools.find((tool) => tool.status === "error")?.errorMessage || "查询未完成，请调整条件或稍后重试。"}</p>}
       {/* 展开的工具列表 */}
       {isMainOpen && (
         <div className="divide-y divide-border/40 border-t border-border/50 bg-background/50">
@@ -124,8 +115,6 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
                     />
                   </span>
                 </button>
-                {tool.status === "error" && <p role="status" className="text-destructive">{tool.errorMessage || "查询未完成，请调整条件或稍后重试。"}</p>}
-
                 {isSubOpen && (
                   <div className="space-y-2 pt-1 font-mono text-[11px]">
                     {tool.artifactId && <ArchiveReader artifactId={tool.artifactId} />}
@@ -142,6 +131,11 @@ export function ToolStepsBlock({ tools, className }: { tools: ToolExecution[]; c
                     </div>
 
                     {/* 返回结果 */}
+                    {tool.status === "error" && (
+                      <p className="font-sans text-muted-foreground">
+                        {tool.errorMessage || "查询未完成，请调整条件或稍后重试。"}
+                      </p>
+                    )}
                     {tool.result && (
                       <div className="rounded-lg bg-muted/40 p-2 border border-border/40 relative">
                         <div className="flex items-center justify-between text-[10px] font-sans font-semibold text-muted-foreground mb-1">
