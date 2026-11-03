@@ -28,6 +28,7 @@ import {
   type ChatConfig,
 } from "@/lib/chat-config";
 import { Markdown } from "@/components/chat/Markdown";
+import { splitLatestAnswerSegment } from "@/lib/answer-reveal";
 import { WebSearchApprovalCard } from "@/components/chat/WebSearchApprovalCard";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
 import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
@@ -455,6 +456,27 @@ function useAnswerMapping(message: ChatMessage) {
   return cachedAnswerByMessage(mappingKey, threadForFeedback);
 }
 
+/** 已发布的句子保持不动，只让刚到达的一句淡入。 */
+function StreamingAnswer({
+  text,
+  webCitations,
+}: {
+  text: string;
+  webCitations?: ReadonlySet<number>;
+}) {
+  const { before, latest } = splitLatestAnswerSegment(text);
+  return (
+    <>
+      {before ? <Markdown content={before} webCitations={webCitations} /> : null}
+      {latest ? (
+        <div key={before.length} className="answer-segment-in">
+          <Markdown content={latest} webCitations={webCitations} />
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 /** 流式生成中的占位与打字机卡片 */
 function StreamingAssistantCard({
   streamingText,
@@ -485,8 +507,7 @@ function StreamingAssistantCard({
         {/* 流式正文 */}
         {streamingText ? (
           <div data-streaming-answer-body>
-            <Markdown content={streamingText} webCitations={webCitations} />
-            <span className="ml-1 inline-block h-3.5 w-1.5 animate-pulse rounded-sm bg-emerald-500 align-middle" />
+            <StreamingAnswer text={streamingText} webCitations={webCitations} />
           </div>
         ) : !streamingReasoning ? (
           <div className="flex items-center gap-2 py-1 text-xs text-muted-foreground">

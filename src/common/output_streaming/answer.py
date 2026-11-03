@@ -10,6 +10,12 @@ an explicit evidence refusal; it is never published first. If the final check
 would rewrite text that was already public, the stream is aborted. Questions
 that require concrete regulation/limit handling are detected before generation
 and use a single policy-bound unit, never streamed model paraphrases.
+
+Basic QA passes ``answer_review=True``. That path does not buffer on the
+question. Each unpublished sentence is reviewed on its own: a supported
+knowledge claim is replaced by the excerpt, a web-only value by a server
+sentence, and an unsupported value by a one-sentence abstention. Other graphs
+keep the policy-bound path.
 """
 
 from __future__ import annotations
@@ -35,6 +41,7 @@ from common.output_streaming.contract import (
     DELIVERY_MODE_TOKEN,
 )
 from common.output_streaming.publisher import OutputAborted, OutputPublisher
+from common.output_streaming.review import ABSTAIN_FAILED, AnswerReview
 from common.output_streaming.safety import SafeTextStream, StreamSafetyError
 
 
@@ -126,6 +133,7 @@ async def stream_final_answer(
     policy_messages: list[AnyMessage] | None = None,
     question: str = "",
     force_policy_bound: bool = False,
+    answer_review: bool = False,
     invocation_metadata: dict[str, Any] | None = None,
     disable_tool_calls: bool = False,
     citation_filter: Any | None = None,
@@ -137,7 +145,11 @@ async def stream_final_answer(
     any answer bytes for this output before invoking this function.
     """
     policy_context = list(policy_messages if policy_messages is not None else messages)
-    policy_bound = force_policy_bound or is_specific_regulation_text(question or "")
+    # Basic QA reviews each unpublished sentence. The question text must not
+    # switch that path into a single buffered refusal.
+    policy_bound = not answer_review and (
+        force_policy_bound or is_specific_regulation_text(question or "")
+    )
     extra_config: dict[str, Any] = {
         "tags": ["nostream", "final-answer"],
     }
@@ -166,6 +178,66 @@ async def stream_final_answer(
     usage: dict[str, int] = {}
     units = 0
     published_text = ""
+    review = AnswerReview.from_messages(policy_context) if answer_review else None
+
+    async def publish_ready_unit(
+        unit: str, *, detail: str
+    ) -> StreamAnswerResult | None:
+        """Publish one safe unit, or return a terminal result."""
+        nonlocal units
+        if review is None:
+            if citation_filter is not None:
+                unit = citation_filter.push(unit)
+                if not unit:
+                    return None
+            reason = _validate_public_unit(unit, policy_context)
+            if reason == "policy_requires_complete_answer":
+                return await _complete_guarded_answer(
+                    publisher,
+                    unit,
+                    policy_context,
+                    usage,
+                    units,
+                    citation_filter=citation_filter,
+                )
+            if reason:
+                await publisher.abort(reason, detail=detail)
+                return _aborted_result(
+                    publisher, safety.clean_text, usage, units, reason
+                )
+        else:
+            original = unit
+            if _json_failure(original):
+                await publisher.abort("generation_failed", detail="json_error_payload")
+                return _aborted_result(
+                    publisher, safety.clean_text, usage, units, "json_error_payload"
+                )
+            try:
+                unit = review.review_unit(original)
+            except Exception as exc:  # noqa: BLE001 - a failed check must not publish the claim
+                logger.bind(output_stream=True).warning(
+                    "answer review failed class={}", type(exc).__name__
+                )
+                unit = (
+                    ABSTAIN_FAILED
+                    if is_specific_regulation_text(original)
+                    else original
+                )
+            replaced = unit != original
+            if citation_filter is not None:
+                unit = citation_filter.push(unit)
+                if not unit:
+                    return None
+            if replaced and unit and not unit.endswith("\n"):
+                unit = f"{unit.rstrip()}\n\n"
+        if _json_failure(unit):
+            await publisher.abort("generation_failed", detail="json_error_payload")
+            return _aborted_result(
+                publisher, safety.clean_text, usage, units, "json_error_payload"
+            )
+        if await publisher.publish(unit):
+            units += 1
+        return None
 
     source = None
     try:
@@ -200,61 +272,13 @@ async def stream_final_answer(
                 )
             text = chunk_text(chunk)
             for unit in safety.feed(text):
-                if citation_filter is not None:
-                    unit = citation_filter.push(unit)
-                    if not unit:
-                        continue
-                reason = _validate_public_unit(unit, policy_context)
-                if reason == "policy_requires_complete_answer":
-                    return await _complete_guarded_answer(
-                        publisher,
-                        unit,
-                        policy_context,
-                        usage,
-                        units,
-                        citation_filter=citation_filter,
-                    )
-                if reason:
-                    await publisher.abort(reason, detail="unit_policy")
-                    return _aborted_result(
-                        publisher, safety.clean_text, usage, units, reason
-                    )
-                if _json_failure(unit):
-                    await publisher.abort(
-                        "generation_failed", detail="json_error_payload"
-                    )
-                    return _aborted_result(
-                        publisher, safety.clean_text, usage, units, "json_error_payload"
-                    )
-                if await publisher.publish(unit):
-                    units += 1
+                stopped = await publish_ready_unit(unit, detail="unit_policy")
+                if stopped is not None:
+                    return stopped
         for unit in safety.flush():
-            if citation_filter is not None:
-                unit = citation_filter.push(unit)
-                if not unit:
-                    continue
-            reason = _validate_public_unit(unit, policy_context)
-            if reason == "policy_requires_complete_answer":
-                return await _complete_guarded_answer(
-                    publisher,
-                    unit,
-                    policy_context,
-                    usage,
-                    units,
-                    citation_filter=citation_filter,
-                )
-            if reason:
-                await publisher.abort(reason, detail="tail_policy")
-                return _aborted_result(
-                    publisher, safety.clean_text, usage, units, reason
-                )
-            if _json_failure(unit):
-                await publisher.abort("generation_failed", detail="json_error_payload")
-                return _aborted_result(
-                    publisher, safety.clean_text, usage, units, "json_error_payload"
-                )
-            if await publisher.publish(unit):
-                units += 1
+            stopped = await publish_ready_unit(unit, detail="tail_policy")
+            if stopped is not None:
+                return stopped
         if citation_filter is not None:
             tail = citation_filter.flush()
             if tail:
@@ -263,9 +287,7 @@ async def stream_final_answer(
         published_text = publisher.emitted_text
         # 联网过滤器会在模型自写来源标题处截断；最终正文必须以已发布前缀为准，
         # 不能再用包含被抑制段落的原始 clean_text。
-        full_text = (
-            published_text if citation_filter is not None else safety.clean_text
-        )
+        full_text = published_text if citation_filter is not None else safety.clean_text
     except StreamSafetyError as exc:
         await publisher.abort(exc.reason_code, detail="safety_buffer")
         return _aborted_result(publisher, "", usage, units, exc.reason_code)
@@ -299,25 +321,34 @@ async def stream_final_answer(
                 await asyncio.wait_for(close(), timeout=2)
 
     # Complete-answer policy: the published prefix may only be extended.  A
-    # rewrite is a failed stream, never a silent replacement.
-    if not full_text.strip():
-        await publisher.abort("generation_failed", detail="empty_answer")
-        return _aborted_result(publisher, "", usage, units, "empty_answer")
-    candidate = AIMessage(content=full_text)
-    policy_result = apply_answer_policy(candidate, policy_context)
-    final_text = (
-        policy_result.content if isinstance(policy_result.content, str) else full_text
-    )
-    blocked = bool(policy_result.additional_kwargs.get("knowledge_policy_blocked"))
-    if blocked or not final_text.startswith(published_text):
-        reason = (
-            str(policy_result.additional_kwargs.get("knowledge_policy_blocked"))
-            if blocked
-            else "final_policy_rewrite"
+    # rewrite is a failed stream, never a silent replacement. Basic QA already
+    # replaced each unpublished sentence, so the emitted text is the answer.
+    if answer_review:
+        final_text = publisher.emitted_text
+        if not final_text.strip():
+            await publisher.abort("generation_failed", detail="empty_answer")
+            return _aborted_result(publisher, "", usage, units, "empty_answer")
+    else:
+        if not full_text.strip():
+            await publisher.abort("generation_failed", detail="empty_answer")
+            return _aborted_result(publisher, "", usage, units, "empty_answer")
+        candidate = AIMessage(content=full_text)
+        policy_result = apply_answer_policy(candidate, policy_context)
+        final_text = (
+            policy_result.content
+            if isinstance(policy_result.content, str)
+            else full_text
         )
-        await publisher.abort("policy_blocked", detail=reason)
-        controlled_text = final_text if blocked else full_text
-        return _aborted_result(publisher, controlled_text, usage, units, reason)
+        blocked = bool(policy_result.additional_kwargs.get("knowledge_policy_blocked"))
+        if blocked or not final_text.startswith(published_text):
+            reason = (
+                str(policy_result.additional_kwargs.get("knowledge_policy_blocked"))
+                if blocked
+                else "final_policy_rewrite"
+            )
+            await publisher.abort("policy_blocked", detail=reason)
+            controlled_text = final_text if blocked else full_text
+            return _aborted_result(publisher, controlled_text, usage, units, reason)
 
     # 来源列表由服务端按正文实际引用生成，不参与模型正文的策略改写；
     # 只在确认正文可发布后追加，并作为 finish 的尾部增量发布。

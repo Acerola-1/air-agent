@@ -140,6 +140,24 @@ async def test_model_projects_watermark_and_marks_only_final(monkeypatch):
 
 
 @pytest.mark.anyio
+async def test_planning_draft_keeps_regulation_wording(monkeypatch):
+    model = AsyncMock()
+    model.bind_tools = Mock(return_value=model)
+    model.ainvoke.return_value = AIMessage(content="浓度限值为 35 微克/立方米。")
+    monkeypatch.setattr(ModelRegistry, "main_llm", model)
+    state = {
+        "messages": [HumanMessage(content="标准限值是多少", id="h2")],
+        "intent": "chitchat",
+        "system_prompt": "规则",
+    }
+    result = await nodes().plan_tools(state, _RUN_CONFIG, writer=lambda event: None)
+    assert result["messages"][0].content == ""
+    assert result["messages"][0].additional_kwargs["ui_visible"] is False
+    assert result["planning_draft"] == "浓度限值为 35 微克/立方米。"
+    assert "未取得可核验" not in result["planning_draft"]
+
+
+@pytest.mark.anyio
 async def test_budget_and_terminal_computation_do_not_call_model(monkeypatch):
     model = AsyncMock()
     monkeypatch.setattr(ModelRegistry, "main_llm", model)

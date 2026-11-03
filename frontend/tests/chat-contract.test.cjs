@@ -27,7 +27,7 @@ test('context meter uses provider input after completion and labels preparation 
   const pass=({children})=>React.createElement(React.Fragment,null,children);
   const {ContextMeter}=load('components/chat/ContextMeter.tsx',{
     'react/jsx-runtime':require(path.join(frontend,'node_modules/react/jsx-runtime')),
-    'lucide-react':{GaugeIcon:()=>null},'@/lib/chat-store':{useChatStore:selector=>selector({contextMetrics:metrics})},
+    'lucide-react':{GaugeIcon:()=>null},'@/lib/chat-store':{useChatStore:selector=>selector({contextMetrics:metrics,messages:[{id:'m1',role:'user',content:'问'}],isStreaming:false})},
     '@/lib/utils':{cn:(...parts)=>parts.filter(Boolean).join(' ')},
     '@/components/ui/tooltip':{Tooltip:pass,TooltipContent:pass,TooltipProvider:pass,TooltipTrigger:pass},
   });
@@ -43,6 +43,36 @@ test('context meter uses provider input after completion and labels preparation 
   assert.match(preparing,/最近准备的模型输入估算/);
   metrics.latest_usage={input_tokens:0};
   assert.match(renderToStaticMarkup(React.createElement(ContextMeter)),/>0 \/ 120\.0k</);
+});
+
+test('context meter is absent before any conversation', () => {
+  const React = require(path.join(frontend, 'node_modules/react'));
+  const { renderToStaticMarkup } = require(path.join(frontend, 'node_modules/react-dom/server'));
+  const pass = ({ children }) => React.createElement(React.Fragment, null, children);
+  const { ContextMeter } = load('components/chat/ContextMeter.tsx', {
+    'react/jsx-runtime': require(path.join(frontend, 'node_modules/react/jsx-runtime')),
+    'lucide-react': { GaugeIcon: () => null },
+    '@/lib/chat-store': { useChatStore: (selector) => selector({ contextMetrics: null, messages: [], isStreaming: false }) },
+    '@/lib/utils': { cn: (...parts) => parts.filter(Boolean).join(' ') },
+    '@/components/ui/tooltip': { Tooltip: pass, TooltipContent: pass, TooltipProvider: pass, TooltipTrigger: pass },
+  });
+  const idle = renderToStaticMarkup(React.createElement(ContextMeter));
+  assert.equal(idle, '');
+  assert.ok(!idle.includes('用量待更新'));
+});
+
+test('answer reveal isolates only the newest sentence', () => {
+  const { splitLatestAnswerSegment } = load('lib/answer-reveal.ts', {});
+  assert.deepEqual(splitLatestAnswerSegment(''), { before: '', latest: '' });
+  assert.deepEqual(splitLatestAnswerSegment('第一句。'), { before: '', latest: '第一句。' });
+  assert.deepEqual(splitLatestAnswerSegment('第一句。第二句。'), {
+    before: '第一句。',
+    latest: '第二句。',
+  });
+  assert.deepEqual(splitLatestAnswerSegment('第一句。\n\n第二句。'), {
+    before: '第一句。\n\n',
+    latest: '第二句。',
+  });
 });
 function deferred() { let resolve; const promise = new Promise((done) => { resolve = done; }); return { promise, resolve }; }
 function fixture(options = {}) {

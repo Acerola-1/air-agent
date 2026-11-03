@@ -659,11 +659,7 @@ class BasicQANodes:
     ) -> dict[str, Any]:
         """将规划结果转换为内部消息、草稿与当次工具定义记录."""
         metrics = prepared.metrics
-        # 服务端依据门禁：带 tool_calls 的草稿正文清空；无工具正文属于规划材料，
-        # 不直接公开，交由 answer 阶段生成。
-        from common.knowledge.policy import apply_answer_policy
-
-        response = apply_answer_policy(response, messages)
+        # 规划正文不公开，也不在这里改写成拒答或摘录。发布前审核只发生在终答。
         calls = list(getattr(response, "tool_calls", []) or [])
         remaining_calls = [
             call
@@ -746,6 +742,7 @@ class BasicQANodes:
                 publisher=publisher,
                 policy_messages=messages,
                 question=_latest_human_content(messages),
+                answer_review=True,
                 invocation_metadata=observed.runtime_metadata(),
                 disable_tool_calls=True,
                 citation_filter=self._citations(state),
@@ -815,6 +812,7 @@ class BasicQANodes:
                     publisher=publisher,
                     policy_messages=messages,
                     question=_latest_human_content(messages),
+                    answer_review=True,
                     invocation_metadata=observed.runtime_metadata(),
                     disable_tool_calls=True,
                     citation_filter=self._citations(state),

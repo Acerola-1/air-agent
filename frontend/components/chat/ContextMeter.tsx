@@ -7,6 +7,10 @@ import { cn } from "@/lib/utils";
 
 export function ContextMeter({ className }: { className?: string }) {
   const metrics = useChatStore((state) => state.contextMetrics);
+  const messages = useChatStore((state) => state.messages);
+  const isStreaming = useChatStore((state) => state.isStreaming);
+  const hasConversation = (messages?.length ?? 0) > 0 || Boolean(isStreaming);
+  if (!hasConversation) return null;
   const actual = metrics?.latest_usage?.input_tokens;
   const hasActual = typeof actual === "number" && Number.isFinite(actual) && actual >= 0;
   const displayed = hasActual ? actual : metrics?.input_tokens ?? 0;
@@ -17,7 +21,7 @@ export function ContextMeter({ className }: { className?: string }) {
   const format = (count: number) => count >= 1000 ? `${(count / 1000).toFixed(1)}k` : String(count);
   return (
     <TooltipProvider><Tooltip><TooltipTrigger asChild>
-      <button type="button" className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring", near ? "border-amber-500/40 text-amber-600 dark:text-amber-400" : "border-border/60 text-muted-foreground", className)}
+      <button type="button" className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] animate-in fade-in-0 duration-300 hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring", near ? "border-amber-500/40 text-amber-600 dark:text-amber-400" : "border-border/60 text-muted-foreground", className)}
         aria-label={metrics ? `${hasActual ? "最近主模型实际输入" : estimated ? "最近准备的模型输入估算" : "最近准备的模型输入"} ${displayed}，可用容量 ${metrics.input_budget_tokens}` : "等待后端提供上下文用量"}>
         <GaugeIcon className="size-3" />
         <span className="font-mono tabular-nums">{metrics ? `${estimated ? "≈ " : ""}${format(displayed)} / ${format(metrics.input_budget_tokens)}` : "用量待更新"}</span>
