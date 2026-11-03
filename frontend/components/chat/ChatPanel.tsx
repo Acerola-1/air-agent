@@ -33,7 +33,6 @@ import { WebSearchApprovalCard } from "@/components/chat/WebSearchApprovalCard";
 import { GraphSwitcher } from "@/components/chat/GraphSwitcher";
 import { ProcessingNotice } from "@/components/chat/ProcessingNotice";
 import { ContextMeter } from "@/components/chat/ContextMeter";
-import { TenantBadge } from "@/components/chat/TenantBadge";
 import { ThinkingBlock } from "@/components/chat/ThinkingBlock";
 import { ToolStepsBlock } from "@/components/chat/ToolStepsBlock";
 import { FeedbackBar } from "@/components/chat/feedback/FeedbackBar";
@@ -557,7 +556,6 @@ function Composer({
     !overLimit;
   const username = useSessionStore((s) => s.username);
   const logout = useSessionStore((s) => s.logout);
-  const logoutPending = useSessionStore((s) => s.logoutPending);
   const sessionError = useSessionStore((s) => s.error);
   const refreshSession = useSessionStore((s) => s.refreshSession);
 
@@ -627,26 +625,6 @@ function Composer({
 
           {/* 上下文容量监控胶囊指示器 */}
           <ContextMeter />
-
-          {/* 登录用户、企业与登出 */}
-          <div className="ml-auto inline-flex max-w-full flex-wrap items-center gap-2 text-[11px]">
-            {username ? (
-              <>
-                <TenantBadge />
-                <span className="hidden rounded-full bg-muted px-2 py-0.5 font-medium text-foreground sm:inline">
-                  {username}
-                </span>
-                <button
-                  type="button"
-                  disabled={logoutPending}
-                  onClick={() => void logout()}
-                  className="text-muted-foreground hover:text-foreground underline underline-offset-2"
-                >
-                  {logoutPending ? "退出中…" : "退出"}
-                </button>
-              </>
-            ) : null}
-          </div>
         </div>
 
         {/* 多行自适应输入框 */}

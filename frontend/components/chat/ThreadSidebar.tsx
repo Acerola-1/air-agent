@@ -6,6 +6,7 @@ import { useChatStore } from "@/lib/chat-store";
 import { useSessionStore } from "@/lib/session-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { SidebarAccountBar } from "@/components/chat/SidebarAccountBar";
 import { threadTitle } from "@/lib/thread-title";
 
 /** 左侧线程列表：按 graph_id + user_id 过滤（由 chat-store.loadThreads 处理），
@@ -40,85 +41,90 @@ export function ThreadSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const hasThreads = threads.length > 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 p-3">
-      <Button
-        type="button"
-        variant="default"
-        className="w-full shrink-0 gap-2"
-        onClick={() => { void newThread(); onNavigate?.(); }}
-        disabled={isStreaming}
-      >
-        <PlusIcon className="size-4" />
-        New Thread
-      </Button>
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 p-3">
+        <Button
+          type="button"
+          variant="default"
+          className="w-full shrink-0 gap-2"
+          onClick={() => { void newThread(); onNavigate?.(); }}
+          disabled={isStreaming}
+        >
+          <PlusIcon className="size-4" />
+          New Thread
+        </Button>
 
-      {hasThreads && (
-        <div className="relative shrink-0">
-          <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="搜索会话"
-            aria-label="搜索会话"
-            className="border-border/60 focus:border-ring bg-muted/40 h-9 w-full rounded-lg border pl-8 pr-9 text-sm outline-none"
-          />
-          {search && <button type="button" aria-label="清空会话搜索"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground focus-visible:ring-2"
-            onClick={() => setSearch("")}><XIcon className="size-3.5" /></button>}
-        </div>
-      )}
-
-      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
-        {loadingThreads && threads.length === 0 ? (
-          <p className="text-muted-foreground px-2 py-3 text-center text-xs">加载中…</p>
-        ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground px-2 py-3 text-center text-xs">
-            {hasThreads ? "没有匹配的会话" : "暂无会话，点击 New Thread 开始"}
-          </p>
-        ) : (
-          filtered.map((t) => {
-            const threadId = t.thread_id;
-            const active = threadId === activeThreadId;
-            const title = threadTitle(t);
-            return (
-              <div
-                key={threadId}
-                className={cn(
-                  "group flex items-center gap-1 rounded-lg transition-colors",
-                  active ? "bg-accent" : "hover:bg-muted",
-                )}
-              >
-                <button
-                  type="button"
-                  onClick={() => { void openThread(threadId); onNavigate?.(); }}
-                  className={cn(
-                    "flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-2 text-left",
-                    active ? "text-accent-foreground" : "text-foreground",
-                  )}
-                  title={title}
-                >
-                  <span
-                    className={cn(
-                      "size-1.5 shrink-0 rounded-full",
-                      active ? "bg-primary" : "bg-muted-foreground/40",
-                    )}
-                    aria-hidden
-                  />
-                  <span className="truncate text-sm">{title}</span>
-                </button>
-                <button
-                  type="button"
-                  aria-label="删除会话"
-                  title="删除会话"
-                  onClick={() => void removeThread(threadId)}
-                  className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 mr-1 shrink-0 rounded p-1 transition-opacity"
-                >
-                  <Trash2Icon className="size-3.5" />
-                </button>
-              </div>
-            );
-          })
+        {hasThreads && (
+          <div className="relative shrink-0">
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="搜索会话"
+              aria-label="搜索会话"
+              className="border-border/60 focus:border-ring bg-muted/40 h-9 w-full rounded-lg border pl-8 pr-9 text-sm outline-none"
+            />
+            {search && <button type="button" aria-label="清空会话搜索"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground focus-visible:ring-2"
+              onClick={() => setSearch("")}><XIcon className="size-3.5" /></button>}
+          </div>
         )}
+
+        <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
+          {loadingThreads && threads.length === 0 ? (
+            <p className="text-muted-foreground px-2 py-3 text-center text-xs">加载中…</p>
+          ) : filtered.length === 0 ? (
+            <p className="text-muted-foreground px-2 py-3 text-center text-xs">
+              {hasThreads ? "没有匹配的会话" : "暂无会话，点击 New Thread 开始"}
+            </p>
+          ) : (
+            filtered.map((t) => {
+              const threadId = t.thread_id;
+              const active = threadId === activeThreadId;
+              const title = threadTitle(t);
+              return (
+                <div
+                  key={threadId}
+                  className={cn(
+                    "group flex items-center gap-1 rounded-lg transition-colors",
+                    active ? "bg-accent" : "hover:bg-muted",
+                  )}
+                >
+                  <button
+                    type="button"
+                    onClick={() => { void openThread(threadId); onNavigate?.(); }}
+                    className={cn(
+                      "flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-2 text-left",
+                      active ? "text-accent-foreground" : "text-foreground",
+                    )}
+                    title={title}
+                  >
+                    <span
+                      className={cn(
+                        "size-1.5 shrink-0 rounded-full",
+                        active ? "bg-primary" : "bg-muted-foreground/40",
+                      )}
+                      aria-hidden
+                    />
+                    <span className="truncate text-sm">{title}</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="删除会话"
+                    title="删除会话"
+                    onClick={() => void removeThread(threadId)}
+                    className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 mr-1 shrink-0 rounded p-1 transition-opacity"
+                  >
+                    <Trash2Icon className="size-3.5" />
+                  </button>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+      <div className="flex shrink-0 items-center border-t border-border/60 px-2 py-1.5">
+        <SidebarAccountBar />
       </div>
     </div>
   );

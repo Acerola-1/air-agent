@@ -3,6 +3,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 
 /** 根布局（原生 LangGraph 实现，无 assistant-ui Runtime）
  *  - 使用系统字体栈，避免生产构建依赖外网 Google Fonts
@@ -15,7 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body className={cn("h-dvh")}>
         <TooltipProvider>
           <Suspense>{children}</Suspense>

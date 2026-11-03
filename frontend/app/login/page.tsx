@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useSessionStore } from "@/lib/session-client";
 import type { AdminSessionContext } from "@/lib/admin-api-contract";
 
@@ -89,7 +90,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center px-4">
+    <div className="flex min-h-dvh items-center justify-center px-4 py-16">
+      <div className="fixed bottom-3 left-3 z-20">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
           <div className="bg-primary text-primary-foreground mx-auto mb-3 flex size-10 items-center justify-center rounded-lg text-sm font-bold">

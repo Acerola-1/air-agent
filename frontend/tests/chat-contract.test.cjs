@@ -61,6 +61,52 @@ test('context meter is absent before any conversation', () => {
   assert.ok(!idle.includes('用量待更新'));
 });
 
+test('theme defaults to the system appearance', () => {
+  const { parseThemePreference, prefersDark, THEME_BOOT_SCRIPT, THEME_STORAGE_KEY } = load('lib/theme.ts', {});
+  assert.equal(parseThemePreference(null), 'system');
+  assert.equal(parseThemePreference(''), 'system');
+  assert.equal(parseThemePreference('sepia'), 'system');
+  assert.equal(parseThemePreference('dark'), 'dark');
+  assert.equal(prefersDark('system', true), true);
+  assert.equal(prefersDark('system', false), false);
+  assert.equal(prefersDark('light', true), false);
+  assert.equal(prefersDark('dark', false), true);
+
+  function boot(stored, systemDark) {
+    const classes = new Set();
+    const html = {
+      classList: {
+        toggle(name, on) { if (on) classes.add(name); else classes.delete(name); },
+      },
+      style: {},
+    };
+    const localStorage = { getItem: (key) => (key === THEME_STORAGE_KEY ? stored : null) };
+    const window = { matchMedia: () => ({ matches: systemDark }) };
+    new Function('localStorage', 'window', 'document', THEME_BOOT_SCRIPT)(
+      localStorage,
+      window,
+      { documentElement: html },
+    );
+    return { dark: classes.has('dark'), colorScheme: html.style.colorScheme };
+  }
+  assert.deepEqual(boot(null, true), { dark: true, colorScheme: 'dark' });
+  assert.deepEqual(boot(null, false), { dark: false, colorScheme: 'light' });
+  assert.deepEqual(boot('light', true), { dark: false, colorScheme: 'light' });
+  assert.deepEqual(boot('dark', false), { dark: true, colorScheme: 'dark' });
+});
+
+test('theme menu stays behind a sun button until opened', () => {
+  const { THEME_OPTIONS } = load('lib/theme.ts', {});
+  assert.deepEqual(THEME_OPTIONS.map((option) => option.label), ['暗色', '亮色', '跟随系统']);
+  assert.deepEqual(THEME_OPTIONS.map((option) => option.id), ['dark', 'light', 'system']);
+  const closed = fs.readFileSync(path.join(frontend, 'components/theme/ThemeToggle.tsx'), 'utf8');
+  assert.match(closed, /aria-label="外观"/);
+  assert.match(closed, /SunIcon/);
+  assert.doesNotMatch(closed, /grid-cols-3/);
+  const bar = fs.readFileSync(path.join(frontend, 'components/chat/SidebarAccountBar.tsx'), 'utf8');
+  assert.match(bar, /<AccountMenu \/>\s*<ThemeToggle \/>/);
+});
+
 test('answer reveal isolates only the newest sentence', () => {
   const { splitLatestAnswerSegment } = load('lib/answer-reveal.ts', {});
   assert.deepEqual(splitLatestAnswerSegment(''), { before: '', latest: '' });

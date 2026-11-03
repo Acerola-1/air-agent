@@ -5,6 +5,7 @@ import { MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ThreadSidebar } from "@/components/chat/ThreadSidebar";
+import { SidebarAccountBar } from "@/components/chat/SidebarAccountBar";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { TenantGate } from "@/components/chat/TenantGate";
 import { useChatStore } from "@/lib/chat-store";
@@ -75,6 +76,9 @@ export default function Home() {
         <main className="flex min-w-0 flex-1 flex-col">
           {sessionCtx && !sessionCtx.current_tenant ? <TenantGate /> : <ChatPanel />}
         </main>
+      </div>
+      <div className="flex shrink-0 items-center border-t border-border/60 bg-background px-2 py-1 md:hidden">
+        <SidebarAccountBar />
       </div>
     </div>
   );
